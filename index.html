@@ -1,0 +1,26 @@
+<html>
+<head>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.4.3/jquery.js"></script>
+<script src="timelapse.js"></script>
+
+<script>
+function ready() {
+  timelapse_load('../timelapses/visible-human-female-384-3mm/', 'timelapse');
+}
+function keypress() {
+  log('keypress');
+}
+$(document).ready(ready);
+$(document).keydown(timelapse_handle_keydown);
+$(document).keyup(timelapse_handle_keyup);
+</script>
+
+
+</head>
+<body>
+<div style="width:800px; height:450px">
+<div id="timelapse" style="position: absolute; width:800px; height:450px; background:#060; overflow:hidden">
+</div>
+</div>
+</body>
+</html>
