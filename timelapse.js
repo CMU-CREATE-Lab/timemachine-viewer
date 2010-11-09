@@ -162,19 +162,24 @@ function timelapse__add_tileidx(tileidx) {
   var url = timelapse__tileidx_url(tileidx);
   log("adding tile " + tileidx_dump(tileidx) + " from " + url);
   g_timelapse.div.append('<video controls id="'+tileidx+'" src="'+url+'" style="position:absolute">');
-  tile_elt = $("#"+tileidx);
-  g_timelapse.tiles[tileidx] = {element:tile_elt};
+
+  // WARNING: this doesn't work with more than one viewer
+  // tile_elt = $("#"+tileidx);
+  var elt = document.getElementById(tileidx);
+  g_timelapse.tiles[tileidx] = {element:elt};
   timelapse__reposition_tileidx(tileidx, g_timelapse.view);
   //log("  tiles=" + dump(g_timelapse.tiles));
 }
   
 function timelapse__delete_tileidx(tileidx) {
-  if (!g_timelapse.tiles[tileidx]) {
+  var tile = g_timelapse.tiles[tileidx];
+  if (!tile) {
     error('timelapse__delete_tileidx(' + tileidx_dump(tileidx) + '): not loaded');
     return;
   }
   log("removing tile " + tileidx_dump(tileidx));
-  g_timelapse.tiles[tileidx].element.remove();
+  
+  tile.element.parentNode.removeChild(g_timelapse.tiles[tileidx].element);
   //log('tiles = ' + dump(g_timelapse.tiles));
   //log('removing ' + tileidx);
   delete g_timelapse.tiles[tileidx];
@@ -182,7 +187,11 @@ function timelapse__delete_tileidx(tileidx) {
 }
   
 function timelapse__tileidx_url(tileidx) {
-  return g_timelapse.url + tileidx_path(tileidx) + ".mp4";
+  var shard_index = (tileidx_r(tileidx)%2)*2 + (tileidx_c(tileidx)%2);
+  var url_prefix = g_timelapse.url.replace("//", "//t"+shard_index+".");
+  var ret = url_prefix + tileidx_path(tileidx) + ".mp4";
+  log("url is " + ret);
+  return ret;
 }
 
 function timelapse__compute_needed_tiles(view) {
@@ -248,14 +257,20 @@ function timelapse__reposition_tileidx(tileidx, view)
   var tile_width = g_timelapse.tile_width << level_shift;
   var tile_height = g_timelapse.tile_height << level_shift;
 
-  tile.element.width(view.scale * tile_width);
-  tile.element.height(view.scale * tile_height);
+  tile.element.style.width = view.scale * tile_width;
+  tile.element.style.height = view.scale * tile_height;
 
   var left = view.scale * (tileidx_c(tileidx) * tile_width - view.x) + g_timelapse.viewport_width*.5;
   var top = view.scale * (tileidx_r(tileidx) * tile_height - view.y) + g_timelapse.viewport_height*.5;
-  
-  tile.element.css({left:left});
-  tile.element.css({top:top});
+
+  // When setting left or top, the number is converted to a string
+  // When # is close enough to zero that we revert to scientific notation, 
+  log("left will be " + Math.round(left*1000)/1000);
+  log("top will be " + Math.round(top*1000)/1000);
+  tile.element.style.left = Math.round(left*1000)/1000;
+  tile.element.style.top = Math.round(top*1000)/1000;
+  log("left now " + tile.element.style.left);
+  log("top now " + tile.element.style.top);
 }
 
 /////////////////////////////////////////////////////////////
