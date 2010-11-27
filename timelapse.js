@@ -36,22 +36,31 @@ function dump(obj) {
   return ret;
 }
 
+function time_secs() {
+  return .001 * (new Date()).getTime();
+}
 
 /////////////////////////////////////////////////////////////
 //
 // Timelapse public api
 //
 
-function timelapse_load(url, div) {
+function timelapse_load(url, div, status_div) {
   g_timelapse.div=$("#"+div);
+  g_timelapse.status_div=$("#"+status_div);
   g_timelapse.url=url;
   g_timelapse.tiles={};
-  log('timelapse_load("'+url+'")');
+  g_timelapse.playback_rate=.5;
+  log("playback rate is " + g_timelapse.playback_rate);
+  g_timelapse.video_pos = 0;             // position of video, if paused.  undefined if playing
+  g_timelapse.video_offset = undefined;  // undefined if paused.  otherwise video time is (time_secs() - video_offset) * video_rate
+  log('timelapse_load("'+url+'")');      
   $.ajax({url:url+'r.json', dataType: 'json', success: timelapse__load_cb});
 }
 
 function timelapse_warp_to(view) {
   g_timelapse.view=view;
+  timelapse__refresh();
 }
 
 function timelapse_home_view() {
@@ -92,7 +101,6 @@ function timelapse__load_cb(data, status, xhr) {
 
   timelapse__read_div_size();
   timelapse_warp_to(timelapse_home_view());
-  timelapse__refresh();
 }
 
 function timelapse__read_div_size() {
@@ -129,6 +137,13 @@ function timelapse_handle_keydown(event) {
   if (event.which == 82) { // R
     timelapse__refresh();
   }
+  if (event.which == 80) { // P
+    if (timelapse_is_paused()) {
+      timelapse_play();
+    } else {
+      timelapse_pause();
+    }
+  }
 }
 
 function timelapse_handle_keyup(event) {
@@ -161,12 +176,16 @@ function timelapse__add_tileidx(tileidx) {
   }
   var url = timelapse__tileidx_url(tileidx);
   log("adding tile " + tileidx_dump(tileidx) + " from " + url);
-  g_timelapse.div.append('<video controls id="'+tileidx+'" src="'+url+'" style="position:absolute">');
+  g_timelapse.div.append('<video controls preload id="'+tileidx+'" src="'+url+'" style="position:absolute">');
 
   // WARNING: this doesn't work with more than one viewer
-  // tile_elt = $("#"+tileidx);
-  var elt = document.getElementById(tileidx);
-  g_timelapse.tiles[tileidx] = {element:elt};
+  var video = document.getElementById(tileidx);
+
+  g_timelapse.tiles[tileidx] = {video:video};
+  video.load();
+  video.defaultPlaybackRate= g_timelapse.playback_rate;
+  video.addEventListener('loadedmetadata', timelapse__video_loaded_metadata, false);
+
   timelapse__reposition_tileidx(tileidx, g_timelapse.view);
   //log("  tiles=" + dump(g_timelapse.tiles));
 }
@@ -179,7 +198,7 @@ function timelapse__delete_tileidx(tileidx) {
   }
   log("removing tile " + tileidx_dump(tileidx));
   
-  tile.element.parentNode.removeChild(g_timelapse.tiles[tileidx].element);
+  tile.video.parentNode.removeChild(g_timelapse.tiles[tileidx].video);
   //log('tiles = ' + dump(g_timelapse.tiles));
   //log('removing ' + tileidx);
   delete g_timelapse.tiles[tileidx];
@@ -190,7 +209,7 @@ function timelapse__tileidx_url(tileidx) {
   var shard_index = (tileidx_r(tileidx)%2)*2 + (tileidx_c(tileidx)%2);
   var url_prefix = g_timelapse.url.replace("//", "//t"+shard_index+".");
   var ret = url_prefix + tileidx_path(tileidx) + ".mp4";
-  log("url is " + ret);
+  //log("url is " + ret);
   return ret;
 }
 
@@ -222,7 +241,7 @@ function timelapse__tileidx_at(level, x, y)
   var ret= {c: Math.floor(x / (g_timelapse.tile_width << (g_timelapse.max_level-level))),
             r: Math.floor(y / (g_timelapse.tile_height << (g_timelapse.max_level-level))),
             l: level};
-  log('timelapse__tileidx_at('+x+','+y+','+level+')='+dump(ret));
+  //log('timelapse__tileidx_at('+x+','+y+','+level+')='+dump(ret));
   return ret;
 }
 
@@ -257,20 +276,100 @@ function timelapse__reposition_tileidx(tileidx, view)
   var tile_width = g_timelapse.tile_width << level_shift;
   var tile_height = g_timelapse.tile_height << level_shift;
 
-  tile.element.style.width = view.scale * tile_width;
-  tile.element.style.height = view.scale * tile_height;
+  tile.video.style.width = view.scale * tile_width;
+  tile.video.style.height = view.scale * tile_height;
 
+  
   var left = view.scale * (tileidx_c(tileidx) * tile_width - view.x) + g_timelapse.viewport_width*.5;
+  //if (!tile.loaded) { left = -10000; }
   var top = view.scale * (tileidx_r(tileidx) * tile_height - view.y) + g_timelapse.viewport_height*.5;
 
-  // When setting left or top, the number is converted to a string
-  // When # is close enough to zero that we revert to scientific notation, 
-  log("left will be " + Math.round(left*1000)/1000);
-  log("top will be " + Math.round(top*1000)/1000);
-  tile.element.style.left = Math.round(left*1000)/1000;
-  tile.element.style.top = Math.round(top*1000)/1000;
-  log("left now " + tile.element.style.left);
-  log("top now " + tile.element.style.top);
+  // Rounding is to prevent going to scientific notation when close to zero;  this confuses the DOM
+  tile.video.style.left = Math.round(left*1000)/1000;
+  tile.video.style.top = Math.round(top*1000)/1000;
+}
+
+/////////////////////////////////////////////////////////////
+//
+// Timelapse video control
+//
+
+function timelapse_is_paused() {
+  return (g_timelapse.video_offset == undefined);
+}
+
+function timelapse_pause() {
+  if (timelapse_is_paused()) return;
+  if (g_timelapse.update_callback) {
+    window.clearInterval(g_timelapse.update_callback);
+    delete g_timelapse.update_callback;
+  }
+  g_timelapse.video_pos = timelapse_get_video_position();
+  g_timelapse.video_offset = undefined;
+  for (tileidx in g_timelapse.tiles) g_timelapse.tiles[tileidx].video.pause();
+}
+
+function timelapse_change_playback_rate() {
+}
+function timelapse_pause_and_seek(t) {
+  timelapse_pause();
+  g_timelapse.video_pos=t;
+  for (tileidx in g_timelapse.tiles) g_timelapse.tiles[tileidx].video.currentTime = t;
+}
+
+function timelapse_get_video_position() {
+  return timelapse_is_paused() ? g_timelapse.video_pos :
+    (time_secs() - g_timelapse.video_offset) * g_timelapse.playback_rate;
+}
+
+function timelapse_play() {
+  if (!timelapse_is_paused()) return;
+  if (!g_timelapse.update_callback) g_timelapse.update_callback = window.setInterval(timelapse__update, 50);
+  g_timelapse.video_offset = time_secs() - g_timelapse.video_pos/g_timelapse.playback_rate;
+  g_timelapse.video_pos = undefined;
+  for (tileidx in g_timelapse.tiles) g_timelapse.tiles[tileidx].video.play();
+}
+
+function timelapse__video_loaded_metadata(event) {
+  var video = event.target;
+  log("loaded_metadata " + tileidx_dump(video.id));
+  video.currentTime = timelapse_get_video_position();
+  if (!timelapse_is_paused()) video.play();
+}
+
+// Call periodically, when video is running
+function timelapse__update() {
+  //timelapse__sync();
+  var msg = "readystate";
+  for (tileidx in g_timelapse.tiles) {
+    var video = g_timelapse.tiles[tileidx].video;
+    msg += " r=" + video.readyState;
+    msg += "/n=" + video.networkState;
+    msg += "/s=" + video.seeking;
+    msg += "/e=" + video.error;
+    msg += "/p=" + video.paused;
+    msg += "/t=" + video.currentTime;
+  }
+  log(msg);
+}
+
+function timelapse__sync() {
+  var error_threshold = .1;
+  
+  if (timelapse_is_paused()) return;
+  
+  var t = timelapse_get_video_position();
+  for (tileidx in g_timelapse.tiles) {
+    var tile = g_timelapse.tiles[tileidx];
+    var video = tile.video;
+    if (video.readyState >= 1 && Math.abs(video.currentTime - t) > error_threshold) {  // HAVE_METADATA=1
+      log("Corrected " + tileidx_dump(tileidx) + " from " + video.currentTime + " to " + t + " (error=" + (video.currentTime-t) +", state=" + video.readyState + ")");
+      video.currentTime = t;
+    } else if (!tile.loaded && video.readyState >= 2) { // HAVE_CURRENT_DATA=2
+      tile.loaded = true;
+      timelapse__reposition_tileidx(tileidx, g_timelapse.view);
+    }
+  }
 }
 
 /////////////////////////////////////////////////////////////
