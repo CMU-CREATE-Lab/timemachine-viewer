@@ -1,0 +1,61 @@
+<html>
+<head>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.4.3/jquery.js"></script>
+<script src="videoset.js"></script>
+
+<script>
+var videos=[];
+var counter=0;
+var swap_interval;
+
+function ready() {
+  videoset_init('videoset', 'videoset_status');
+  videoset_disable_cache(true);
+  videoset_pause_and_seek(70);
+  videoset_play();
+  swap_video(0);
+  swap_video(1);
+  swap_video(2);
+  swap_video(3);
+  swap_video(4);
+  swap_interval = setInterval(swap_one_video, 1000);
+}
+
+function swap_one_video()
+{
+  swap_video(counter % videos.length);
+  counter++;
+}
+
+function swap_video(i)
+{
+  if (videos[i]) videoset_delete_video(videos[i]);
+  videos[i]=videoset_add_video('http://t0.timelapse.gigapan.org/videotest/video0.mp4', i*128, 0, 128, 128);
+}
+
+function deactivate_swap()
+{
+  clearInterval(swap_interval);
+}
+
+$(document).ready(ready);
+</script>
+
+
+</head>
+<body>
+<div style="width:800px; height:450px">
+<div id="videoset" style="position: absolute; width:800px; height:450px; background:#060; overflow:hidden">
+</div>
+</div>
+<div id="videoset_status"></div>
+
+<input type="button" value="play" onclick="videoset_play()">
+<input type="button" value="pause" onclick="videoset_pause()">
+<input type="button" value="reset" onclick="videoset_pause_and_seek(0)">
+<input type="button" value="activate videoset" onclick="videoset_activate()">
+<input type="button" value="deactivate videoset" onclick="videoset_deactivate()">
+<input type="button" value="deactivate swap" onclick="deactivate_swap()">
+
+</body>
+</html>
