@@ -94,20 +94,21 @@ function timelapse__read_video_div_size() {
 
 function timelapse_handle_keydown(event) {
   log('keydown ' + event.which);
+  var translation_speed_constant = 20;
   if (event.which == 37) { // left arrow
-    g_timelapse.view.x -= 10 / g_timelapse.view.scale;
+    g_timelapse.view.x -= translation_speed_constant / g_timelapse.view.scale;
     timelapse__refresh();
   }
   if (event.which == 39) { // right arrow
-    g_timelapse.view.x += 10 / g_timelapse.view.scale;
+    g_timelapse.view.x += translation_speed_constant / g_timelapse.view.scale;
     timelapse__refresh();
   }
   if (event.which == 38) { // up arrow
-    g_timelapse.view.y -= 10 / g_timelapse.view.scale;
+    g_timelapse.view.y -= translation_speed_constant / g_timelapse.view.scale;
     timelapse__refresh();
   }
   if (event.which == 40) { // down arrow
-    g_timelapse.view.y += 10 / g_timelapse.view.scale;
+    g_timelapse.view.y += translation_speed_constant / g_timelapse.view.scale;
     timelapse__refresh();
   }
   if (event.which == 189) { // minus

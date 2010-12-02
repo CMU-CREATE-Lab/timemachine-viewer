@@ -128,8 +128,11 @@ function videoset_delete_video(video) {
   log("video(" + video.id + ") delete");
   video.active = false;
   video.pause();
+  log(videoset__video_summary(video));
   video.removeAttribute('src');
+  log(videoset__video_summary(video));
   video.style.display = 'none';
+  log(videoset__video_summary(video));
   delete g_videoset.active_videos[video.id];
   g_videoset.inactive_videos[video.id]=video;
 }
@@ -191,8 +194,13 @@ function videoset_play() {
 // Videoset private funcs
 //
 
+// This seems to get called pretty late in the game
 function videoset__video_loaded_metadata(event) {
   var video = event.target;
+  if (!video.active) {
+    log("video("+video.id+") loaded_metadata after deactivation!");
+    return;
+  }
   log("video("+video.id+") loaded_metadata;  seek to " + videoset_get_video_position());
   video.currentTime = videoset_get_video_position();
   if (!videoset_is_paused()) video.play();
