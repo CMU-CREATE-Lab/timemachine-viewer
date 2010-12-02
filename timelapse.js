@@ -131,6 +131,50 @@ function timelapse_handle_keydown(event) {
   }
 }
 
+function timelapse_handle_mousescroll(event) {
+  log('mousescroll delta  ' + event.wheelDelta);
+  if (event.wheelDelta > 0){
+	g_timelapse.view.scale /= .9;
+    timelapse__refresh();
+  }else if (event.wheelDelta < 0){
+	g_timelapse.view.scale *= .9;
+    timelapse__refresh();
+  }
+}
+
+function timelapse_handle_mousemove(end_x, end_y) {
+  log('mouse distance moved (' + end_x + ',' + end_y + ')');
+  if (end_x > 0 && end_y > 0) {
+	g_timelapse.view.x -= Math.abs(end_x) / g_timelapse.view.scale;
+	g_timelapse.view.y -= Math.abs(end_y) / g_timelapse.view.scale;
+	timelapse__refresh();
+  }else if (end_x > 0 && end_y < 0) {
+	g_timelapse.view.x -= Math.abs(end_x) / g_timelapse.view.scale;
+	g_timelapse.view.y += Math.abs(end_y) / g_timelapse.view.scale;
+	timelapse__refresh();
+  }else if (end_x < 0 && end_y > 0) {
+	g_timelapse.view.x += Math.abs(end_x) / g_timelapse.view.scale;
+	g_timelapse.view.y -= Math.abs(end_y) / g_timelapse.view.scale;
+	timelapse__refresh();
+  }else if (end_x < 0 && end_y < 0) {
+	g_timelapse.view.x += Math.abs(end_x) / g_timelapse.view.scale;
+	g_timelapse.view.y += Math.abs(end_y) / g_timelapse.view.scale;
+	timelapse__refresh();
+  }else if (end_x == 0 && end_y < 0) {
+	g_timelapse.view.y += Math.abs(end_y) / g_timelapse.view.scale;
+	timelapse__refresh();
+  }else if (end_x == 0 && end_y > 0) {
+	g_timelapse.view.y -= Math.abs(end_y) / g_timelapse.view.scale;
+	timelapse__refresh();
+  }else if (end_x < 0 && end_y == 0) {
+	g_timelapse.view.x += Math.abs(end_x) / g_timelapse.view.scale;
+	timelapse__refresh();
+  }else if (end_x > 0 && end_y == 0) {
+	g_timelapse.view.x -= Math.abs(end_x) / g_timelapse.view.scale;
+	timelapse__refresh();
+  }
+}
+
 function timelapse_handle_keyup(event) {
 }
 

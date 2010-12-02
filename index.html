@@ -1,37 +1,64 @@
 <html>
-<head>
-<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.4.3/jquery.js"></script>
-<script src="timelapse.js"></script>
-<script src="videoset.js"></script>
+  <head>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.4.3/jquery.js"></script>
+    <script src="timelapse.js"></script>
+    <script src="videoset.js"></script>
+    <script src="jQuery_mousewheel_plugin.js"></script>
 
-<script>
-function ready() {
-//  timelapse_load('http://timelapse.gigapan.org/timelapses/visible-human-female-512-3mm/', 'timelapse', 'timelapse_status');
-  timelapse_load('../timelapses/brassica1-15m-halfsize/', 'timelapse', 'timelapse_status', {"tile_height":256,"height":3876,"fps":25,"frames":2438,"width":9856,"tile_width":256});
-}
-function keypress() {
-  log('keypress');
-}
-$(document).ready(ready);
-$(document).keydown(timelapse_handle_keydown);
-$(document).keyup(timelapse_handle_keyup);
-</script>
+    <script>
+      function ready() {
+        //  timelapse_load('http://timelapse.gigapan.org/timelapses/visible-human-female-512-3mm/', 'timelapse', 'timelapse_status');
+        timelapse_load('../timelapses/brassica1-15m-halfsize/', 'timelapse', 'timelapse_status', {"tile_height":256,"height":3876,"fps":25,"frames":2438,"width":9856,"tile_width":256});
+      }
+      function keypress() {
+        log('keypress');
+      }
+      $(document).ready(ready);
+      $(document).keydown(timelapse_handle_keydown);
+      $(document).keyup(timelapse_handle_keyup);
+	  $(window).mousewheel(timelapse_handle_mousescroll);
+    </script>
+  </head>
+  <body>
 
+    <div style="width:800px; height:450px">
+      <div id="timelapse" style="position: absolute; width:800px; height:450px; background:#060; overflow:hidden">
+      </div>
+    </div>
+    <div id="timelapse_status"></div>
 
-</head>
-<body>
-<div style="width:800px; height:450px">
-<div id="timelapse" style="position: absolute; width:800px; height:450px; background:#060; overflow:hidden">
-</div>
-</div>
-<div id="timelapse_status"></div>
+	<script>
+	  $("#timelapse").mousedown(function(e) {
+	    //start pos
+		var start_x = e.pageX;
+		var start_y = e.pageY;
+		//end pos
+		var end_x = 0;
+		var end_y = 0;
 
-<input type="button" value="play" onclick="timelapse_play()">
-<input type="button" value="pause" onclick="timelapse_pause()">
-<input type="button" value="reset" onclick="timelapse_pause_and_seek(0)">
-<input type="button" value="home" onclick="timelapse_warp_to(timelapse_home_view())">
-<input type="button" value="activate" onclick="timelapse_activate()">
-<input type="button" value="deactivate" onclick="timelapse_deactivate()">
+		$(document).mousemove(function(e) {
+		  //distance moved
+		  end_x = e.pageX - start_x;
+		  end_y = e.pageY - start_y;
+		  //timelapse_handle_mousemove(end_x, end_y);
+		  return false;
+		});
 
-</body>
+		$(document).one('mouseup', function() {
+		  timelapse_handle_mousemove(end_x, end_y);
+		  $(document).unbind('mousemove');
+		});
+
+		return false;
+	  });
+	</script>
+
+    <input type="button" value="play" onclick="timelapse_play()">
+    <input type="button" value="pause" onclick="timelapse_pause()">
+    <input type="button" value="reset" onclick="timelapse_pause_and_seek(0)">
+    <input type="button" value="home" onclick="timelapse_warp_to(timelapse_home_view())">
+    <input type="button" value="activate" onclick="timelapse_activate()">
+    <input type="button" value="deactivate" onclick="timelapse_deactivate()">
+
+  </body>
 </html>
