@@ -30,7 +30,7 @@ function swap_one_video()
 function swap_video(i)
 {
   if (videos[i]) videoset_delete_video(videos[i]);
-  videos[i]=videoset_add_video('http://t0.timelapse.gigapan.org/videotest/video0.mp4', i*128, 0, 128, 128);
+  videos[i]=videoset_add_video('http://t0.timelapse.gigapan.org/videotest/video0.mp4', {left:i*132, top:2+i*2, width:128, height:128});
 }
 
 function deactivate_swap()

@@ -1,16 +1,5 @@
 var g_videoset={}
 
-// level_threshold sets the quality of display by deciding what level of tile to show for a given level of zoom:
-//
-//  1.0: select a tile that's shown between 50% and 100% size  (never supersample)
-//  0.5: select a tile that's shown between 71% and 141% size
-//  0.0: select a tile that's shown between 100% and 200% size (never subsample)
-// -0.5: select a tile that's shown between 141% and 242% size (always supersample)
-// -1.0: select a tile that's shown between 200% and 400% size (always supersample)
-
-g_videoset.level_threshold=0;
-
-
 ///////////////////////////////////////////////////////
 //
 // Generic utilies
@@ -50,7 +39,7 @@ function time_secs() {
 
 function videoset_init(video_div_name, status_div_name) {
   log('videoset_init');
-  g_videoset.div=document.getElementById(video_div_name);
+  g_videoset.video_div=document.getElementById(video_div_name);
   g_videoset.status_div=document.getElementById(status_div_name);
   g_videoset.active_videos={};
   g_videoset.inactive_videos={};
@@ -85,12 +74,12 @@ function videoset_disable_cache(disable) {
 // Add and remove videos
 //
 
-function videoset_add_video(src, x, y, width, height) {
+function videoset_add_video(src, geometry) {
   g_videoset.id++;
   if (g_videoset.disable_cache) {
     src += "?nocache=" + time_secs()+"."+g_videoset.id;
   }
-  log("video(" + g_videoset.id + ") added from " + src + " at x="+x+",y="+y+", w="+width+",h="+height);
+  log("video(" + g_videoset.id + ") added from " + src + " at left="+geometry.left+",top="+geometry.top+", w="+geometry.width+",h="+geometry.height);
 
   var video = null;
   // Try to find an existing video to recycle
@@ -107,28 +96,32 @@ function videoset_add_video(src, x, y, width, height) {
   if (video == null) video = document.createElement('video');
   video.id = g_videoset.id;
   video.active = true;
+  log(videoset__video_summary(video));
   video.setAttribute('src', src);
+  log("set src successfully");
   video.setAttribute('controls', true);
-  videoset_reposition_video(video, x, y, width, height);
+  video.setAttribute('preload', true);
+  videoset_reposition_video(video, geometry);
   video.defaultPlaybackRate= g_videoset.playback_rate;
   video.load();
   video.style.display = 'inline';
+  video.style.position = 'absolute';
   g_videoset.active_videos[video.id]=video;
-  g_videoset.div.appendChild(video);
+  g_videoset.video_div.appendChild(video);
   video.addEventListener('loadedmetadata', videoset__video_loaded_metadata, false);
   return video;
 }
   
 
-function videoset_reposition_video(video, x, y, width, height)
+function videoset_reposition_video(video, geometry)
 {
-  log("video(" + video.id + ") reposition to x="+x+",y="+y+", w="+width+",h="+height);
+  log("video(" + video.id + ") reposition to left="+geometry.left+",top="+geometry.top+", w="+geometry.width+",h="+geometry.height);
   // toFixed prevents going to scientific notation when close to zero;  this confuses the DOM
-  video.style.left = x.toFixed(4);
-  video.style.top = y.toFixed(4);
+  video.style.left = geometry.left.toFixed(4);
+  video.style.top  = geometry.top.toFixed(4);
 
-  video.style.width = width;
-  video.style.height = height;
+  video.style.width = geometry.width;
+  video.style.height = geometry.height;
 }
 
 function videoset_delete_video(video) {
