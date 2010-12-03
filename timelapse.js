@@ -318,6 +318,18 @@ function timelapse__reposition_tileidx(tileidx)
 // Timelapse video control
 //
 
+function timelapse_toggle_native_video_controls() {
+  $("#timelapse").children().each(function() {
+	if ($(this).attr('controls')) {
+	  $(this).removeAttr('controls');
+	  controlsStatus = false;
+	} else {
+	  $(this).attr('controls', 'true');
+	  controlsStatus = true
+	}
+  });
+}
+
 function timelapse_is_paused() {
   return videoset_is_paused();
 }

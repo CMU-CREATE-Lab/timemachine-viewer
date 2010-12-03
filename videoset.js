@@ -1,4 +1,5 @@
 var g_videoset={}
+var controlsStatus=true;
 
 ///////////////////////////////////////////////////////
 //
@@ -99,7 +100,7 @@ function videoset_add_video(src, geometry) {
   log(videoset__video_summary(video));
   video.setAttribute('src', src);
   log("set src successfully");
-  video.setAttribute('controls', true);
+  if (controlsStatus) video.setAttribute('controls', true);
   video.setAttribute('preload', true);
   videoset_reposition_video(video, geometry);
   video.defaultPlaybackRate= g_videoset.playback_rate;

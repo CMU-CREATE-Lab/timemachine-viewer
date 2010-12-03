@@ -29,6 +29,7 @@
 
 	<script>
 	  $("#timelapse").mousedown(function(e) {
+
 	    //start pos
 		var start_x = e.pageX;
 		var start_y = e.pageY;
@@ -59,6 +60,8 @@
     <input type="button" value="home" onclick="timelapse_warp_to(timelapse_home_view())">
     <input type="button" value="activate" onclick="timelapse_activate()">
     <input type="button" value="deactivate" onclick="timelapse_deactivate()">
+
+	<input type="checkbox" name="video_control" onclick="timelapse_toggle_native_video_controls()">Disable Native Video Controls
 
   </body>
 </html>
