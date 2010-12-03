@@ -175,6 +175,12 @@ function timelapse_handle_mousemove(end_x, end_y) {
   }
 }
 
+function timelapse_handle_double_click() {
+  log('double click');
+  g_timelapse.view.scale /= .9;
+  timelapse__refresh();
+}
+
 function timelapse_handle_keyup(event) {
 }
 
