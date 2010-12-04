@@ -125,11 +125,11 @@ function timelapse_handle_keydown(event) {
 
 function timelapse_handle_mousescroll(event) {
   log('mousescroll delta  ' + event.wheelDelta);
-  if (event.wheelDelta > 0){
-	g_timelapse.view.scale /= .9;
+  if (event.wheelDelta > 0) {
+    g_timelapse.view.scale /= .9;
     timelapse__refresh();
-  }else if (event.wheelDelta < 0){
-	g_timelapse.view.scale *= .9;
+  } else if (event.wheelDelta < 0) {
+    g_timelapse.view.scale *= .9;
     timelapse__refresh();
   }
 }
@@ -291,12 +291,15 @@ function timelapse__tileidx_geometry(tileidx)
 
   var width = view.scale * tile_width;
   var height = view.scale * tile_height;
-  
-  var left = view.scale * (tileidx_c(tileidx) * tile_width - view.x) + g_timelapse.viewport_width*.5;
-  //if (!tile.loaded) { left = -10000; }
-  var top = view.scale * (tileidx_r(tileidx) * tile_height - view.y) + g_timelapse.viewport_height*.5;
 
-  return {left:left, top:top, width:width, height:height};
+  // Calculate left, right, top, bottom, rounding to nearest pixel;  avoid gaps between tiles.
+  var left = Math.round(view.scale * (tileidx_c(tileidx) * tile_width - view.x) + g_timelapse.viewport_width*.5);
+  var right = Math.round(view.scale * ((tileidx_c(tileidx)+1) * tile_width - view.x) + g_timelapse.viewport_width*.5);
+  //if (!tile.loaded) { left = -10000; }
+  var top = Math.round(view.scale * (tileidx_r(tileidx) * tile_height - view.y) + g_timelapse.viewport_height*.5);
+  var bottom = Math.round(view.scale * ((tileidx_r(tileidx)+1) * tile_height - view.y) + g_timelapse.viewport_height*.5);
+
+  return {left:left, top:top, width:(right-left), height:(bottom-top)};
 }
 
 function timelapse__reposition_tileidx(tileidx)
@@ -336,12 +339,12 @@ function timelapse_pause() {
   videoset_pause();
 }
 
-function timelapse_change_playback_rate() {
-  // TODO
+function timelapse_seek(t) {
+  videoset_seek(t);
 }
 
-function timelapse_pause_and_seek(t) {
-  videoset_pause_and_seek(t);
+function timelapse_change_playback_rate() {
+  // TODO
 }
 
 function timelapse_get_video_position() {

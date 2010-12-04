@@ -58,8 +58,12 @@
 
     <input type="button" value="play" onclick="timelapse_play()">
     <input type="button" value="pause" onclick="timelapse_pause()">
-    <input type="button" value="reset" onclick="timelapse_pause_and_seek(0)">
+    <input type="button" value="reset" onclick="timelapse_pause(); timelapse_seek(0)">
     <input type="button" value="home" onclick="timelapse_warp_to(timelapse_home_view())">
+    <input type="button" value="seek 20" onclick="timelapse_seek(20)">
+    <input type="button" value="seek 40" onclick="timelapse_seek(40)">
+    <input type="button" value="seek 60" onclick="timelapse_seek(60)">
+    <input type="button" value="seek 80" onclick="timelapse_seek(80)">
 <br>Debug:
     <input type="checkbox" onclick="videoset_log_status(this.value)">Log video status
     <input type="checkbox" onclick="videoset_enable_native_video_controls(this.value)">Show Native Video Controls

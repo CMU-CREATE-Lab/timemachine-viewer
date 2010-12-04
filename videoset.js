@@ -46,9 +46,12 @@ function videoset_init(video_div_name, status_div_name) {
   g_videoset.playback_rate=1;
   g_videoset.id=0;
   g_videoset.controls_status=false;
+  g_videoset.length = 97.5;
   videoset_disable_cache(false);
-  g_videoset.video_pos = 0;             // position of video, if paused.  undefined if playing
-  g_videoset.video_offset = undefined;  // undefined if paused.  otherwise video time is (time_secs() - video_offset) * video_rate
+  // current_time = time_offset + time_secs() * (paused ? 0 : playback_rate)
+  // time_offset = current_time - time_secs() * (paused ? 0 : playback_rate)
+  g_videoset.paused = true;
+  g_videoset.time_offset = 0;
   videoset_log_status(false);
 }
 
@@ -155,21 +158,37 @@ function videoset_delete_video(video) {
 //
 
 function videoset_is_paused() {
-  return (g_videoset.video_offset == undefined);
+  return g_videoset.paused;
 }
 
 function videoset_pause() {
-  if (videoset_is_paused()) return;
-  clearInterval(g_videoset.sync_interval);
-  if (g_videoset.update_callback) {
-    window.clearInterval(g_videoset.update_callback);
-    delete g_videoset.update_callback;
+  if (!g_videoset.paused) {
+    log("videoset pause");
+    clearInterval(g_videoset.sync_interval);
+    var time = videoset_current_time();
+    g_videoset.paused = true;
+
+    for (id in g_videoset.active_videos) {
+      log("video("+id+") play");
+      g_videoset.active_videos[id].pause();
+    }
+
+    videoset_seek(time);
   }
-  g_videoset.video_pos = videoset_get_video_position();
-  g_videoset.video_offset = undefined;
-  for (id in g_videoset.active_videos) {
-    log("video("+id+") pause");
-    g_videoset.active_videos[id].pause();
+}
+
+function videoset_play() {
+  if (g_videoset.paused) {
+    var time = videoset_current_time();
+    g_videoset.paused = false;
+    videoset_seek(time);
+
+    for (id in g_videoset.active_videos) {
+      log("video("+id+") play");
+      g_videoset.active_videos[id].play();
+    }
+    
+    g_videoset.sync_interval = setInterval(videoset__sync, 200);
   }
 }
 
@@ -178,31 +197,13 @@ function videoset_change_playback_rate() {
   log('videoset_change_playback_rate() is unimplemented');
 }
 
-function videoset_pause_and_seek(t) {
-  videoset_pause();
-  g_videoset.video_pos=t;
-  for (id in g_videoset.active_videos) {
-    g_videoset.active_videos[id].currentTime = t;
-  }
+function videoset_seek(new_time) {
+  g_videoset.time_offset = new_time - time_secs() * (g_videoset.paused ? 0 : g_videoset.playback_rate);
+  videoset__sync(0.0);
 }
 
-function videoset_get_video_position() {
-  return videoset_is_paused() ? g_videoset.video_pos :
-    (time_secs() - g_videoset.video_offset) * g_videoset.playback_rate;
-}
-
-function videoset_play() {
-  log("videoset play");
-  if (!videoset_is_paused()) return;
-  g_videoset.sync_interval = setInterval(videoset__sync, 200);
-
-  //if (!g_videoset.update_callback) g_videoset.update_callback = window.setInterval(videoset__update, 50);
-  g_videoset.video_offset = time_secs() - g_videoset.video_pos/g_videoset.playback_rate;
-  g_videoset.video_pos = undefined;
-  for (id in g_videoset.active_videos) {
-    log("video("+id+") play");
-    g_videoset.active_videos[id].play();
-  }
+function videoset_current_time() {
+  return g_videoset.time_offset + time_secs() * (g_videoset.paused ? 0 : g_videoset.playback_rate);
 }
 
 /////////////////////////////////////////////////////////////
@@ -217,8 +218,8 @@ function videoset__video_loaded_metadata(event) {
     log("video("+video.id+") loaded_metadata after deactivation!");
     return;
   }
-  log("video("+video.id+") loaded_metadata;  seek to " + videoset_get_video_position());
-  video.currentTime = videoset_get_video_position();
+  log("video("+video.id+") loaded_metadata;  seek to " + videoset_current_time());
+  video.currentTime = videoset_current_time();
   if (!videoset_is_paused()) video.play();
 }
 
@@ -257,12 +258,15 @@ function videoset__dump_timerange(timerange) {
   return ret;
 }
 
-function videoset__sync() {
-  var error_threshold = .01;
+function videoset__sync(error_threshold) {
+  if (error_threshold == undefined) error_threshold = 0.01;
   
-  if (videoset_is_paused()) return;
-  
-  var t = videoset_get_video_position();
+  var t = videoset_current_time();
+  if (t > g_videoset.length) {
+    videoset_pause();
+    videoset_seek(g_videoset.length);
+  }
+
   for (tileidx in g_videoset.active_videos) {
     var video = g_videoset.active_videos[tileidx];
     if (video.readyState >= 1 && Math.abs(video.currentTime - t) > error_threshold) {  // HAVE_METADATA=1
