@@ -49,13 +49,13 @@ function videoset_init(video_div_name, status_div_name) {
   videoset_disable_cache(false);
   g_videoset.video_pos = 0;             // position of video, if paused.  undefined if playing
   g_videoset.video_offset = undefined;  // undefined if paused.  otherwise video time is (time_secs() - video_offset) * video_rate
-  g_videoset.sync_interval = setInterval(videoset__sync, 200);
-  videoset_log_status(true);
+  videoset_log_status(false);
 }
 
 function videoset_log_status(enable) {
+  enable = !!enable;  // make true or false
   log("videoset log status " + enable);
-  if (g_videoset.active == !!enable) return;
+  if (g_videoset.active == enable) return;
   g_videoset.active = enable;
   if (enable) {
     g_videoset.log_interval = setInterval(videoset__log_status, 500);
@@ -70,7 +70,7 @@ function videoset_disable_cache(disable) {
 }
 
 function videoset_enable_native_video_controls(enable) {
-  g_videoset.controls_status = !!enable;
+  g_videoset.controls_status = !!enable;  // make true or false
 
   for (id in g_videoset.active_videos) {
     var v = g_videoset.active_videos[id];
@@ -160,6 +160,7 @@ function videoset_is_paused() {
 
 function videoset_pause() {
   if (videoset_is_paused()) return;
+  clearInterval(g_videoset.sync_interval);
   if (g_videoset.update_callback) {
     window.clearInterval(g_videoset.update_callback);
     delete g_videoset.update_callback;
@@ -193,6 +194,8 @@ function videoset_get_video_position() {
 function videoset_play() {
   log("videoset play");
   if (!videoset_is_paused()) return;
+  g_videoset.sync_interval = setInterval(videoset__sync, 200);
+
   //if (!g_videoset.update_callback) g_videoset.update_callback = window.setInterval(videoset__update, 50);
   g_videoset.video_offset = time_secs() - g_videoset.video_pos/g_videoset.playback_rate;
   g_videoset.video_pos = undefined;
