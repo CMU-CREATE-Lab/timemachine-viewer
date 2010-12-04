@@ -1,5 +1,4 @@
-var g_videoset={}
-var controlsStatus=true;
+var g_videoset={};
 
 ///////////////////////////////////////////////////////
 //
@@ -46,6 +45,7 @@ function videoset_init(video_div_name, status_div_name) {
   g_videoset.inactive_videos={};
   g_videoset.playback_rate=1;
   g_videoset.id=0;
+  g_videoset.controls_status=false;
   videoset_disable_cache(false);
   g_videoset.video_pos = 0;             // position of video, if paused.  undefined if playing
   g_videoset.video_offset = undefined;  // undefined if paused.  otherwise video time is (time_secs() - video_offset) * video_rate
@@ -67,6 +67,20 @@ function videoset_log_status(enable) {
 function videoset_disable_cache(disable) {
   log("videoset disable_cache=" + disable);
   g_videoset.disable_cache=disable;
+}
+
+function videoset_enable_native_video_controls(enable) {
+  g_videoset.controls_status = !!enable;
+
+  for (id in g_videoset.active_videos) {
+    var v = g_videoset.active_videos[id];
+    enable ? v.setAttribute('controls', true) : v.removeAttribute('controls');
+  }
+    
+  for (id in g_videoset.inactive_videos) {
+    var v = g_videoset.inactive_videos[id];
+    enable ? v.setAttribute('controls', true) : v.removeAttribute('controls');
+  }
 }
 
 ///////////////////////////
@@ -98,7 +112,7 @@ function videoset_add_video(src, geometry) {
   log(videoset__video_summary(video));
   video.setAttribute('src', src);
   log("set src successfully");
-  if (controlsStatus) video.setAttribute('controls', true);
+  if (g_videoset.controls_status) video.setAttribute('controls', true);
   video.setAttribute('preload', true);
   videoset_reposition_video(video, geometry);
   video.defaultPlaybackRate= g_videoset.playback_rate;
