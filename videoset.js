@@ -46,7 +46,7 @@ function videoset_init(video_div_name, status_div_name) {
   g_videoset.playback_rate=1;
   g_videoset.id=0;
   g_videoset.controls_status=false;
-  g_videoset.length = 97.5;
+  g_videoset.duration=0;
   videoset_disable_cache(false);
   // current_time = time_offset + time_secs() * (paused ? 0 : playback_rate)
   // time_offset = current_time - time_secs() * (paused ? 0 : playback_rate)
@@ -226,6 +226,7 @@ function videoset__video_loaded_metadata(event) {
     log("video("+video.id+") loaded_metadata after deactivation!");
     return;
   }
+  if (!g_videoset.duration) g_videoset.duration = video.duration;
   log("video("+video.id+") loaded_metadata;  seek to " + videoset_current_time());
   video.currentTime = videoset_current_time();
   if (!videoset_is_paused()) video.play();
@@ -273,9 +274,9 @@ function videoset__sync(error_threshold) {
   if (t < 0) {
     videoset_pause();
     videoset_seek(0);
-  } else if (t > g_videoset.length) {
+  } else if (t > g_videoset.duration) {
     videoset_pause();
-    videoset_seek(g_videoset.length);
+    videoset_seek(g_videoset.duration);
   }
 
   for (tileidx in g_videoset.active_videos) {
