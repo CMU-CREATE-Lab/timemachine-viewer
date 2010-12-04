@@ -55,14 +55,6 @@ function timelapse_compute_bbox(view) {
   return {xmin:view.x-half_width, xmax:view.x+half_width, ymin:view.y-half_height, ymax:view.y+half_height};
 }
 
-function timelapse_activate() {
-  videoset_activate();
-}
-
-function timelapse_deactivate() {
-  videoset_deactivate();
-}
-
 /////////////////////////////////////////////////////////////
 //
 // Timelapse private funcs
@@ -349,7 +341,7 @@ function timelapse_change_playback_rate() {
 }
 
 function timelapse_pause_and_seek(t) {
-  videoset_pause_and_seek();
+  videoset_pause_and_seek(t);
 }
 
 function timelapse_get_video_position() {

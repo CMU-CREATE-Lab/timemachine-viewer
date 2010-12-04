@@ -49,21 +49,19 @@ function videoset_init(video_div_name, status_div_name) {
   videoset_disable_cache(false);
   g_videoset.video_pos = 0;             // position of video, if paused.  undefined if playing
   g_videoset.video_offset = undefined;  // undefined if paused.  otherwise video time is (time_secs() - video_offset) * video_rate
-  videoset_activate();
+  g_videoset.sync_interval = setInterval(videoset__sync, 200);
+  videoset_log_status(true);
 }
 
-function videoset_activate() {
-  log("videoset activate");
-  if (g_videoset.active) return;
-  g_videoset.active = true;
-  g_videoset.log_interval = setInterval(videoset__log_status, 500);
-}
-
-function videoset_deactivate() {
-  log("videoset deactivate");
-  if (!g_videoset.active) return;
-  g_videoset_active = false;
-  clearInterval(g_videoset.log_interval);
+function videoset_log_status(enable) {
+  log("videoset log status " + enable);
+  if (g_videoset.active == !!enable) return;
+  g_videoset.active = enable;
+  if (enable) {
+    g_videoset.log_interval = setInterval(videoset__log_status, 500);
+  } else {
+    clearInterval(g_videoset.log_interval);
+  }
 }
 
 function videoset_disable_cache(disable) {
@@ -243,21 +241,21 @@ function videoset__dump_timerange(timerange) {
 }
 
 function videoset__sync() {
-  var error_threshold = .1;
+  var error_threshold = .01;
   
   if (videoset_is_paused()) return;
   
   var t = videoset_get_video_position();
-  for (tileidx in g_videoset.videos) {
-    var tile = g_videoset.videos[tileidx];
-    var video = tile.video;
+  for (tileidx in g_videoset.active_videos) {
+    var video = g_videoset.active_videos[tileidx];
     if (video.readyState >= 1 && Math.abs(video.currentTime - t) > error_threshold) {  // HAVE_METADATA=1
       log("Corrected " + tileidx_dump(tileidx) + " from " + video.currentTime + " to " + t + " (error=" + (video.currentTime-t) +", state=" + video.readyState + ")");
-      video.currentTime = t;
-    } else if (!tile.loaded && video.readyState >= 2) { // HAVE_CURRENT_DATA=2
-      tile.loaded = true;
-      videoset__reposition_tileidx(tileidx, g_videoset.view);
+      video.currentTime = t + error_threshold *.5; // seek ahead slightly
     }
+//    else if (!tile.loaded && video.readyState >= 2) { // HAVE_CURRENT_DATA=2
+//      tile.loaded = true;
+//      videoset__reposition_tileidx(tileidx, g_videoset.view);
+//    }
   }
 }
 

@@ -60,8 +60,8 @@
     <input type="button" value="pause" onclick="timelapse_pause()">
     <input type="button" value="reset" onclick="timelapse_pause_and_seek(0)">
     <input type="button" value="home" onclick="timelapse_warp_to(timelapse_home_view())">
-    <input type="button" value="activate" onclick="timelapse_activate()">
-    <input type="button" value="deactivate" onclick="timelapse_deactivate()">
+    <input type="button" value="start logging" onclick="videoset_log_status(true)">
+    <input type="button" value="stop logging" onclick="videoset_log_status(false)">
 
 	<input type="checkbox" name="video_control" onclick="timelapse_toggle_native_video_controls()">Disable Native Video Controls
 
