@@ -118,7 +118,7 @@ function videoset_add_video(src, geometry) {
   if (g_videoset.controls_status) video.setAttribute('controls', true);
   video.setAttribute('preload', true);
   videoset_reposition_video(video, geometry);
-  video.defaultPlaybackRate= g_videoset.playback_rate;
+  video.defaultPlaybackRate = video.playbackRate =  g_videoset.playback_rate;
   video.load();
   video.style.display = 'inline';
   video.style.position = 'absolute';
@@ -192,14 +192,22 @@ function videoset_play() {
   }
 }
 
-function videoset_change_playback_rate() {
-  // TODO
-  log('videoset_change_playback_rate() is unimplemented');
+function videoset_set_playback_rate(rate) {
+  if (rate != g_videoset.playback_rate) {
+    var t = videoset_current_time();
+    g_videoset.playback_rate = rate;
+    videoset_seek(t);
+    for (id in g_videoset.active_videos) {
+      g_videoset.active_videos[id].defaultPlaybackRate = g_videoset.active_videos[id].playbackRate = rate;
+    }
+  }
 }
 
 function videoset_seek(new_time) {
-  g_videoset.time_offset = new_time - time_secs() * (g_videoset.paused ? 0 : g_videoset.playback_rate);
-  videoset__sync(0.0);
+  if (new_time != videoset_current_time()) {
+    g_videoset.time_offset = new_time - time_secs() * (g_videoset.paused ? 0 : g_videoset.playback_rate);
+    videoset__sync(0.0);
+  }
 }
 
 function videoset_current_time() {
@@ -262,7 +270,10 @@ function videoset__sync(error_threshold) {
   if (error_threshold == undefined) error_threshold = 0.01;
   
   var t = videoset_current_time();
-  if (t > g_videoset.length) {
+  if (t < 0) {
+    videoset_pause();
+    videoset_seek(0);
+  } else if (t > g_videoset.length) {
     videoset_pause();
     videoset_seek(g_videoset.length);
   }

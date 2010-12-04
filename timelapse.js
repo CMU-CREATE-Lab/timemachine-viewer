@@ -343,8 +343,8 @@ function timelapse_seek(t) {
   videoset_seek(t);
 }
 
-function timelapse_change_playback_rate() {
-  // TODO
+function timelapse_set_playback_rate(rate) {
+  videoset_set_playback_rate(rate);
 }
 
 function timelapse_get_video_position() {
