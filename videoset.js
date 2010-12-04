@@ -279,10 +279,10 @@ function videoset__sync(error_threshold) {
     videoset_seek(g_videoset.duration);
   }
 
-  for (tileidx in g_videoset.active_videos) {
-    var video = g_videoset.active_videos[tileidx];
+  for (id in g_videoset.active_videos) {
+    var video = g_videoset.active_videos[id];
     if (video.readyState >= 1 && Math.abs(video.currentTime - t) > error_threshold) {  // HAVE_METADATA=1
-      log("Corrected " + tileidx_dump(tileidx) + " from " + video.currentTime + " to " + t + " (error=" + (video.currentTime-t) +", state=" + video.readyState + ")");
+      log("Corrected video(" + id + ") from " + video.currentTime + " to " + t + " (error=" + (video.currentTime-t) +", state=" + video.readyState + ")");
       video.currentTime = t + error_threshold *.5; // seek ahead slightly
     }
 //    else if (!tile.loaded && video.readyState >= 2) { // HAVE_CURRENT_DATA=2
