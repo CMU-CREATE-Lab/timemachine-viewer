@@ -169,7 +169,7 @@ function timelapse_handle_mousemove(end_x, end_y) {
 
 function timelapse_handle_double_click() {
   log('double click');
-  g_timelapse.view.scale /= .9;
+  g_timelapse.view.scale /= .45; //zoom in by a factor of 2
   timelapse__refresh();
 }
 
@@ -319,16 +319,9 @@ function timelapse__reposition_tileidx(tileidx)
 // Timelapse video control
 //
 
-function timelapse_toggle_native_video_controls() {
-  $("#timelapse").children().each(function() {
-	if ($(this).attr('controls')) {
-	  $(this).removeAttr('controls');
-	  controlsStatus = false;
-	} else {
-	  $(this).attr('controls', 'true');
-	  controlsStatus = true
-	}
-  });
+function timelapse_update_slider(t) {
+  $("#currentTime").text(t.toFixed(2));
+  $("#timelineSlider").slider("option", "value", t);
 }
 
 function timelapse_is_paused() {

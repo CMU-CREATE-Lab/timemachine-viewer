@@ -1,11 +1,21 @@
 <html>
   <head>
-    <script src="jquery.js"></script>
-    <script src="jQuery_mousewheel_plugin.js"></script>
+    <script src="jquery/jquery.min.js"></script>
+    <script src="jquery/plugins/mouse/jQuery_mousewheel_plugin.js"></script>
+    <script src="jquery/plugins/ui/jquery-ui.min.js"></script>
     <script src="timelapse.js"></script>
     <script src="videoset.js"></script>
 
+    <link href="jquery/plugins/ui/css/jquery-ui.css" rel="stylesheet" type="text/css"/>
+
+	<style type="text/css">
+    	#timelineSlider { margin: 10px; width: 500px}
+  	</style>
+
     <script>
+      var timelapseDuration = 0.0;
+	  var timeStepInSecs = 0.04; // 25 frames per second (TODO: can we get this value from the video?)
+
       function ready() {
         //  timelapse_load('http://timelapse.gigapan.org/timelapses/visible-human-female-512-3mm/', 'timelapse', 'timelapse_status');
         timelapse_load('../timelapses/brassica1-15m-halfsize/', 'timelapse', 'timelapse_status', {"tile_height":256,"height":3876,"fps":25,"frames":2438,"width":9856,"tile_width":256});
@@ -17,6 +27,49 @@
       $(document).keydown(timelapse_handle_keydown);
       $(document).keyup(timelapse_handle_keyup);
 	  $(window).mousewheel(timelapse_handle_mousescroll);
+	  $(document).ready(function() {
+
+	    timelapseDuration = g_timelapse.frames/g_timelapse.fps;
+
+	    $("#timelapse").mousedown(function(e) {
+	  	  //start pos
+	  	  var start_x = e.pageX;
+	  	  var start_y = e.pageY;
+	  	  //end pos
+	  	  var end_x = 0;
+	  	  var end_y = 0;
+
+	  	  $(document).mousemove(function(e) {
+	  	    //distance moved
+	  		end_x = e.pageX - start_x;
+	  		end_y = e.pageY - start_y;
+	  		//timelapse_handle_mousemove(end_x, end_y);
+	  		return false;
+	      });
+
+	  	  $(document).one('mouseup', function() {
+	  	    timelapse_handle_mousemove(end_x, end_y);
+	  		$(document).unbind('mousemove');
+	  	  });
+
+	  	  return false;
+	  	});
+
+	    $("#timelapse").dblclick(timelapse_handle_double_click);
+
+		$("#timelineSlider").slider({
+		  animate: true,
+		  value: 0,
+		  min: 0,
+		  max: timelapseDuration,
+		  range: "min",
+		  step: timeStepInSecs,
+		  slide: function(e, ui) {
+			var timeInSecs = ui.value;
+			timelapse_seek(timeInSecs);
+		  }
+        });
+	  });
     </script>
   </head>
   <body>
@@ -26,35 +79,6 @@
       </div>
     </div>
     <div id="timelapse_status"></div>
-
-	<script>
-	  $("#timelapse").mousedown(function(e) {
-
-	    //start pos
-		var start_x = e.pageX;
-		var start_y = e.pageY;
-		//end pos
-		var end_x = 0;
-		var end_y = 0;
-
-		$(document).mousemove(function(e) {
-		  //distance moved
-		  end_x = e.pageX - start_x;
-		  end_y = e.pageY - start_y;
-		  //timelapse_handle_mousemove(end_x, end_y);
-		  return false;
-		});
-
-		$(document).one('mouseup', function() {
-		  timelapse_handle_mousemove(end_x, end_y);
-		  $(document).unbind('mousemove');
-		});
-
-		return false;
-	  });
-
-	  $("#timelapse").dblclick(timelapse_handle_double_click);
-	</script>
 
     <input type="button" value="play" onclick="timelapse_play()">
     <input type="button" value="pause" onclick="timelapse_pause()">
@@ -74,8 +98,20 @@
     <input type="button" value="rate .5" onclick="timelapse_set_playback_rate(.5)">
     <input type="button" value="rate 1" onclick="timelapse_set_playback_rate(1)">
 
-<br>Debug:
+    <br>Debug:
     <input type="checkbox" onclick="videoset_log_status(this.value)">Log video status
     <input type="checkbox" onclick="videoset_enable_native_video_controls(this.value)">Show Native Video Controls
+
+  	<table border="0" cellpadding="3" cellspacing="0" class="control_panel_widget">
+  	  <tr>
+  	    <td colspan="3">
+  	      <div id="timelineSlider"></div>
+  	    </td>
+  	    <td align="right">
+  	      Time: <span id="currentTime">0.00</span><br>
+  	    </td>
+  	  </tr>
+	</table>
+
   </body>
 </html>
