@@ -290,5 +290,8 @@ function videoset__sync(error_threshold) {
 //      videoset__reposition_tileidx(tileidx, g_videoset.view);
 //    }
   }
+  
+  timelapse_update_slider(t);
+
 }
 
