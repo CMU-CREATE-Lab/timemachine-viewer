@@ -1,92 +1,125 @@
 <html>
-  <head>
-    <title>Gigapan Timelapse Explorer</title>
-    <script src="jquery/jquery.min.js"></script>
-    <script src="jquery/jquery-ui-1.8.6.custom.min.js"></script>
-    <script src="jquery/plugins/mouse/jQuery_mousewheel_plugin.js"></script>
-    <script src="timelapse.js"></script>
-    <script src="videoset.js"></script>
+<head>
+   <title>Gigapan Timelapse Explorer</title>
+   <script src="js/jquery/jquery.min.js"></script>
+   <script src="js/jquery/jquery-ui-1.8.6.custom.min.js"></script>
+   <script src="js/jquery/plugins/mouse/jQuery_mousewheel_plugin.js"></script>
+   <script src="timelapse.js"></script>
+   <script src="videoset.js"></script>
 
-    <link href="css/jquery-ui/smoothness/jquery-ui-1.8.6.custom.css" rel="stylesheet" type="text/css"/>
+   <link href="css/jquery-ui/smoothness/jquery-ui-1.8.6.custom.css" rel="stylesheet" type="text/css"/>
+   <style type="text/css">
+      body, p, table, tr, td {
+         font-family: Verdana, sans-serif;
+         font-size: 8pt;
+      }
 
-	<style type="text/css">
-    	#timelineSlider { margin: 10px; width: 500px}
-  	</style>
+      #timelineSlider {
+         margin: 10px;
+         width: 500px
+      }
 
-    <script>
+      #mouse_debug_info {
+         border: 1px solid black;
+         padding:3px;
+         margin:3px 0 3px 0;
+         width:500px;
+      }
+   </style>
+
+   <script>
       var timelapseDuration = 0.0;
-	  var timeStepInSecs = 0.04; // 25 frames per second (TODO: can we get this value from the video?)
+      var timeStepInSecs = 0.04; // 25 frames per second (TODO: can we get this value from the video?)
 
-      function ready() {
-        //  timelapse_load('http://timelapse.gigapan.org/timelapses/visible-human-female-512-3mm/', 'timelapse', 'timelapse_status');
-        timelapse_load('../timelapses/brassica1-15m-halfsize/', 'timelapse', 'timelapse_status', {"tile_height":256,"height":3876,"fps":25,"frames":2438,"width":9856,"tile_width":256});
-      }
-      function keypress() {
-        log('keypress');
-      }
+      function ready()
+         {
+         //  timelapse_load('http://timelapse.gigapan.org/timelapses/visible-human-female-512-3mm/', 'timelapse', 'timelapse_status');
+         timelapse_load('../timelapses/brassica1-15m-halfsize/', 'timelapse', 'timelapse_status', {"tile_height":256,"height":3876,"fps":25,"frames":2438,"width":9856,"tile_width":256});
+         }
+      function keypress()
+         {
+         log('keypress');
+         }
       $(document).ready(ready);
       $(document).keydown(timelapse_handle_keydown);
       $(document).keyup(timelapse_handle_keyup);
       $(window).mousewheel(timelapse_handle_mousescroll);
-      $(document).ready(function() {
+      $(document).ready(function()
+                           {
+                              timelapseDuration = g_timelapse.frames / g_timelapse.fps;
 
-	    timelapseDuration = g_timelapse.frames/g_timelapse.fps;
+                              $("#timelapse").bind("mousemove", function(event)
+                                 {
+                                    var viewerPosition = $("#timelapse").position();
+                                    var mouseX = event.pageX - viewerPosition.left;
+                                    var mouseY = event.pageY - viewerPosition.top;
+                                    $("#window_coords").text("("+event.pageX+","+event.pageY+")");
+                                    $("#viewer_pixel_coords").text("("+mouseX+","+mouseY+")");
+                                 });
 
-		$("#timelineSlider").slider({
-		  animate: true,
-		  value: 0,
-		  min: 0,
-		  max: timelapseDuration,
-		  range: "min",
-		  step: timeStepInSecs,
-		  slide: function(e, ui) {
-			var timeInSecs = ui.value;
-			timelapse_seek(timeInSecs);
-		  }
-        });
-	  });
-    </script>
-  </head>
-  <body>
+                              $("#timelineSlider").slider({
+                                                             animate: true,
+                                                             value: 0,
+                                                             min: 0,
+                                                             max: timelapseDuration,
+                                                             range: "min",
+                                                             step: timeStepInSecs,
+                                                             slide: function(e, ui)
+                                                                {
+                                                                   var timeInSecs = ui.value;
+                                                                   timelapse_seek(timeInSecs);
+                                                                }
+                                                          });
+                           });
+   </script>
+</head>
+<body>
 
-    <div style="width:800px; height:450px">
-      <div id="timelapse" style="position: absolute; width:800px; height:450px; background:black; overflow:hidden">
-      </div>
-    </div>
-    <div id="timelapse_status"></div>
+<div style="width:800px; height:450px">
+   <div id="timelapse" style="position: absolute; width:800px; height:450px; background:black; overflow:hidden">
+   </div>
+</div>
+<div id="timelapse_status"></div>
 
-    <input type="button" value="play" onclick="timelapse_play()">
-    <input type="button" value="pause" onclick="timelapse_pause()">
-    <input type="button" value="reset" onclick="timelapse_pause(); timelapse_seek(0)">
-    <input type="button" value="home" onclick="timelapse_warp_to(timelapse_home_view())">
-    <input type="button" value="seek 20" onclick="timelapse_seek(20)">
-    <input type="button" value="seek 40" onclick="timelapse_seek(40)">
-    <input type="button" value="seek 60" onclick="timelapse_seek(60)">
-    <input type="button" value="seek 80" onclick="timelapse_seek(80)">
-    <br>
-    <input type="button" value="rate -1" onclick="timelapse_set_playback_rate(-1)">
-    <input type="button" value="rate -.5" onclick="timelapse_set_playback_rate(-.5)">
-    <input type="button" value="rate -.25" onclick="timelapse_set_playback_rate(-.25)">
-    <input type="button" value="rate -.1" onclick="timelapse_set_playback_rate(-.1)">
-    <input type="button" value="rate .1" onclick="timelapse_set_playback_rate(.1)">
-    <input type="button" value="rate .25" onclick="timelapse_set_playback_rate(.25)">
-    <input type="button" value="rate .5" onclick="timelapse_set_playback_rate(.5)">
-    <input type="button" value="rate 1" onclick="timelapse_set_playback_rate(1)">
+<input type="button" value="play" onclick="timelapse_play()">
+<input type="button" value="pause" onclick="timelapse_pause()">
+<input type="button" value="reset" onclick="timelapse_pause(); timelapse_seek(0)">
+<input type="button" value="home" onclick="timelapse_warp_to(timelapse_home_view())">
+<input type="button" value="seek 20" onclick="timelapse_seek(20)">
+<input type="button" value="seek 40" onclick="timelapse_seek(40)">
+<input type="button" value="seek 60" onclick="timelapse_seek(60)">
+<input type="button" value="seek 80" onclick="timelapse_seek(80)">
+<br>
+<input type="button" value="rate -1" onclick="timelapse_set_playback_rate(-1)">
+<input type="button" value="rate -.5" onclick="timelapse_set_playback_rate(-.5)">
+<input type="button" value="rate -.25" onclick="timelapse_set_playback_rate(-.25)">
+<input type="button" value="rate -.1" onclick="timelapse_set_playback_rate(-.1)">
+<input type="button" value="rate .1" onclick="timelapse_set_playback_rate(.1)">
+<input type="button" value="rate .25" onclick="timelapse_set_playback_rate(.25)">
+<input type="button" value="rate .5" onclick="timelapse_set_playback_rate(.5)">
+<input type="button" value="rate 1" onclick="timelapse_set_playback_rate(1)">
 
-    <br>Debug:
-    <input type="checkbox" onclick="videoset_log_status(this.value)">Log video status
-    <input type="checkbox" onclick="videoset_enable_native_video_controls(this.value)">Show Native Video Controls
+<div id="mouse_debug_info">
+   <span class="label">Window Coords:</span> <span id="window_coords"></span><br>
+   <span class="label">Viewer Pixel Coords:</span> <span id="viewer_pixel_coords"></span><br>
+   <span class="label">Viewer Pano Coords:</span> <span id="viewer_pano_coords"></span><br>
+   <span class="label">Viewer Bounds:</span> <span id="viewer_bounds"></span><br>
+</div>
 
-  	<table border="0" cellpadding="3" cellspacing="0" class="control_panel_widget">
-  	  <tr>
-  	    <td colspan="3">
-  	      <div id="timelineSlider"></div>
-  	    </td>
-  	    <td align="right">
-  	      Time: <span id="currentTime">0.00</span><br>
-  	    </td>
-  	  </tr>
-	</table>
+<br>Debug:
+<input type="checkbox" onclick="videoset_log_status(this.value)">Log video status
+<input type="checkbox" onclick="videoset_enable_native_video_controls(this.value)">Show Native Video Controls
 
-  </body>
+<table border="0" cellpadding="3" cellspacing="0" class="control_panel_widget">
+   <tr>
+      <td colspan="3">
+         <div id="timelineSlider"></div>
+      </td>
+      <td align="right">
+         Time: <span id="currentTime">0.00</span><br>
+      </td>
+   </tr>
+</table>
+
+</body>
 </html>
