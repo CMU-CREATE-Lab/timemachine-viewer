@@ -32,49 +32,45 @@
    </style>
 
    <script>
-      var timelapseDuration = 0.0;
-      var timeStepInSecs = 0.04; // 25 frames per second
+     var timelapseDuration = 0.0;
+	 var timeStepInSecs = 0.04; // 25 frames per second
 
-      function ready()
-         {
-         //  timelapse_load('http://timelapse.gigapan.org/timelapses/visible-human-female-512-3mm/', 'timelapse', 'timelapse_status');
-         timelapse_load('../timelapses/brassica1-15m-halfsize/', 'timelapse', 'timelapse_status', {"tile_height":256,"height":3876,"fps":25,"frames":2438,"width":9856,"tile_width":256});
-         }
-      function keypress()
-         {
-         log('keypress');
-         }
-      $(document).ready(ready);
-      $(document).keydown(timelapse_handle_keydown);
-      $(document).keyup(timelapse_handle_keyup);
-      $(window).mousewheel(timelapse_handle_mousescroll);
-      $(document).ready(function()
-                           {
-                              timelapseDuration = g_timelapse.frames / g_timelapse.fps;
+     function ready() {
+       //  timelapse_load('http://timelapse.gigapan.org/timelapses/visible-human-female-512-3mm/', 'timelapse', 'timelapse_status');
+       timelapse_load('../timelapses/brassica1-15m-halfsize/', 'timelapse', 'timelapse_status', {"tile_height":256,"height":3876,"fps":25,"frames":2438,"width":9856,"tile_width":256});
+     }
+     function keypress() {
+       log('keypress');
+     }
 
-                              $("#timelapse").bind("mousemove", function(event)
-                                 {
-                                    var viewerPosition = $("#timelapse").position();
-                                    var mouseX = event.pageX - viewerPosition.left;
-                                    var mouseY = event.pageY - viewerPosition.top;
-                                    $("#window_coords").text("(" + event.pageX + "," + event.pageY + ")");
-                                    $("#viewer_pixel_coords").text("(" + mouseX + "," + mouseY + ")");
-                                 });
+     $(document).ready(function() {
+       ready();
+	   $(this).keydown(timelapse_handle_keydown);
+       $(this).keyup(timelapse_handle_keyup);
+	   $(timelapse).mousewheel(timelapse_handle_mousescroll);
+	   timelapseDuration = g_timelapse.frames/g_timelapse.fps;
 
-                              $("#timelineSlider").slider({
-                                                             animate: true,
-                                                             value: 0,
-                                                             min: 0,
-                                                             max: timelapseDuration,
-                                                             range: "min",
-                                                             step: timeStepInSecs,
-                                                             slide: function(e, ui)
-                                                                {
-                                                                   var timeInSecs = ui.value;
-                                                                   timelapse_seek(timeInSecs);
-                                                                }
-                                                          });
-                           });
+	   $("#timelapse").bind("mousemove", function(event) {
+	     var viewerPosition = $("#timelapse").position();
+		 var mouseX = event.pageX - viewerPosition.left;
+		 var mouseY = event.pageY - viewerPosition.top;
+		 $("#window_coords").text("(" + event.pageX + "," + event.pageY + ")");
+		 $("#viewer_pixel_coords").text("(" + mouseX + "," + mouseY + ")");
+	   });
+
+	   $("#timelineSlider").slider({
+	     animate: true,
+		 value: 0,
+		 min: 0,
+		 max: timelapseDuration,
+		 range: "min",
+		 step: timeStepInSecs,
+		 slide: function(e, ui) {
+		   var timeInSecs = ui.value;
+		   timelapse_seek(timeInSecs);
+		 }
+       });
+	 });
    </script>
 </head>
 <body>
