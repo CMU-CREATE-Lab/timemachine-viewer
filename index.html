@@ -19,17 +19,21 @@
          width: 500px
       }
 
+      #timelapse {
+         cursor: url("css/cursors/openhand.cur")
+      }
+
       #mouse_debug_info {
          border: 1px solid black;
-         padding:3px;
-         margin:3px 0 3px 0;
-         width:500px;
+         padding: 3px;
+         margin: 3px 0 3px 0;
+         width: 500px;
       }
    </style>
 
    <script>
       var timelapseDuration = 0.0;
-      var timeStepInSecs = 0.04; // 25 frames per second (TODO: can we get this value from the video?)
+      var timeStepInSecs = 0.04; // 25 frames per second
 
       function ready()
          {
@@ -53,8 +57,8 @@
                                     var viewerPosition = $("#timelapse").position();
                                     var mouseX = event.pageX - viewerPosition.left;
                                     var mouseY = event.pageY - viewerPosition.top;
-                                    $("#window_coords").text("("+event.pageX+","+event.pageY+")");
-                                    $("#viewer_pixel_coords").text("("+mouseX+","+mouseY+")");
+                                    $("#window_coords").text("(" + event.pageX + "," + event.pageY + ")");
+                                    $("#viewer_pixel_coords").text("(" + mouseX + "," + mouseY + ")");
                                  });
 
                               $("#timelineSlider").slider({
