@@ -43,17 +43,21 @@ function timelapse_load(url, video_div_name, status_div_name, optional_info) {
 function timelapse_handle_mousedown(event) {
   var last_event = event;
   log("mousedown");
+  g_timelapse.video_div.style.cursor = "url('css/cursors/closedhand.cur')";
   g_timelapse.video_div.onmousemove = function(event) {
     log("mousemove");
     g_timelapse.target_view.x += (last_event.pageX - event.pageX) / g_timelapse.view.scale;
     g_timelapse.target_view.y += (last_event.pageY - event.pageY) / g_timelapse.view.scale;
     timelapse_set_target_view(g_timelapse.target_view);
     last_event = event;
+    return false;
   }
   g_timelapse.video_div.onmouseup = function(event) {
     log("mouseup");
+    g_timelapse.video_div.style.cursor = "url('css/cursors/openhand.cur')";
     g_timelapse.video_div.onmousemove = null;
   }
+  return false;
 }
 
 function timelapse_set_target_view(view) {
@@ -161,39 +165,6 @@ function timelapse_handle_mousescroll(event) {
   else if (event.wheelDelta < 0) g_timelapse.target_view.scale *= .9;
   timelapse_set_target_view(g_timelapse.target_view);
 }  
-
-function timelapse_handle_mousemove(end_x, end_y) {
-  log('mouse distance moved (' + end_x + ',' + end_y + ')');
-  if (end_x > 0 && end_y > 0) {
-	g_timelapse.view.x -= Math.abs(end_x) / g_timelapse.view.scale;
-	g_timelapse.view.y -= Math.abs(end_y) / g_timelapse.view.scale;
-        timelapse_warp_to(g_timelapse.view);
-  }else if (end_x > 0 && end_y < 0) {
-	g_timelapse.view.x -= Math.abs(end_x) / g_timelapse.view.scale;
-	g_timelapse.view.y += Math.abs(end_y) / g_timelapse.view.scale;
-        timelapse_warp_to(g_timelapse.view);
-  }else if (end_x < 0 && end_y > 0) {
-	g_timelapse.view.x += Math.abs(end_x) / g_timelapse.view.scale;
-	g_timelapse.view.y -= Math.abs(end_y) / g_timelapse.view.scale;
-        timelapse_warp_to(g_timelapse.view);
-  }else if (end_x < 0 && end_y < 0) {
-	g_timelapse.view.x += Math.abs(end_x) / g_timelapse.view.scale;
-	g_timelapse.view.y += Math.abs(end_y) / g_timelapse.view.scale;
-        timelapse_warp_to(g_timelapse.view);
-  }else if (end_x == 0 && end_y < 0) {
-	g_timelapse.view.y += Math.abs(end_y) / g_timelapse.view.scale;
-        timelapse_warp_to(g_timelapse.view);
-  }else if (end_x == 0 && end_y > 0) {
-	g_timelapse.view.y -= Math.abs(end_y) / g_timelapse.view.scale;
-        timelapse_warp_to(g_timelapse.view);
-  }else if (end_x < 0 && end_y == 0) {
-	g_timelapse.view.x += Math.abs(end_x) / g_timelapse.view.scale;
-        timelapse_warp_to(g_timelapse.view);
-  }else if (end_x > 0 && end_y == 0) {
-	g_timelapse.view.x -= Math.abs(end_x) / g_timelapse.view.scale;
-        timelapse_warp_to(g_timelapse.view);
-  }
-}
 
 function timelapse_handle_double_click() {
   log('double click');
