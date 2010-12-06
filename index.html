@@ -26,36 +26,10 @@
       $(document).ready(ready);
       $(document).keydown(timelapse_handle_keydown);
       $(document).keyup(timelapse_handle_keyup);
-	  $(window).mousewheel(timelapse_handle_mousescroll);
-	  $(document).ready(function() {
+      $(window).mousewheel(timelapse_handle_mousescroll);
+      $(document).ready(function() {
 
 	    timelapseDuration = g_timelapse.frames/g_timelapse.fps;
-
-	    $("#timelapse").mousedown(function(e) {
-	  	  //start pos
-	  	  var start_x = e.pageX;
-	  	  var start_y = e.pageY;
-	  	  //end pos
-	  	  var end_x = 0;
-	  	  var end_y = 0;
-
-	  	  $(document).mousemove(function(e) {
-	  	    //distance moved
-	  		end_x = e.pageX - start_x;
-	  		end_y = e.pageY - start_y;
-	  		//timelapse_handle_mousemove(end_x, end_y);
-	  		return false;
-	      });
-
-	  	  $(document).one('mouseup', function() {
-	  	    timelapse_handle_mousemove(end_x, end_y);
-	  		$(document).unbind('mousemove');
-	  	  });
-
-	  	  return false;
-	  	});
-
-	    $("#timelapse").dblclick(timelapse_handle_double_click);
 
 		$("#timelineSlider").slider({
 		  animate: true,

@@ -23,10 +23,16 @@ function timelapse_load(url, video_div_name, status_div_name, optional_info) {
   g_timelapse.url=url;
   g_timelapse.tiles={};
   g_timelapse.playback_rate=.5;
+  g_timelapse.view = timelapse_home_view();
+  g_timelapse.target_view = timelapse_home_view();
   log("playback rate is " + g_timelapse.playback_rate);
   g_timelapse.video_pos = 0;             // position of video, if paused.  undefined if playing
   g_timelapse.video_offset = undefined;  // undefined if paused.  otherwise video time is (time_secs() - video_offset) * video_rate
   log('timelapse_load("'+url+'")');
+  g_timelapse.video_div.onmousedown = timelapse_handle_mousedown;
+  g_timelapse.video_div.ondblclick = timelapse_handle_double_click;
+            
+
   if (optional_info) {
     timelapse__load_cb(optional_info, "", "");
   } else {
@@ -34,22 +40,55 @@ function timelapse_load(url, video_div_name, status_div_name, optional_info) {
   }    
 }
 
-function timelapse_warp_to(view) {
-  g_timelapse.view=view;
-  timelapse__limit_view();
+function timelapse_handle_mousedown(event) {
+  var last_event = event;
+  log("mousedown");
+  g_timelapse.video_div.onmousemove = function(event) {
+    log("mousemove");
+    g_timelapse.target_view.x += (last_event.pageX - event.pageX) / g_timelapse.view.scale;
+    g_timelapse.target_view.y += (last_event.pageY - event.pageY) / g_timelapse.view.scale;
+    timelapse_set_target_view(g_timelapse.target_view);
+    last_event = event;
+  }
+  g_timelapse.video_div.onmouseup = function(event) {
+    log("mouseup");
+    g_timelapse.video_div.onmousemove = null;
+  }
+}
+
+function timelapse_set_target_view(view) {
+  var max_scale = 2;
+  var min_scale = timelapse_home_view().scale * .5;
+  view.scale = Math.max(min_scale, Math.min(max_scale, view.scale));
+  view.x = Math.max(0, Math.min(g_timelapse.width, view.x));
+  view.y = Math.max(0, Math.min(g_timelapse.height, view.y));
+  g_timelapse.target_view.x = view.x;
+  g_timelapse.target_view.y = view.y;
+  g_timelapse.target_view.scale = view.scale;
+//  if (!g_videoset.animate_interval) g_videoset.animate_interval = setInterval(timelapse__animate, 100);
+  // TEMPORARY
+  g_timelapse.view.x = g_timelapse.target_view.x;
+  g_timelapse.view.y = g_timelapse.target_view.y;
+  g_timelapse.view.scale = g_timelapse.target_view.scale;
   timelapse__refresh();
 }
 
-function timelapse__limit_view() {
-  var max_scale = 2;
-  if (g_timelapse.view.scale > max_scale) g_timelapse.view.scale = max_scale;
-  var min_scale = timelapse_home_view().scale * .5;
-  if (g_timelapse.view.scale < min_scale) g_timelapse.view.scale = min_scale;
+//function timelapse__animate() {
+//  var log_scale = Math.log(g_timelapse.view.scale);
+//  var log_target_scale = Math.log(g_timelapse.target_view.scale);
+//  var delta_log_scale = log_target_scale - log_scale;
+//  var min_scale_speed = .05;
+//  var scale_proportion = .1;
+//
+//  if (Math.abs(delta_log_scale) < 
+//}
 
-  if (g_timelapse.view.x < 0) g_timelapse.view.x = 0;
-  if (g_timelapse.view.x > g_timelapse.width) g_timelapse.view.x = g_timelapse.width;
-  if (g_timelapse.view.y < 0) g_timelapse.view.y = 0;
-  if (g_timelapse.view.y > g_timelapse.height) g_timelapse.view.y = g_timelapse.height;
+function timelapse_warp_to(view) {
+  timelapse_set_target_view(view);
+  g_timelapse.view.x = g_timelapse.target_view.x;
+  g_timelapse.view.y = g_timelapse.target_view.y;
+  g_timelapse.view.scale = g_timelapse.target_view.scale;
+  timelapse__refresh();
 }
 
 function timelapse_home_view() {
@@ -100,49 +139,28 @@ function timelapse__read_video_div_size() {
 function timelapse_handle_keydown(event) {
   log('keydown ' + event.which);
   var translation_speed_constant = 20;
-  if (event.which == 37) { // left arrow
-    g_timelapse.view.x -= translation_speed_constant / g_timelapse.view.scale;
-    timelapse_warp_to(g_timelapse.view);
+  var translation = translation_speed_constant / g_timelapse.view.scale;
+  switch (event.which) {
+  case 37:  g_timelapse.target_view.x -= translation;  break;  // left arrow
+  case 39:  g_timelapse.target_view.x += translation;  break;  // right arrow
+  case 38:  g_timelapse.target_view.y -= translation;  break;  // up arrow
+  case 40:  g_timelapse.target_view.y += translation;  break;  // down arrow
+  case 189: g_timelapse.target_view.scale *= .9;       break;  // minus
+  case 187: g_timelapse.target_view.scale /= .9;       break;  // plus
+  case 80:  // P
+    if (timelapse_is_paused()) timelapse_play();
+    else timelapse_pause();
+    return;
   }
-  if (event.which == 39) { // right arrow
-    g_timelapse.view.x += translation_speed_constant / g_timelapse.view.scale;
-    timelapse_warp_to(g_timelapse.view);
-  }
-  if (event.which == 38) { // up arrow
-    g_timelapse.view.y -= translation_speed_constant / g_timelapse.view.scale;
-    timelapse_warp_to(g_timelapse.view);
-  }
-  if (event.which == 40) { // down arrow
-    g_timelapse.view.y += translation_speed_constant / g_timelapse.view.scale;
-    timelapse_warp_to(g_timelapse.view);
-  }
-  if (event.which == 189) { // minus
-    g_timelapse.view.scale *= .9;
-    timelapse_warp_to(g_timelapse.view);
-  }
-  if (event.which == 187) { // plus
-    g_timelapse.view.scale /= .9;
-    timelapse_warp_to(g_timelapse.view);
-  }
-  if (event.which == 80) { // P
-    if (timelapse_is_paused()) {
-      timelapse_play();
-    } else {
-      timelapse_pause();
-    }
-  }
+  timelapse_set_target_view(g_timelapse.target_view);
 }
 
 function timelapse_handle_mousescroll(event) {
   log('mousescroll delta  ' + event.wheelDelta);
-  if (event.wheelDelta > 0) {
-    g_timelapse.view.scale /= .9;
-    timelapse_warp_to(g_timelapse.view);
-  } else if (event.wheelDelta < 0) {
-    g_timelapse.view.scale *= .9;
-    timelapse_warp_to(g_timelapse.view);
-  }
-}
+  if (event.wheelDelta > 0) g_timelapse.target_view.scale /= .9;
+  else if (event.wheelDelta < 0) g_timelapse.target_view.scale *= .9;
+  timelapse_set_target_view(g_timelapse.target_view);
+}  
 
 function timelapse_handle_mousemove(end_x, end_y) {
   log('mouse distance moved (' + end_x + ',' + end_y + ')');
@@ -179,8 +197,8 @@ function timelapse_handle_mousemove(end_x, end_y) {
 
 function timelapse_handle_double_click() {
   log('double click');
-  g_timelapse.view.scale /= .45; //zoom in by a factor of 2
-  timelapse__refresh();
+  g_timelapse.target_view.scale *= 2;
+  timelapse_set_target_view(g_timelapse.target_view);
 }
 
 function timelapse_handle_keyup(event) {
