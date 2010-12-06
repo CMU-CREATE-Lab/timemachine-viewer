@@ -1,3 +1,68 @@
+//======================================================================================================================
+// Class for managing timelapse videosets.
+//
+// Dependencies: None (TODO: actually has a dependency on timelapse.js which we need to fix)
+//
+// Authors:
+// * Randy Sarget (randy.sargent@gmail.com)
+// * Paul Dille (pdille@andrew.cmu.edu)
+// * Chris Bartley (bartley@cmu.edu)
+//======================================================================================================================
+
+//======================================================================================================================
+// VERIFY NAMESPACE
+//======================================================================================================================
+// Create the global symbol "org" if it doesn't exist.  Throw an error if it does exist but is not an object.
+var org;
+if (!org)
+   {
+   org = {};
+   }
+else
+   {
+   if (typeof org != "object")
+      {
+      var orgExistsMessage = "Error: failed to create org namespace: org already exists and is not an object";
+      alert(orgExistsMessage);
+      throw new Error(orgExistsMessage);
+      }
+   }
+
+// Repeat the creation and type-checking for the next level
+if (!org.gigapan)
+   {
+   org.gigapan = {};
+   }
+else
+   {
+   if (typeof org.gigapan != "object")
+      {
+      var orgGigapanExistsMessage = "Error: failed to create org.gigapan namespace: org.gigapan already exists and is not an object";
+      alert(orgGigapanExistsMessage);
+      throw new Error(orgGigapanExistsMessage);
+      }
+   }
+
+// Repeat the creation and type-checking for the next level
+if (!org.gigapan.timelapse)
+   {
+   org.gigapan.timelapse = {};
+   }
+else
+   {
+   if (typeof org.gigapan.timelapse != "object")
+      {
+      var orgGigapanTimelapseExistsMessage = "Error: failed to create org.gigapan.timelapse namespace: org.gigapan.timelapse already exists and is not an object";
+      alert(orgGigapanTimelapseExistsMessage);
+      throw new Error(orgGigapanTimelapseExistsMessage);
+      }
+   }
+//======================================================================================================================
+
+//======================================================================================================================
+// CODE
+//======================================================================================================================
+
 var g_videoset={};
 
 ///////////////////////////////////////////////////////
