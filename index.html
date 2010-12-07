@@ -153,7 +153,7 @@
                                            });
 
 
-			$('.ui-slider-handle').bind("mouseover", function() {
+			$("#playBackSpeedSlider").slider( "widget" ).bind("mouseover", function() {
 	      		$(this).attr("title",$("#playBackSpeedSlider").slider("option", "value"));
 	   		});
 
