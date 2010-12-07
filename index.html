@@ -168,9 +168,9 @@
 	   		});
 
 	    	$('#stop').bind("click", function() {
-	   	  		if (timelapse_is_paused()) return;
+	   	  		if (this.is_paused) return;
 	      		$('#play_toggle').attr("class", "play_mouseout");
-	      		$('#play_toggle').attr("title","Play")
+	      		$('#play_toggle').attr("title","Play");
 	      		timelapse.seek(0);
 	      		timelapse.pause();
 	   	 	});
@@ -209,7 +209,7 @@
          <div id="timelineSlider"></div>
       </td>
       <td align="right">
-         <span id="currentTime">00:00:00</span> <span id="totalTime">00:00:00</span><br>
+         <span id="currentTime">00:00:00</span>/<span id="totalTime">00:00:00</span><br>
       </td>
    </tr>
 </table>
