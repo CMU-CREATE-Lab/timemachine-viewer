@@ -32,7 +32,7 @@
       }
 
 	  .play_mouseover {
-	    width:20;
+	    width:20px;
 	    height:23px;
 	    background-image: url("images/play_mouseover.png");
 	    cursor: pointer;
@@ -40,7 +40,7 @@
 	  }
 
 	  .play_mouseout {
-	    width:20;
+	    width:20px;
 	    height:23px;
 	    background-image: url("images/play_mouseout.png");
 	    cursor: pointer;
@@ -48,7 +48,7 @@
 	  }
 
       .pause_mouseover {
-	    width:20;
+	    width:20px;
 	    height:23px;
 	    background-image: url("images/pause_mouseover.png");
 	    cursor: pointer;
@@ -56,7 +56,7 @@
 	  }
 
 	  .pause_mouseout {
-	    width:20;
+	    width:20px;
 	    height:23px;
 	    background-image: url("images/pause_mouseout.png");
 	    cursor: pointer;
@@ -64,7 +64,7 @@
 	  }
 
 	  .stop_mouseover {
-		width:20;
+		width:20px;
 	    height:22px;
 	    background-image: url("images/stop_mouseover.png");
 	    cursor: pointer;
@@ -72,7 +72,7 @@
 	  }
 
 	  .stop_mouseout {
-		width:20;
+		width:20px;
 	    height:22px;
 	    background-image: url("images/stop_mouseout.png");
 	    cursor: pointer;
@@ -128,7 +128,7 @@
 
 	   		$('.ui-slider-handle').bind("mousedown", function() {
 	      		this.style.cursor = "url('css/cursors/closedhand.cur')";
-	      		$('.ui-slider-handle').one('mouseup', function() {
+	      		$('.ui-slider-handle')['one']('mouseup', function() {
 					this.style.cursor = "url('css/cursors/openhand.cur')";
 	  	  		});
 	   		});
@@ -158,11 +158,11 @@
 	    	$('#play_toggle').bind("click", function() {
 	     		if ($(this).attr("class") == "play_mouseover") {
 		   			$(this).attr("class", "pause_mouseout");
-		   			$(this).attr("title","Pause")
+		   			$(this).attr("title","Pause");
 		   			timelapse.play();
 		 		} else {
 		   			$(this).attr("class", "play_mouseout");
-		   			$(this).attr("title","Play")
+		   			$(this).attr("title","Play");
 		   			timelapse.pause();
 		 		}
 	   		});
