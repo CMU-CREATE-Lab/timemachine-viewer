@@ -261,6 +261,17 @@ if (!org.gigapan.timelapse.Videoset)
                {
                   return fps;
                };
+
+            this.add_time_change_listener = function(listener)
+               {
+                  videoset.add_sync_listener(listener);
+               };
+
+            this.remove_time_change_listene = function(listener)
+               {
+                  videoset.remove_sync_listener(listener);
+               };
+
             ////////////////////////////////////////////////////////////////////////////////////////////////////////////
             //
             // Private methods
@@ -570,13 +581,6 @@ if (!org.gigapan.timelapse.Videoset)
             UTIL.log('Timelapse("' + url + '")');
             video_div['onmousedown'] = handle_mousedown;
             video_div['ondblclick'] = handle_double_click;
-
-            // TODO: push this out to index.html
-            videoset.add_sync_listener(function(t)
-                                          {
-                                             $("#currentTime").text(UTIL.formatTime(t));
-                                             $("#timelineSlider")['slider']("option", "value", t);
-                                          });
 
             if (optional_info)
                {

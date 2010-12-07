@@ -88,8 +88,14 @@
       $(document).ready(function()
          {
             timelapse = new org.gigapan.timelapse.Timelapse('../timelapses/brassica1-15m-halfsize/',
-                                                                'timelapse',
-                                                                {"tile_height":256,"height":3876,"fps":25,"frames":2438,"width":9856,"tile_width":256});
+                                                            'timelapse',
+                                                            {"tile_height":256,"height":3876,"fps":25,"frames":2438,"width":9856,"tile_width":256});
+
+            timelapse.add_time_change_listener(function(t)
+                                                  {
+                                                     $("#currentTime").text(org.gigapan.Util.formatTime(t));
+                                                     $("#timelineSlider")['slider']("option", "value", t);
+                                                  });
 
             $(this)['keydown'](timelapse.handle_keydown);
             $(this)['keyup'](timelapse.handle_keyup);
