@@ -2,6 +2,7 @@
 // Class for managing timelapses.
 //
 // Dependencies:
+// * org.gigapan.Util
 // * org.gigapan.timelapse.Videoset
 //
 // Authors:
@@ -63,22 +64,25 @@ else
 //======================================================================================================================
 // DEPENDECIES
 //======================================================================================================================
-/*
-TODO:
+if (!org.gigapan.Util)
+   {
+   var noUtilMsg = "The org.gigapan.Util library is required by org.gigapan.timelapse.Timelapse";
+   alert(noUtilMsg);
+   throw new Error(noUtilMsg);
+   }
 if (!org.gigapan.timelapse.Videoset)
    {
    var noVideosetMsg = "The org.gigapan.timelapse.Videoset library is required by org.gigapan.timelapse.Timelapse";
    alert(noVideosetMsg);
    throw new Error(noVideosetMsg);
    }
-*/
 //======================================================================================================================
 
 //======================================================================================================================
 // CODE
 //======================================================================================================================
 
-var g_timelapse={}
+var g_timelapse={};
 
 // level_threshold sets the quality of display by deciding what level of tile to show for a given level of zoom:
 //
@@ -96,8 +100,13 @@ g_timelapse.level_threshold=0;
 // Timelapse public api
 //
 
+var UTIL = org.gigapan.Util; // TODO: make me a static global
+var videoset = null; // TODO: make me a class member
+
 function timelapse_load(url, video_div_name, status_div_name, optional_info) {
-  videoset_init(video_div_name, status_div_name);
+  videoset = new org.gigapan.timelapse.Videoset(video_div_name);
+  videoset.add_sync_listener(timelapse_update_slider);
+
   g_timelapse.video_div=document.getElementById(video_div_name);
   g_timelapse.status_div=document.getElementById(status_div_name);
   g_timelapse.url=url;
@@ -105,10 +114,10 @@ function timelapse_load(url, video_div_name, status_div_name, optional_info) {
   g_timelapse.playback_rate=.5;
   g_timelapse.view = timelapse_home_view();
   g_timelapse.target_view = timelapse_home_view();
-  log("playback rate is " + g_timelapse.playback_rate);
+  UTIL.log("playback rate is " + g_timelapse.playback_rate);
   g_timelapse.video_pos = 0;             // position of video, if paused.  undefined if playing
-  g_timelapse.video_offset = undefined;  // undefined if paused.  otherwise video time is (time_secs() - video_offset) * video_rate
-  log('timelapse_load("'+url+'")');
+  g_timelapse.video_offset = undefined;  // undefined if paused.  otherwise video time is (UTIL.getCurrentTimeInSecs() - video_offset) * video_rate
+  UTIL.log('timelapse_load("'+url+'")');
   g_timelapse.video_div.onmousedown = timelapse_handle_mousedown;
   g_timelapse.video_div.ondblclick = timelapse_handle_double_click;
             
@@ -122,21 +131,21 @@ function timelapse_load(url, video_div_name, status_div_name, optional_info) {
 
 function timelapse_handle_mousedown(event) {
   var last_event = event;
-  log("mousedown");
+  UTIL.log("mousedown");
   g_timelapse.video_div.style.cursor = "url('css/cursors/closedhand.cur')";
   g_timelapse.video_div.onmousemove = function(event) {
-    log("mousemove");
+    UTIL.log("mousemove");
     g_timelapse.target_view.x += (last_event.pageX - event.pageX) / g_timelapse.view.scale;
     g_timelapse.target_view.y += (last_event.pageY - event.pageY) / g_timelapse.view.scale;
     timelapse_set_target_view(g_timelapse.target_view);
     last_event = event;
     return false;
-  }
-  g_timelapse.video_div.onmouseup = function(event) {
-    log("mouseup");
+  };
+  g_timelapse.video_div.onmouseup = function() {
+    UTIL.log("mouseup");
     g_timelapse.video_div.style.cursor = "url('css/cursors/openhand.cur')";
     g_timelapse.video_div.onmousemove = null;
-  }
+  };
   return false;
 }
 
@@ -197,7 +206,7 @@ function timelapse_compute_bbox(view) {
 //
 
 function timelapse__load_cb(data, status, xhr) {
-  log('timelapse_load_cb('+dump(data)+', '+status+', '+xhr+')');
+  UTIL.log('timelapse_load_cb('+UTIL.dumpObject(data)+', '+status+', '+xhr+')');
   g_timelapse.width=data.width;
   g_timelapse.height=data.height;
   g_timelapse.tile_width=data.tile_width;
@@ -221,7 +230,7 @@ function timelapse__read_video_div_size() {
 }
 
 function timelapse_handle_keydown(event) {
-  log('keydown ' + event.which);
+  UTIL.log('keydown ' + event.which);
   var translation_speed_constant = 20;
   var translation = translation_speed_constant / g_timelapse.view.scale;
   switch (event.which) {
@@ -240,50 +249,50 @@ function timelapse_handle_keydown(event) {
 }
 
 function timelapse_handle_mousescroll(event) {
-  log('mousescroll delta  ' + event.wheelDelta);
+  UTIL.log('mousescroll delta  ' + event.wheelDelta);
   if (event.wheelDelta > 0) g_timelapse.target_view.scale /= .9;
   else if (event.wheelDelta < 0) g_timelapse.target_view.scale *= .9;
   timelapse_set_target_view(g_timelapse.target_view);
 }  
 
 function timelapse_handle_double_click() {
-  log('double click');
+  UTIL.log('double click');
   g_timelapse.target_view.scale *= 2;
   timelapse_set_target_view(g_timelapse.target_view);
 }
 
-function timelapse_handle_keyup(event) {
+function timelapse_handle_keyup() {
 }
 
 function timelapse__refresh() {
-  log('refresh');
-  tileidxs = timelapse__compute_needed_tiles(g_timelapse.view);
+  UTIL.log('refresh');
+  var tileidxs = timelapse__compute_needed_tiles(g_timelapse.view);
   // Add new tiles and reposition ones we want to keep
-  for (var tileidx in tileidxs) {
-    if (!g_timelapse.tiles[tileidx]) {
-      log('need ' + tileidx_dump(tileidx) + ' from ' + timelapse__tileidx_url(tileidx));
-      timelapse__add_tileidx(tileidx);
+  for (var tileidx1 in tileidxs) {
+    if (!g_timelapse.tiles[tileidx1]) {
+      UTIL.log('need ' + tileidx_dump(tileidx1) + ' from ' + timelapse__tileidx_url(tileidx1));
+      timelapse__add_tileidx(tileidx1);
     } else {
-      log('already have ' + tileidx_dump(tileidx));
-      timelapse__reposition_tileidx(tileidx, g_timelapse.view);
+      UTIL.log('already have ' + tileidx_dump(tileidx1));
+      timelapse__reposition_tileidx(tileidx1, g_timelapse.view);
     }
   }
   // Delete tiles we no longer need
-  for (var tileidx in g_timelapse.tiles) {
-    if (tileidxs[tileidx] == undefined) {
-      timelapse__delete_tileidx(tileidx);
+  for (var tileidx2 in g_timelapse.tiles) {
+    if (tileidxs[tileidx2] == undefined) {
+      timelapse__delete_tileidx(tileidx2);
     }
   }
 }
 
 function timelapse__add_tileidx(tileidx) {
   if (g_timelapse.tiles[tileidx]) {
-    error('timelapse__add_tileidx(' + tileidx_dump(tileidx) + '): already loaded');
+    UTIL.error('timelapse__add_tileidx(' + tileidx_dump(tileidx) + '): already loaded');
     return;
   }
   var url = timelapse__tileidx_url(tileidx);
-  log("adding tile " + tileidx_dump(tileidx) + " from " + url);
-  var video = videoset_add_video(url, timelapse__tileidx_geometry(tileidx));
+  UTIL.log("adding tile " + tileidx_dump(tileidx) + " from " + url);
+  var video = videoset.add_video(url, timelapse__tileidx_geometry(tileidx));
 
   g_timelapse.tiles[tileidx] = {video:video};
 }
@@ -291,12 +300,12 @@ function timelapse__add_tileidx(tileidx) {
 function timelapse__delete_tileidx(tileidx) {
   var tile = g_timelapse.tiles[tileidx];
   if (!tile) {
-    error('timelapse__delete_tileidx(' + tileidx_dump(tileidx) + '): not loaded');
+    UTIL.error('timelapse__delete_tileidx(' + tileidx_dump(tileidx) + '): not loaded');
     return;
   }
-  log("removing tile " + tileidx_dump(tileidx));
+  UTIL.log("removing tile " + tileidx_dump(tileidx));
 
-  videoset_delete_video(tile.video);
+  videoset.delete_video(tile.video);
   delete g_timelapse.tiles[tileidx];
 }
   
@@ -304,7 +313,7 @@ function timelapse__tileidx_url(tileidx) {
   var shard_index = (tileidx_r(tileidx)%2)*2 + (tileidx_c(tileidx)%2);
   var url_prefix = g_timelapse.url.replace("//", "//t"+shard_index+".");
   var ret = url_prefix + tileidx_path(tileidx) + ".mp4";
-  //log("url is " + ret);
+  //UTIL.log("url is " + ret);
   return ret;
 }
 
@@ -313,7 +322,7 @@ function timelapse__compute_needed_tiles(view) {
   var bbox= timelapse_compute_bbox(view);
   var tilemin= timelapse__tileidx_at(level, Math.max(0, bbox.xmin), Math.max(0, bbox.ymin));
   var tilemax= timelapse__tileidx_at(level, Math.min(g_timelapse.width-1, bbox.xmax), Math.min(g_timelapse.height-1, bbox.ymax));
-  log("needed tiles " + tileidx_dump(tilemin) + " to " + tileidx_dump(tilemax));
+  UTIL.log("needed tiles " + tileidx_dump(tilemin) + " to " + tileidx_dump(tilemax));
   var tiles=[];
   for (var r=tileidx_r(tilemin); r <= tileidx_r(tilemax); r++) {
     for (var c=tileidx_c(tilemin); c <= tileidx_c(tilemax); c++) {
@@ -329,7 +338,7 @@ function timelapse__compute_needed_tiles(view) {
     var tileidx = tiles[i].tileidx;
     tileidxs[tileidx] = tileidx;
   }
-  log("returning " + tiles.length + " tiles");
+  UTIL.log("returning " + tiles.length + " tiles");
   return tileidxs;
 }
 
@@ -338,7 +347,7 @@ function timelapse__tileidx_at(level, x, y)
   var ret= tileidx_create(level,
                           Math.floor(x / (g_timelapse.tile_width << (g_timelapse.max_level-level))),
                           Math.floor(y / (g_timelapse.tile_height << (g_timelapse.max_level-level))));
-  log('timelapse__tileidx_at('+x+','+y+','+level+')='+tileidx_dump(ret));
+  UTIL.log('timelapse__tileidx_at('+x+','+y+','+level+')='+tileidx_dump(ret));
   return ret;
 }
 
@@ -349,7 +358,7 @@ function timelapse__scale2level(scale) {
   var selected_level = Math.floor(ideal_level+g_timelapse.level_threshold);
   selected_level = Math.max(selected_level, 0);
   selected_level = Math.min(selected_level, g_timelapse.max_level);
-  //log('timelapse_scale2level('+scale+'): ideal_level='+ideal_level+', ret='+selected_level);
+  //UTIL.log('timelapse_scale2level('+scale+'): ideal_level='+ideal_level+', ret='+selected_level);
   return selected_level;
 }
 
@@ -385,12 +394,12 @@ function timelapse__reposition_tileidx(tileidx)
 {
   var tile = g_timelapse.tiles[tileidx];
   if (!tile) {
-    error('timelapse__refresh_tileidx('+tileidx_dump(tileidx)+'): tile does not exist');
+    UTIL.error('timelapse__refresh_tileidx('+tileidx_dump(tileidx)+'): tile does not exist');
     return;
   }
-  //log('timelapse__refresh_tileidx('+tileidx_dump(tileidx)+')');
+  //UTIL.log('timelapse__refresh_tileidx('+tileidx_dump(tileidx)+')');
 
-  videoset_reposition_video(tile.video, timelapse__tileidx_geometry(tileidx));
+  videoset.reposition_video(tile.video, timelapse__tileidx_geometry(tileidx));
 }
 
 /////////////////////////////////////////////////////////////
@@ -404,41 +413,48 @@ function timelapse_update_slider(t) {
 }
 
 function timelapse_is_paused() {
-  return videoset_is_paused();
+  return videoset.is_paused();
 }
 
 function timelapse_pause() {
-  videoset_pause();
+  videoset.pause();
 }
 
 function timelapse_seek(t) {
-  videoset_seek(t);
+  videoset.seek(t);
 }
 
 function timelapse_set_playback_rate(rate) {
-  videoset_set_playback_rate(rate);
+  videoset.set_playback_rate(rate);
 }
 
 function timelapse_get_video_position() {
-  return videoset_get_video_position();
+  return videoset.get_video_position();
 }
 
 function timelapse_play() {
-  videoset_play();
+  videoset.play();
+}
+
+function timelapse_log_status(enable) {
+  videoset.log_status(enable);
+}
+
+function timelapse_enable_native_video_controls(enable) {
+  videoset.enable_native_video_controls(enable);
 }
 
 function timelapse__video_loaded_metadata(event) {
   var video = event.target;
-  log("loaded_metadata " + tileidx_dump(video.id));
+  UTIL.log("loaded_metadata " + tileidx_dump(video.id));
   video.currentTime = timelapse_get_video_position();
   if (!timelapse_is_paused()) video.play();
 }
 
 // Call periodically, when video is running
 function timelapse__update() {
-  //timelapse__sync();
   var msg = "readystate";
-  for (tileidx in g_timelapse.tiles) {
+  for (var tileidx in g_timelapse.tiles) {
     var video = g_timelapse.tiles[tileidx].video;
     msg += " r=" + video.readyState;
     msg += "/n=" + video.networkState;
@@ -447,11 +463,7 @@ function timelapse__update() {
     msg += "/p=" + video.paused;
     msg += "/t=" + video.currentTime;
   }
-  log(msg);
-}
-
-function timelapse__sync() {
-  videoset__sync();
+  UTIL.log(msg);
 }
 
 /////////////////////////////////////////////////////////////

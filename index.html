@@ -4,6 +4,7 @@
    <script src="js/jquery/jquery.min.js"></script>
    <script src="js/jquery/jquery-ui-1.8.6.custom.min.js"></script>
    <script src="js/jquery/plugins/mouse/jQuery_mousewheel_plugin.js"></script>
+   <script src="js/org/gigapan/util.js"></script>
    <script src="js/org/gigapan/timelapse/videoset.js"></script>
    <script src="js/org/gigapan/timelapse/timelapse.js"></script>
 
@@ -40,7 +41,7 @@
        timelapse_load('../timelapses/brassica1-15m-halfsize/', 'timelapse', 'timelapse_status', {"tile_height":256,"height":3876,"fps":25,"frames":2438,"width":9856,"tile_width":256});
      }
      function keypress() {
-       log('keypress');
+       org.gigapan.Util.log('keypress');
      }
 
      $(document).ready(function() {
@@ -107,8 +108,8 @@
 </div>
 
 <br>Debug:
-<input type="checkbox" onclick="videoset_log_status(this.value)">Log video status
-<input type="checkbox" onclick="videoset_enable_native_video_controls(this.value)">Show Native Video Controls
+<input id="logVideoStatus" type="checkbox" onclick="timelapse_log_status(this.value)"><label for="logVideoStatus">Log video status</label>
+<input id="showNativeVideoControls" type="checkbox" onclick="timelapse_enable_native_video_controls(this.value)"><label for="showNativeVideoControls">Show Native Video Controls</label>
 
 <table border="0" cellpadding="3" cellspacing="0" class="control_panel_widget">
    <tr>

@@ -1,7 +1,8 @@
 //======================================================================================================================
 // Class for managing timelapse videosets.
 //
-// Dependencies: None (TODO: actually has a dependency on timelapse.js which we need to fix)
+// Dependencies:
+// * org.gigapan.Util
 //
 // Authors:
 // * Randy Sarget (randy.sargent@gmail.com)
@@ -60,303 +61,380 @@ else
 //======================================================================================================================
 
 //======================================================================================================================
-// CODE
+// DEPENDECIES
+//======================================================================================================================
+if (!org.gigapan.Util)
+   {
+   var noUtilMsg = "The org.gigapan.Util library is required by org.gigapan.timelapse.Videoset";
+   alert(noUtilMsg);
+   throw new Error(noUtilMsg);
+   }
 //======================================================================================================================
 
-var g_videoset={};
+//======================================================================================================================
+// CODE
+//======================================================================================================================
+(function()
+   {
+      var UTIL = org.gigapan.Util;
 
-///////////////////////////////////////////////////////
-//
-// Generic utilies
-//
+      org.gigapan.timelapse.Videoset = function(video_div_name)
+         {
+            var video_div = document.getElementById(video_div_name);
+            var active = false;
+            var active_videos = {};
+            var inactive_videos = {};
+            var playback_rate = 1;
+            var id = 0;
+            var controls_status = false;
+            var duration = 0;
+            var is_cache_disabled = false;
+            var paused = true;
+            var time_offset = 0;
+            var log_interval = null;
+            var sync_interval = null;
+            var sync_listeners = [];
 
-function log(str) {
-  var now = (new Date()).getTime();
-  var mins = ("0" + Math.floor((now / 60000) % 60)).substr(-2);
-  var secs = ("0" + ((now / 1000) % 60).toFixed(3)).substr(-6);
-  console.log(mins + ":" + secs + ": " + str);
-}
+            ////////////////////////////////////////////////////////////////////////////////////////////////////////////
+            //
+            // Public methods
+            //
 
-function error(str) {
-  log('*ERROR: ' + str);
-}
+            this.log_status = function(enable)
+               {
+                  enable = !!enable;  // make true or false
+                  UTIL.log("videoset log status " + enable);
+                  if (active == enable)
+                     {
+                     return;
+                     }
+                  active = enable;
+                  if (enable)
+                     {
+                     log_interval = setInterval(log_status, 500);
+                     }
+                  else
+                     {
+                     clearInterval(log_interval);
+                     }
+               };
 
-function dump(obj) {
-  if (typeof obj != 'object') return obj;
-  var ret = '{';
-  for (property in obj) {
-    if (ret != '{') ret += ',';
-    //ret += property + ':' + dump(obj[property]);
-    ret += property + ':' + obj[property];
-  }
-  ret += '}';
-  return ret;
-}
+            this.enable_native_video_controls = function(enable)
+               {
+                  controls_status = !!enable;  // make true or false
 
-function time_secs() {
-  return .001 * (new Date()).getTime();
-}
+                  for (var videoId1 in active_videos)
+                     {
+                     var v1 = active_videos[videoId1];
+                     enable ? v1.setAttribute('controls', true) : v1.removeAttribute('controls');
+                     }
 
-/////////////////////////////////////////////////////////////
-//
-// Videoset api
-//
+                  for (var videoId2 in inactive_videos)
+                     {
+                     var v2 = inactive_videos[videoId2];
+                     enable ? v2.setAttribute('controls', true) : v2.removeAttribute('controls');
+                     }
+               };
 
-function videoset_init(video_div_name, status_div_name) {
-  log('videoset_init');
-  g_videoset.video_div=document.getElementById(video_div_name);
-  g_videoset.status_div=document.getElementById(status_div_name);
-  g_videoset.active_videos={};
-  g_videoset.inactive_videos={};
-  g_videoset.playback_rate=1;
-  g_videoset.id=0;
-  g_videoset.controls_status=false;
-  g_videoset.duration=0;
-  videoset_disable_cache(false);
-  // current_time = time_offset + time_secs() * (paused ? 0 : playback_rate)
-  // time_offset = current_time - time_secs() * (paused ? 0 : playback_rate)
-  g_videoset.paused = true;
-  g_videoset.time_offset = 0;
-  videoset_log_status(false);
-}
+            this.add_sync_listener = function(listener)
+               {
+                  if (listener && typeof(listener) == "function")
+                     {
+                     sync_listeners.push(listener);
+                     }
+               };
 
-function videoset_log_status(enable) {
-  enable = !!enable;  // make true or false
-  log("videoset log status " + enable);
-  if (g_videoset.active == enable) return;
-  g_videoset.active = enable;
-  if (enable) {
-    g_videoset.log_interval = setInterval(videoset__log_status, 500);
-  } else {
-    clearInterval(g_videoset.log_interval);
-  }
-}
+            this.remove_sync_listener = function(listener)
+               {
+                  if (listener && typeof(listener) == "function")
+                     {
+                     for (var i = 0; i < sync_listeners.length; i++)
+                        {
+                        if (listener == sync_listeners[i])
+                           {
+                           sync_listeners.splice(i, 1);
+                           return;
+                           }
+                        }
+                     }
+               };
 
-function videoset_disable_cache(disable) {
-  log("videoset disable_cache=" + disable);
-  g_videoset.disable_cache=disable;
-}
+            ///////////////////////////
+            // Add and remove videos
+            //
 
-function videoset_enable_native_video_controls(enable) {
-  g_videoset.controls_status = !!enable;  // make true or false
+            this.add_video = function(src, geometry)
+               {
+                  id++;
+                  if (is_cache_disabled)
+                     {
+                     src += "?nocache=" + UTIL.getCurrentTimeInSecs() + "." + id;
+                     }
+                  UTIL.log("video(" + id + ") added from " + src + " at left=" + geometry.left + ",top=" + geometry.top + ", w=" + geometry.width + ",h=" + geometry.height);
 
-  for (id in g_videoset.active_videos) {
-    var v = g_videoset.active_videos[id];
-    enable ? v.setAttribute('controls', true) : v.removeAttribute('controls');
-  }
-    
-  for (id in g_videoset.inactive_videos) {
-    var v = g_videoset.inactive_videos[id];
-    enable ? v.setAttribute('controls', true) : v.removeAttribute('controls');
-  }
-}
+                  var video = null;
+                  // Try to find an existing video to recycle
 
-///////////////////////////
-// Add and remove videos
-//
+                  for (var videoId in inactive_videos)
+                     {
+                     var candidate = inactive_videos[videoId];
+                     if (candidate.readyState >= 4 && !candidate.seeking)
+                        {
+                        video = candidate;
+                        delete inactive_videos[videoId];
+                        UTIL.log("video(" + videoId + ") reused from video(" + candidate.id + ")");
+                        break;
+                        }
+                     }
+                  if (video == null)
+                     {
+                     video = document.createElement('video');
+                     }
+                  video.id = id;
+                  video.active = true;
+                  UTIL.log(video_summary(video));
+                  video.setAttribute('src', src);
+                  UTIL.log("set src successfully");
+                  if (controls_status)
+                     {
+                     video.setAttribute('controls', true);
+                     }
+                  video.setAttribute('preload', true);
+                  this.reposition_video(video, geometry);
+                  video.defaultPlaybackRate = video.playbackRate = playback_rate;
+                  video.load();
+                  video.style.display = 'inline';
+                  video.style.position = 'absolute';
+                  active_videos[video.id] = video;
+                  video_div.appendChild(video);
+                  video.addEventListener('loadedmetadata', video_loaded_metadata, false);
+                  return video;
+               };
 
-function videoset_add_video(src, geometry) {
-  g_videoset.id++;
-  if (g_videoset.disable_cache) {
-    src += "?nocache=" + time_secs()+"."+g_videoset.id;
-  }
-  log("video(" + g_videoset.id + ") added from " + src + " at left="+geometry.left+",top="+geometry.top+", w="+geometry.width+",h="+geometry.height);
+            this.reposition_video = function(video, geometry)
+               {
+                  UTIL.log("video(" + video.id + ") reposition to left=" + geometry.left + ",top=" + geometry.top + ", w=" + geometry.width + ",h=" + geometry.height);
+                  // toFixed prevents going to scientific notation when close to zero;  this confuses the DOM
+                  video.style.left = geometry.left.toFixed(4);
+                  video.style.top = geometry.top.toFixed(4);
 
-  var video = null;
-  // Try to find an existing video to recycle
+                  video.style.width = geometry.width;
+                  video.style.height = geometry.height;
+               };
 
-  for (id in g_videoset.inactive_videos) {
-    var candidate = g_videoset.inactive_videos[id];
-    if (candidate.readyState >= 4 && candidate.seeking == false) {
-      video = candidate;
-      delete g_videoset.inactive_videos[id];
-      log("video(" + g_videoset.id + ") reused from video(" + candidate.id + ")");
-      break;
-    }    
-  }
-  if (video == null) video = document.createElement('video');
-  video.id = g_videoset.id;
-  video.active = true;
-  log(videoset__video_summary(video));
-  video.setAttribute('src', src);
-  log("set src successfully");
-  if (g_videoset.controls_status) video.setAttribute('controls', true);
-  video.setAttribute('preload', true);
-  videoset_reposition_video(video, geometry);
-  video.defaultPlaybackRate = video.playbackRate =  g_videoset.playback_rate;
-  video.load();
-  video.style.display = 'inline';
-  video.style.position = 'absolute';
-  g_videoset.active_videos[video.id]=video;
-  g_videoset.video_div.appendChild(video);
-  video.addEventListener('loadedmetadata', videoset__video_loaded_metadata, false);
-  return video;
-}
-  
+            this.delete_video = function(video)
+               {
+                  UTIL.log("video(" + video.id + ") delete");
+                  video.active = false;
+                  video.pause();
+                  UTIL.log(video_summary(video));
+                  video.removeAttribute('src');
+                  UTIL.log(video_summary(video));
+                  video.style.display = 'none';
+                  UTIL.log(video_summary(video));
+                  delete active_videos[video.id];
+                  inactive_videos[video.id] = video;
+               };
 
-function videoset_reposition_video(video, geometry)
-{
-  log("video(" + video.id + ") reposition to left="+geometry.left+",top="+geometry.top+", w="+geometry.width+",h="+geometry.height);
-  // toFixed prevents going to scientific notation when close to zero;  this confuses the DOM
-  video.style.left = geometry.left.toFixed(4);
-  video.style.top  = geometry.top.toFixed(4);
+            ///////////////////////////
+            // Time controls
+            //
 
-  video.style.width = geometry.width;
-  video.style.height = geometry.height;
-}
+            var _is_paused = function()
+               {
+                  return paused;
+               };
+            this.is_paused = _is_paused;
 
-function videoset_delete_video(video) {
-  log("video(" + video.id + ") delete");
-  video.active = false;
-  video.pause();
-  log(videoset__video_summary(video));
-  video.removeAttribute('src');
-  log(videoset__video_summary(video));
-  video.style.display = 'none';
-  log(videoset__video_summary(video));
-  delete g_videoset.active_videos[video.id];
-  g_videoset.inactive_videos[video.id]=video;
-}
+            var _pause = function()
+               {
+                  if (!paused)
+                     {
+                     UTIL.log("videoset pause");
+                     clearInterval(sync_interval);
+                     var time = _current_time();
+                     paused = true;
 
-/////////////////////////
-// Time controls
-//
+                     for (var videoId in active_videos)
+                        {
+                        UTIL.log("video(" + videoId + ") play");
+                        active_videos[videoId].pause();
+                        }
 
-function videoset_is_paused() {
-  return g_videoset.paused;
-}
+                     _seek(time);
+                     }
+               };
+            this.pause = _pause;
 
-function videoset_pause() {
-  if (!g_videoset.paused) {
-    log("videoset pause");
-    clearInterval(g_videoset.sync_interval);
-    var time = videoset_current_time();
-    g_videoset.paused = true;
+            this.play = function()
+               {
+                  if (paused)
+                     {
+                     var time = _current_time();
+                     paused = false;
+                     _seek(time);
 
-    for (id in g_videoset.active_videos) {
-      log("video("+id+") play");
-      g_videoset.active_videos[id].pause();
-    }
+                     for (var videoId in active_videos)
+                        {
+                        UTIL.log("video(" + videoId + ") play");
+                        active_videos[videoId].play();
+                        }
 
-    videoset_seek(time);
-  }
-}
+                     sync_interval = setInterval(sync, 200);
+                     }
+               };
 
-function videoset_play() {
-  if (g_videoset.paused) {
-    var time = videoset_current_time();
-    g_videoset.paused = false;
-    videoset_seek(time);
+            this.set_playback_rate = function(rate)
+               {
+                  if (rate != playback_rate)
+                     {
+                     var t = _current_time();
+                     playback_rate = rate;
+                     _seek(t);
+                     for (var videoId in active_videos)
+                        {
+                        active_videos[videoId].defaultPlaybackRate = active_videos[videoId].playbackRate = rate;
+                        }
+                     }
+               };
 
-    for (id in g_videoset.active_videos) {
-      log("video("+id+") play");
-      g_videoset.active_videos[id].play();
-    }
-    
-    g_videoset.sync_interval = setInterval(videoset__sync, 200);
-  }
-}
+            var _seek = function(new_time)
+               {
+                  if (new_time != _current_time())
+                     {
+                     time_offset = new_time - UTIL.getCurrentTimeInSecs() * (paused ? 0 : playback_rate);
+                     sync(0.0);
+                     }
+               };
+            this.seek = _seek;
 
-function videoset_set_playback_rate(rate) {
-  if (rate != g_videoset.playback_rate) {
-    var t = videoset_current_time();
-    g_videoset.playback_rate = rate;
-    videoset_seek(t);
-    for (id in g_videoset.active_videos) {
-      g_videoset.active_videos[id].defaultPlaybackRate = g_videoset.active_videos[id].playbackRate = rate;
-    }
-  }
-}
+            var _current_time = function()
+               {
+                  return time_offset + UTIL.getCurrentTimeInSecs() * (paused ? 0 : playback_rate);
+               };
+            this.current_time = _current_time;
 
-function videoset_seek(new_time) {
-  if (new_time != videoset_current_time()) {
-    g_videoset.time_offset = new_time - time_secs() * (g_videoset.paused ? 0 : g_videoset.playback_rate);
-    videoset__sync(0.0);
-  }
-}
+            ////////////////////////////////////////////////////////////////////////////////////////////////////////////
+            //
+            // Private methods
+            //
 
-function videoset_current_time() {
-  return g_videoset.time_offset + time_secs() * (g_videoset.paused ? 0 : g_videoset.playback_rate);
-}
+            // This seems to get called pretty late in the game
+            var video_loaded_metadata = function(event)
+               {
+                  var video = event.target;
+                  if (!video.active)
+                     {
+                     UTIL.log("video(" + video.id + ") loaded_metadata after deactivation!");
+                     return;
+                     }
+                  if (!duration)
+                     {
+                     duration = video.duration;
+                     }
+                  UTIL.log("video(" + video.id + ") loaded_metadata;  seek to " + _current_time());
+                  video.currentTime = _current_time();
+                  if (!_is_paused())
+                     {
+                     video.play();
+                     }
+               };
 
-/////////////////////////////////////////////////////////////
-//
-// Videoset private funcs
-//
+            // Call periodically, when video is running
+            var log_status = function()
+               {
+                  var msg = "video status:";
+                  for (var videoId1 in active_videos)
+                     {
+                     msg += " " + video_summary(active_videos[videoId1]);
+                     }
+                  for (var videoId2 in inactive_videos)
+                     {
+                     msg += " " + video_summary(inactive_videos[videoId2]);
+                     }
+                  UTIL.log(msg);
+               };
 
-// This seems to get called pretty late in the game
-function videoset__video_loaded_metadata(event) {
-  var video = event.target;
-  if (!video.active) {
-    log("video("+video.id+") loaded_metadata after deactivation!");
-    return;
-  }
-  if (!g_videoset.duration) g_videoset.duration = video.duration;
-  log("video("+video.id+") loaded_metadata;  seek to " + videoset_current_time());
-  video.currentTime = videoset_current_time();
-  if (!videoset_is_paused()) video.play();
-}
+            var video_summary = function(video)
+               {
+                  var summary = video.id.toString();
+                  summary += ":A=" + (video.active ? "y" : "n");
+                  summary += ";N=" + video.networkState;
+                  summary += ";R=" + video.readyState;
+                  summary += ";P=" + (video.paused ? "y" : "n");
+                  summary += ";S=" + (video.seeking ? "y" : "n");
+                  summary += ";T=" + video.currentTime.toFixed(3);
+                  summary += ";B=" + dump_timerange(video.buffered);
+                  summary += ";P=" + dump_timerange(video.played);
+                  summary += ";E=" + (video.error ? "y" : "n");
+                  return summary;
+               };
 
-// Call periodically, when video is running
-function videoset__log_status() {
-  var msg = "video status:";
-  for (id in g_videoset.active_videos) {
-    msg += " " + videoset__video_summary(g_videoset.active_videos[id]);
-  }
-  for (id in g_videoset.inactive_videos) {
-    msg += " " + videoset__video_summary(g_videoset.inactive_videos[id]);
-  }
-  log(msg);
-}
+            var dump_timerange = function(timerange)
+               {
+                  var ret = "{";
+                  for (var i = 0; i < timerange.length; i++)
+                     {
+                     ret += timerange.start(i).toFixed(3) + "-" + timerange.end(i).toFixed(3);
+                     }
+                  ret += "}";
+                  return ret;
+               };
 
-function videoset__video_summary(video) {
-  var summary = video.id.toString();
-  summary += ":A=" + (video.active ? "y" : "n");
-  summary += ";N=" + video.networkState;
-  summary += ";R=" + video.readyState;
-  summary += ";P=" + (video.paused ? "y" : "n");
-  summary += ";S=" + (video.seeking ? "y" : "n");
-  summary += ";T=" + video.currentTime.toFixed(3);
-  summary += ";B=" + videoset__dump_timerange(video.buffered);
-  summary += ";P=" + videoset__dump_timerange(video.played);
-  summary += ";E=" + (video.error ? "y" : "n");
-  return summary;
-}
+            var sync = function(error_threshold)
+               {
+                  if (error_threshold == undefined)
+                     {
+                     error_threshold = 0.01;
+                     }
 
-function videoset__dump_timerange(timerange) {
-  ret = "{";
-  for (var i=0; i<timerange.length; i++) {
-    ret += timerange.start(i).toFixed(3) + "-" + timerange.end(i).toFixed(3);
-  }
-  ret += "}";
-  return ret;
-}
+                  var t = _current_time();
+                  if (t < 0)
+                     {
+                     _pause();
+                     _seek(0);
+                     }
+                  else if (t > duration)
+                     {
+                     _pause();
+                     _seek(duration);
+                     }
 
-function videoset__sync(error_threshold) {
-  if (error_threshold == undefined) error_threshold = 0.01;
-  
-  var t = videoset_current_time();
-  if (t < 0) {
-    videoset_pause();
-    videoset_seek(0);
-  } else if (t > g_videoset.duration) {
-    videoset_pause();
-    videoset_seek(g_videoset.duration);
-  }
+                  for (var videoId in active_videos)
+                     {
+                     var video = active_videos[videoId];
+                     if (video.readyState >= 1 && Math.abs(video.currentTime - t) > error_threshold)
+                        {  // HAVE_METADATA=1
+                        UTIL.log("Corrected video(" + videoId + ") from " + video.currentTime + " to " + t + " (error=" + (video.currentTime - t) + ", state=" + video.readyState + ")");
+                        video.currentTime = t + error_threshold * .5; // seek ahead slightly
+                        }
+                     //    else if (!tile.loaded && video.readyState >= 2) { // HAVE_CURRENT_DATA=2
+                     //      tile.loaded = true;
+                     //      videoset__reposition_tileidx(tileidx, view);
+                     //    }
+                     }
 
-  for (id in g_videoset.active_videos) {
-    var video = g_videoset.active_videos[id];
-    if (video.readyState >= 1 && Math.abs(video.currentTime - t) > error_threshold) {  // HAVE_METADATA=1
-      log("Corrected video(" + id + ") from " + video.currentTime + " to " + t + " (error=" + (video.currentTime-t) +", state=" + video.readyState + ")");
-      video.currentTime = t + error_threshold *.5; // seek ahead slightly
-    }
-//    else if (!tile.loaded && video.readyState >= 2) { // HAVE_CURRENT_DATA=2
-//      tile.loaded = true;
-//      videoset__reposition_tileidx(tileidx, g_videoset.view);
-//    }
-  }
-  
-  timelapse_update_slider(t);
+                  for (var i = 0; i < sync_listeners.length; i++)
+                     {
+                     try
+                        {
+                        sync_listeners[i](t);
+                        }
+                     catch(e)
+                        {
+                        UTIL.error(e.name + " while executing videoset sync listener handler: " + e.message, e);
+                        }
+                     }
+               };
 
-}
+            ////////////////////////////////////////////////////////////////////////////////////////////////////////////
+            //
+            // Constructor
+            //
 
+            UTIL.log('Videoset() constructor');
+
+            this.log_status(false);
+
+         };
+   })();
