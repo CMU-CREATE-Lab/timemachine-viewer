@@ -158,13 +158,13 @@ if (!org.gigapan.timelapse.Videoset)
                      case 189: target_view.scale *= .9;       break;  // minus
                      case 187: target_view.scale /= .9;       break;  // plus
                      case 80:  // P
-                        if (this.is_paused())
+                        if (_is_paused())
                            {
-                           this.play();
+                           _play();
                            }
                         else
                            {
-                           this.pause();
+                           _pause();
                            }
                         return;
                   }
@@ -209,15 +209,17 @@ if (!org.gigapan.timelapse.Videoset)
             // Timelapse video control
             //
 
-            this.is_paused = function()
+            var _is_paused = function()
                {
                   return videoset.is_paused();
                };
+            this.is_paused = _is_paused;
 
-            this.pause = function()
+            var _pause = function()
                {
                   videoset.pause();
                };
+            this.pause = _pause;
 
             this.seek = function(t)
                {
@@ -234,10 +236,11 @@ if (!org.gigapan.timelapse.Videoset)
                   return videoset.get_video_position();
                };
 
-            this.play = function()
+            var _play = function()
                {
                   videoset.play();
                };
+            this.play = _play;
 
             this.log_status = function(enable)
                {
