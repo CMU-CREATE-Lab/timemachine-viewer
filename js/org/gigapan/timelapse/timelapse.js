@@ -129,6 +129,32 @@ function timelapse_load(url, video_div_name, status_div_name, optional_info) {
   }    
 }
 
+function timelapse_handle_window_close() {
+  /*num_active_removed = 0;
+  num_inactive_removed = 0;
+
+  for (id in g_videoset.inactive_videos) {
+    var candidate = g_videoset.inactive_videos[id];
+    if (candidate.readyState >= 4 && candidate.seeking == false) {
+      video = candidate;
+      delete g_videoset.inactive_videos[id];
+      num_inactive_removed += 1;
+    }    
+  }
+
+  for (id in g_videoset.active_videos) {
+    var candidate = g_videoset.active_videos[id];
+    if (candidate.readyState >= 4 && candidate.seeking == false) {
+	  video = candidate;
+	  delete g_videoset.active_videos[id];
+	  num_inactive_removed += 1;
+    }
+  }
+  
+  alert("num active removed: " + num_active_removed + " " + "num inactive removed: " + num_inactive_removed);*/
+  
+}
+
 function timelapse_handle_mousedown(event) {
   var last_event = event;
   UTIL.log("mousedown");
@@ -407,8 +433,20 @@ function timelapse__reposition_tileidx(tileidx)
 // Timelapse video control
 //
 
+function timelapse_format_time(t){
+  var hours = Math.floor(t/3600);
+  var minutes = Math.floor(t/60)-(hours*60);
+  var seconds = Math.floor(t-(hours*3600)-(minutes*60));
+
+  if (hours < 10) hours = "0" + hours;
+  if (minutes < 10) minutes = "0" + minutes;
+  if (seconds < 10) seconds = "0" + seconds;
+
+  return hours + ":" + minutes + ":" + seconds
+}
+
 function timelapse_update_slider(t) {
-  $("#currentTime").text(t.toFixed(2));
+  $("#currentTime").text(timelapse_format_time(t));
   $("#timelineSlider").slider("option", "value", t);
 }
 

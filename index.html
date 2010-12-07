@@ -30,10 +30,34 @@
          margin: 3px 0 3px 0;
          width: 500px;
       }
+
+	  .play {
+	    width:20;
+	    height:23px;
+	    background-image: url("images/play.png");
+	    cursor: pointer;
+	    float:left;
+	  }
+
+	  .pause {
+		width:20;
+	    height:22px;
+	    background-image: url("images/pause.png");
+	    cursor: pointer;
+	    float:left;
+	  }
+
+	  .stop {
+		width:20;
+	    height:22px;
+	    background-image: url("images/stop.png");
+	    cursor: pointer;
+	    float:left;
+	  }
    </style>
 
    <script>
-     var timelapseDuration = 0.0;
+     var timelapseDurationInSeconds = 0.0;
 	 var timeStepInSecs = 0.04; // 25 frames per second
 
      function ready() {
@@ -44,12 +68,15 @@
        org.gigapan.Util.log('keypress');
      }
 
-     $(document).ready(function() {
+	 $(document).ready(function() {
        ready();
 	   $(this).keydown(timelapse_handle_keydown);
        $(this).keyup(timelapse_handle_keyup);
 	   $(timelapse).mousewheel(timelapse_handle_mousescroll);
-	   timelapseDuration = g_timelapse.frames/g_timelapse.fps;
+
+	   window.onunload = timelapse_handle_window_close;
+
+	   timelapseDurationInSeconds = g_timelapse.frames/g_timelapse.fps;
 
 	   $("#timelapse").bind("mousemove", function(event) {
 	     var viewerPosition = $("#timelapse").position();
@@ -63,7 +90,7 @@
 	     animate: true,
 		 value: 0,
 		 min: 0,
-		 max: timelapseDuration,
+		 max: timelapseDurationInSeconds,
 		 range: "min",
 		 step: timeStepInSecs,
 		 slide: function(e, ui) {
@@ -71,7 +98,28 @@
 		   timelapse_seek(timeInSecs);
 		 }
        });
-	 });
+
+	   $('#play_toggle').bind("click", function() {
+	     if ($(this).attr("class") == "play") {
+		   $(this).attr("class", "pause");
+		   $(this).attr("title","Pause")
+		   timelapse_play();
+		 } else {
+		   $(this).attr("class", "play");
+		   $(this).attr("title","Play")
+		   timelapse_pause();
+		 }
+	   });
+
+	   $('#stop').bind("click", function() {
+	     $('#play_toggle').attr("class", "play");
+	     $('#play_toggle').attr("title","Play")
+	     timelapse_seek(0);
+	     timelapse_pause();
+	   });
+
+	   $("#totalTime").text(timelapse_format_time(timelapseDurationInSeconds));
+     });
    </script>
 </head>
 <body>
@@ -82,14 +130,7 @@
 </div>
 <div id="timelapse_status"></div>
 
-<input type="button" value="play" onclick="timelapse_play()">
-<input type="button" value="pause" onclick="timelapse_pause()">
-<input type="button" value="reset" onclick="timelapse_pause(); timelapse_seek(0)">
-<input type="button" value="home" onclick="timelapse_warp_to(timelapse_home_view())">
-<input type="button" value="seek 20" onclick="timelapse_seek(20)">
-<input type="button" value="seek 40" onclick="timelapse_seek(40)">
-<input type="button" value="seek 60" onclick="timelapse_seek(60)">
-<input type="button" value="seek 80" onclick="timelapse_seek(80)">
+<input type="button" value="recenter" onclick="timelapse_warp_to(timelapse_home_view())">
 <br>
 <input type="button" value="rate -1" onclick="timelapse_set_playback_rate(-1)">
 <input type="button" value="rate -.5" onclick="timelapse_set_playback_rate(-.5)">
@@ -113,11 +154,17 @@
 
 <table border="0" cellpadding="3" cellspacing="0" class="control_panel_widget">
    <tr>
+   	  <td>
+   	  	<div id="play_toggle" class="play" title="Play"></div>
+   	  </td>
+   	  <td>
+   	  	<div id="stop" class="stop" title="Stop"></div>
+   	  </td>
       <td colspan="3">
          <div id="timelineSlider"></div>
       </td>
       <td align="right">
-         Time: <span id="currentTime">0.00</span><br>
+         <span id="currentTime">00:00:00</span> <span id="totalTime">00:00:00</span><br>
       </td>
    </tr>
 </table>
