@@ -83,6 +83,20 @@
          cursor: pointer;
          float: left;
       }
+       .recenter_mouseover {
+          width: 20px;
+          height: 23px;
+          background-image: url("images/recenter_mouseover.png");
+          cursor: pointer;
+          float: left;
+      }
+       .recenter_mouseout {
+          width: 20px;
+          height: 23px;
+          background-image: url("images/recenter_mouseout.png");
+          cursor: pointer;
+          float: left;
+      }
    </style>
 
    <script>
@@ -191,6 +205,18 @@
                $(this).attr("class", "stop_mouseout");
             });
 
+            $('#recenter').bind("mousemove", function() {
+               $(this).attr("class", "recenter_mouseover");
+            });
+
+            $('#recenter').bind("mouseout", function() {
+               $(this).attr("class", "recenter_mouseout");
+            });
+
+			$('#recenter').bind("click", function() {
+				timelapse.warpTo(timelapse.homeView());
+			});
+
             $('#play_toggle').bind("click", function()
                {
                if ($(this).attr("class") == "play_mouseover")
@@ -234,9 +260,6 @@
    <div id="timelapse" style="position: absolute; width:800px; height:450px; background:black; overflow:hidden"></div>
 </div>
 
-<input type="button" value="recenter" onclick="timelapse.warpTo(timelapse.homeView())">
-<br>
-
 <table border="0" cellpadding="3" cellspacing="0" class="control_panel_widget">
    <tr>
       <td>
@@ -244,6 +267,9 @@
       </td>
       <td>
          <div id="stop" class="stop_mouseout" title="Stop"></div>
+      </td>
+      <td>
+	     <div id="recenter" class="recenter_mouseout" title="Recenter"></div>
       </td>
       <td colspan="3">
          <div id="timelineSlider"></div>
@@ -253,7 +279,7 @@
       </td>
    </tr>
    <tr>
-     <td colspan="3">
+     <td colspan="4">
          Playback Speed:<div id="playBackSpeedSlider"></div>
      </td>
    </tr>
