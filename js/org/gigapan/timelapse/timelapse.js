@@ -311,12 +311,13 @@ if (!org.gigapan.timelapse.Videoset)
                {
                   var maxScale = 2;
                   var minScale = _homeView().scale * .5;
-                  newView.scale = Math.max(minScale, Math.min(maxScale, newView.scale));
-                  newView.x = Math.max(0, Math.min(panoWidth, newView.x));
-                  newView.y = Math.max(0, Math.min(panoHeight, newView.y));
-                  targetView.x = newView.x;
-                  targetView.y = newView.y;
-                  targetView.scale = newView.scale;
+                  var tempView = {};
+                  tempView.scale = Math.max(minScale, Math.min(maxScale, newView.scale));
+                  tempView.x = Math.max(0, Math.min(panoWidth, newView.x));
+                  tempView.y = Math.max(0, Math.min(panoHeight, newView.y));
+                  targetView.x = tempView.x;
+                  targetView.y = tempView.y;
+                  targetView.scale = tempView.scale;
                   //  if (!g_videoset.animate_interval) g_videoset.animate_interval = setInterval(timelapse__animate, 100);
                   // TEMPORARY
                   view.x = targetView.x;
