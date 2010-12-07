@@ -132,11 +132,12 @@
 	      		this.style.cursor = "url('css/cursors/openhand.cur')";
 	   		});
 
-	   		$('.ui-slider-handle').bind("mousedown", function() {
-	      		this.style.cursor = "url('css/cursors/closedhand.cur')";
-	      		$('.ui-slider-handle')['one']('mouseup', function() {
-					this.style.cursor = "url('css/cursors/openhand.cur')";
-	  	  		});
+	   		$('.ui-slider').bind("slide", function() {
+	      		$('.ui-slider-handle').css("cursor", "url('css/cursors/closedhand.cur')");
+	   		});
+
+	   		$('.ui-slider').bind("slidestop", function() {
+	      		$('.ui-slider-handle').css("cursor", "url('css/cursors/openhand.cur')");
 	   		});
 
 	   		$('.ui-slider').bind("mouseover", function() {
