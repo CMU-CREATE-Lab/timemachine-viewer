@@ -105,6 +105,11 @@
                                                      if (t >= timelapseDurationInSeconds) {
                                                      	$('#play_toggle').attr("class", "play_mouseout");
                                                      	$('#play_toggle').attr("title","Play");
+                                                     } else if (t <= 0) {
+                                                        $("#currentTime").text(org.gigapan.Util.formatTime(0));
+                                                        $("#timelineSlider")['slider']("option", "value", 0);
+                                                     	$('#play_toggle').attr("class", "play_mouseout");
+                                                     	$('#play_toggle').attr("title","Play");
                                                      }
                                                   });
 
@@ -116,14 +121,13 @@
 
             timelapseDurationInSeconds = timelapse.getNumFrames() / timelapse.getFps();
 
-            $("#timelapse").bind("mousemove", function(event)
-               {
+            $("#timelapse").bind("mousemove", function(event) {
                   var viewerPosition = $("#timelapse").position();
                   var mouseX = event.pageX - viewerPosition.left;
                   var mouseY = event.pageY - viewerPosition.top;
                   $("#window_coords").text("(" + event.pageX + "," + event.pageY + ")");
                   $("#viewer_pixel_coords").text("(" + mouseX + "," + mouseY + ")");
-               });
+            });
 
             $("#timelineSlider")['slider']({
                                               animate: true,
@@ -153,7 +157,7 @@
                                            });
 
 
-			$("#playBackSpeedSlider").slider( "widget" ).bind("mouseover", function() {
+			$("#playBackSpeedSlider").slider("widget").bind("mouseover", function() {
 	      		$(this).attr("title",$("#playBackSpeedSlider").slider("option", "value"));
 	   		});
 
