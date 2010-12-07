@@ -189,9 +189,9 @@ if (!org.gigapan.timelapse.Videoset)
                   setTargetView(targetView);
                };
 
-            var _warpTo = function(view)
+            var _warpTo = function(newView)
                {
-                  setTargetView(view);
+                  setTargetView(newView);
                   view.x = targetView.x;
                   view.y = targetView.y;
                   view.scale = targetView.scale;
@@ -307,16 +307,16 @@ if (!org.gigapan.timelapse.Videoset)
                   setTargetView(targetView);
                };
 
-            var setTargetView = function(view)
+            var setTargetView = function(newView)
                {
                   var maxScale = 2;
                   var minScale = _homeView().scale * .5;
-                  view.scale = Math.max(minScale, Math.min(maxScale, view.scale));
-                  view.x = Math.max(0, Math.min(panoWidth, view.x));
-                  view.y = Math.max(0, Math.min(panoHeight, view.y));
-                  targetView.x = view.x;
-                  targetView.y = view.y;
-                  targetView.scale = view.scale;
+                  newView.scale = Math.max(minScale, Math.min(maxScale, newView.scale));
+                  newView.x = Math.max(0, Math.min(panoWidth, newView.x));
+                  newView.y = Math.max(0, Math.min(panoHeight, newView.y));
+                  targetView.x = newView.x;
+                  targetView.y = newView.y;
+                  targetView.scale = newView.scale;
                   //  if (!g_videoset.animate_interval) g_videoset.animate_interval = setInterval(timelapse__animate, 100);
                   // TEMPORARY
                   view.x = targetView.x;
@@ -332,11 +332,11 @@ if (!org.gigapan.timelapse.Videoset)
                   return {x:.5 * (bbox.xmin + bbox.xmax), y:.5 * (bbox.ymin + bbox.ymax), scale: scale};
                };
 
-            var computeBoundingBox = function(view)
+            var computeBoundingBox = function(theView)
                {
-                  var halfWidth = .5 * viewportWidth / view.scale;
-                  var halfHeight = viewportHeight / view.scale;
-                  return {xmin:view.x - halfWidth, xmax:view.x + halfWidth, ymin:view.y - halfHeight, ymax:view.y + halfHeight};
+                  var halfWidth = .5 * viewportWidth / theView.scale;
+                  var halfHeight = viewportHeight / theView.scale;
+                  return {xmin:theView.x - halfWidth, xmax:theView.x + halfWidth, ymin:theView.y - halfHeight, ymax:theView.y + halfHeight};
                };
 
             var onPanoLoadSuccessCallback = function(data, status, xhr)
@@ -430,10 +430,10 @@ if (!org.gigapan.timelapse.Videoset)
                   return urlPrefix + getTileidxPath(tileidx) + ".mp4";
                };
 
-            var computeNeededTiles = function(view)
+            var computeNeededTiles = function(theView)
                {
-                  var level = scale2level(view.scale);
-                  var bbox = computeBoundingBox(view);
+                  var level = scale2level(theView.scale);
+                  var bbox = computeBoundingBox(theView);
                   var tilemin = tileidxAt(level, Math.max(0, bbox.xmin), Math.max(0, bbox.ymin));
                   var tilemax = tileidxAt(level, Math.min(panoWidth - 1, bbox.xmax), Math.min(panoHeight - 1, bbox.ymax));
                   UTIL.log("needed tiles " + dumpTileidx(tilemin) + " to " + dumpTileidx(tilemax));
@@ -444,7 +444,7 @@ if (!org.gigapan.timelapse.Videoset)
                         {
                         var tileidx1 = tileidxCreate(level, c, r);
                         var tileCtr = tileidxCenter(tileidx1);
-                        var distSq = (tileCtr.x - view.x) * (tileCtr.x - view.x) + (tileCtr.y - view.y) * (tileCtr.y - view.y);
+                        var distSq = (tileCtr.x - theView.x) * (tileCtr.x - theView.x) + (tileCtr.y - theView.y) * (tileCtr.y - theView.y);
                         tiles.push({distSq:distSq, tileidx:tileidx1});
                         }
                      }
