@@ -31,29 +31,53 @@
          width: 500px;
       }
 
-      .play {
-         width: 20px;
-         height: 23px;
-         background-image: url("images/play.png");
-         cursor: pointer;
-         float: left;
-      }
+	  .play_mouseover {
+	    width:20;
+	    height:23px;
+	    background-image: url("images/play_mouseover.png");
+	    cursor: pointer;
+	    float:left;
+	  }
 
-      .pause {
-         width: 20px;
-         height: 22px;
-         background-image: url("images/pause.png");
-         cursor: pointer;
-         float: left;
-      }
+	  .play_mouseout {
+	    width:20;
+	    height:23px;
+	    background-image: url("images/play_mouseout.png");
+	    cursor: pointer;
+	    float:left;
+	  }
 
-      .stop {
-         width: 20px;
-         height: 22px;
-         background-image: url("images/stop.png");
-         cursor: pointer;
-         float: left;
-      }
+      .pause_mouseover {
+	    width:20;
+	    height:23px;
+	    background-image: url("images/pause_mouseover.png");
+	    cursor: pointer;
+	    float:left;
+	  }
+
+	  .pause_mouseout {
+	    width:20;
+	    height:23px;
+	    background-image: url("images/pause_mouseout.png");
+	    cursor: pointer;
+	    float:left;
+	  }
+
+	  .stop_mouseover {
+		width:20;
+	    height:22px;
+	    background-image: url("images/stop_mouseover.png");
+	    cursor: pointer;
+	    float:left;
+	  }
+
+	  .stop_mouseout {
+		width:20;
+	    height:22px;
+	    background-image: url("images/stop_mouseout.png");
+	    cursor: pointer;
+	    float:left;
+	  }
    </style>
 
    <script>
@@ -98,29 +122,58 @@
                                                  }
                                            });
 
-            $('#play_toggle').bind("click", function()
-               {
-                  if ($(this).attr("class") == "play")
-                     {
-                     $(this).attr("class", "pause");
-                     $(this).attr("title", "Pause");
-                     timelapse.play();
-                     }
-                  else
-                     {
-                     $(this).attr("class", "play");
-                     $(this).attr("title", "Play");
-                     timelapse.pause();
-                     }
-               });
+			$('.ui-slider-handle').bind("mouseover", function() {
+	      		this.style.cursor = "url('css/cursors/openhand.cur')";
+	   		});
 
-            $('#stop').bind("click", function()
-               {
-                  $('#play_toggle').attr("class", "play");
-                  $('#play_toggle').attr("title", "Play");
-                  timelapse.seek(0);
-                  timelapse.pause();
-               });
+	   		$('.ui-slider-handle').bind("mousedown", function() {
+	      		this.style.cursor = "url('css/cursors/closedhand.cur')";
+	      		$('.ui-slider-handle').one('mouseup', function() {
+					this.style.cursor = "url('css/cursors/openhand.cur')";
+	  	  		});
+	   		});
+
+	   		$('.ui-slider').bind("mouseover", function() {
+	      		$(this).css("cursor", "pointer");
+	   		});
+
+	   		$('#play_toggle').bind("mousemove", function() {
+	      		if ($(this).attr("class") == "play_mouseout") $(this).attr("class", "play_mouseover");
+	      		else if ($(this).attr("class") == "pause_mouseout") $(this).attr("class", "pause_mouseover");
+	   		});
+
+	    	$('#play_toggle').bind("mouseout", function() {
+	      		if ($(this).attr("class") == "play_mouseover") $(this).attr("class", "play_mouseout");
+	      		else if ($(this).attr("class") == "pause_mouseover") $(this).attr("class", "pause_mouseout");
+	    	});
+
+	    	$('#stop').bind("mousemove", function() {
+	      		$(this).attr("class", "stop_mouseover");
+	    	});
+
+	    	$('#stop').bind("mouseout", function() {
+	      		$(this).attr("class", "stop_mouseout");
+	    	});
+
+	    	$('#play_toggle').bind("click", function() {
+	     		if ($(this).attr("class") == "play_mouseover") {
+		   			$(this).attr("class", "pause_mouseout");
+		   			$(this).attr("title","Pause")
+		   			timelapse.play();
+		 		} else {
+		   			$(this).attr("class", "play_mouseout");
+		   			$(this).attr("title","Play")
+		   			timelapse.pause();
+		 		}
+	   		});
+
+	    	$('#stop').bind("click", function() {
+	   	  		if (timelapse_is_paused()) return;
+	      		$('#play_toggle').attr("class", "play_mouseout");
+	      		$('#play_toggle').attr("title","Play")
+	      		timelapse.seek(0);
+	      		timelapse.pause();
+	   	 	});
 
             $("#totalTime").text(org.gigapan.Util.formatTime(timelapseDurationInSeconds));
          });
@@ -144,6 +197,23 @@
 <input type="button" value="rate .5" onclick="timelapse.set_playback_rate(.5)">
 <input type="button" value="rate 1" onclick="timelapse.set_playback_rate(1)">
 
+<table border="0" cellpadding="3" cellspacing="0" class="control_panel_widget">
+   <tr>
+      <td>
+         <div id="play_toggle" class="play_mouseout" title="Play"></div>
+      </td>
+      <td>
+         <div id="stop" class="stop_mouseout" title="Stop"></div>
+      </td>
+      <td colspan="3">
+         <div id="timelineSlider"></div>
+      </td>
+      <td align="right">
+         <span id="currentTime">00:00:00</span> <span id="totalTime">00:00:00</span><br>
+      </td>
+   </tr>
+</table>
+
 <div id="mouse_debug_info">
    <span class="label">Window Coords:</span> <span id="window_coords"></span><br>
    <span class="label">Viewer Pixel Coords:</span> <span id="viewer_pixel_coords"></span><br>
@@ -154,23 +224,6 @@
 <br>Debug:
 <input id="logVideoStatus" type="checkbox" onclick="timelapse.log_status(this.value)"><label for="logVideoStatus">Log video status</label>
 <input id="showNativeVideoControls" type="checkbox" onclick="timelapse.enable_native_video_controls(this.value)"><label for="showNativeVideoControls">Show Native Video Controls</label>
-
-<table border="0" cellpadding="3" cellspacing="0" class="control_panel_widget">
-   <tr>
-      <td>
-         <div id="play_toggle" class="play" title="Play"></div>
-      </td>
-      <td>
-         <div id="stop" class="stop" title="Stop"></div>
-      </td>
-      <td colspan="3">
-         <div id="timelineSlider"></div>
-      </td>
-      <td align="right">
-         <span id="currentTime">00:00:00</span> <span id="totalTime">00:00:00</span><br>
-      </td>
-   </tr>
-</table>
 
 </body>
 </html>
