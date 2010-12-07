@@ -69,7 +69,7 @@
 
             $(this)['keydown'](timelapse.handle_keydown);
             $(this)['keyup'](timelapse.handle_keyup);
-            $(timelapse).mousewheel(timelapse.handle_mousescroll);
+            $("#timelapse").mousewheel(timelapse.handle_mousescroll);
 
             window.onunload = timelapse.handle_window_close;
 
