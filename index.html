@@ -153,8 +153,9 @@
                                                    }
                                                 });
 
-            $('.ui-slider-handle').bind("mouseover", function() {
-               $(this).attr("title",$("#playBackSpeedSlider").slider("option", "value"));
+
+            $("#playBackSpeedSlider")['slider']( "widget" ).bind("mouseover", function() {
+               $(this).attr("title",$("#playBackSpeedSlider")['slider']("option", "value"));
             });
 
             $('.ui-slider-handle').bind("mouseover", function() {
@@ -199,7 +200,7 @@
                   $(this).attr("title", "Pause");
                   if (timelapseCurrentTimeInSeconds >= timelapseDurationInSeconds)
                      {
-                     $("#timelineSlider").slider("option", "value", 0);
+                     $("#timelineSlider")['slider']("option", "value", 0);
                      timelapse.seek(0);
                      }
                   timelapse.play();
@@ -254,8 +255,7 @@
    </tr>
    <tr>
       <td colspan="3">
-         Playback Speed:
-         <div id="playBackSpeedSlider"></div>
+         Playback Speed: <div id="playBackSpeedSlider"></div>
       </td>
    </tr>
 </table>
