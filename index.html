@@ -20,6 +20,11 @@
          width: 500px
       }
 
+      #playBackSpeedSlider {
+         margin: 10px;
+         width: 100px
+      }
+
       #timelapse {
          cursor: url("css/cursors/openhand.cur")
       }
@@ -135,6 +140,23 @@
                                                  }
                                            });
 
+            $("#playBackSpeedSlider")['slider']({
+											  animate: true,
+                                              value: 1,
+                                              min: -2,
+                                              max: 2,
+                                              slide: function(e, ui)
+                                                 {
+													timelapse.setPlaybackRate(ui.value)
+													$(this).attr("title",ui.value);
+                                                 }
+                                           });
+
+
+			$('.ui-slider-handle').bind("mouseover", function() {
+	      		$(this).attr("title",$("#playBackSpeedSlider").slider("option", "value"));
+	   		});
+
 			$('.ui-slider-handle').bind("mouseover", function() {
 	      		this.style.cursor = "url('css/cursors/openhand.cur')";
 	   		});
@@ -206,14 +228,6 @@
 
 <input type="button" value="recenter" onclick="timelapse.warpTo(timelapse.homeView())">
 <br>
-<input type="button" value="rate -1" onclick="timelapse.setPlaybackRate(-1)">
-<input type="button" value="rate -.5" onclick="timelapse.setPlaybackRate(-.5)">
-<input type="button" value="rate -.25" onclick="timelapse.setPlaybackRate(-.25)">
-<input type="button" value="rate -.1" onclick="timelapse.setPlaybackRate(-.1)">
-<input type="button" value="rate .1" onclick="timelapse.setPlaybackRate(.1)">
-<input type="button" value="rate .25" onclick="timelapse.setPlaybackRate(.25)">
-<input type="button" value="rate .5" onclick="timelapse.setPlaybackRate(.5)">
-<input type="button" value="rate 1" onclick="timelapse.setPlaybackRate(1)">
 
 <table border="0" cellpadding="3" cellspacing="0" class="control_panel_widget">
    <tr>
@@ -229,6 +243,11 @@
       <td align="right">
          <span id="currentTime">00:00:00</span>/<span id="totalTime">00:00:00</span><br>
       </td>
+   </tr>
+   <tr>
+     <td colspan="3">
+   	   Playback Speed:<div id="playBackSpeedSlider"></div>
+     </td>
    </tr>
 </table>
 
