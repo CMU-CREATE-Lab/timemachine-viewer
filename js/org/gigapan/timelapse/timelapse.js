@@ -86,57 +86,57 @@ if (!org.gigapan.timelapse.Videoset)
    {
       var UTIL = org.gigapan.Util;
 
-      org.gigapan.timelapse.Timelapse = function(url, video_div_name, optional_info)
+      org.gigapan.timelapse.Timelapse = function(url, videoDivName, optionalInfo)
          {
-            var videoset = new org.gigapan.timelapse.Videoset(video_div_name);
-            var video_div = document.getElementById(video_div_name);
+            var videoset = new org.gigapan.timelapse.Videoset(videoDivName);
+            var videoDiv = document.getElementById(videoDivName);
             var tiles = {};
-            var width = 0;
-            var height = 0;
-            var viewport_width = 0;
-            var viewport_height = 0;
-            var tile_width = 0;
-            var tile_height = 0;
+            var panoWidth = 0;
+            var panoHeight = 0;
+            var viewportWidth = 0;
+            var viewportHeight = 0;
+            var tileWidth = 0;
+            var tileHeight = 0;
             var fps = 0;
             var frames = 0;
-            var max_level = 0;
-            var playback_rate = .5;
+            var maxLevel = 0;
+            var playbackRate = .5;
             var view = null;
-            var target_view = null;
+            var targetView = null;
 
-            // level_threshold sets the quality of display by deciding what level of tile to show for a given level of zoom:
+            // levelThreshold sets the quality of display by deciding what level of tile to show for a given level of zoom:
             //
             //  1.0: select a tile that's shown between 50% and 100% size  (never supersample)
             //  0.5: select a tile that's shown between 71% and 141% size
             //  0.0: select a tile that's shown between 100% and 200% size (never subsample)
             // -0.5: select a tile that's shown between 141% and 242% size (always supersample)
             // -1.0: select a tile that's shown between 200% and 400% size (always supersample)
-            var level_threshold = 0;
+            var levelThreshold = 0;
 
             ////////////////////////////////////////////////////////////////////////////////////////////////////////////
             //
             // Public methods
             //
 
-            this.handle_window_close = function()
+            this.handleWindowClose = function()
                {
                   /*num_active_removed = 0;
                    num_inactive_removed = 0;
 
-                   for (id in g_videoset.inactive_videos) {
-                   var candidate = g_videoset.inactive_videos[id];
+                   for (id in g_videoset.inactiveVideos) {
+                   var candidate = g_videoset.inactiveVideos[id];
                    if (candidate.readyState >= 4 && candidate.seeking == false) {
                    video = candidate;
-                   delete g_videoset.inactive_videos[id];
+                   delete g_videoset.inactiveVideos[id];
                    num_inactive_removed += 1;
                    }
                    }
 
-                   for (id in g_videoset.active_videos) {
-                   var candidate = g_videoset.active_videos[id];
+                   for (id in g_videoset.activeVideos) {
+                   var candidate = g_videoset.activeVideos[id];
                    if (candidate.readyState >= 4 && candidate.seeking == false) {
                    video = candidate;
-                   delete g_videoset.active_videos[id];
+                   delete g_videoset.activeVideos[id];
                    num_inactive_removed += 1;
                    }
                    }
@@ -144,21 +144,21 @@ if (!org.gigapan.timelapse.Videoset)
                    alert("num active removed: " + num_active_removed + " " + "num inactive removed: " + num_inactive_removed);*/
                };
 
-            this.handle_keydown = function(event)
+            this.handleKeydownEvent = function(event)
                {
                   UTIL.log('keydown ' + event.which);
-                  var translation_speed_constant = 20;
-                  var translation = translation_speed_constant / view.scale;
+                  var translationSpeedConstant = 20;
+                  var translation = translationSpeedConstant / view.scale;
                   switch (event.which)
                   {
-                     case 37:  target_view.x -= translation;  break;  // left arrow
-                     case 39:  target_view.x += translation;  break;  // right arrow
-                     case 38:  target_view.y -= translation;  break;  // up arrow
-                     case 40:  target_view.y += translation;  break;  // down arrow
-                     case 189: target_view.scale *= .9;       break;  // minus
-                     case 187: target_view.scale /= .9;       break;  // plus
+                     case 37:  targetView.x -= translation;  break;  // left arrow
+                     case 39:  targetView.x += translation;  break;  // right arrow
+                     case 38:  targetView.y -= translation;  break;  // up arrow
+                     case 40:  targetView.y += translation;  break;  // down arrow
+                     case 189: targetView.scale *= .9;       break;  // minus
+                     case 187: targetView.scale /= .9;       break;  // plus
                      case 80:  // P
-                        if (_is_paused())
+                        if (_isPaused())
                            {
                            _play();
                            }
@@ -168,52 +168,52 @@ if (!org.gigapan.timelapse.Videoset)
                            }
                         return;
                   }
-                  set_target_view(target_view);
+                  setTargetView(targetView);
                };
 
-            this.handle_mousescroll = function(event)
+            this.handleKeyupEvent = function()
+               {
+               };
+
+            this.handleMousescrollEvent = function(event)
                {
                   UTIL.log('mousescroll delta  ' + event.wheelDelta);
                   if (event.wheelDelta > 0)
                      {
-                     target_view.scale /= .9;
+                     targetView.scale /= .9;
                      }
                   else if (event.wheelDelta < 0)
                      {
-                     target_view.scale *= .9;
+                     targetView.scale *= .9;
                      }
-                  set_target_view(target_view);
+                  setTargetView(targetView);
                };
 
-            this.handle_keyup = function()
+            var _warpTo = function(view)
                {
-               };
-
-            var _warp_to = function(view)
-               {
-                  set_target_view(view);
-                  view.x = target_view.x;
-                  view.y = target_view.y;
-                  view.scale = target_view.scale;
+                  setTargetView(view);
+                  view.x = targetView.x;
+                  view.y = targetView.y;
+                  view.scale = targetView.scale;
                   refresh();
                };
-            this.warp_to = _warp_to;
+            this.warpTo = _warpTo;
 
-            var _home_view = function()
+            var _homeView = function()
                {
-                  return compute_view_fit({xmin:0, ymin:0, xmax:width, ymax:height});
+                  return computeViewFit({xmin:0, ymin:0, xmax:panoWidth, ymax:panoHeight});
                };
-            this.home_view = _home_view;
+            this.homeView = _homeView;
 
             ///////////////////////////
             // Timelapse video control
             //
 
-            var _is_paused = function()
+            var _isPaused = function()
                {
-                  return videoset.is_paused();
+                  return videoset.isPaused();
                };
-            this.is_paused = _is_paused;
+            this.isPaused = _isPaused;
 
             var _pause = function()
                {
@@ -226,14 +226,14 @@ if (!org.gigapan.timelapse.Videoset)
                   videoset.seek(t);
                };
 
-            this.set_playback_rate = function(rate)
+            this.setPlaybackRate = function(rate)
                {
-                  videoset.set_playback_rate(rate);
+                  videoset.setPlaybackRate(rate);
                };
 
-            this.get_video_position = function()
+            this.getVideoPosition = function()
                {
-                  return videoset.get_video_position();
+                  return videoset.getVideoPosition();
                };
 
             var _play = function()
@@ -242,34 +242,34 @@ if (!org.gigapan.timelapse.Videoset)
                };
             this.play = _play;
 
-            this.log_status = function(enable)
+            this.setStatusLoggingEnabled = function(enable)
                {
-                  videoset.log_status(enable);
+                  videoset.setStatusLoggingEnabled(enable);
                };
 
-            this.enable_native_video_controls = function(enable)
+            this.setNativeVideoControlsEnabled = function(enable)
                {
-                  videoset.enable_native_video_controls(enable);
+                  videoset.setNativeVideoControlsEnabled(enable);
                };
 
-            this.get_num_frames = function()
+            this.getNumFrames = function()
                {
                   return frames;
                };
 
-            this.get_fps = function()
+            this.getFps = function()
                {
                   return fps;
                };
 
-            this.add_time_change_listener = function(listener)
+            this.addTimeChangeListener = function(listener)
                {
-                  videoset.add_sync_listener(listener);
+                  videoset.addSyncListener(listener);
                };
 
-            this.remove_time_change_listene = function(listener)
+            this.removeTimeChangeListener = function(listener)
                {
-                  videoset.remove_sync_listener(listener);
+                  videoset.removeSyncListener(listener);
                };
 
             ////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -277,111 +277,111 @@ if (!org.gigapan.timelapse.Videoset)
             // Private methods
             //
 
-            var handle_mousedown = function(event)
+            var handleMousedownEvent = function(event)
                {
-                  var last_event = event;
+                  var lastEvent = event;
                   UTIL.log("mousedown");
-                  video_div.style.cursor = "url('css/cursors/closedhand.cur')";
-                  video_div.onmousemove = function(event)
+                  videoDiv.style.cursor = "url('css/cursors/closedhand.cur')";
+                  videoDiv.onmousemove = function(event)
                      {
                         UTIL.log("mousemove");
-                        target_view.x += (last_event.pageX - event.pageX) / view.scale;
-                        target_view.y += (last_event.pageY - event.pageY) / view.scale;
-                        set_target_view(target_view);
-                        last_event = event;
+                        targetView.x += (lastEvent.pageX - event.pageX) / view.scale;
+                        targetView.y += (lastEvent.pageY - event.pageY) / view.scale;
+                        setTargetView(targetView);
+                        lastEvent = event;
                         return false;
                      };
-                  video_div.onmouseup = function()
+                  videoDiv.onmouseup = function()
                      {
                         UTIL.log("mouseup");
-                        video_div.style.cursor = "url('css/cursors/openhand.cur')";
-                        video_div.onmousemove = null;
+                        videoDiv.style.cursor = "url('css/cursors/openhand.cur')";
+                        videoDiv.onmousemove = null;
                      };
                   return false;
                };
 
-            var handle_double_click = function()
+            var handleDoubleClickEvent = function()
                {
                   UTIL.log('double click');
-                  target_view.scale *= 2;
-                  set_target_view(target_view);
+                  targetView.scale *= 2;
+                  setTargetView(targetView);
                };
 
-            var set_target_view = function(view)
+            var setTargetView = function(view)
                {
-                  var max_scale = 2;
-                  var min_scale = _home_view().scale * .5;
-                  view.scale = Math.max(min_scale, Math.min(max_scale, view.scale));
-                  view.x = Math.max(0, Math.min(width, view.x));
-                  view.y = Math.max(0, Math.min(height, view.y));
-                  target_view.x = view.x;
-                  target_view.y = view.y;
-                  target_view.scale = view.scale;
+                  var maxScale = 2;
+                  var minScale = _homeView().scale * .5;
+                  view.scale = Math.max(minScale, Math.min(maxScale, view.scale));
+                  view.x = Math.max(0, Math.min(panoWidth, view.x));
+                  view.y = Math.max(0, Math.min(panoHeight, view.y));
+                  targetView.x = view.x;
+                  targetView.y = view.y;
+                  targetView.scale = view.scale;
                   //  if (!g_videoset.animate_interval) g_videoset.animate_interval = setInterval(timelapse__animate, 100);
                   // TEMPORARY
-                  view.x = target_view.x;
-                  view.y = target_view.y;
-                  view.scale = target_view.scale;
+                  view.x = targetView.x;
+                  view.y = targetView.y;
+                  view.scale = targetView.scale;
                   refresh();
                };
 
-            var compute_view_fit = function(bbox)
+            var computeViewFit = function(bbox)
                {
-                  var scale = Math.min(viewport_width / (bbox.xmax - bbox.xmin),
-                                       viewport_height / (bbox.ymax - bbox.ymin));
+                  var scale = Math.min(viewportWidth / (bbox.xmax - bbox.xmin),
+                                       viewportHeight / (bbox.ymax - bbox.ymin));
                   return {x:.5 * (bbox.xmin + bbox.xmax), y:.5 * (bbox.ymin + bbox.ymax), scale: scale};
                };
 
-            var compute_bbox = function(view)
+            var computeBoundingBox = function(view)
                {
-                  var half_width = .5 * viewport_width / view.scale;
-                  var half_height = viewport_height / view.scale;
-                  return {xmin:view.x - half_width, xmax:view.x + half_width, ymin:view.y - half_height, ymax:view.y + half_height};
+                  var halfWidth = .5 * viewportWidth / view.scale;
+                  var halfHeight = viewportHeight / view.scale;
+                  return {xmin:view.x - halfWidth, xmax:view.x + halfWidth, ymin:view.y - halfHeight, ymax:view.y + halfHeight};
                };
 
-            var load_cb = function(data, status, xhr)
+            var onPanoLoadSuccessCallback = function(data, status, xhr)
                {
-                  UTIL.log('load_cb(' + UTIL.dumpObject(data) + ', ' + status + ', ' + xhr + ')');
-                  width = data['width'];
-                  height = data['height'];
-                  tile_width = data['tile_width'];
-                  tile_height = data['tile_height'];
+                  UTIL.log('onPanoLoadSuccessCallback(' + UTIL.dumpObject(data) + ', ' + status + ', ' + xhr + ')');
+                  panoWidth = data['width'];
+                  panoHeight = data['height'];
+                  tileWidth = data['tile_width'];
+                  tileHeight = data['tile_height'];
                   fps = data['fps'];
                   frames = data['frames'];
 
                   // Compute max level #
-                  for (max_level = 1;
-                       (tile_width << max_level) < width || (tile_height << max_level) < height;
-                       max_level++)
+                  for (maxLevel = 1;
+                       (tileWidth << maxLevel) < panoWidth || (tileHeight << maxLevel) < panoHeight;
+                       maxLevel++)
                      {
                      }
 
-                  read_video_div_size();
-                  _warp_to(_home_view());
+                  readVideoDivSize();
+                  _warpTo(_homeView());
                };
 
-            var read_video_div_size = function()
+            var readVideoDivSize = function()
                {
-                  viewport_width = parseInt(video_div.style.width);
-                  viewport_height = parseInt(video_div.style.height);
+                  viewportWidth = parseInt(videoDiv.style.width);
+                  viewportHeight = parseInt(videoDiv.style.height);
                };
 
             var refresh = function()
                {
                   UTIL.log('refresh');
-                  var tileidxs = compute_needed_tiles(view);
+                  var tileidxs = computeNeededTiles(view);
                   // Add new tiles and reposition ones we want to keep
                   for (var tileidx1 in tileidxs)
                      {
                      if (!tiles[tileidx1])
                         {
-                        UTIL.log('need ' + tileidx_dump(tileidx1) + ' from ' + tileidx_url(tileidx1));
-                        add_tileidx(tileidx1);
+                        UTIL.log('need ' + dumpTileidx(tileidx1) + ' from ' + getTileidxUrl(tileidx1));
+                        addTileidx(tileidx1);
                         }
                      else
                         {
-                        UTIL.log('already have ' + tileidx_dump(tileidx1));
-                        reposition_tileidx(tileidx1);
+                        UTIL.log('already have ' + dumpTileidx(tileidx1));
+                        repositionTileidx(tileidx1);
                         }
                      }
                   // Delete tiles we no longer need
@@ -389,68 +389,68 @@ if (!org.gigapan.timelapse.Videoset)
                      {
                      if (tileidxs[tileidx2] == undefined)
                         {
-                        delete_tileidx(tileidx2);
+                        deleteTileidx(tileidx2);
                         }
                      }
                };
 
-            var add_tileidx = function(tileidx)
+            var addTileidx = function(tileidx)
                {
                   if (tiles[tileidx])
                      {
-                     UTIL.error('add_tileidx(' + tileidx_dump(tileidx) + '): already loaded');
+                     UTIL.error('addTileidx(' + dumpTileidx(tileidx) + '): already loaded');
                      return;
                      }
-                  var url = tileidx_url(tileidx);
-                  var geom = tileidx_geometry(tileidx);
-                  UTIL.log("adding tile " + tileidx_dump(tileidx) + " from " + url + " and geom = (left:" + geom['left'] + " ,top:" + geom['top'] + ", width:" + geom['width'] + ", height:" + geom['height'] + ")");
-                  var video = videoset.add_video(url, geom);
+                  var url = getTileidxUrl(tileidx);
+                  var geom = tileidxGeometry(tileidx);
+                  UTIL.log("adding tile " + dumpTileidx(tileidx) + " from " + url + " and geom = (left:" + geom['left'] + " ,top:" + geom['top'] + ", width:" + geom['width'] + ", height:" + geom['height'] + ")");
+                  var video = videoset.addVideo(url, geom);
 
                   tiles[tileidx] = {video:video};
                };
 
-            var delete_tileidx = function(tileidx)
+            var deleteTileidx = function(tileidx)
                {
                   var tile = tiles[tileidx];
                   if (!tile)
                      {
-                     UTIL.error('delete_tileidx(' + tileidx_dump(tileidx) + '): not loaded');
+                     UTIL.error('deleteTileidx(' + dumpTileidx(tileidx) + '): not loaded');
                      return;
                      }
-                  UTIL.log("removing tile " + tileidx_dump(tileidx));
+                  UTIL.log("removing tile " + dumpTileidx(tileidx));
 
-                  videoset.delete_video(tile.video);
+                  videoset.deleteVideo(tile.video);
                   delete tiles[tileidx];
                };
 
-            var tileidx_url = function(tileidx)
+            var getTileidxUrl = function(tileidx)
                {
-                  var shard_index = (tileidx_r(tileidx) % 2) * 2 + (tileidx_c(tileidx) % 2);
-                  var url_prefix = url.replace("//", "//t" + shard_index + ".");
-                  return url_prefix + tileidx_path(tileidx) + ".mp4";
+                  var shardIndex = (getTileidxRow(tileidx) % 2) * 2 + (getTileidxColumn(tileidx) % 2);
+                  var urlPrefix = url.replace("//", "//t" + shardIndex + ".");
+                  return urlPrefix + getTileidxPath(tileidx) + ".mp4";
                };
 
-            var compute_needed_tiles = function(view)
+            var computeNeededTiles = function(view)
                {
                   var level = scale2level(view.scale);
-                  var bbox = compute_bbox(view);
-                  var tilemin = tileidx_at(level, Math.max(0, bbox.xmin), Math.max(0, bbox.ymin));
-                  var tilemax = tileidx_at(level, Math.min(width - 1, bbox.xmax), Math.min(height - 1, bbox.ymax));
-                  UTIL.log("needed tiles " + tileidx_dump(tilemin) + " to " + tileidx_dump(tilemax));
+                  var bbox = computeBoundingBox(view);
+                  var tilemin = tileidxAt(level, Math.max(0, bbox.xmin), Math.max(0, bbox.ymin));
+                  var tilemax = tileidxAt(level, Math.min(panoWidth - 1, bbox.xmax), Math.min(panoHeight - 1, bbox.ymax));
+                  UTIL.log("needed tiles " + dumpTileidx(tilemin) + " to " + dumpTileidx(tilemax));
                   var tiles = [];
-                  for (var r = tileidx_r(tilemin); r <= tileidx_r(tilemax); r++)
+                  for (var r = getTileidxRow(tilemin); r <= getTileidxRow(tilemax); r++)
                      {
-                     for (var c = tileidx_c(tilemin); c <= tileidx_c(tilemax); c++)
+                     for (var c = getTileidxColumn(tilemin); c <= getTileidxColumn(tilemax); c++)
                         {
-                        var tileidx1 = tileidx_create(level, c, r);
-                        var tile_ctr = tileidx_center(tileidx1);
-                        var dist_sq = (tile_ctr.x - view.x) * (tile_ctr.x - view.x) + (tile_ctr.y - view.y) * (tile_ctr.y - view.y);
-                        tiles.push({dist_sq:dist_sq, tileidx:tileidx1});
+                        var tileidx1 = tileidxCreate(level, c, r);
+                        var tileCtr = tileidxCenter(tileidx1);
+                        var distSq = (tileCtr.x - view.x) * (tileCtr.x - view.x) + (tileCtr.y - view.y) * (tileCtr.y - view.y);
+                        tiles.push({distSq:distSq, tileidx:tileidx1});
                         }
                      }
                   tiles.sort(function(a, b)
                                 {
-                                   return a.dist_sq - b.dist_sq;
+                                   return a['distSq'] - b['distSq'];
                                 });
                   var tileidxs = {};
                   for (var i in tiles)
@@ -462,63 +462,63 @@ if (!org.gigapan.timelapse.Videoset)
                   return tileidxs;
                };
 
-            var tileidx_at = function(level, x, y)
+            var tileidxAt = function(level, x, y)
                {
-                  var ret = tileidx_create(level,
-                                           Math.floor(x / (tile_width << (max_level - level))),
-                                           Math.floor(y / (tile_height << (max_level - level))));
-                  UTIL.log('tileidx_at(' + x + ',' + y + ',' + level + ')=' + tileidx_dump(ret));
+                  var ret = tileidxCreate(level,
+                                           Math.floor(x / (tileWidth << (maxLevel - level))),
+                                           Math.floor(y / (tileHeight << (maxLevel - level))));
+                  UTIL.log('tileidxAt(' + x + ',' + y + ',' + level + ')=' + dumpTileidx(ret));
                   return ret;
                };
 
             var scale2level = function(scale)
                {
                   // Minimum level is 0, which has one tile
-                  // Maximum level is g_timelapse.max_level, which is displayed 1:1 at scale=1
-                  var ideal_level = Math.log(scale) / Math.log(2) + max_level;
-                  var selected_level = Math.floor(ideal_level + level_threshold);
-                  selected_level = Math.max(selected_level, 0);
-                  selected_level = Math.min(selected_level, max_level);
-                  //UTIL.log('scale2level('+scale+'): ideal_level='+ideal_level+', ret='+selected_level);
-                  return selected_level;
+                  // Maximum level is maxLevel, which is displayed 1:1 at scale=1
+                  var idealLevel = Math.log(scale) / Math.log(2) + maxLevel;
+                  var selectedLevel = Math.floor(idealLevel + levelThreshold);
+                  selectedLevel = Math.max(selectedLevel, 0);
+                  selectedLevel = Math.min(selectedLevel, maxLevel);
+                  //UTIL.log('scale2level('+scale+'): idealLevel='+idealLevel+', ret='+selectedLevel);
+                  return selectedLevel;
                };
 
-            var tileidx_center = function(t)
+            var tileidxCenter = function(t)
                {
-                  var level_shift = max_level - tileidx_l(t);
+                  var levelShift = maxLevel - getTileidxLevel(t);
                   return {
-                     x: (tileidx_c(t) + .5) * (tile_width << level_shift),
-                     y: (tileidx_r(t) + .5) * (tile_height << level_shift)
+                     x: (getTileidxColumn(t) + .5) * (tileWidth << levelShift),
+                     y: (getTileidxRow(t) + .5) * (tileHeight << levelShift)
                   };
                };
 
-            var tileidx_geometry = function(tileidx)
+            var tileidxGeometry = function(tileidx)
                {
-                  var level_shift = max_level - tileidx_l(tileidx);
-                  var tile_width_temp = tile_width << level_shift;
-                  var tile_height_temp = tile_height << level_shift;
+                  var levelShift = maxLevel - getTileidxLevel(tileidx);
+                  var tileWidthTemp = tileWidth << levelShift;
+                  var tileHeightTemp = tileHeight << levelShift;
 
                   // Calculate left, right, top, bottom, rounding to nearest pixel;  avoid gaps between tiles.
-                  var left = Math.round(view.scale * (tileidx_c(tileidx) * tile_width_temp - view.x) + viewport_width * .5);
-                  var right = Math.round(view.scale * ((tileidx_c(tileidx) + 1) * tile_width_temp - view.x) + viewport_width * .5);
+                  var left = Math.round(view.scale * (getTileidxColumn(tileidx) * tileWidthTemp - view.x) + viewportWidth * .5);
+                  var right = Math.round(view.scale * ((getTileidxColumn(tileidx) + 1) * tileWidthTemp - view.x) + viewportWidth * .5);
                   //if (!tile.loaded) { left = -10000; }
-                  var top = Math.round(view.scale * (tileidx_r(tileidx) * tile_height_temp - view.y) + viewport_height * .5);
-                  var bottom = Math.round(view.scale * ((tileidx_r(tileidx) + 1) * tile_height_temp - view.y) + viewport_height * .5);
+                  var top = Math.round(view.scale * (getTileidxRow(tileidx) * tileHeightTemp - view.y) + viewportHeight * .5);
+                  var bottom = Math.round(view.scale * ((getTileidxRow(tileidx) + 1) * tileHeightTemp - view.y) + viewportHeight * .5);
 
                   return {left:left, top:top, width:(right - left), height:(bottom - top)};
                };
 
-            var reposition_tileidx = function(tileidx)
+            var repositionTileidx = function(tileidx)
                {
                   var tile = tiles[tileidx];
                   if (!tile)
                      {
-                     UTIL.error('reposition_tileidx(' + tileidx_dump(tileidx) + '): tile does not exist');
+                     UTIL.error('repositionTileidx(' + dumpTileidx(tileidx) + '): tile does not exist');
                      return;
                      }
-                  //UTIL.log('reposition_tileidx('+tileidx_dump(tileidx)+')');
+                  //UTIL.log('repositionTileidx('+dumpTileidx(tileidx)+')');
 
-                  videoset.reposition_video(tile['video'], tileidx_geometry(tileidx));
+                  videoset.repositionVideo(tile['video'], tileidxGeometry(tileidx));
                };
 
             ///////////////////////////
@@ -529,38 +529,38 @@ if (!org.gigapan.timelapse.Videoset)
             // l:4 (0-15)   r:13 (0-8191)  c:14 (0-16383)
             // 31-bit representation
             //
-            var tileidx_create = function(l, c, r)
+            var tileidxCreate = function(l, c, r)
                {
                   return (l << 27) + (r << 14) + c;
                };
 
-            var tileidx_l = function(t)
+            var getTileidxLevel = function(t)
                {
                   return t >> 27;
                };
 
-            var tileidx_r = function(t)
+            var getTileidxRow = function(t)
                {
                   return 8191 & (t >> 14);
                };
 
-            var tileidx_c = function(t)
+            var getTileidxColumn = function(t)
                {
                   return 16383 & t;
                };
 
-            var tileidx_dump = function(t)
+            var dumpTileidx = function(t)
                {
-                  return "{l:" + tileidx_l(t) + ",c:" + tileidx_c(t) + ",r:" + tileidx_r(t) + "}";
+                  return "{l:" + getTileidxLevel(t) + ",c:" + getTileidxColumn(t) + ",r:" + getTileidxRow(t) + "}";
                };
 
-            var tileidx_path = function(t)
+            var getTileidxPath = function(t)
                {
                   var name = "r";
-                  for (var pos = tileidx_l(t) - 1; pos >= 0; pos--)
+                  for (var pos = getTileidxLevel(t) - 1; pos >= 0; pos--)
                      {
                      // Append 0-3 depending on bits from col and row
-                     name += (1 & (tileidx_c(t) >> pos)) + 2 * (1 & (tileidx_r(t) >> pos));
+                     name += (1 & (getTileidxColumn(t) >> pos)) + 2 * (1 & (getTileidxRow(t) >> pos));
                      }
                   var dir = '';
                   for (var i = 0; i < name.length - 3; i += 3)
@@ -575,20 +575,20 @@ if (!org.gigapan.timelapse.Videoset)
             // Constructor code
             //
 
-            view = _home_view();
-            target_view = view;
-            UTIL.log("playback rate is " + playback_rate);
+            view = _homeView();
+            targetView = view;
+            UTIL.log("playback rate is " + playbackRate);
             UTIL.log('Timelapse("' + url + '")');
-            video_div['onmousedown'] = handle_mousedown;
-            video_div['ondblclick'] = handle_double_click;
+            videoDiv['onmousedown'] = handleMousedownEvent;
+            videoDiv['ondblclick'] = handleDoubleClickEvent;
 
-            if (optional_info)
+            if (optionalInfo)
                {
-               load_cb(optional_info, "", "");
+               onPanoLoadSuccessCallback(optionalInfo, "", "");
                }
             else
                {
-               $.ajax({url:url + 'r.json', dataType: 'json', success: load_cb});  // TODO: move this to index.html
+               $.ajax({url:url + 'r.json', dataType: 'json', success: onPanoLoadSuccessCallback});  // TODO: move this to index.html
                }
 
          };

@@ -91,19 +91,19 @@
                                                             'timelapse',
                                                             {"tile_height":256,"height":3876,"fps":25,"frames":2438,"width":9856,"tile_width":256});
 
-            timelapse.add_time_change_listener(function(t)
+            timelapse.addTimeChangeListener(function(t)
                                                   {
                                                      $("#currentTime").text(org.gigapan.Util.formatTime(t));
                                                      $("#timelineSlider")['slider']("option", "value", t);
                                                   });
 
-            $(this)['keydown'](timelapse.handle_keydown);
-            $(this)['keyup'](timelapse.handle_keyup);
-            $("#timelapse").mousewheel(timelapse.handle_mousescroll);
+            $(this)['keydown'](timelapse.handleKeydownEvent);
+            $(this)['keyup'](timelapse.handleKeyupEvent);
+            $("#timelapse").mousewheel(timelapse.handleMousescrollEvent);
 
-            window.onunload = timelapse.handle_window_close;
+            window.onunload = timelapse.handleWindowClose;
 
-            timelapseDurationInSeconds = timelapse.get_num_frames() / timelapse.get_fps();
+            timelapseDurationInSeconds = timelapse.getNumFrames() / timelapse.getFps();
 
             $("#timelapse").bind("mousemove", function(event)
                {
@@ -174,7 +174,7 @@
 	   		});
 
 	    	$('#stop').bind("click", function() {
-	   	  		if (this.is_paused) return;
+	   	  		if (this.isPaused) return;
 	      		$('#play_toggle').attr("class", "play_mouseout");
 	      		$('#play_toggle').attr("title","Play");
 	      		timelapse.seek(0);
@@ -192,16 +192,16 @@
    </div>
 </div>
 
-<input type="button" value="recenter" onclick="timelapse.warp_to(timelapse.home_view())">
+<input type="button" value="recenter" onclick="timelapse.warpTo(timelapse.homeView())">
 <br>
-<input type="button" value="rate -1" onclick="timelapse.set_playback_rate(-1)">
-<input type="button" value="rate -.5" onclick="timelapse.set_playback_rate(-.5)">
-<input type="button" value="rate -.25" onclick="timelapse.set_playback_rate(-.25)">
-<input type="button" value="rate -.1" onclick="timelapse.set_playback_rate(-.1)">
-<input type="button" value="rate .1" onclick="timelapse.set_playback_rate(.1)">
-<input type="button" value="rate .25" onclick="timelapse.set_playback_rate(.25)">
-<input type="button" value="rate .5" onclick="timelapse.set_playback_rate(.5)">
-<input type="button" value="rate 1" onclick="timelapse.set_playback_rate(1)">
+<input type="button" value="rate -1" onclick="timelapse.setPlaybackRate(-1)">
+<input type="button" value="rate -.5" onclick="timelapse.setPlaybackRate(-.5)">
+<input type="button" value="rate -.25" onclick="timelapse.setPlaybackRate(-.25)">
+<input type="button" value="rate -.1" onclick="timelapse.setPlaybackRate(-.1)">
+<input type="button" value="rate .1" onclick="timelapse.setPlaybackRate(.1)">
+<input type="button" value="rate .25" onclick="timelapse.setPlaybackRate(.25)">
+<input type="button" value="rate .5" onclick="timelapse.setPlaybackRate(.5)">
+<input type="button" value="rate 1" onclick="timelapse.setPlaybackRate(1)">
 
 <table border="0" cellpadding="3" cellspacing="0" class="control_panel_widget">
    <tr>
@@ -228,8 +228,8 @@
 </div>
 
 <br>Debug:
-<input id="logVideoStatus" type="checkbox" onclick="timelapse.log_status(this.value)"><label for="logVideoStatus">Log video status</label>
-<input id="showNativeVideoControls" type="checkbox" onclick="timelapse.enable_native_video_controls(this.value)"><label for="showNativeVideoControls">Show Native Video Controls</label>
+<input id="logVideoStatus" type="checkbox" onclick="timelapse.setStatusLoggingEnabled(this.value)"><label for="logVideoStatus">Log video status</label>
+<input id="showNativeVideoControls" type="checkbox" onclick="timelapse.setNativeVideoControlsEnabled(this.value)"><label for="showNativeVideoControls">Show Native Video Controls</label>
 
 </body>
 </html>

@@ -78,81 +78,81 @@ if (!org.gigapan.Util)
    {
       var UTIL = org.gigapan.Util;
 
-      org.gigapan.timelapse.Videoset = function(video_div_name)
+      org.gigapan.timelapse.Videoset = function(videoDivName)
          {
-            var video_div = document.getElementById(video_div_name);
-            var active = false;
-            var active_videos = {};
-            var inactive_videos = {};
-            var playback_rate = 1;
+            var videoDiv = document.getElementById(videoDivName);
+            var isStatusLoggingEnabled = false;
+            var activeVideos = {};
+            var inactiveVideos = {};
+            var playbackRate = 1;
             var id = 0;
-            var controls_status = false;
+            var areNativeVideoControlsVisible = false;
             var duration = 0;
-            var is_cache_disabled = false;
+            var isCacheDisabled = false;
             var paused = true;
-            var time_offset = 0;
-            var log_interval = null;
-            var sync_interval = null;
-            var sync_listeners = [];
+            var timeOffset = 0;
+            var logInterval = null;
+            var syncInterval = null;
+            var syncListeners = [];
 
             ////////////////////////////////////////////////////////////////////////////////////////////////////////////
             //
             // Public methods
             //
 
-            this.log_status = function(enable)
+            this.setStatusLoggingEnabled = function(enable)
                {
                   enable = !!enable;  // make true or false
-                  UTIL.log("videoset log status " + enable);
-                  if (active == enable)
+                  UTIL.log("videoset logging status: " + enable);
+                  if (isStatusLoggingEnabled == enable)
                      {
                      return;
                      }
-                  active = enable;
+                  isStatusLoggingEnabled = enable;
                   if (enable)
                      {
-                     log_interval = setInterval(log_status, 500);
+                     logInterval = setInterval(writeStatusToLog, 500);
                      }
                   else
                      {
-                     clearInterval(log_interval);
+                     clearInterval(logInterval);
                      }
                };
 
-            this.enable_native_video_controls = function(enable)
+            this.setNativeVideoControlsEnabled = function(enable)
                {
-                  controls_status = !!enable;  // make true or false
+                  areNativeVideoControlsVisible = !!enable;  // make true or false
 
-                  for (var videoId1 in active_videos)
+                  for (var videoId1 in activeVideos)
                      {
-                     var v1 = active_videos[videoId1];
+                     var v1 = activeVideos[videoId1];
                      enable ? v1.setAttribute('controls', true) : v1.removeAttribute('controls');
                      }
 
-                  for (var videoId2 in inactive_videos)
+                  for (var videoId2 in inactiveVideos)
                      {
-                     var v2 = inactive_videos[videoId2];
+                     var v2 = inactiveVideos[videoId2];
                      enable ? v2.setAttribute('controls', true) : v2.removeAttribute('controls');
                      }
                };
 
-            this.add_sync_listener = function(listener)
+            this.addSyncListener = function(listener)
                {
                   if (listener && typeof(listener) == "function")
                      {
-                     sync_listeners.push(listener);
+                     syncListeners.push(listener);
                      }
                };
 
-            this.remove_sync_listener = function(listener)
+            this.removeSyncListener = function(listener)
                {
                   if (listener && typeof(listener) == "function")
                      {
-                     for (var i = 0; i < sync_listeners.length; i++)
+                     for (var i = 0; i < syncListeners.length; i++)
                         {
-                        if (listener == sync_listeners[i])
+                        if (listener == syncListeners[i])
                            {
-                           sync_listeners.splice(i, 1);
+                           syncListeners.splice(i, 1);
                            return;
                            }
                         }
@@ -163,10 +163,10 @@ if (!org.gigapan.Util)
             // Add and remove videos
             //
 
-            this.add_video = function(src, geometry)
+            this.addVideo = function(src, geometry)
                {
                   id++;
-                  if (is_cache_disabled)
+                  if (isCacheDisabled)
                      {
                      src += "?nocache=" + UTIL.getCurrentTimeInSecs() + "." + id;
                      }
@@ -175,13 +175,13 @@ if (!org.gigapan.Util)
                   var video = null;
                   // Try to find an existing video to recycle
 
-                  for (var videoId in inactive_videos)
+                  for (var videoId in inactiveVideos)
                      {
-                     var candidate = inactive_videos[videoId];
+                     var candidate = inactiveVideos[videoId];
                      if (candidate.readyState >= 4 && !candidate.seeking)
                         {
                         video = candidate;
-                        delete inactive_videos[videoId];
+                        delete inactiveVideos[videoId];
                         UTIL.log("video(" + videoId + ") reused from video(" + candidate.id + ")");
                         break;
                         }
@@ -192,26 +192,26 @@ if (!org.gigapan.Util)
                      }
                   video.id = id;
                   video.active = true;
-                  UTIL.log(video_summary(video));
+                  UTIL.log(getVideoSummaryAsString(video));
                   video.setAttribute('src', src);
                   UTIL.log("set src successfully");
-                  if (controls_status)
+                  if (areNativeVideoControlsVisible)
                      {
                      video.setAttribute('controls', true);
                      }
                   video.setAttribute('preload', true);
-                  this.reposition_video(video, geometry);
-                  video.defaultPlaybackRate = video.playbackRate = playback_rate;
+                  this.repositionVideo(video, geometry);
+                  video.defaultPlaybackRate = video.playbackRate = playbackRate;
                   video.load();
                   video.style.display = 'inline';
                   video.style.position = 'absolute';
-                  active_videos[video.id] = video;
-                  video_div.appendChild(video);
-                  video.addEventListener('loadedmetadata', video_loaded_metadata, false);
+                  activeVideos[video.id] = video;
+                  videoDiv.appendChild(video);
+                  video.addEventListener('loadedmetadata', videoLoadedMetadata, false);
                   return video;
                };
 
-            this.reposition_video = function(video, geometry)
+            this.repositionVideo = function(video, geometry)
                {
                   UTIL.log("video(" + video.id + ") reposition to left=" + geometry.left + ",top=" + geometry.top + ", w=" + geometry.width + ",h=" + geometry.height);
                   // toFixed prevents going to scientific notation when close to zero;  this confuses the DOM
@@ -222,43 +222,43 @@ if (!org.gigapan.Util)
                   video.style.height = geometry.height;
                };
 
-            this.delete_video = function(video)
+            this.deleteVideo = function(video)
                {
                   UTIL.log("video(" + video.id + ") delete");
                   video.active = false;
                   video.pause();
-                  UTIL.log(video_summary(video));
+                  UTIL.log(getVideoSummaryAsString(video));
                   video.removeAttribute('src');
-                  UTIL.log(video_summary(video));
+                  UTIL.log(getVideoSummaryAsString(video));
                   video.style.display = 'none';
-                  UTIL.log(video_summary(video));
-                  delete active_videos[video.id];
-                  inactive_videos[video.id] = video;
+                  UTIL.log(getVideoSummaryAsString(video));
+                  delete activeVideos[video.id];
+                  inactiveVideos[video.id] = video;
                };
 
             ///////////////////////////
             // Time controls
             //
 
-            var _is_paused = function()
+            var _isPaused = function()
                {
                   return paused;
                };
-            this.is_paused = _is_paused;
+            this.isPaused = _isPaused;
 
             var _pause = function()
                {
                   if (!paused)
                      {
                      UTIL.log("videoset pause");
-                     clearInterval(sync_interval);
-                     var time = _current_time();
+                     clearInterval(syncInterval);
+                     var time = _getCurrentTime();
                      paused = true;
 
-                     for (var videoId in active_videos)
+                     for (var videoId in activeVideos)
                         {
                         UTIL.log("video(" + videoId + ") play");
-                        active_videos[videoId].pause();
+                        activeVideos[videoId].pause();
                         }
 
                      _seek(time);
@@ -270,49 +270,49 @@ if (!org.gigapan.Util)
                {
                   if (paused)
                      {
-                     var time = _current_time();
+                     var time = _getCurrentTime();
                      paused = false;
                      _seek(time);
 
-                     for (var videoId in active_videos)
+                     for (var videoId in activeVideos)
                         {
                         UTIL.log("video(" + videoId + ") play");
-                        active_videos[videoId].play();
+                        activeVideos[videoId].play();
                         }
 
-                     sync_interval = setInterval(sync, 200);
+                     syncInterval = setInterval(sync, 200);
                      }
                };
 
-            this.set_playback_rate = function(rate)
+            this.setPlaybackRate = function(rate)
                {
-                  if (rate != playback_rate)
+                  if (rate != playbackRate)
                      {
-                     var t = _current_time();
-                     playback_rate = rate;
+                     var t = _getCurrentTime();
+                     playbackRate = rate;
                      _seek(t);
-                     for (var videoId in active_videos)
+                     for (var videoId in activeVideos)
                         {
-                        active_videos[videoId].defaultPlaybackRate = active_videos[videoId].playbackRate = rate;
+                        activeVideos[videoId].defaultPlaybackRate = activeVideos[videoId].playbackRate = rate;
                         }
                      }
                };
 
             var _seek = function(new_time)
                {
-                  if (new_time != _current_time())
+                  if (new_time != _getCurrentTime())
                      {
-                     time_offset = new_time - UTIL.getCurrentTimeInSecs() * (paused ? 0 : playback_rate);
+                     timeOffset = new_time - UTIL.getCurrentTimeInSecs() * (paused ? 0 : playbackRate);
                      sync(0.0);
                      }
                };
             this.seek = _seek;
 
-            var _current_time = function()
+            var _getCurrentTime = function()
                {
-                  return time_offset + UTIL.getCurrentTimeInSecs() * (paused ? 0 : playback_rate);
+                  return timeOffset + UTIL.getCurrentTimeInSecs() * (paused ? 0 : playbackRate);
                };
-            this.current_time = _current_time;
+            this.getCurrentTime = _getCurrentTime;
 
             ////////////////////////////////////////////////////////////////////////////////////////////////////////////
             //
@@ -320,42 +320,42 @@ if (!org.gigapan.Util)
             //
 
             // This seems to get called pretty late in the game
-            var video_loaded_metadata = function(event)
+            var videoLoadedMetadata = function(event)
                {
                   var video = event.target;
                   if (!video.active)
                      {
-                     UTIL.log("video(" + video.id + ") loaded_metadata after deactivation!");
+                     UTIL.log("video(" + video.id + ") videoLoadedMetadata after deactivation!");
                      return;
                      }
                   if (!duration)
                      {
                      duration = video.duration;
                      }
-                  UTIL.log("video(" + video.id + ") loaded_metadata;  seek to " + _current_time());
-                  video.currentTime = _current_time();
-                  if (!_is_paused())
+                  UTIL.log("video(" + video.id + ") videoLoadedMetadata;  seek to " + _getCurrentTime());
+                  video.currentTime = _getCurrentTime();
+                  if (!_isPaused())
                      {
                      video.play();
                      }
                };
 
             // Call periodically, when video is running
-            var log_status = function()
+            var writeStatusToLog = function()
                {
                   var msg = "video status:";
-                  for (var videoId1 in active_videos)
+                  for (var videoId1 in activeVideos)
                      {
-                     msg += " " + video_summary(active_videos[videoId1]);
+                     msg += " " + getVideoSummaryAsString(activeVideos[videoId1]);
                      }
-                  for (var videoId2 in inactive_videos)
+                  for (var videoId2 in inactiveVideos)
                      {
-                     msg += " " + video_summary(inactive_videos[videoId2]);
+                     msg += " " + getVideoSummaryAsString(inactiveVideos[videoId2]);
                      }
                   UTIL.log(msg);
                };
 
-            var video_summary = function(video)
+            var getVideoSummaryAsString = function(video)
                {
                   var summary = video.id.toString();
                   summary += ":A=" + (video.active ? "y" : "n");
@@ -364,13 +364,13 @@ if (!org.gigapan.Util)
                   summary += ";P=" + (video.paused ? "y" : "n");
                   summary += ";S=" + (video.seeking ? "y" : "n");
                   summary += ";T=" + video.currentTime.toFixed(3);
-                  summary += ";B=" + dump_timerange(video.buffered);
-                  summary += ";P=" + dump_timerange(video.played);
+                  summary += ";B=" + dumpTimerange(video.buffered);
+                  summary += ";P=" + dumpTimerange(video.played);
                   summary += ";E=" + (video.error ? "y" : "n");
                   return summary;
                };
 
-            var dump_timerange = function(timerange)
+            var dumpTimerange = function(timerange)
                {
                   var ret = "{";
                   for (var i = 0; i < timerange.length; i++)
@@ -381,14 +381,14 @@ if (!org.gigapan.Util)
                   return ret;
                };
 
-            var sync = function(error_threshold)
+            var sync = function(errorThreshold)
                {
-                  if (error_threshold == undefined)
+                  if (errorThreshold == undefined)
                      {
-                     error_threshold = 0.01;
+                     errorThreshold = 0.01;
                      }
 
-                  var t = _current_time();
+                  var t = _getCurrentTime();
                   if (t < 0)
                      {
                      _pause();
@@ -400,25 +400,25 @@ if (!org.gigapan.Util)
                      _seek(duration);
                      }
 
-                  for (var videoId in active_videos)
+                  for (var videoId in activeVideos)
                      {
-                     var video = active_videos[videoId];
-                     if (video.readyState >= 1 && Math.abs(video.currentTime - t) > error_threshold)
+                     var video = activeVideos[videoId];
+                     if (video.readyState >= 1 && Math.abs(video.currentTime - t) > errorThreshold)
                         {  // HAVE_METADATA=1
                         UTIL.log("Corrected video(" + videoId + ") from " + video.currentTime + " to " + t + " (error=" + (video.currentTime - t) + ", state=" + video.readyState + ")");
-                        video.currentTime = t + error_threshold * .5; // seek ahead slightly
+                        video.currentTime = t + errorThreshold * .5; // seek ahead slightly
                         }
                      //    else if (!tile.loaded && video.readyState >= 2) { // HAVE_CURRENT_DATA=2
                      //      tile.loaded = true;
-                     //      videoset__reposition_tileidx(tileidx, view);
+                     //      videoset__repositionTileidx(tileidx, view);
                      //    }
                      }
 
-                  for (var i = 0; i < sync_listeners.length; i++)
+                  for (var i = 0; i < syncListeners.length; i++)
                      {
                      try
                         {
-                        sync_listeners[i](t);
+                        syncListeners[i](t);
                         }
                      catch(e)
                         {
@@ -434,7 +434,7 @@ if (!org.gigapan.Util)
 
             UTIL.log('Videoset() constructor');
 
-            this.log_status(false);
+            this.setStatusLoggingEnabled(false);
 
          };
    })();
