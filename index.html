@@ -105,7 +105,7 @@
                                                      if (t >= timelapseDurationInSeconds) {
                                                      	$('#play_toggle').attr("class", "play_mouseout");
                                                      	$('#play_toggle').attr("title","Play");
-                                                     } else if (t <= 0) {
+                                                     } else if (t < 0) {
                                                         $("#currentTime").text(org.gigapan.Util.formatTime(0));
                                                         $("#timelineSlider")['slider']("option", "value", 0);
                                                      	$('#play_toggle').attr("class", "play_mouseout");
