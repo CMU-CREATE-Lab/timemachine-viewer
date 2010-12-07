@@ -84,6 +84,7 @@
       var timelapseDurationInSeconds = 0.0;
       var timeStepInSecs = 0.04; // 25 frames per second
       var timelapse = null;
+      var timelapseCurrentTimeInSeconds = 0.0;
 
       $(document).ready(function()
          {
@@ -93,8 +94,13 @@
 
             timelapse.addTimeChangeListener(function(t)
                                                   {
+                                                  	 timelapseCurrentTimeInSeconds = t;
                                                      $("#currentTime").text(org.gigapan.Util.formatTime(t));
                                                      $("#timelineSlider")['slider']("option", "value", t);
+                                                     if (t >= timelapseDurationInSeconds) {
+                                                     	$('#play_toggle').attr("class", "play_mouseout");
+                                                     	$('#play_toggle').attr("title","Play");
+                                                     }
                                                   });
 
             $(this)['keydown'](timelapse.handleKeydownEvent);
@@ -123,6 +129,7 @@
                                               step: timeStepInSecs,
                                               slide: function(e, ui)
                                                  {
+                                                 	timelapseCurrentTimeInSeconds = ui.value;
                                                     var timeInSecs = ui.value;
                                                     timelapse.seek(timeInSecs);
                                                  }
@@ -166,6 +173,10 @@
 	     		if ($(this).attr("class") == "play_mouseover") {
 		   			$(this).attr("class", "pause_mouseout");
 		   			$(this).attr("title","Pause");
+					if (timelapseCurrentTimeInSeconds >= timelapseDurationInSeconds) {
+						$("#timelineSlider").slider("option", "value", 0);
+						timelapse.seek(0);
+					}
 		   			timelapse.play();
 		 		} else {
 		   			$(this).attr("class", "play_mouseout");
