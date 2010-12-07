@@ -1,0 +1,86 @@
+body, p, table, tr, td {
+ font-family: Verdana, sans-serif;
+ font-size: 8pt;
+}
+
+#timelineSlider {
+ margin: 10px;
+ width: 583px;
+}
+
+#playBackSpeedSlider {
+ width: 100px;
+}
+
+#timelapse {
+ cursor: url("cursors/openhand.cur")
+}
+
+#mouse_debug_info {
+ border: 1px solid black;
+ padding: 3px;
+ margin: 3px 0 3px 0;
+ width: 500px;
+}
+
+.play_mouseover {
+ width: 20px;
+ height: 23px;
+ background-image: url("../images/play_mouseover.png");
+ cursor: pointer;
+ float: left;
+}
+
+.play_mouseout {
+ width: 20px;
+ height: 23px;
+ background-image: url("../images/play_mouseout.png");
+ cursor: pointer;
+ float: left;
+}
+
+.pause_mouseover {
+ width: 20px;
+ height: 23px;
+ background-image: url("../images/pause_mouseover.png");
+ cursor: pointer;
+ float: left;
+}
+
+.pause_mouseout {
+ width: 20px;
+ height: 23px;
+ background-image: url("../images/pause_mouseout.png");
+ cursor: pointer;
+ float: left;
+}
+
+.stop_mouseover {
+ width: 20px;
+ height: 22px;
+ background-image: url("../images/stop_mouseover.png");
+ cursor: pointer;
+ float: left;
+}
+
+.stop_mouseout {
+ width: 20px;
+ height: 22px;
+ background-image: url("../images/stop_mouseout.png");
+ cursor: pointer;
+ float: left;
+}
+.recenter_mouseover {
+  width: 20px;
+  height: 23px;
+  background-image: url("../images/recenter_mouseover.png");
+  cursor: pointer;
+  float: left;
+}
+.recenter_mouseout {
+  width: 20px;
+  height: 23px;
+  background-image: url("../images/recenter_mouseout.png");
+  cursor: pointer;
+  float: left;
+}
