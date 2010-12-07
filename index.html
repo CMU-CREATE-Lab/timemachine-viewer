@@ -22,11 +22,11 @@
 
       #playBackSpeedSlider {
          margin: 10px;
-         width: 100px
+         width: 100px;
       }
 
       #timelapse {
-         cursor: url("css/cursors/openhand.cur");
+         cursor: url("css/cursors/openhand.cur")
       }
 
       #mouse_debug_info {
@@ -148,11 +148,10 @@
                                                 max: 2,
                                                 slide: function(e, ui)
                                                    {
-                                                   timelapse.setPlaybackRate(ui.value)
+                                                   timelapse.setPlaybackRate(ui.value);
                                                    $(this).attr("title", ui.value);
                                                    }
                                                 });
-
 
             $("#playBackSpeedSlider")['slider']( "widget" ).bind("mouseover", function() {
                $(this).attr("title",$("#playBackSpeedSlider")['slider']("option", "value"));
@@ -254,9 +253,9 @@
       </td>
    </tr>
    <tr>
-      <td colspan="3">
-         Playback Speed: <div id="playBackSpeedSlider"></div>
-      </td>
+     <td colspan="3">
+         Playback Speed:<div id="playBackSpeedSlider"></div>
+     </td>
    </tr>
 </table>
 
