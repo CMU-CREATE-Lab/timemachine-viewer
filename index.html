@@ -31,95 +31,99 @@
          width: 500px;
       }
 
-	  .play {
-	    width:20;
-	    height:23px;
-	    background-image: url("images/play.png");
-	    cursor: pointer;
-	    float:left;
-	  }
+      .play {
+         width: 20px;
+         height: 23px;
+         background-image: url("images/play.png");
+         cursor: pointer;
+         float: left;
+      }
 
-	  .pause {
-		width:20;
-	    height:22px;
-	    background-image: url("images/pause.png");
-	    cursor: pointer;
-	    float:left;
-	  }
+      .pause {
+         width: 20px;
+         height: 22px;
+         background-image: url("images/pause.png");
+         cursor: pointer;
+         float: left;
+      }
 
-	  .stop {
-		width:20;
-	    height:22px;
-	    background-image: url("images/stop.png");
-	    cursor: pointer;
-	    float:left;
-	  }
+      .stop {
+         width: 20px;
+         height: 22px;
+         background-image: url("images/stop.png");
+         cursor: pointer;
+         float: left;
+      }
    </style>
 
    <script>
-     var timelapseDurationInSeconds = 0.0;
-	 var timeStepInSecs = 0.04; // 25 frames per second
+      var timelapseDurationInSeconds = 0.0;
+      var timeStepInSecs = 0.04; // 25 frames per second
+      var timelapse = null;
 
-     function ready() {
-       //  timelapse_load('http://timelapse.gigapan.org/timelapses/visible-human-female-512-3mm/', 'timelapse', 'timelapse_status');
-       timelapse_load('../timelapses/brassica1-15m-halfsize/', 'timelapse', 'timelapse_status', {"tile_height":256,"height":3876,"fps":25,"frames":2438,"width":9856,"tile_width":256});
-     }
-     function keypress() {
-       org.gigapan.Util.log('keypress');
-     }
+      $(document).ready(function()
+         {
+            timelapse = new org.gigapan.timelapse.Timelapse('../timelapses/brassica1-15m-halfsize/',
+                                                                'timelapse',
+                                                                {"tile_height":256,"height":3876,"fps":25,"frames":2438,"width":9856,"tile_width":256});
 
-	 $(document).ready(function() {
-       ready();
-	   $(this).keydown(timelapse_handle_keydown);
-       $(this).keyup(timelapse_handle_keyup);
-	   $(timelapse).mousewheel(timelapse_handle_mousescroll);
+            $(this)['keydown'](timelapse.handle_keydown);
+            $(this)['keyup'](timelapse.handle_keyup);
+            $(timelapse).mousewheel(timelapse.handle_mousescroll);
 
-	   window.onunload = timelapse_handle_window_close;
+            window.onunload = timelapse.handle_window_close;
 
-	   timelapseDurationInSeconds = g_timelapse.frames/g_timelapse.fps;
+            timelapseDurationInSeconds = timelapse.get_num_frames() / timelapse.get_fps();
 
-	   $("#timelapse").bind("mousemove", function(event) {
-	     var viewerPosition = $("#timelapse").position();
-		 var mouseX = event.pageX - viewerPosition.left;
-		 var mouseY = event.pageY - viewerPosition.top;
-		 $("#window_coords").text("(" + event.pageX + "," + event.pageY + ")");
-		 $("#viewer_pixel_coords").text("(" + mouseX + "," + mouseY + ")");
-	   });
+            $("#timelapse").bind("mousemove", function(event)
+               {
+                  var viewerPosition = $("#timelapse").position();
+                  var mouseX = event.pageX - viewerPosition.left;
+                  var mouseY = event.pageY - viewerPosition.top;
+                  $("#window_coords").text("(" + event.pageX + "," + event.pageY + ")");
+                  $("#viewer_pixel_coords").text("(" + mouseX + "," + mouseY + ")");
+               });
 
-	   $("#timelineSlider").slider({
-	     animate: true,
-		 value: 0,
-		 min: 0,
-		 max: timelapseDurationInSeconds,
-		 range: "min",
-		 step: timeStepInSecs,
-		 slide: function(e, ui) {
-		   var timeInSecs = ui.value;
-		   timelapse_seek(timeInSecs);
-		 }
-       });
+            $("#timelineSlider")['slider']({
+                                              animate: true,
+                                              value: 0,
+                                              min: 0,
+                                              max: timelapseDurationInSeconds,
+                                              range: "min",
+                                              step: timeStepInSecs,
+                                              slide: function(e, ui)
+                                                 {
+                                                    var timeInSecs = ui.value;
+                                                    timelapse.seek(timeInSecs);
+                                                 }
+                                           });
 
-	   $('#play_toggle').bind("click", function() {
-	     if ($(this).attr("class") == "play") {
-		   $(this).attr("class", "pause");
-		   $(this).attr("title","Pause")
-		   timelapse_play();
-		 } else {
-		   $(this).attr("class", "play");
-		   $(this).attr("title","Play")
-		   timelapse_pause();
-		 }
-	   });
+            $('#play_toggle').bind("click", function()
+               {
+                  if ($(this).attr("class") == "play")
+                     {
+                     $(this).attr("class", "pause");
+                     $(this).attr("title", "Pause");
+                     timelapse.play();
+                     }
+                  else
+                     {
+                     $(this).attr("class", "play");
+                     $(this).attr("title", "Play");
+                     timelapse.pause();
+                     }
+               });
 
-	   $('#stop').bind("click", function() {
-	     $('#play_toggle').attr("class", "play");
-	     $('#play_toggle').attr("title","Play")
-	     timelapse_seek(0);
-	     timelapse_pause();
-	   });
+            $('#stop').bind("click", function()
+               {
+                  $('#play_toggle').attr("class", "play");
+                  $('#play_toggle').attr("title", "Play");
+                  timelapse.seek(0);
+                  timelapse.pause();
+               });
 
-	   $("#totalTime").text(timelapse_format_time(timelapseDurationInSeconds));
-     });
+            $("#totalTime").text(org.gigapan.Util.formatTime(timelapseDurationInSeconds));
+         });
    </script>
 </head>
 <body>
@@ -128,18 +132,17 @@
    <div id="timelapse" style="position: absolute; width:800px; height:450px; background:black; overflow:hidden">
    </div>
 </div>
-<div id="timelapse_status"></div>
 
-<input type="button" value="recenter" onclick="timelapse_warp_to(timelapse_home_view())">
+<input type="button" value="recenter" onclick="timelapse.warp_to(timelapse.home_view())">
 <br>
-<input type="button" value="rate -1" onclick="timelapse_set_playback_rate(-1)">
-<input type="button" value="rate -.5" onclick="timelapse_set_playback_rate(-.5)">
-<input type="button" value="rate -.25" onclick="timelapse_set_playback_rate(-.25)">
-<input type="button" value="rate -.1" onclick="timelapse_set_playback_rate(-.1)">
-<input type="button" value="rate .1" onclick="timelapse_set_playback_rate(.1)">
-<input type="button" value="rate .25" onclick="timelapse_set_playback_rate(.25)">
-<input type="button" value="rate .5" onclick="timelapse_set_playback_rate(.5)">
-<input type="button" value="rate 1" onclick="timelapse_set_playback_rate(1)">
+<input type="button" value="rate -1" onclick="timelapse.set_playback_rate(-1)">
+<input type="button" value="rate -.5" onclick="timelapse.set_playback_rate(-.5)">
+<input type="button" value="rate -.25" onclick="timelapse.set_playback_rate(-.25)">
+<input type="button" value="rate -.1" onclick="timelapse.set_playback_rate(-.1)">
+<input type="button" value="rate .1" onclick="timelapse.set_playback_rate(.1)">
+<input type="button" value="rate .25" onclick="timelapse.set_playback_rate(.25)">
+<input type="button" value="rate .5" onclick="timelapse.set_playback_rate(.5)">
+<input type="button" value="rate 1" onclick="timelapse.set_playback_rate(1)">
 
 <div id="mouse_debug_info">
    <span class="label">Window Coords:</span> <span id="window_coords"></span><br>
@@ -149,17 +152,17 @@
 </div>
 
 <br>Debug:
-<input id="logVideoStatus" type="checkbox" onclick="timelapse_log_status(this.value)"><label for="logVideoStatus">Log video status</label>
-<input id="showNativeVideoControls" type="checkbox" onclick="timelapse_enable_native_video_controls(this.value)"><label for="showNativeVideoControls">Show Native Video Controls</label>
+<input id="logVideoStatus" type="checkbox" onclick="timelapse.log_status(this.value)"><label for="logVideoStatus">Log video status</label>
+<input id="showNativeVideoControls" type="checkbox" onclick="timelapse.enable_native_video_controls(this.value)"><label for="showNativeVideoControls">Show Native Video Controls</label>
 
 <table border="0" cellpadding="3" cellspacing="0" class="control_panel_widget">
    <tr>
-   	  <td>
-   	  	<div id="play_toggle" class="play" title="Play"></div>
-   	  </td>
-   	  <td>
-   	  	<div id="stop" class="stop" title="Stop"></div>
-   	  </td>
+      <td>
+         <div id="play_toggle" class="play" title="Play"></div>
+      </td>
+      <td>
+         <div id="stop" class="stop" title="Stop"></div>
+      </td>
       <td colspan="3">
          <div id="timelineSlider"></div>
       </td>

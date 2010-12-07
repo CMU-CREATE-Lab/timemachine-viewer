@@ -89,4 +89,29 @@ else
          {
             return .001 * (new Date()).getTime();
          };
+
+      org.gigapan.Util.formatTime = function(t)
+         {
+            var hours = Math.floor(t / 3600);
+            var minutes = Math.floor(t / 60) - (hours * 60);
+            var seconds = Math.floor(t - (hours * 3600) - (minutes * 60));
+
+            var hoursStr = '' + hours;
+            var minutesStr = '' + minutes;
+            var secondsStr = '' + seconds;
+            if (hours < 10)
+               {
+               hoursStr = "0" + hoursStr;
+               }
+            if (minutes < 10)
+               {
+               minutesStr = "0" + minutesStr;
+               }
+            if (seconds < 10)
+               {
+               secondsStr = "0" + secondsStr;
+               }
+
+            return hoursStr + ":" + minutesStr + ":" + secondsStr;
+         };
    })();

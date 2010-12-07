@@ -429,7 +429,7 @@ if (!org.gigapan.Util)
 
             ////////////////////////////////////////////////////////////////////////////////////////////////////////////
             //
-            // Constructor
+            // Constructor code
             //
 
             UTIL.log('Videoset() constructor');
