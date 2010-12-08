@@ -248,7 +248,7 @@
          {
          currentAnimationStep = 0;
 
-         // jump to starting time and position (TODO: make sure we're there before continuing)
+         // jump to starting time and position (TODO: make sure we are there before continuing)
          timelapse.warpToBoundingBox(snaplapse[0]['bounds']);
 
          animateSnaplapseWorkhorse();
@@ -263,7 +263,7 @@
          var frame = snaplapse[currentAnimationStep];
          org.gigapan.Util.log("   Step " + currentAnimationStep + " = [" + frame['time'] + "] = min:("+frame['bounds']['xmin']+","+frame['bounds']['ymin']+") max:("+frame['bounds']['xmax']+","+frame['bounds']['ymax']+")");
 
-         // jump to the time and position (TODO: make sure we're there before continuing)
+         // jump to the time and position (TODO: make sure we are there before continuing)
          timelapse.seek(frame['time']);
          timelapse.warpToBoundingBox(frame['bounds']);
 
@@ -302,15 +302,15 @@
    <tr>
       <td>(-)</td>
       <td colspan="4">
-         Playback Speed:
+      	 <label for="playBackSpeedSlider">Playback Speed:</label>
          <div id="playBackSpeedSlider"></div>
       </td>
       <td>(+)</td>
    </tr>
 </table>
 
-Choose a timelapse:
-<select id="timelapse_chooser" onchange="changeTimelapse(this.value);">
+<label for="timelapseChooser">Choose a timelapse:</label>
+<select id="timelapseChooser" onchange="changeTimelapse(this.value);">
    <option value="brassica" selected="selected">Brassica
 </select>
 
