@@ -1,116 +1,17 @@
 <html>
 <head>
    <title>Gigapan Timelapse Explorer</title>
-   <script src="js/jquery/jquery.min.js"></script>
-   <script src="js/jquery/jquery-ui-1.8.6.custom.min.js"></script>
-   <script src="js/jquery/plugins/mouse/jQuery_mousewheel_plugin.js"></script>
-   <script src="js/org/gigapan/util.js"></script>
-   <script src="js/org/gigapan/timelapse/videoset.js"></script>
-   <script src="js/org/gigapan/timelapse/timelapse.js"></script>
+	   <script src="js/jquery/jquery.min.js" type="text/javascript"></script>
+	   <script src="js/jquery/jquery-ui-1.8.6.custom.min.js" type="text/javascript"></script>
+	   <script src="js/jquery/plugins/mouse/jQuery_mousewheel_plugin.js" type="text/javascript"></script>
+	   <script src="js/org/gigapan/util.js" type="text/javascript"></script>
+	   <script src="js/org/gigapan/timelapse/videoset.js" type="text/javascript"></script>
+	   <script src="js/org/gigapan/timelapse/timelapse.js" type="text/javascript"></script>
 
-   <link href="css/jquery-ui/smoothness/jquery-ui-1.8.6.custom.css" rel="stylesheet" type="text/css"/>
-   <style type="text/css">
-      body, p, table, tr, td {
-         font-family: Verdana, sans-serif;
-         font-size: 8pt;
-      }
+	   <link href="css/timelapse.css" rel="stylesheet" type="text/css" />
+	   <link href="css/jquery-ui/smoothness/jquery-ui-1.8.6.custom.css" rel="stylesheet" type="text/css" />
 
-      #timelineSlider {
-         margin: 10px;
-         width: 500px;
-      }
-
-      #playBackSpeedSlider {
-         margin: 10px;
-         width: 100px;
-      }
-
-      #timelapse {
-         cursor: url("css/cursors/openhand.cur")
-      }
-
-      #mouse_debug_info {
-         border: 1px solid black;
-         padding: 3px;
-         margin: 3px 0 3px 0;
-         width: 500px;
-      }
-
-      .play_mouseover {
-         width: 20px;
-         height: 23px;
-         background-image: url("images/play_mouseover.png");
-         cursor: pointer;
-         float: left;
-      }
-
-      .play_mouseout {
-         width: 20px;
-         height: 23px;
-         background-image: url("images/play_mouseout.png");
-         cursor: pointer;
-         float: left;
-      }
-
-      .pause_mouseover {
-         width: 20px;
-         height: 23px;
-         background-image: url("images/pause_mouseover.png");
-         cursor: pointer;
-         float: left;
-      }
-
-      .pause_mouseout {
-         width: 20px;
-         height: 23px;
-         background-image: url("images/pause_mouseout.png");
-         cursor: pointer;
-         float: left;
-      }
-
-      .stop_mouseover {
-         width: 20px;
-         height: 22px;
-         background-image: url("images/stop_mouseover.png");
-         cursor: pointer;
-         float: left;
-      }
-
-      .stop_mouseout {
-         width: 20px;
-         height: 22px;
-         background-image: url("images/stop_mouseout.png");
-         cursor: pointer;
-         float: left;
-      }
-       .recenter_mouseover {
-          width: 20px;
-          height: 23px;
-          background-image: url("images/recenter_mouseover.png");
-          cursor: pointer;
-          float: left;
-      }
-       .recenter_mouseout {
-          width: 20px;
-          height: 23px;
-          background-image: url("images/recenter_mouseout.png");
-          cursor: pointer;
-          float: left;
-      }
-
-      .control_panel {
-         margin: 10px 0 0 0;
-         padding: 10px;
-         border: 1px solid black;
-      }
-
-      #jsonOutput {
-         display: none;
-      }
-
-   </style>
-
-   <script>
+   <script type="text/javascript">
       var timelapseDurationInSeconds = 0.0;
       var timeStepInSecs = 0.04; // 25 frames per second
       var timelapse = null;
@@ -169,7 +70,7 @@
                                                    }
                                                 });
 
-            $("#playBackSpeedSlider")['slider']( "widget" ).bind("mouseover", function() {
+				$("#playBackSpeedSlider")['slider']("widget").bind("mouseover", function() {
                $(this).attr("title",$("#playBackSpeedSlider")['slider']("option", "value"));
             });
 
@@ -207,17 +108,17 @@
                $(this).attr("class", "stop_mouseout");
             });
 
-            $('#recenter').bind("mousemove", function() {
-               $(this).attr("class", "recenter_mouseover");
+				$('#home').bind("mousemove", function() {
+				   $(this).attr("class", "home_mouseover");
             });
 
-            $('#recenter').bind("mouseout", function() {
-               $(this).attr("class", "recenter_mouseout");
+				$('#home').bind("mouseout", function() {
+				   $(this).attr("class", "home_mouseout");
             });
 
-			$('#recenter').bind("click", function() {
-				timelapse.warpTo(timelapse.homeView());
-			});
+				$('#home').bind("click", function() {
+                  timelapse.warpTo(timelapse.homeView());
+            });
 
             $('#play_toggle').bind("click", function()
                {
@@ -254,6 +155,10 @@
 
             $("#totalTime").text(org.gigapan.Util.formatTime(timelapseDurationInSeconds));
          });
+
+      function changeTimelapse(timelapse) {
+         alert("TODO - changing timelapse to: " + timelapse);
+      }
 
       // ---------------------------------------------------------------------------------------------------------------
 
@@ -374,7 +279,7 @@
    <div id="timelapse" style="position: absolute; width:800px; height:450px; background:black; overflow:hidden"></div>
 </div>
 
-<table border="0" cellpadding="3" cellspacing="0" class="control_panel">
+<table style="border: 2px solid black;">
    <tr>
       <td>
          <div id="play_toggle" class="play_mouseout" title="Play"></div>
@@ -383,27 +288,37 @@
          <div id="stop" class="stop_mouseout" title="Stop"></div>
       </td>
       <td>
-	     <div id="recenter" class="recenter_mouseout" title="Recenter"></div>
+         <div id="home" class="home_mouseout" title="Home"></div>
       </td>
       <td colspan="3">
          <div id="timelineSlider"></div>
       </td>
       <td align="right">
-         <span id="currentTime">00:00:00</span>/<span id="totalTime">00:00:00</span><br>
+         <span id="currentTime">00:00:00</span>/<span id="totalTime">00:00:00</span><br/>
       </td>
    </tr>
+</table>
+<table>
    <tr>
-     <td colspan="4">
-         Playback Speed:<div id="playBackSpeedSlider"></div>
-     </td>
+      <td>(-)</td>
+      <td colspan="4">
+         Playback Speed:
+         <div id="playBackSpeedSlider"></div>
+      </td>
+      <td>(+)</td>
    </tr>
 </table>
 
-<br>Debug:
-<input id="logVideoStatus" type="checkbox" onclick="timelapse.setStatusLoggingEnabled(this.value)"><label for="logVideoStatus">Log video status</label>
-<input id="showNativeVideoControls" type="checkbox" onclick="timelapse.setNativeVideoControlsEnabled(this.value)"><label for="showNativeVideoControls">Show Native Video Controls</label>
+Choose a timelapse:
+<select id="timelapse_chooser" onchange="changeTimelapse(this.value);">
+   <option value="brassica" selected="selected">Brassica
+</select>
 
-<table border="0" cellpadding="3" cellspacing="0" class="control_panel">
+<br/>Debug:
+<input id="logVideoStatus" type="checkbox" onclick="timelapse.setStatusLoggingEnabled(this.value)"/><label for="logVideoStatus">Log video status</label>
+<input id="showNativeVideoControls" type="checkbox" onclick="timelapse.setNativeVideoControlsEnabled(this.value)"/><label for="showNativeVideoControls">Show Native Video Controls</label>
+
+<table border="0" cellpadding="3" cellspacing="0" class="control_panel" style="margin-top:10px">
    <tr>
       <th colspan="2">Snaplapse Creator</th>
    </tr>
@@ -429,7 +344,7 @@
       </td>
    </tr>
 </table>
-<textarea id="jsonOutput" rows="30" cols="70" id="json"></textarea>
+<textarea id="jsonOutput" style="display:none" rows="30" cols="70" id="json"></textarea>
 
 </body>
 </html>
