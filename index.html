@@ -79,7 +79,7 @@
 													   }
 													});
 
-				$("#playBackSpeedSlider")['slider']( "widget" ).bind("mouseover", function() {
+				$("#playBackSpeedSlider")['slider']("widget").bind("mouseover", function() {
 				   $(this).attr("title",$("#playBackSpeedSlider")['slider']("option", "value"));
 				});
 
@@ -117,15 +117,15 @@
 				   $(this).attr("class", "stop_mouseout");
 				});
 
-				$('#recenter').bind("mousemove", function() {
-				   $(this).attr("class", "recenter_mouseover");
+				$('#home').bind("mousemove", function() {
+				   $(this).attr("class", "home_mouseover");
 				});
 
-				$('#recenter').bind("mouseout", function() {
-				   $(this).attr("class", "recenter_mouseout");
+				$('#home').bind("mouseout", function() {
+				   $(this).attr("class", "home_mouseout");
 				});
 
-				$('#recenter').bind("click", function() {
+				$('#home').bind("click", function() {
 					timelapse.warpTo(timelapse.homeView());
 				});
 
@@ -164,6 +164,10 @@
 
 				$("#totalTime").text(org.gigapan.Util.formatTime(timelapseDurationInSeconds));
 			 });
+
+			 function changeTimelapse(timelapse) {
+			 	alert("TODO - changing timelapse to: " + timelapse);
+			 }
 	   </script>
 	</head>
 	<body>
@@ -182,7 +186,7 @@
 				<div id="stop" class="stop_mouseout" title="Stop"></div>
 			  </td>
 			  <td>
-				<div id="recenter" class="recenter_mouseout" title="Recenter"></div>
+				<div id="home" class="home_mouseout" title="Home"></div>
 			  </td>
 			  <td colspan="3">
 				<div id="timelineSlider"></div>
@@ -202,6 +206,11 @@
 			</tr>
 		  </table>
 		</div>
+
+		Choose a timelapse:
+		<select id="timelapse_chooser" onchange="changeTimelapse(this.value);">
+			<option value="brassica" selected="selected">Brassica
+		</select>
 
 		<div id="mouse_debug_info">
 		   <span class="label">Window Coords:</span> <span id="window_coords"></span><br/>

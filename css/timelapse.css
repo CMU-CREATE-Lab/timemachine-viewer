@@ -70,17 +70,17 @@ body, p, table, tr, td {
  cursor: pointer;
  float: left;
 }
-.recenter_mouseover {
+.home_mouseover {
   width: 20px;
   height: 23px;
-  background-image: url("../images/recenter_mouseover.png");
+  background-image: url("../images/home_mouseover.png");
   cursor: pointer;
   float: left;
 }
-.recenter_mouseout {
+.home_mouseout {
   width: 20px;
   height: 23px;
-  background-image: url("../images/recenter_mouseout.png");
+  background-image: url("../images/home_mouseout.png");
   cursor: pointer;
   float: left;
 }
