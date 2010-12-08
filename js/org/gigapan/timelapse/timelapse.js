@@ -205,6 +205,16 @@ if (!org.gigapan.timelapse.Videoset)
                };
             this.homeView = _homeView;
 
+            this.getBoundingBoxForCurrentView = function()
+               {
+                  return computeBoundingBox(view);
+               };
+
+            this.warpToBoundingBox = function(bbox)
+               {
+                  this.warpTo(computeViewFit(bbox));
+               };
+
             ///////////////////////////
             // Timelapse video control
             //
@@ -272,6 +282,11 @@ if (!org.gigapan.timelapse.Videoset)
                   videoset.removeSyncListener(listener);
                };
 
+            this.getCurrentTime = function()
+               {
+                  return videoset.getCurrentTime();
+               };
+
             ////////////////////////////////////////////////////////////////////////////////////////////////////////////
             //
             // Private methods
@@ -336,7 +351,7 @@ if (!org.gigapan.timelapse.Videoset)
             var computeBoundingBox = function(theView)
                {
                   var halfWidth = .5 * viewportWidth / theView.scale;
-                  var halfHeight = viewportHeight / theView.scale;
+                  var halfHeight = .5 * viewportHeight / theView.scale;
                   return {xmin:theView.x - halfWidth, xmax:theView.x + halfWidth, ymin:theView.y - halfHeight, ymax:theView.y + halfHeight};
                };
 

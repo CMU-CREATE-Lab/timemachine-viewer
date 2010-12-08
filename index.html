@@ -97,6 +97,17 @@
           cursor: pointer;
           float: left;
       }
+
+      .control_panel {
+         margin: 10px 0 0 0;
+         padding: 10px;
+         border: 1px solid black;
+      }
+
+      #jsonOutput {
+         display: none;
+      }
+
    </style>
 
    <script>
@@ -130,15 +141,6 @@
             window.onunload = timelapse.handleWindowClose;
 
             timelapseDurationInSeconds = timelapse.getNumFrames() / timelapse.getFps();
-
-            $("#timelapse").bind("mousemove", function(event)
-               {
-               var viewerPosition = $("#timelapse").position();
-               var mouseX = event.pageX - viewerPosition.left;
-               var mouseY = event.pageY - viewerPosition.top;
-               $("#window_coords").text("(" + event.pageX + "," + event.pageY + ")");
-               $("#viewer_pixel_coords").text("(" + mouseX + "," + mouseY + ")");
-               });
 
             $("#timelineSlider")['slider']({
                                            animate: true,
@@ -252,6 +254,118 @@
 
             $("#totalTime").text(org.gigapan.Util.formatTime(timelapseDurationInSeconds));
          });
+
+      // ---------------------------------------------------------------------------------------------------------------
+
+      var snaplapseKeyframes = [];
+      var snaplapse = null;
+
+      function recordKeyframe()
+         {
+         var bounds = timelapse.getBoundingBoxForCurrentView();
+
+         var keyframe = {};
+         keyframe['time'] = timelapse.getCurrentTime();
+         keyframe['bounds'] = {};
+         keyframe['bounds']['xmin'] = bounds.xmin;
+         keyframe['bounds']['ymin'] = bounds.ymin;
+         keyframe['bounds']['xmax'] = bounds.xmax;
+         keyframe['bounds']['ymax'] = bounds.ymax;
+         snaplapseKeyframes[snaplapseKeyframes.length] = keyframe;
+
+         $("#jsonOutput").text(JSON.stringify(snaplapseKeyframes, null, 3));
+         }
+
+      function playSnaplapse()
+         {
+         if (snaplapseKeyframes.length > 0)
+            {
+            // stop playback (TODO: disable Play button, timeline, etc.)
+            timelapse.pause();
+
+            // build the snaplapse
+            buildSnaplapse();
+
+            $("#jsonOutput").text(JSON.stringify(snaplapse, null, 3));
+
+            animateSnaplapse();
+            }
+         }
+
+      function buildSnaplapse()
+         {
+         var keyframe = snaplapseKeyframes[0];
+
+         snaplapse = [];
+         snaplapse[snaplapse.length] = keyframe;
+
+         var previousKeyframe = keyframe;
+         for (var i = 1; i < snaplapseKeyframes.length; i++)
+            {
+            var currentKeyframe = snaplapseKeyframes[i];
+
+            var timeStep = 1 / timelapse.getFps();
+            var numStepsBetweenKeyframes = Math.abs((currentKeyframe['time'] - previousKeyframe['time']) / timeStep);
+            org.gigapan.Util.log("Processing keyframe " + i + ": Num steps = [" + numStepsBetweenKeyframes + "]");
+
+            var timeOffset = (currentKeyframe['time'] - previousKeyframe['time'] ) / numStepsBetweenKeyframes;
+            var boundsXminOffset = (currentKeyframe['bounds']['xmin'] - previousKeyframe['bounds']['xmin'] ) / numStepsBetweenKeyframes;
+            var boundsYminOffset = (currentKeyframe['bounds']['ymin'] - previousKeyframe['bounds']['ymin'] ) / numStepsBetweenKeyframes;
+            var boundsXmaxOffset = (currentKeyframe['bounds']['xmax'] - previousKeyframe['bounds']['xmax'] ) / numStepsBetweenKeyframes;
+            var boundsYmaxOffset = (currentKeyframe['bounds']['ymax'] - previousKeyframe['bounds']['ymax'] ) / numStepsBetweenKeyframes;
+            org.gigapan.Util.log("   boundsXminOffset: " + boundsXminOffset);
+            org.gigapan.Util.log("   boundsYminOffset: " + boundsYminOffset);
+            org.gigapan.Util.log("   boundsXmaxOffset: " + boundsXmaxOffset);
+            org.gigapan.Util.log("   boundsYmaxOffset: " + boundsYmaxOffset);
+
+            // record the frames between keyframes
+            var previousFrame = previousKeyframe;
+            for (var frameIndex = 1; frameIndex <= numStepsBetweenKeyframes; frameIndex++)
+               {
+               var frame = {};
+               frame['time'] = previousFrame['time'] + timeOffset;
+               frame['bounds'] = {};
+               frame['bounds']['xmin'] = previousFrame['bounds']['xmin'] + boundsXminOffset;
+               frame['bounds']['ymin'] = previousFrame['bounds']['ymin'] + boundsYminOffset;
+               frame['bounds']['xmax'] = previousFrame['bounds']['xmax'] + boundsXmaxOffset;
+               frame['bounds']['ymax'] = previousFrame['bounds']['ymax'] + boundsYmaxOffset;
+               snaplapse[snaplapse.length] = frame;
+               previousFrame = frame;
+               }
+            previousKeyframe = currentKeyframe;
+            }
+         }
+
+      var currentAnimationStep = 0;
+      function animateSnaplapse()
+         {
+         if (snaplapse && snaplapse.length > 0)
+            {
+            currentAnimationStep = 0;
+
+            // jump to starting time and position (TODO: make sure we're there before continuing)
+            timelapse.warpToBoundingBox(snaplapse[0]['bounds']);
+
+            animateSnaplapseWorkhorse();
+            }
+         }
+
+      function animateSnaplapseWorkhorse()
+         {
+         org.gigapan.Util.log("Animating snaplapse...");
+         if (snaplapse && snaplapse.length > 0 && currentAnimationStep < snaplapse.length)
+            {
+            var frame = snaplapse[currentAnimationStep];
+            org.gigapan.Util.log("   Step " + currentAnimationStep + " = [" + frame['time'] + "] = min:("+frame['bounds']['xmin']+","+frame['bounds']['ymin']+") max:("+frame['bounds']['xmax']+","+frame['bounds']['ymax']+")");
+
+            // jump to the time and position (TODO: make sure we're there before continuing)
+            timelapse.seek(frame['time']);
+            timelapse.warpToBoundingBox(frame['bounds']);
+
+            currentAnimationStep++;
+            setTimeout(animateSnaplapseWorkhorse, $("#playbackDelayInMillis").val());
+            }
+         }
    </script>
 </head>
 <body>
@@ -260,7 +374,7 @@
    <div id="timelapse" style="position: absolute; width:800px; height:450px; background:black; overflow:hidden"></div>
 </div>
 
-<table border="0" cellpadding="3" cellspacing="0" class="control_panel_widget">
+<table border="0" cellpadding="3" cellspacing="0" class="control_panel">
    <tr>
       <td>
          <div id="play_toggle" class="play_mouseout" title="Play"></div>
@@ -285,16 +399,37 @@
    </tr>
 </table>
 
-<div id="mouse_debug_info">
-   <span class="label">Window Coords:</span> <span id="window_coords"></span><br>
-   <span class="label">Viewer Pixel Coords:</span> <span id="viewer_pixel_coords"></span><br>
-   <span class="label">Viewer Pano Coords:</span> <span id="viewer_pano_coords"></span><br>
-   <span class="label">Viewer Bounds:</span> <span id="viewer_bounds"></span><br>
-</div>
-
 <br>Debug:
 <input id="logVideoStatus" type="checkbox" onclick="timelapse.setStatusLoggingEnabled(this.value)"><label for="logVideoStatus">Log video status</label>
 <input id="showNativeVideoControls" type="checkbox" onclick="timelapse.setNativeVideoControlsEnabled(this.value)"><label for="showNativeVideoControls">Show Native Video Controls</label>
+
+<table border="0" cellpadding="3" cellspacing="0" class="control_panel">
+   <tr>
+      <th colspan="2">Snaplapse Creator</th>
+   </tr>
+   <tr>
+      <td>
+         <input type="button" id="recordKeyframeButton" onclick="recordKeyframe()" value="Record Keyframe">
+      </td>
+      <td align="right">
+         <input type="button" id="playSnaplapseButton" onclick="playSnaplapse()" value="Play Snaplapse">
+      </td>
+   </tr>
+   <tr>
+      <td colspan="2" align="right">
+         <label for="playbackDelayInMillis">Playback Frame Delay (ms):</label>
+         <select id="playbackDelayInMillis">
+            <option value="1">1</option>
+            <option value="10" selected="selected">10</option>
+            <option value="50">50</option>
+            <option value="100">100</option>
+            <option value="250">250</option>
+            <option value="1000">1000</option>
+         </select>
+      </td>
+   </tr>
+</table>
+<textarea id="jsonOutput" rows="30" cols="70" id="json"></textarea>
 
 </body>
 </html>
