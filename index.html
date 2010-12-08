@@ -1,277 +1,277 @@
 <html>
 <head>
-   <title>Gigapan Timelapse Explorer</title>
-	   <script src="js/jquery/jquery.min.js" type="text/javascript"></script>
-	   <script src="js/jquery/jquery-ui-1.8.6.custom.min.js" type="text/javascript"></script>
-	   <script src="js/jquery/plugins/mouse/jQuery_mousewheel_plugin.js" type="text/javascript"></script>
-	   <script src="js/org/gigapan/util.js" type="text/javascript"></script>
-	   <script src="js/org/gigapan/timelapse/videoset.js" type="text/javascript"></script>
-	   <script src="js/org/gigapan/timelapse/timelapse.js" type="text/javascript"></script>
+<title>Gigapan Timelapse Explorer</title>
+<script src="js/jquery/jquery.min.js" type="text/javascript"></script>
+<script src="js/jquery/jquery-ui-1.8.6.custom.min.js" type="text/javascript"></script>
+<script src="js/jquery/plugins/mouse/jQuery_mousewheel_plugin.js" type="text/javascript"></script>
+<script src="js/org/gigapan/util.js" type="text/javascript"></script>
+<script src="js/org/gigapan/timelapse/videoset.js" type="text/javascript"></script>
+<script src="js/org/gigapan/timelapse/timelapse.js" type="text/javascript"></script>
 
-	   <link href="css/timelapse.css" rel="stylesheet" type="text/css" />
-	   <link href="css/jquery-ui/smoothness/jquery-ui-1.8.6.custom.css" rel="stylesheet" type="text/css" />
+<link href="css/timelapse.css" rel="stylesheet" type="text/css"/>
+<link href="css/jquery-ui/smoothness/jquery-ui-1.8.6.custom.css" rel="stylesheet" type="text/css"/>
 
-   <script type="text/javascript">
-      var timelapseDurationInSeconds = 0.0;
-      var timeStepInSecs = 0.04; // 25 frames per second
-      var timelapse = null;
-      var timelapseCurrentTimeInSeconds = 0.0;
+<script type="text/javascript">
+   var timelapseDurationInSeconds = 0.0;
+   var timeStepInSecs = 0.04; // 25 frames per second
+   var timelapse = null;
+   var timelapseCurrentTimeInSeconds = 0.0;
 
-      $(document).ready(function()
-         {
-            timelapse = new org.gigapan.timelapse.Timelapse('../timelapses/brassica1-15m-halfsize/',
-                                                            'timelapse',
-                                                            {"tile_height":256,"height":3876,"fps":25,"frames":2438,"width":9856,"tile_width":256});
+   $(document).ready(function()
+      {
+         timelapse = new org.gigapan.timelapse.Timelapse('../timelapses/brassica1-15m-halfsize/',
+                                                         'timelapse',
+                                                         {"tile_height":256,"height":3876,"fps":25,"frames":2438,"width":9856,"tile_width":256});
 
-            timelapse.addTimeChangeListener(function(t)
+         timelapse.addTimeChangeListener(function(t)
+                                            {
+                                            timelapseCurrentTimeInSeconds = t;
+                                            $("#currentTime").text(org.gigapan.Util.formatTime(t));
+                                            $("#timelineSlider")['slider']("option", "value", t);
+                                            if (t >= timelapseDurationInSeconds)
                                                {
-                                               timelapseCurrentTimeInSeconds = t;
-                                               $("#currentTime").text(org.gigapan.Util.formatTime(t));
-                                               $("#timelineSlider")['slider']("option", "value", t);
-                                               if (t >= timelapseDurationInSeconds)
-                                                  {
-                                                  $('#play_toggle').attr("class", "play_mouseout");
-                                                  $('#play_toggle').attr("title", "Play");
-                                                  }
-                                               });
+                                               $('#play_toggle').attr("class", "play_mouseout");
+                                               $('#play_toggle').attr("title", "Play");
+                                               }
+                                            });
 
-            $(this)['keydown'](timelapse.handleKeydownEvent);
-            $(this)['keyup'](timelapse.handleKeyupEvent);
-            $("#timelapse").mousewheel(timelapse.handleMousescrollEvent);
+         $(this)['keydown'](timelapse.handleKeydownEvent);
+         $(this)['keyup'](timelapse.handleKeyupEvent);
+         $("#timelapse").mousewheel(timelapse.handleMousescrollEvent);
 
-            window.onunload = timelapse.handleWindowClose;
+         window.onunload = timelapse.handleWindowClose;
 
-            timelapseDurationInSeconds = timelapse.getNumFrames() / timelapse.getFps();
+         timelapseDurationInSeconds = timelapse.getNumFrames() / timelapse.getFps();
 
-            $("#timelineSlider")['slider']({
-                                           animate: true,
-                                           value: 0,
-                                           min: 0,
-                                           max: timelapseDurationInSeconds,
-                                           range: "min",
-                                           step: timeStepInSecs,
-                                           slide: function(e, ui)
-                                              {
-                                              timelapseCurrentTimeInSeconds = ui.value;
-                                              var timeInSecs = ui.value;
-                                              timelapse.seek(timeInSecs);
-                                              }
-                                           });
+         $("#timelineSlider")['slider']({
+                                        animate: true,
+                                        value: 0,
+                                        min: 0,
+                                        max: timelapseDurationInSeconds,
+                                        range: "min",
+                                        step: timeStepInSecs,
+                                        slide: function(e, ui)
+                                           {
+                                           timelapseCurrentTimeInSeconds = ui.value;
+                                           var timeInSecs = ui.value;
+                                           timelapse.seek(timeInSecs);
+                                           }
+                                        });
 
-            $("#playBackSpeedSlider")['slider']({
-                                                animate: true,
-                                                value: 1,
-                                                min: -2,
-                                                max: 2,
-                                                slide: function(e, ui)
-                                                   {
-                                                   timelapse.setPlaybackRate(ui.value);
-                                                   $(this).attr("title", ui.value);
-                                                   }
-                                                });
+         $("#playBackSpeedSlider")['slider']({
+                                             animate: true,
+                                             value: 1,
+                                             min: -2,
+                                             max: 2,
+                                             slide: function(e, ui)
+                                                {
+                                                timelapse.setPlaybackRate(ui.value);
+                                                $(this).attr("title", ui.value);
+                                                }
+                                             });
 
-				$("#playBackSpeedSlider")['slider']("widget").bind("mouseover", function() {
-               $(this).attr("title",$("#playBackSpeedSlider")['slider']("option", "value"));
-            });
-
-            $('.ui-slider-handle').bind("mouseover", function() {
-               this.style.cursor = "url('css/cursors/openhand.cur')";
-            });
-
-            $('.ui-slider').bind("slide", function() {
-               $('.ui-slider-handle').css("cursor", "url('css/cursors/closedhand.cur')");
-            });
-
-            $('.ui-slider').bind("slidestop", function() {
-               $('.ui-slider-handle').css("cursor", "url('css/cursors/openhand.cur')");
-            });
-
-            $('.ui-slider').bind("mouseover", function() {
-               $(this).css("cursor", "pointer");
-            });
-
-            $('#play_toggle').bind("mousemove", function() {
-               if ($(this).attr("class") == "play_mouseout") $(this).attr("class", "play_mouseover");
-               else if ($(this).attr("class") == "pause_mouseout") $(this).attr("class", "pause_mouseover");
-            });
-
-            $('#play_toggle').bind("mouseout", function() {
-               if ($(this).attr("class") == "play_mouseover") $(this).attr("class", "play_mouseout");
-               else if ($(this).attr("class") == "pause_mouseover") $(this).attr("class", "pause_mouseout");
-            });
-
-            $('#stop').bind("mousemove", function() {
-               $(this).attr("class", "stop_mouseover");
-            });
-
-            $('#stop').bind("mouseout", function() {
-               $(this).attr("class", "stop_mouseout");
-            });
-
-				$('#home').bind("mousemove", function() {
-				   $(this).attr("class", "home_mouseover");
-            });
-
-				$('#home').bind("mouseout", function() {
-				   $(this).attr("class", "home_mouseout");
-            });
-
-				$('#home').bind("click", function() {
-                  timelapse.warpTo(timelapse.homeView());
-            });
-
-            $('#play_toggle').bind("click", function()
-               {
-               if ($(this).attr("class") == "play_mouseover")
-                  {
-                  $(this).attr("class", "pause_mouseout");
-                  $(this).attr("title", "Pause");
-                  if (timelapseCurrentTimeInSeconds >= timelapseDurationInSeconds)
-                     {
-                     $("#timelineSlider")['slider']("option", "value", 0);
-                     timelapse.seek(0);
-                     }
-                  timelapse.play();
-                  }
-               else
-                  {
-                  $(this).attr("class", "play_mouseout");
-                  $(this).attr("title", "Play");
-                  timelapse.pause();
-                  }
-               });
-
-            $('#stop').bind("click", function()
-               {
-               if (this.isPaused)
-                  {
-                  return;
-                  }
-               $('#play_toggle').attr("class", "play_mouseout");
-               $('#play_toggle').attr("title", "Play");
-               timelapse.seek(0);
-               timelapse.pause();
-               });
-
-            $("#totalTime").text(org.gigapan.Util.formatTime(timelapseDurationInSeconds));
+         $("#playBackSpeedSlider")['slider']("widget").bind("mouseover", function() {
+            $(this).attr("title",$("#playBackSpeedSlider")['slider']("option", "value"));
          });
 
-      function changeTimelapse(timelapse) {
-         alert("TODO - changing timelapse to: " + timelapse);
+         $('.ui-slider-handle').bind("mouseover", function() {
+            this.style.cursor = "url('css/cursors/openhand.cur')";
+         });
+
+         $('.ui-slider').bind("slide", function() {
+            $('.ui-slider-handle').css("cursor", "url('css/cursors/closedhand.cur')");
+         });
+
+         $('.ui-slider').bind("slidestop", function() {
+            $('.ui-slider-handle').css("cursor", "url('css/cursors/openhand.cur')");
+         });
+
+         $('.ui-slider').bind("mouseover", function() {
+            $(this).css("cursor", "pointer");
+         });
+
+         $('#play_toggle').bind("mousemove", function() {
+            if ($(this).attr("class") == "play_mouseout") $(this).attr("class", "play_mouseover");
+            else if ($(this).attr("class") == "pause_mouseout") $(this).attr("class", "pause_mouseover");
+         });
+
+         $('#play_toggle').bind("mouseout", function() {
+            if ($(this).attr("class") == "play_mouseover") $(this).attr("class", "play_mouseout");
+            else if ($(this).attr("class") == "pause_mouseover") $(this).attr("class", "pause_mouseout");
+         });
+
+         $('#stop').bind("mousemove", function() {
+            $(this).attr("class", "stop_mouseover");
+         });
+
+         $('#stop').bind("mouseout", function() {
+            $(this).attr("class", "stop_mouseout");
+         });
+
+         $('#home').bind("mousemove", function() {
+            $(this).attr("class", "home_mouseover");
+         });
+
+         $('#home').bind("mouseout", function() {
+            $(this).attr("class", "home_mouseout");
+         });
+
+         $('#home').bind("click", function() {
+               timelapse.warpTo(timelapse.homeView());
+         });
+
+         $('#play_toggle').bind("click", function()
+            {
+            if ($(this).attr("class") == "play_mouseover")
+               {
+               $(this).attr("class", "pause_mouseout");
+               $(this).attr("title", "Pause");
+               if (timelapseCurrentTimeInSeconds >= timelapseDurationInSeconds)
+                  {
+                  $("#timelineSlider")['slider']("option", "value", 0);
+                  timelapse.seek(0);
+                  }
+               timelapse.play();
+               }
+            else
+               {
+               $(this).attr("class", "play_mouseout");
+               $(this).attr("title", "Play");
+               timelapse.pause();
+               }
+            });
+
+         $('#stop').bind("click", function()
+            {
+            if (this.isPaused)
+               {
+               return;
+               }
+            $('#play_toggle').attr("class", "play_mouseout");
+            $('#play_toggle').attr("title", "Play");
+            timelapse.seek(0);
+            timelapse.pause();
+            });
+
+         $("#totalTime").text(org.gigapan.Util.formatTime(timelapseDurationInSeconds));
+      });
+
+   function changeTimelapse(timelapse) {
+      alert("TODO - changing timelapse to: " + timelapse);
+   }
+
+   // ---------------------------------------------------------------------------------------------------------------
+
+   var snaplapseKeyframes = [];
+   var snaplapse = null;
+
+   function recordKeyframe()
+      {
+      var bounds = timelapse.getBoundingBoxForCurrentView();
+
+      var keyframe = {};
+      keyframe['time'] = timelapse.getCurrentTime();
+      keyframe['bounds'] = {};
+      keyframe['bounds']['xmin'] = bounds.xmin;
+      keyframe['bounds']['ymin'] = bounds.ymin;
+      keyframe['bounds']['xmax'] = bounds.xmax;
+      keyframe['bounds']['ymax'] = bounds.ymax;
+      snaplapseKeyframes[snaplapseKeyframes.length] = keyframe;
+
+      $("#jsonOutput").text(JSON.stringify(snaplapseKeyframes, null, 3));
       }
 
-      // ---------------------------------------------------------------------------------------------------------------
-
-      var snaplapseKeyframes = [];
-      var snaplapse = null;
-
-      function recordKeyframe()
+   function playSnaplapse()
+      {
+      if (snaplapseKeyframes.length > 0)
          {
-         var bounds = timelapse.getBoundingBoxForCurrentView();
+         // stop playback (TODO: disable Play button, timeline, etc.)
+         timelapse.pause();
 
-         var keyframe = {};
-         keyframe['time'] = timelapse.getCurrentTime();
-         keyframe['bounds'] = {};
-         keyframe['bounds']['xmin'] = bounds.xmin;
-         keyframe['bounds']['ymin'] = bounds.ymin;
-         keyframe['bounds']['xmax'] = bounds.xmax;
-         keyframe['bounds']['ymax'] = bounds.ymax;
-         snaplapseKeyframes[snaplapseKeyframes.length] = keyframe;
+         // build the snaplapse
+         buildSnaplapse();
 
-         $("#jsonOutput").text(JSON.stringify(snaplapseKeyframes, null, 3));
+         $("#jsonOutput").text(JSON.stringify(snaplapse, null, 3));
+
+         animateSnaplapse();
          }
+      }
 
-      function playSnaplapse()
+   function buildSnaplapse()
+      {
+      var keyframe = snaplapseKeyframes[0];
+
+      snaplapse = [];
+      snaplapse[snaplapse.length] = keyframe;
+
+      var previousKeyframe = keyframe;
+      for (var i = 1; i < snaplapseKeyframes.length; i++)
          {
-         if (snaplapseKeyframes.length > 0)
+         var currentKeyframe = snaplapseKeyframes[i];
+
+         var timeStep = 1 / timelapse.getFps();
+         var numStepsBetweenKeyframes = Math.abs((currentKeyframe['time'] - previousKeyframe['time']) / timeStep);
+         org.gigapan.Util.log("Processing keyframe " + i + ": Num steps = [" + numStepsBetweenKeyframes + "]");
+
+         var timeOffset = (currentKeyframe['time'] - previousKeyframe['time'] ) / numStepsBetweenKeyframes;
+         var boundsXminOffset = (currentKeyframe['bounds']['xmin'] - previousKeyframe['bounds']['xmin'] ) / numStepsBetweenKeyframes;
+         var boundsYminOffset = (currentKeyframe['bounds']['ymin'] - previousKeyframe['bounds']['ymin'] ) / numStepsBetweenKeyframes;
+         var boundsXmaxOffset = (currentKeyframe['bounds']['xmax'] - previousKeyframe['bounds']['xmax'] ) / numStepsBetweenKeyframes;
+         var boundsYmaxOffset = (currentKeyframe['bounds']['ymax'] - previousKeyframe['bounds']['ymax'] ) / numStepsBetweenKeyframes;
+         org.gigapan.Util.log("   boundsXminOffset: " + boundsXminOffset);
+         org.gigapan.Util.log("   boundsYminOffset: " + boundsYminOffset);
+         org.gigapan.Util.log("   boundsXmaxOffset: " + boundsXmaxOffset);
+         org.gigapan.Util.log("   boundsYmaxOffset: " + boundsYmaxOffset);
+
+         // record the frames between keyframes
+         var previousFrame = previousKeyframe;
+         for (var frameIndex = 1; frameIndex <= numStepsBetweenKeyframes; frameIndex++)
             {
-            // stop playback (TODO: disable Play button, timeline, etc.)
-            timelapse.pause();
-
-            // build the snaplapse
-            buildSnaplapse();
-
-            $("#jsonOutput").text(JSON.stringify(snaplapse, null, 3));
-
-            animateSnaplapse();
+            var frame = {};
+            frame['time'] = previousFrame['time'] + timeOffset;
+            frame['bounds'] = {};
+            frame['bounds']['xmin'] = previousFrame['bounds']['xmin'] + boundsXminOffset;
+            frame['bounds']['ymin'] = previousFrame['bounds']['ymin'] + boundsYminOffset;
+            frame['bounds']['xmax'] = previousFrame['bounds']['xmax'] + boundsXmaxOffset;
+            frame['bounds']['ymax'] = previousFrame['bounds']['ymax'] + boundsYmaxOffset;
+            snaplapse[snaplapse.length] = frame;
+            previousFrame = frame;
             }
+         previousKeyframe = currentKeyframe;
          }
+      }
 
-      function buildSnaplapse()
+   var currentAnimationStep = 0;
+   function animateSnaplapse()
+      {
+      if (snaplapse && snaplapse.length > 0)
          {
-         var keyframe = snaplapseKeyframes[0];
+         currentAnimationStep = 0;
 
-         snaplapse = [];
-         snaplapse[snaplapse.length] = keyframe;
+         // jump to starting time and position (TODO: make sure we're there before continuing)
+         timelapse.warpToBoundingBox(snaplapse[0]['bounds']);
 
-         var previousKeyframe = keyframe;
-         for (var i = 1; i < snaplapseKeyframes.length; i++)
-            {
-            var currentKeyframe = snaplapseKeyframes[i];
-
-            var timeStep = 1 / timelapse.getFps();
-            var numStepsBetweenKeyframes = Math.abs((currentKeyframe['time'] - previousKeyframe['time']) / timeStep);
-            org.gigapan.Util.log("Processing keyframe " + i + ": Num steps = [" + numStepsBetweenKeyframes + "]");
-
-            var timeOffset = (currentKeyframe['time'] - previousKeyframe['time'] ) / numStepsBetweenKeyframes;
-            var boundsXminOffset = (currentKeyframe['bounds']['xmin'] - previousKeyframe['bounds']['xmin'] ) / numStepsBetweenKeyframes;
-            var boundsYminOffset = (currentKeyframe['bounds']['ymin'] - previousKeyframe['bounds']['ymin'] ) / numStepsBetweenKeyframes;
-            var boundsXmaxOffset = (currentKeyframe['bounds']['xmax'] - previousKeyframe['bounds']['xmax'] ) / numStepsBetweenKeyframes;
-            var boundsYmaxOffset = (currentKeyframe['bounds']['ymax'] - previousKeyframe['bounds']['ymax'] ) / numStepsBetweenKeyframes;
-            org.gigapan.Util.log("   boundsXminOffset: " + boundsXminOffset);
-            org.gigapan.Util.log("   boundsYminOffset: " + boundsYminOffset);
-            org.gigapan.Util.log("   boundsXmaxOffset: " + boundsXmaxOffset);
-            org.gigapan.Util.log("   boundsYmaxOffset: " + boundsYmaxOffset);
-
-            // record the frames between keyframes
-            var previousFrame = previousKeyframe;
-            for (var frameIndex = 1; frameIndex <= numStepsBetweenKeyframes; frameIndex++)
-               {
-               var frame = {};
-               frame['time'] = previousFrame['time'] + timeOffset;
-               frame['bounds'] = {};
-               frame['bounds']['xmin'] = previousFrame['bounds']['xmin'] + boundsXminOffset;
-               frame['bounds']['ymin'] = previousFrame['bounds']['ymin'] + boundsYminOffset;
-               frame['bounds']['xmax'] = previousFrame['bounds']['xmax'] + boundsXmaxOffset;
-               frame['bounds']['ymax'] = previousFrame['bounds']['ymax'] + boundsYmaxOffset;
-               snaplapse[snaplapse.length] = frame;
-               previousFrame = frame;
-               }
-            previousKeyframe = currentKeyframe;
-            }
+         animateSnaplapseWorkhorse();
          }
+      }
 
-      var currentAnimationStep = 0;
-      function animateSnaplapse()
+   function animateSnaplapseWorkhorse()
+      {
+      org.gigapan.Util.log("Animating snaplapse...");
+      if (snaplapse && snaplapse.length > 0 && currentAnimationStep < snaplapse.length)
          {
-         if (snaplapse && snaplapse.length > 0)
-            {
-            currentAnimationStep = 0;
+         var frame = snaplapse[currentAnimationStep];
+         org.gigapan.Util.log("   Step " + currentAnimationStep + " = [" + frame['time'] + "] = min:("+frame['bounds']['xmin']+","+frame['bounds']['ymin']+") max:("+frame['bounds']['xmax']+","+frame['bounds']['ymax']+")");
 
-            // jump to starting time and position (TODO: make sure we're there before continuing)
-            timelapse.warpToBoundingBox(snaplapse[0]['bounds']);
+         // jump to the time and position (TODO: make sure we're there before continuing)
+         timelapse.seek(frame['time']);
+         timelapse.warpToBoundingBox(frame['bounds']);
 
-            animateSnaplapseWorkhorse();
-            }
+         currentAnimationStep++;
+         setTimeout(animateSnaplapseWorkhorse, $("#playbackDelayInMillis").val());
          }
-
-      function animateSnaplapseWorkhorse()
-         {
-         org.gigapan.Util.log("Animating snaplapse...");
-         if (snaplapse && snaplapse.length > 0 && currentAnimationStep < snaplapse.length)
-            {
-            var frame = snaplapse[currentAnimationStep];
-            org.gigapan.Util.log("   Step " + currentAnimationStep + " = [" + frame['time'] + "] = min:("+frame['bounds']['xmin']+","+frame['bounds']['ymin']+") max:("+frame['bounds']['xmax']+","+frame['bounds']['ymax']+")");
-
-            // jump to the time and position (TODO: make sure we're there before continuing)
-            timelapse.seek(frame['time']);
-            timelapse.warpToBoundingBox(frame['bounds']);
-
-            currentAnimationStep++;
-            setTimeout(animateSnaplapseWorkhorse, $("#playbackDelayInMillis").val());
-            }
-         }
-   </script>
+      }
+</script>
 </head>
 <body>
 
