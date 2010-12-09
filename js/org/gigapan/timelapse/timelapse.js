@@ -395,10 +395,11 @@ if (!org.gigapan.timelapse.Videoset)
                   UTIL.log('vvvvvvvvvvvvvvvvvvvvvvvv start refresh');
                   logReadyVideos();
                   
-                  for (var tileidx0 in tiles) tiles[tileidx0].needed = false;
+                  for (var tileidx in tiles) tiles[tileidx].needed = false;
 
                   var tileidxs = computeNeededTiles(view);
-                  // Add new tiles and reposition ones we want to keep
+                  var currentLevel = scale2level(view.scale);
+                  // Add new tiles, hold on to too-low-res tiles still needed
                   for (var tileidx1 in tileidxs)
                      {
                      var tile = tiles[tileidx1];
@@ -410,11 +411,32 @@ if (!org.gigapan.timelapse.Videoset)
                      tile.needed = true;
                      if (!tile.video.ready) needFirstAncestor(tileidx1);
                      }
-                  // Delete tiles we no longer need
-                  for (var tileidx2 in tiles)
+
+                  // Sort ready, higher-level tiles according to level
+                  // TODO: only get on-screen tiles
+                  var highLevelTileidxs = [];
+                  for (var tileidx in tiles)
                      {
-                     if (!tiles[tileidx2].needed) deleteTileidx(tileidx2);
-                     else repositionTileidx(tileidx2);
+                     if (getTileidxLevel(tileidx) > currentLevel && tiles[tileidx].video.ready)
+                        {
+                        highLevelTileidxs.push(tileidx);
+                        }
+                     }
+                  highLevelTileidxs = highLevelTileidxs.sort();
+
+                  // Look for higher-level tiles we need to keep for now
+                  for (var i = 0; i < highLevelTileidxs.length; i++)
+                     {
+                     var tileidx = highLevelTileidxs[i];
+                     var ancestor = findFirstNeededAncestor(tileidx);
+                     if (ancestor && !ancestor.ready) tiles[tileidx].needed = true;
+                     }
+
+                  // Delete tiles we no longer need and reposition the ones we need
+                  for (var tileidx in tiles)
+                     {
+                     if (!tiles[tileidx].needed) deleteTileidx(tileidx);
+                     else repositionTileidx(tileidx);
                      }
                   logReadyVideos();
                   UTIL.log('^^^^^^^^^^^^^^^^^^^^^^^^ end refresh');
@@ -445,26 +467,37 @@ if (!org.gigapan.timelapse.Videoset)
                   //      msg += " " + dumpTileidx(tileidx);
                   //      }
                   //   }
-                  UTIL.log(msg);
+                  //UTIL.log(msg);
                };
 
             var needFirstAncestor = function(tileidx)
                {
-                  UTIL.log("need ancestor for " + dumpTileidx(tileidx));
+                 //UTIL.log("need ancestor for " + dumpTileidx(tileidx));
                   var a = tileidx;
                   while (a)
                      {
                      a = getTileidxParent(a);
-                     UTIL.log("checking " + dumpTileidx(a) + ": present=" + !!tiles[a] + ", ready=" + (tiles[a]?tiles[a].video.ready:"n/a"));
+                     //UTIL.log("checking " + dumpTileidx(a) + ": present=" + !!tiles[a] + ", ready=" + (tiles[a]?tiles[a].video.ready:"n/a"));
                      
                      if (tiles[a] && tiles[a].video.ready)
                         {
                         tiles[a].needed=true;
-                        UTIL.log("need ancestor " + dumpTileidx(tileidx) + ": " + dumpTileidx(a));
+                        //UTIL.log("need ancestor " + dumpTileidx(tileidx) + ": " + dumpTileidx(a));
                         return;
                         }
                      }
-                  UTIL.log("need ancestor " + dumpTileidx(tileidx) + ": none found");
+                  //UTIL.log("need ancestor " + dumpTileidx(tileidx) + ": none found");
+               }
+
+            var findFirstNeededAncestor = function(tileidx)
+               {
+                  var a = tileidx;
+                  while (a)
+                     {
+                     a = getTileidxParent(a);
+                     if (tiles[a] && tiles[a].needed) return tiles[a];
+                     }
+                  return false;
                }
 
             var addTileidx = function(tileidx)
@@ -490,7 +523,7 @@ if (!org.gigapan.timelapse.Videoset)
                      UTIL.error('deleteTileidx(' + dumpTileidx(tileidx) + '): not loaded');
                      return;
                      }
-                  UTIL.log("removing tile " + dumpTileidx(tileidx));
+                  UTIL.log("removing tile " + dumpTileidx(tileidx) + " ready=" + tile.video.ready);
 
                   videoset.deleteVideo(tile.video);
                   delete tiles[tileidx];
@@ -531,7 +564,6 @@ if (!org.gigapan.timelapse.Videoset)
                      var tileidx = tiles[i].tileidx;
                      tileidxs[tileidx] = tileidx;
                      }
-                  UTIL.log("returning " + tiles.length + " tiles");
                   return tileidxs;
                };
 
@@ -540,7 +572,7 @@ if (!org.gigapan.timelapse.Videoset)
                   var ret = tileidxCreate(level,
                                            Math.floor(x / (tileWidth << (maxLevel - level))),
                                            Math.floor(y / (tileHeight << (maxLevel - level))));
-                  UTIL.log('tileidxAt(' + x + ',' + y + ',' + level + ')=' + dumpTileidx(ret));
+                  //UTIL.log('tileidxAt(' + x + ',' + y + ',' + level + ')=' + dumpTileidx(ret));
                   return ret;
                };
 

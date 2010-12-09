@@ -182,7 +182,7 @@ if (!org.gigapan.Util)
                         {
                         video = candidate;
                         delete inactiveVideos[videoId];
-                        UTIL.log("video(" + videoId + ") reused from video(" + candidate.id + ")");
+                        UTIL.log("video(" + id + "): reusing video(" + candidate.id + ")");
                         break;
                         }
                      }
@@ -193,9 +193,9 @@ if (!org.gigapan.Util)
                   video.id = id;
                   video.active = true;
                   video.ready = false;
-                  UTIL.log(getVideoSummaryAsString(video));
+                  //UTIL.log(getVideoSummaryAsString(video));
                   video.setAttribute('src', src);
-                  UTIL.log("set src successfully");
+                  //UTIL.log("set src successfully");
                   if (areNativeVideoControlsVisible)
                      {
                      video.setAttribute('controls', true);
@@ -215,7 +215,7 @@ if (!org.gigapan.Util)
 
             this.repositionVideo = function(video, geometry)
                {
-                  UTIL.log("video(" + video.id + ") reposition to left=" + geometry.left + ",top=" + geometry.top + ", w=" + geometry.width + ",h=" + geometry.height + "; ready="+video.ready);
+                  //UTIL.log("video(" + video.id + ") reposition to left=" + geometry.left + ",top=" + geometry.top + ", w=" + geometry.width + ",h=" + geometry.height + "; ready="+video.ready);
                   // toFixed prevents going to scientific notation when close to zero;  this confuses the DOM
                   video.style.left = geometry.left.toFixed(4) - (video.ready ? 0 : 100000);
                   video.style.top = geometry.top.toFixed(4);
@@ -229,11 +229,11 @@ if (!org.gigapan.Util)
                   UTIL.log("video(" + video.id + ") delete");
                   video.active = false;
                   video.pause();
-                  UTIL.log(getVideoSummaryAsString(video));
+                  //UTIL.log(getVideoSummaryAsString(video));
                   video.removeAttribute('src');
-                  UTIL.log(getVideoSummaryAsString(video));
+                  //UTIL.log(getVideoSummaryAsString(video));
                   video.style.display = 'none';
-                  UTIL.log(getVideoSummaryAsString(video));
+                  //UTIL.log(getVideoSummaryAsString(video));
                   delete activeVideos[video.id];
                   inactiveVideos[video.id] = video;
                };
@@ -332,14 +332,14 @@ if (!org.gigapan.Util)
                   var video = event.target;
                   if (!video.active)
                      {
-                     UTIL.log("video(" + video.id + ") videoLoadedMetadata after deactivation!");
+                     //UTIL.log("video(" + video.id + ") videoLoadedMetadata after deactivation!");
                      return;
                      }
                   if (!duration)
                      {
                      duration = video.duration;
                      }
-                  UTIL.log("video(" + video.id + ") videoLoadedMetadata;  seek to " + _getCurrentTime());
+                  UTIL.log("video(" + video.id + ") videoLoadedMetadata; seek to " + _getCurrentTime());
                   video.currentTime = _getCurrentTime();
                   if (!_isPaused())
                      {
