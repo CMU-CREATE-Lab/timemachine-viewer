@@ -402,7 +402,7 @@ if (!org.gigapan.Util)
                {
                   if (errorThreshold == undefined)
                      {
-                     errorThreshold = 0.01;
+                     errorThreshold = UTIL.isChrome() ? 0.01 : 0.04;
                      }
 
                   var t = _getCurrentTime();

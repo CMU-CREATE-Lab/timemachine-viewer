@@ -49,6 +49,8 @@ else
 //======================================================================================================================
 (function()
    {
+      var isChromeCached;
+      
       org.gigapan.Util = function()
          {
          };
@@ -114,4 +116,11 @@ else
 
             return hoursStr + ":" + minutesStr + ":" + secondsStr;
          };
+
+      org.gigapan.Util.isChrome = function()
+         {
+            if (isChromeCached != undefined) return isChromeCached;
+            return isChromeCached = (navigator.userAgent.indexOf("Chrome") >= 0);
+         };
+
    })();

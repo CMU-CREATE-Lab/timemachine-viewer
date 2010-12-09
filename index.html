@@ -250,14 +250,13 @@
 </table>
 <br/><br/>
 
+<!--
 <label for="timelapseChooser">Choose a timelapse:</label>
 <select id="timelapseChooser" onchange="changeTimelapse(this.value);">
    <option value="brassica" selected="selected">Brassica
 </select>
+-->
 
-<br/>Debug:
-<input id="logVideoStatus" type="checkbox" onclick="timelapse.setStatusLoggingEnabled(this.value)"/><label for="logVideoStatus">Log video status</label>
-<input id="showNativeVideoControls" type="checkbox" onclick="timelapse.setNativeVideoControlsEnabled(this.value)"/><label for="showNativeVideoControls">Show Native Video Controls</label>
 
 <table border="0" cellpadding="3" cellspacing="0" class="control_panel" style="margin-top:10px">
    <tr>
@@ -285,7 +284,12 @@
       </td>
    </tr>
 </table>
-<textarea id="jsonOutput" style="display:none" rows="30" cols="70" id="json"></textarea>
+
+<br/>Debug:
+<input id="logVideoStatus" type="checkbox" onclick="timelapse.setStatusLoggingEnabled(this.value)"/><label for="logVideoStatus">Log video status</label>
+<input id="showNativeVideoControls" type="checkbox" onclick="timelapse.setNativeVideoControlsEnabled(this.value)"/><label for="showNativeVideoControls">Show Native Video Controls</label>
+
+<!-- <textarea id="jsonOutput" style="display:none" rows="30" cols="70" id="json"></textarea> -->
 
 </body>
 </html>
