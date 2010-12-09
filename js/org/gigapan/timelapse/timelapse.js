@@ -429,8 +429,12 @@ if (!org.gigapan.timelapse.Videoset)
                   for (var i = 0; i < highLevelTileidxs.length; i++)
                      {
                      var tileidx = highLevelTileidxs[i];
-                     var ancestor = findFirstNeededAncestor(tileidx);
-                     if (ancestor && !ancestor.ready) tiles[tileidx].needed = true;
+                     var ancestoridx = findFirstNeededAncestor(tileidx);
+                     if (ancestoridx != false && !tiles[ancestoridx].video.ready)
+                        {
+                        UTIL.log("Need " + dumpTileidx(tileidx) + " because " + dumpTileidx(ancestoridx) + " isn't ready");
+                        tiles[tileidx].needed = true;
+                        }
                      }
 
                   // Delete tiles we no longer need and reposition the ones we need
@@ -473,7 +477,7 @@ if (!org.gigapan.timelapse.Videoset)
 
             var needFirstAncestor = function(tileidx)
                {
-                 //UTIL.log("need ancestor for " + dumpTileidx(tileidx));
+                  //UTIL.log("need ancestor for " + dumpTileidx(tileidx));
                   var a = tileidx;
                   while (a)
                      {
@@ -496,7 +500,7 @@ if (!org.gigapan.timelapse.Videoset)
                   while (a)
                      {
                      a = getTileidxParent(a);
-                     if (tiles[a] && tiles[a].needed) return tiles[a];
+                     if (tiles[a] && tiles[a].needed) return a;
                      }
                   return false;
                }
