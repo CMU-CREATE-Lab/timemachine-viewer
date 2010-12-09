@@ -300,9 +300,11 @@ if (!org.gigapan.timelapse.Videoset)
             var handleMousedownEvent = function(event)
                {
                   var lastEvent = event;
+                  var saveMouseMove = document.onmousemove;
+                  var saveMouseUp = document.onmouseup;
                   UTIL.log("mousedown");
                   videoDiv.style.cursor = "url('css/cursors/closedhand.cur')";
-                  videoDiv.onmousemove = function(event)
+                  document.onmousemove = function(event)
                      {
                         UTIL.log("mousemove");
                         targetView.x += (lastEvent.pageX - event.pageX) / view.scale;
@@ -311,11 +313,12 @@ if (!org.gigapan.timelapse.Videoset)
                         lastEvent = event;
                         return false;
                      };
-                  videoDiv.onmouseup = function()
+                  document.onmouseup = function()
                      {
                         UTIL.log("mouseup");
                         videoDiv.style.cursor = "url('css/cursors/openhand.cur')";
-                        videoDiv.onmousemove = null;
+                        document.onmousemove = saveMouseMove;
+                        document.onmouseup = saveMouseUp;
                      };
                   return false;
                };
