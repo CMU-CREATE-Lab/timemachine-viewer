@@ -192,6 +192,7 @@ if (!org.gigapan.Util)
                      }
                   video.id = id;
                   video.active = true;
+                  video.ready = false;
                   UTIL.log(getVideoSummaryAsString(video));
                   video.setAttribute('src', src);
                   UTIL.log("set src successfully");
@@ -208,14 +209,15 @@ if (!org.gigapan.Util)
                   activeVideos[video.id] = video;
                   videoDiv.appendChild(video);
                   video.addEventListener('loadedmetadata', videoLoadedMetadata, false);
+                  video.addEventListener('seeked', videoSeeked, false);
                   return video;
                };
 
             this.repositionVideo = function(video, geometry)
                {
-                  UTIL.log("video(" + video.id + ") reposition to left=" + geometry.left + ",top=" + geometry.top + ", w=" + geometry.width + ",h=" + geometry.height);
+                  UTIL.log("video(" + video.id + ") reposition to left=" + geometry.left + ",top=" + geometry.top + ", w=" + geometry.width + ",h=" + geometry.height + "; ready="+video.ready);
                   // toFixed prevents going to scientific notation when close to zero;  this confuses the DOM
-                  video.style.left = geometry.left.toFixed(4);
+                  video.style.left = geometry.left.toFixed(4) - (video.ready ? 0 : 100000);
                   video.style.top = geometry.top.toFixed(4);
 
                   video.style.width = geometry.width;
@@ -345,6 +347,16 @@ if (!org.gigapan.Util)
                      }
                };
 
+            var videoSeeked = function(event)
+               {
+                  var video = event.target;
+                  if (!video.ready)
+                     {
+                     video.ready = true;
+                     video.style.left = parseFloat(video.style.left) + 100000;
+                     }
+               };
+
             // Call periodically, when video is running
             var writeStatusToLog = function()
                {
@@ -413,10 +425,11 @@ if (!org.gigapan.Util)
                         UTIL.log("Corrected video(" + videoId + ") from " + video.currentTime + " to " + t + " (error=" + (video.currentTime - t) + ", state=" + video.readyState + ")");
                         video.currentTime = t + errorThreshold * .5; // seek ahead slightly
                         }
-                     //    else if (!tile.loaded && video.readyState >= 2) { // HAVE_CURRENT_DATA=2
-                     //      tile.loaded = true;
-                     //      videoset__repositionTileidx(tileidx, view);
-                     //    }
+                     else if (!video.ready && video.readyState >= 3)
+                        {
+                        video.ready = true;
+                        video.style.left = parseFloat(video.style.left) + 100000;
+                        }
                      }
 
                   for (var i = 0; i < syncListeners.length; i++)
@@ -440,6 +453,6 @@ if (!org.gigapan.Util)
             UTIL.log('Videoset() constructor');
 
             this.setStatusLoggingEnabled(false);
-
+               
          };
    })();
