@@ -404,17 +404,17 @@ if (!org.gigapan.timelapse.Videoset)
                      var tile = tiles[tileidx1];
                      if (!tile)
                         {
-                        UTIL.log('need ' + tile + ' from ' + getTileidxUrl(tileidx1));
+                        UTIL.log('need ' + dumpTileidx(tileidx1) + ' from ' + getTileidxUrl(tileidx1));
                         tile = addTileidx(tileidx1);
                         }
                      tile.needed = true;
-                     repositionTileidx(tileidx1);
                      if (!tile.video.ready) needFirstAncestor(tileidx1);
                      }
                   // Delete tiles we no longer need
                   for (var tileidx2 in tiles)
                      {
                      if (!tiles[tileidx2].needed) deleteTileidx(tileidx2);
+                     else repositionTileidx(tileidx2);
                      }
                   logReadyVideos();
                   UTIL.log('^^^^^^^^^^^^^^^^^^^^^^^^ end refresh');
@@ -435,16 +435,29 @@ if (!org.gigapan.timelapse.Videoset)
                      {
                      if (levelCounts[i]) msg += " " + i + ":" + levelCounts[i];
                      }
+                  if (levelCounts.length == 0) msg += "**************************************************************************";
+                  UTIL.log(msg);
+                  //msg = "ready tiles:";
+                  //for (var tileidx in tiles)
+                  //   {
+                  //   if (tiles[tileidx].video.ready)
+                  //      {
+                  //      msg += " " + dumpTileidx(tileidx);
+                  //      }
+                  //   }
                   UTIL.log(msg);
                };
 
             var needFirstAncestor = function(tileidx)
                {
+                  UTIL.log("need ancestor for " + dumpTileidx(tileidx));
                   var a = tileidx;
                   while (a)
                      {
                      a = getTileidxParent(a);
-                     if (tiles[a])
+                     UTIL.log("checking " + dumpTileidx(a) + ": present=" + !!tiles[a] + ", ready=" + (tiles[a]?tiles[a].video.ready:"n/a"));
+                     
+                     if (tiles[a] && tiles[a].video.ready)
                         {
                         tiles[a].needed=true;
                         UTIL.log("need ancestor " + dumpTileidx(tileidx) + ": " + dumpTileidx(a));
