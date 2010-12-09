@@ -7,7 +7,6 @@
 <script src="js/org/gigapan/util.js" type="text/javascript"></script>
 <script src="js/org/gigapan/timelapse/videoset.js" type="text/javascript"></script>
 <script src="js/org/gigapan/timelapse/timelapse.js" type="text/javascript"></script>
-<script src="js/org/gigapan/timelapse/snaplapse.js" type="text/javascript"></script>
 
 <link href="css/timelapse.css" rel="stylesheet" type="text/css"/>
 <link href="css/jquery-ui/smoothness/jquery-ui-1.8.6.custom.css" rel="stylesheet" type="text/css"/>
@@ -17,7 +16,6 @@
    var timeStepInSecs = 0.04; // 25 frames per second
    var timelapse = null;
    var timelapseCurrentTimeInSeconds = 0.0;
-   var snaplapse = null;
 
    $(document).ready(function()
       {
@@ -162,67 +160,115 @@
       alert("TODO - changing timelapse to: " + timelapse);
    }
 
-   function newSnaplapse()
-      {
-      snaplapse = new org.gigapan.timelapse.Snaplapse(timelapse);
-      snaplapse.addEventListener('play',
-                                 function()
-                                    {
-                                       $("#newSnaplapseButton").attr("disabled", "disabled");
-                                       $("#recordKeyframeButton").attr("disabled", "disabled");
-                                       $("#playStopSnaplapseButton").text("Stop Snaplapse");
-                                    });
-      snaplapse.addEventListener('stop',
-                                 function()
-                                    {
-                                       $("#newSnaplapseButton").removeAttr("disabled");
-                                       $("#recordKeyframeButton").removeAttr("disabled");
-                                       $("#playStopSnaplapseButton").text("Play Snaplapse");
-                                    });
-      snaplapse.addEventListener('record-keyframe',
-                                 function()
-                                    {
-                                       $("#numSnaplapseKeyframes").text(snaplapse.getNumKeyframes());
-                                    });
-      snaplapse.addEventListener('warp',
-                                 function(frame)
-                                    {
-                                       $("#currentFrame").text(frame['time'].toFixed(2));
-                                    });
-      $("#recordKeyframeButton").removeAttr("disabled");
-      $("#playStopSnaplapseButton").attr("disabled", "disabled");
-      $("#numSnaplapseKeyframes").text("0");
-      $("#currentFrame").text("n/a");
-      }
+   // ---------------------------------------------------------------------------------------------------------------
+
+   var snaplapseKeyframes = [];
+   var snaplapse = null;
 
    function recordKeyframe()
       {
-      if (snaplapse)
+      var bounds = timelapse.getBoundingBoxForCurrentView();
+
+      var keyframe = {};
+      keyframe['time'] = timelapse.getCurrentTime();
+      keyframe['bounds'] = {};
+      keyframe['bounds']['xmin'] = bounds.xmin;
+      keyframe['bounds']['ymin'] = bounds.ymin;
+      keyframe['bounds']['xmax'] = bounds.xmax;
+      keyframe['bounds']['ymax'] = bounds.ymax;
+      snaplapseKeyframes[snaplapseKeyframes.length] = keyframe;
+
+      $("#jsonOutput").text(JSON.stringify(snaplapseKeyframes, null, 3));
+      }
+
+   function playSnaplapse()
+      {
+      if (snaplapseKeyframes.length > 0)
          {
-         var success = snaplapse.recordKeyframe();
-         if (!success)
-            {
-               alert("ERROR: Invalid time position\n\n" +
-                     "The flow of time in a snaplapse can only be in one\n" +
-                     "direction, and the time position of a keyframe cannot\n" +
-                     "be the same as the previous keyframe.")
-            }
-         if (snaplapse.getNumKeyframes() > 1)
-            {
-            $("#playStopSnaplapseButton").removeAttr("disabled");
-            }
+         // stop playback (TODO: disable Play button, timeline, etc.)
+         timelapse.pause();
+
+         // build the snaplapse
+         buildSnaplapse();
+
+         $("#jsonOutput").text(JSON.stringify(snaplapse, null, 3));
+
+         animateSnaplapse();
          }
       }
 
-   function playStopSnaplapse()
+   function buildSnaplapse()
       {
-      if (snaplapse.isPlaying())
+      var keyframe = snaplapseKeyframes[0];
+
+      snaplapse = [];
+      snaplapse[snaplapse.length] = keyframe;
+
+      var previousKeyframe = keyframe;
+      for (var i = 1; i < snaplapseKeyframes.length; i++)
          {
-         snaplapse.stop();
+         var currentKeyframe = snaplapseKeyframes[i];
+
+         var timeStep = 1 / timelapse.getFps();
+         var numStepsBetweenKeyframes = Math.abs((currentKeyframe['time'] - previousKeyframe['time']) / timeStep);
+         org.gigapan.Util.log("Processing keyframe " + i + ": Num steps = [" + numStepsBetweenKeyframes + "]");
+
+         var timeOffset = (currentKeyframe['time'] - previousKeyframe['time'] ) / numStepsBetweenKeyframes;
+         var boundsXminOffset = (currentKeyframe['bounds']['xmin'] - previousKeyframe['bounds']['xmin'] ) / numStepsBetweenKeyframes;
+         var boundsYminOffset = (currentKeyframe['bounds']['ymin'] - previousKeyframe['bounds']['ymin'] ) / numStepsBetweenKeyframes;
+         var boundsXmaxOffset = (currentKeyframe['bounds']['xmax'] - previousKeyframe['bounds']['xmax'] ) / numStepsBetweenKeyframes;
+         var boundsYmaxOffset = (currentKeyframe['bounds']['ymax'] - previousKeyframe['bounds']['ymax'] ) / numStepsBetweenKeyframes;
+         org.gigapan.Util.log("   boundsXminOffset: " + boundsXminOffset);
+         org.gigapan.Util.log("   boundsYminOffset: " + boundsYminOffset);
+         org.gigapan.Util.log("   boundsXmaxOffset: " + boundsXmaxOffset);
+         org.gigapan.Util.log("   boundsYmaxOffset: " + boundsYmaxOffset);
+
+         // record the frames between keyframes
+         var previousFrame = previousKeyframe;
+         for (var frameIndex = 1; frameIndex <= numStepsBetweenKeyframes; frameIndex++)
+            {
+            var frame = {};
+            frame['time'] = previousFrame['time'] + timeOffset;
+            frame['bounds'] = {};
+            frame['bounds']['xmin'] = previousFrame['bounds']['xmin'] + boundsXminOffset;
+            frame['bounds']['ymin'] = previousFrame['bounds']['ymin'] + boundsYminOffset;
+            frame['bounds']['xmax'] = previousFrame['bounds']['xmax'] + boundsXmaxOffset;
+            frame['bounds']['ymax'] = previousFrame['bounds']['ymax'] + boundsYmaxOffset;
+            snaplapse[snaplapse.length] = frame;
+            previousFrame = frame;
+            }
+         previousKeyframe = currentKeyframe;
          }
-      else
+      }
+
+   var currentAnimationStep = 0;
+   function animateSnaplapse()
+      {
+      if (snaplapse && snaplapse.length > 0)
          {
-         snaplapse.play();
+         currentAnimationStep = 0;
+
+         // jump to starting time and position (TODO: make sure we are there before continuing)
+         timelapse.warpToBoundingBox(snaplapse[0]['bounds']);
+
+         animateSnaplapseWorkhorse();
+         }
+      }
+
+   function animateSnaplapseWorkhorse()
+      {
+      org.gigapan.Util.log("Animating snaplapse...");
+      if (snaplapse && snaplapse.length > 0 && currentAnimationStep < snaplapse.length)
+         {
+         var frame = snaplapse[currentAnimationStep];
+         org.gigapan.Util.log("   Step " + currentAnimationStep + " = [" + frame['time'] + "] = min:("+frame['bounds']['xmin']+","+frame['bounds']['ymin']+") max:("+frame['bounds']['xmax']+","+frame['bounds']['ymax']+")");
+
+         // jump to the time and position (TODO: make sure we are there before continuing)
+         timelapse.seek(frame['time']);
+         timelapse.warpToBoundingBox(frame['bounds']);
+
+         currentAnimationStep++;
+         setTimeout(animateSnaplapseWorkhorse, $("#playbackDelayInMillis").val());
          }
       }
 </script>
@@ -256,7 +302,7 @@
    <tr>
       <td>(-)</td>
       <td colspan="4">
-         <label for="playBackSpeedSlider">Playback Speed:</label>
+      	 <label for="playBackSpeedSlider">Playback Speed:</label>
          <div id="playBackSpeedSlider"></div>
       </td>
       <td>(+)</td>
@@ -274,27 +320,27 @@
 
 <table border="0" cellpadding="3" cellspacing="0" class="control_panel" style="margin-top:10px">
    <tr>
-      <th align="center">Snaplapse Creator</th>
+      <th colspan="2">Snaplapse Creator</th>
    </tr>
    <tr>
-      <td align="center">
-         <button type="button" id="newSnaplapseButton" onclick="newSnaplapse()">New Snaplapse</button>
-         <button type="button" disabled="disabled" id="recordKeyframeButton" onclick="recordKeyframe()">Record Keyframe</button>
-         <button type="button" disabled="disabled" id="playStopSnaplapseButton" onclick="playStopSnaplapse()">Play Snaplapse</button>
+      <td>
+         <input type="button" id="recordKeyframeButton" onclick="recordKeyframe()" value="Record Keyframe">
+      </td>
+      <td align="right">
+         <input type="button" id="playSnaplapseButton" onclick="playSnaplapse()" value="Play Snaplapse">
       </td>
    </tr>
    <tr>
-      <td align="center">
-         <table border="0" cellpadding="3" cellspacing="0">
-            <tr>
-               <td><label for="numSnaplapseKeyframes">Keyframes:</label></td>
-               <td align="right"><span id="numSnaplapseKeyframes">0</span></td>
-            </tr>
-            <tr>
-               <td><label for="currentFrame">Current Frame:</label></td>
-               <td align="right"><span id="currentFrame">n/a</span></td>
-            </tr>
-         </table>
+      <td colspan="2" align="right">
+         <label for="playbackDelayInMillis">Playback Frame Delay (ms):</label>
+         <select id="playbackDelayInMillis">
+            <option value="1">1</option>
+            <option value="10" selected="selected">10</option>
+            <option value="50">50</option>
+            <option value="100">100</option>
+            <option value="250">250</option>
+            <option value="1000">1000</option>
+         </select>
       </td>
    </tr>
 </table>

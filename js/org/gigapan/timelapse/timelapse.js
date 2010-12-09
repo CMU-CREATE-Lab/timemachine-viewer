@@ -241,6 +241,11 @@ if (!org.gigapan.timelapse.Videoset)
                   videoset.setPlaybackRate(rate);
                };
 
+            this.getPlaybackRate = function()
+               {
+                  return videoset.getPlaybackRate();
+               };
+
             this.getVideoPosition = function()
                {
                   return videoset.getVideoPosition();

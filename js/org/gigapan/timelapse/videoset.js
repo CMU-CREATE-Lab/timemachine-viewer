@@ -284,6 +284,11 @@ if (!org.gigapan.Util)
                      }
                };
 
+            this.getPlaybackRate = function()
+               {
+                  return playbackRate;
+               };
+
             this.setPlaybackRate = function(rate)
                {
                   if (rate != playbackRate)
