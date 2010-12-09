@@ -392,31 +392,67 @@ if (!org.gigapan.timelapse.Videoset)
 
             var refresh = function()
                {
-                  UTIL.log('refresh');
+                  UTIL.log('vvvvvvvvvvvvvvvvvvvvvvvv start refresh');
+                  logReadyVideos();
+                  
+                  for (var tileidx0 in tiles) tiles[tileidx0].needed = false;
+
                   var tileidxs = computeNeededTiles(view);
                   // Add new tiles and reposition ones we want to keep
                   for (var tileidx1 in tileidxs)
                      {
-                     if (!tiles[tileidx1])
+                     var tile = tiles[tileidx1];
+                     if (!tile)
                         {
-                        UTIL.log('need ' + dumpTileidx(tileidx1) + ' from ' + getTileidxUrl(tileidx1));
-                        addTileidx(tileidx1);
+                        UTIL.log('need ' + tile + ' from ' + getTileidxUrl(tileidx1));
+                        tile = addTileidx(tileidx1);
                         }
-                     else
-                        {
-                        UTIL.log('already have ' + dumpTileidx(tileidx1));
-                        repositionTileidx(tileidx1);
-                        }
+                     tile.needed = true;
+                     repositionTileidx(tileidx1);
+                     if (!tile.video.ready) needFirstAncestor(tileidx1);
                      }
                   // Delete tiles we no longer need
                   for (var tileidx2 in tiles)
                      {
-                     if (tileidxs[tileidx2] == undefined)
+                     if (!tiles[tileidx2].needed) deleteTileidx(tileidx2);
+                     }
+                  logReadyVideos();
+                  UTIL.log('^^^^^^^^^^^^^^^^^^^^^^^^ end refresh');
+               };
+
+            var logReadyVideos = function()
+               {
+                  var levelCounts=[];
+                  for (var tileidx in tiles)
+                     {
+                     if (tiles[tileidx].video.ready)
                         {
-                        deleteTileidx(tileidx2);
+                        levelCounts[getTileidxLevel(tileidx)] = 1 + (levelCounts[getTileidxLevel(tileidx)] || 0);
                         }
                      }
+                  var msg = "level counts:";
+                  for (var i = 0; i < levelCounts.length; i++)
+                     {
+                     if (levelCounts[i]) msg += " " + i + ":" + levelCounts[i];
+                     }
+                  UTIL.log(msg);
                };
+
+            var needFirstAncestor = function(tileidx)
+               {
+                  var a = tileidx;
+                  while (a)
+                     {
+                     a = getTileidxParent(a);
+                     if (tiles[a])
+                        {
+                        tiles[a].needed=true;
+                        UTIL.log("need ancestor " + dumpTileidx(tileidx) + ": " + dumpTileidx(a));
+                        return;
+                        }
+                     }
+                  UTIL.log("need ancestor " + dumpTileidx(tileidx) + ": none found");
+               }
 
             var addTileidx = function(tileidx)
                {
@@ -430,7 +466,7 @@ if (!org.gigapan.timelapse.Videoset)
                   UTIL.log("adding tile " + dumpTileidx(tileidx) + " from " + url + " and geom = (left:" + geom['left'] + " ,top:" + geom['top'] + ", width:" + geom['width'] + ", height:" + geom['height'] + ")");
                   var video = videoset.addVideo(url, geom);
 
-                  tiles[tileidx] = {video:video};
+                  return tiles[tileidx] = {video:video};
                };
 
             var deleteTileidx = function(tileidx)
@@ -571,6 +607,11 @@ if (!org.gigapan.timelapse.Videoset)
             var getTileidxColumn = function(t)
                {
                   return 16383 & t;
+               };
+
+            var getTileidxParent = function(t)
+               {
+                  return tileidxCreate(getTileidxLevel(t)-1, getTileidxColumn(t)>>1, getTileidxRow(t)>>1);
                };
 
             var dumpTileidx = function(t)
