@@ -5,11 +5,12 @@ body, p, table, tr, td {
 
 #timelineSlider {
  margin: 10px;
- width: 583px;
+ width: 607px;
 }
 
 #playBackSpeedSlider {
- width: 100px;
+ margin: 5px;
+ width: 180px;
 }
 
 #timelapse {
@@ -55,21 +56,6 @@ body, p, table, tr, td {
  float: left;
 }
 
-.stop_mouseover {
- width: 20px;
- height: 22px;
- background-image: url("../images/stop_mouseover.png");
- cursor: pointer;
- float: left;
-}
-
-.stop_mouseout {
- width: 20px;
- height: 22px;
- background-image: url("../images/stop_mouseout.png");
- cursor: pointer;
- float: left;
-}
 .home_mouseover {
   width: 20px;
   height: 23px;
