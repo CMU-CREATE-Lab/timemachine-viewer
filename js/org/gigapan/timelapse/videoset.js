@@ -111,7 +111,7 @@ if (!org.gigapan.Util)
                   isStatusLoggingEnabled = enable;
                   if (enable)
                      {
-                     logInterval = setInterval(writeStatusToLog, 500);
+                     logInterval = setInterval(this.writeStatusToLog, 500);
                      }
                   else
                      {
@@ -358,7 +358,7 @@ if (!org.gigapan.Util)
                };
 
             // Call periodically, when video is running
-            var writeStatusToLog = function()
+            this.writeStatusToLog = function()
                {
                   var msg = "video status:";
                   for (var videoId1 in activeVideos)

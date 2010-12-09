@@ -118,6 +118,7 @@ if (!org.gigapan.timelapse.Videoset)
             // Public methods
             //
 
+            // TODO: fix this
             this.handleWindowClose = function()
                {
                   /*num_active_removed = 0;
@@ -625,6 +626,12 @@ if (!org.gigapan.timelapse.Videoset)
 
                   videoset.repositionVideo(tile['video'], tileidxGeometry(tileidx));
                };
+
+            this.writeStatusToLog = function()
+               {
+                  videoset.writeStatusToLog();
+               };
+            this.getTiles = function() { return tiles; }
 
             ///////////////////////////
             // Tile index
