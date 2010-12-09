@@ -413,7 +413,7 @@ if (!org.gigapan.timelapse.Videoset)
                      }
 
                   // Sort ready, higher-level tiles according to level
-                  // TODO: only get on-screen tiles
+                  // TODO: only consider on-screen tiles
                   var highLevelTileidxs = [];
                   for (var tileidx in tiles)
                      {
