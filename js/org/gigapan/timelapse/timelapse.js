@@ -181,13 +181,12 @@ if (!org.gigapan.timelapse.Videoset)
                   UTIL.log('mousescroll delta  ' + event.wheelDelta);
                   if (event.wheelDelta > 0)
                      {
-                     targetView.scale /= .9;
+                     zoomAbout(1/.9, event.x, event.y);
                      }
                   else if (event.wheelDelta < 0)
                      {
-                     targetView.scale *= .9;
+                     zoomAbout(.9, event.x, event.y);
                      }
-                  setTargetView(targetView);
                };
 
             var _warpTo = function(newView)
@@ -324,19 +323,34 @@ if (!org.gigapan.timelapse.Videoset)
                   return false;
                };
 
-            var handleDoubleClickEvent = function()
+            var zoomAbout = function(zoom, x, y)
                {
-                  UTIL.log('double click');
-                  targetView.scale *= 2;
+                  var newScale = limitScale(targetView.scale * zoom);
+                  var actualZoom = newScale / targetView.scale;
+                  targetView.x += 1 * (1-1/actualZoom) * (event.x - viewportWidth*.5) / targetView.scale;
+                  targetView.y += 1 * (1-1/actualZoom) * (event.y - viewportHeight*.5) / targetView.scale;
+                  targetView.scale = newScale;
                   setTargetView(targetView);
                };
+              
+            var handleDoubleClickEvent = function(event)
+               {
+                  UTIL.log('double click');
+                  zoomAbout(2., event.x, event.y);
+               };
 
-            var setTargetView = function(newView)
+            var limitScale = function(scale)
                {
                   var maxScale = 2;
                   var minScale = _homeView().scale * .5;
+
+                  return Math.max(minScale, Math.min(maxScale, scale));
+               };
+                  
+            var setTargetView = function(newView)
+               {
                   var tempView = {};
-                  tempView.scale = Math.max(minScale, Math.min(maxScale, newView.scale));
+                  tempView.scale = limitScale(newView.scale);
                   tempView.x = Math.max(0, Math.min(panoWidth, newView.x));
                   tempView.y = Math.max(0, Math.min(panoHeight, newView.y));
                   targetView.x = tempView.x;
