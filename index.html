@@ -1,7 +1,7 @@
 <html>
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
-<title>Gigapan Timelapse Explorer</title>
+<title>GigaPan Timelapse Explorer</title>
 <script src="js/jquery/jquery.min.js" type="text/javascript"></script>
 <script src="js/jquery/jquery-ui-1.8.6.custom.min.js" type="text/javascript"></script>
 <script src="js/jquery/plugins/mouse/jQuery_mousewheel_plugin.js" type="text/javascript"></script>
@@ -24,6 +24,11 @@
 
    $(document).ready(function()
       {
+
+	  	 if (!browserSupported()){
+	  	   window.location = "browsernotsupported.html"
+		 }
+
          timelapse = new org.gigapan.timelapse.Timelapse('../timelapses/brassica1-15m-halfsize/',
                                                          'timelapse',
                                                          {"tile_height":256,"height":3876,"fps":25,"frames":2438,"width":9856,"tile_width":256});
@@ -71,7 +76,7 @@
 		 $('#speed').selectToUISlider({
 			labels: 12,
 			labelSrc: "text",
-			tooltipSrc: "text",
+			tooltipSrc: "text"
 		 }).hide();
 
          $('.ui-slider-handle').bind("mouseover", function() {
@@ -135,8 +140,12 @@
 
          $("#totalTime").text(org.gigapan.Util.formatTime(timelapseDurationInSeconds));
 
-
       });
+
+   function browserSupported() {
+     var v = document.createElement('video');
+     return !!(v.canPlayType && v.canPlayType('video/mp4; codecs="avc1.42E01E, mp4a.40.2"').replace(/no/, ''));
+   }
 
    function changeTimelapse(timelapse) {
       alert("TODO - changing timelapse to: " + timelapse);
