@@ -86,6 +86,7 @@ if (!org.gigapan.Util)
             var inactiveVideos = {};
             var playbackRate = 1;
             var id = 0;
+            var fps = 25;
             var areNativeVideoControlsVisible = false;
             var duration = 0;
             var isCacheDisabled = false;
@@ -158,6 +159,16 @@ if (!org.gigapan.Util)
                         }
                      }
                };
+
+            this.setFps = function(newFps)
+               {
+                  fps = newFps;
+               }
+
+            this.getFps = function()
+               {
+                  return fps;
+               }
 
             ///////////////////////////
             // Add and remove videos
@@ -307,9 +318,13 @@ if (!org.gigapan.Util)
 
             var _seek = function(new_time)
                {
+                  // Chrome workaround: always seek 1/4 frame in from beginning of frame to ensure video displays correct frame #
+                  // Requires h.264 videos to be encoded with no B-frames
+                  new_time = (Math.round(new_time * fps) + .25) / fps;
                   if (new_time != _getCurrentTime())
                      {
                      timeOffset = new_time - UTIL.getCurrentTimeInSecs() * (paused ? 0 : playbackRate);
+                     console.log("timeOffset is " + timeOffset + ", frame " + timeOffset * 25);
                      sync(0.0);
                      }
                };

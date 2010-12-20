@@ -97,7 +97,6 @@ if (!org.gigapan.timelapse.Videoset)
             var viewportHeight = 0;
             var tileWidth = 0;
             var tileHeight = 0;
-            var fps = 0;
             var frames = 0;
             var maxLevel = 0;
             var playbackRate = .5;
@@ -274,7 +273,7 @@ if (!org.gigapan.timelapse.Videoset)
 
             this.getFps = function()
                {
-                  return fps;
+                 return videoset.getFps();
                };
 
             this.addTimeChangeListener = function(listener)
@@ -385,7 +384,7 @@ if (!org.gigapan.timelapse.Videoset)
                   panoHeight = data['height'];
                   tileWidth = data['tile_width'];
                   tileHeight = data['tile_height'];
-                  fps = data['fps'];
+                  videoset.setFps(data['fps']);
                   frames = data['frames'];
 
                   // Compute max level #
