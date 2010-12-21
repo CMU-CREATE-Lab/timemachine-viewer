@@ -95,6 +95,9 @@ if (!org.gigapan.Util)
             var logInterval = null;
             var syncInterval = null;
             var syncListeners = [];
+            var perfInitialSeeks = 0;
+            var perfSeekCorrections = [];
+            var perfAdded = 0;
 
             ////////////////////////////////////////////////////////////////////////////////////////////////////////////
             //
@@ -170,12 +173,34 @@ if (!org.gigapan.Util)
                   return fps;
                }
 
+            this.resetPerf = function()
+               {
+                  perfInitialSeeks = 0;
+                  perfSeekCorrections = [];
+                  perfAdded = 0;
+               }
+
+            this.getPerf = function()
+               {
+                  var perf = "Videos added: " + perfAdded;
+                  perf += "; initial seeks: " + perfInitialSeeks;
+                  perf += "; # corrections: " + perfSeekCorrections.length;
+                  perf += "; Corrections: ";
+                  for (var i = 0; i < perfSeekCorrections.length; i++)
+                     {
+                     if (i) perf += ",";
+                     perf += perfSeekCorrections[i].toFixed(4);
+                     }
+                  return perf;
+               }
+
             ///////////////////////////
             // Add and remove videos
             //
 
             this.addVideo = function(src, geometry)
                {
+                  perfAdded++;
                   id++;
                   if (isCacheDisabled)
                      {
@@ -355,6 +380,7 @@ if (!org.gigapan.Util)
                      duration = video.duration;
                      }
                   UTIL.log("video(" + video.id + ") videoLoadedMetadata; seek to " + _getCurrentTime());
+                  perfInitialSeeks++;
                   video.currentTime = _getCurrentTime();
                   if (!_isPaused())
                      {
@@ -438,6 +464,7 @@ if (!org.gigapan.Util)
                      if (video.readyState >= 1 && Math.abs(video.currentTime - t) > errorThreshold)
                         {  // HAVE_METADATA=1
                         UTIL.log("Corrected video(" + videoId + ") from " + video.currentTime + " to " + t + " (error=" + (video.currentTime - t) + ", state=" + video.readyState + ")");
+                        perfSeekCorrections.push(video.currentTime - t);
                         video.currentTime = t + errorThreshold * .5; // seek ahead slightly
                         }
                      else if (!video.ready && video.readyState >= 3)

@@ -214,6 +214,16 @@ if (!org.gigapan.timelapse.Videoset)
                   this.warpTo(computeViewFit(bbox));
                };
 
+            this.resetPerf = function()
+               {
+                  videoset.resetPerf();
+               };
+
+            this.getPerf = function()
+               {
+                  return videoset.getPerf();
+               }
+              
             ///////////////////////////
             // Timelapse video control
             //
