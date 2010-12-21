@@ -98,12 +98,12 @@ if (!org.gigapan.timelapse.Timelapse)
             var maxTime = 0;
             var timeDirection = 0;
 
-            this.recordKeyframe = function()
+            this.recordKeyframe = function(time, bounds)
                {
-                  var bounds = timelapse.getBoundingBoxForCurrentView();
+                  if (bounds == undefined) bounds = timelapse.getBoundingBoxForCurrentView();
 
                   var keyframe = {};
-                  keyframe['time'] = timelapse.getCurrentTime();
+                  keyframe['time'] = (time == undefined) ? timelapse.getCurrentTime() : time;
 
                   // check that the time isn't changing direction and that the new keyframe doesn't have the same time as the previous
                   if (keyframes.length > 0)
