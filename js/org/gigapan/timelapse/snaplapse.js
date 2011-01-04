@@ -97,6 +97,7 @@ if (!org.gigapan.timelapse.Timelapse)
             var minTime = timelapse.getNumFrames() / timelapse.getFps();
             var maxTime = 0;
             var timeDirection = 0;
+            var intervalHandle = null;
 
             this.getAsJSON = function()
                {
@@ -267,6 +268,14 @@ if (!org.gigapan.timelapse.Timelapse)
                         // set playback rate to the proper direction
                         timelapse.setPlaybackRate(timeDirection * Math.abs(timelapse.getPlaybackRate()));
 
+                        // Set an interval which calls the timeChangeListener.  This is much more reliable than adding
+                        // a listener to the timelapse because the video element doesn't actually fire time change events
+                        // for every time change.
+                        intervalHandle = setInterval(function()
+                                                       {
+                                                       timeChangeListener(timelapse.getCurrentTime());
+                                                       }, 1000 / timelapse.getFps());
+
                         // start playback
                         timelapse.play();
 
@@ -296,8 +305,8 @@ if (!org.gigapan.timelapse.Timelapse)
                      // stop playback
                      timelapse.pause();
 
-                     // remove time change listener from the timelapse
-                     timelapse.removeTimeChangeListener(timeChangeListener);
+                     // clear the time change interval
+                     clearInterval(intervalHandle);
 
                      isCurrentlyPlaying = false;
 
