@@ -98,9 +98,20 @@ if (!org.gigapan.timelapse.Timelapse)
             var maxTime = 0;
             var timeDirection = 0;
 
+            this.getAsJSON = function()
+               {
+                  var snaplapseJSON = {};
+                  snaplapseJSON['snaplapse'] = {};
+                  snaplapseJSON['snaplapse']['keyframes'] = keyframes;
+                  return JSON.stringify(snaplapseJSON, null, 3);
+               };
+
             this.recordKeyframe = function(time, bounds)
                {
-                  if (bounds == undefined) bounds = timelapse.getBoundingBoxForCurrentView();
+                  if (bounds == undefined)
+                     {
+                     bounds = timelapse.getBoundingBoxForCurrentView();
+                     }
 
                   var keyframe = {};
                   keyframe['time'] = (time == undefined) ? timelapse.getCurrentTime() : time;

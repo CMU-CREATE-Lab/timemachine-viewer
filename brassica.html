@@ -21,6 +21,7 @@
    var timelapse = null;
    var timelapseCurrentTimeInSeconds = 0.0;
    var snaplapse = null;
+   var snaplapseCodeWindow = null;
 
    $(document).ready(function()
       {
@@ -173,8 +174,13 @@
                                     });
       $("#recordKeyframeButton").removeAttr("disabled");
       $("#playStopSnaplapseButton").attr("disabled", "disabled");
+      $("#saveSnaplapseButton").attr("disabled", "disabled");
       $("#numSnaplapseKeyframes").text("0");
       $("#currentFrame").text("n/a");
+      if (snaplapseCodeWindow)
+         {
+         snaplapseCodeWindow.close();
+         }
       }
 
    function recordKeyframe()
@@ -192,6 +198,7 @@
          if (snaplapse.getNumKeyframes() > 1)
             {
             $("#playStopSnaplapseButton").removeAttr("disabled");
+            $("#saveSnaplapseButton").removeAttr("disabled");
             }
          }
       }
@@ -207,6 +214,59 @@
          snaplapse.play();
          }
       }
+
+   function saveSnaplapse()
+      {
+      if (snaplapse && (snaplapse.getNumKeyframes() > 1))
+         {
+         // open a new window--that new window will call this window's getSnaplapseJSON() function to dynamically write
+         // the stringified JSON to itself.  We can't simply have this window write to the new one immediately after
+         // opening because we need to wait for the DOM to load.  So, rather than have some timeout lameness, it's easier
+         // for the new window to just request the JSON when it's ready for it.
+         snaplapseCodeWindow = popup('save_snaplapse.html', 'saveSnaplapseWindow');
+         }
+      else
+         {
+         alert("ERROR: No snaplapse to save--please create a snaplapse and add at least once keyframe to it.")
+         }
+      }
+
+   function getSnaplapseJSON()
+      {
+      return snaplapse.getAsJSON();
+      }
+
+   // Code from:
+   //    http://javascript-array.com/scripts/window_open/
+   //    http://www.webdeveloper.com/forum/showthread.php?t=15735
+   function popup(url, windowName)
+      {
+      // get dimensions of parent window so we can center the new window within the parent
+      var parentWidth = $(window).width();
+      var parentHeight = $(window).height();
+      var parentX = (document.all) ? window.screenLeft : window['screenX'];
+      var parentY = (document.all) ? window.screenTop : window['screenY'];
+
+      var width = 400;
+      var height = 460;
+      var left = parentX + (parentWidth - width) / 2;
+      var top = parentY + (parentHeight - height) / 2;
+      var params = 'width=' + width + ', height=' + height;
+      params += ', top=' + top + ', left=' + left;
+      params += ', directories=no';
+      params += ', location=no';
+      params += ', menubar=no';
+      params += ', resizable=yes';
+      params += ', scrollbars=auto';
+      params += ', status=no';
+      params += ', toolbar=no';
+      var newWindow = window.open(url, windowName, params);
+      if (window.focus)
+         {
+         newWindow.focus()
+         }
+      return newWindow;
+      }
 </script>
 </head>
 <body>
@@ -218,7 +278,7 @@
 <table style="border: 2px solid black;">
    <tr>
       <td>
-            <div id="home" class="home_mouseout" title="Home"></div>
+         <div id="home" class="home_mouseout" title="Home"></div>
       </td>
       <td>
          <div id="play_toggle" class="play_mouseout" title="Play"></div>
@@ -234,21 +294,21 @@
 </table>
 <br/>
 <table>
-  <tr>
-    <td>
-      <label for="playBackSpeedSlider">Playback Speed:</label>
-        <div id="playBackSpeedSlider" name="playBackSpeedSlider">
-	       <select name="speed" id="speed">
-		     <option value="-1">-1x</option>
-			 <option value="-.5">-½x</option>
-			 <option value="-.25">-¼x</option>
-			 <option value=".25">¼x</option>
-			 <option value=".5">½x</option>
-			 <option value="1" selected="selected">1x</option>
-		   </select>
-	  </div>
-	</td>
-  </tr>
+   <tr>
+      <td>
+         <label for="playBackSpeedSlider">Playback Speed:</label>
+         <div id="playBackSpeedSlider" name="playBackSpeedSlider">
+            <select name="speed" id="speed">
+               <option value="-1">-1x</option>
+               <option value="-.5">-½x</option>
+               <option value="-.25">-¼x</option>
+               <option value=".25">¼x</option>
+               <option value=".5">½x</option>
+               <option value="1" selected="selected">1x</option>
+            </select>
+         </div>
+      </td>
+   </tr>
 </table>
 <br/><br/>
 
@@ -259,6 +319,9 @@
 </select>
 -->
 
+<br/>Debug:
+<input id="logVideoStatus" type="checkbox" onclick="timelapse.setStatusLoggingEnabled(this.value)"/><label for="logVideoStatus">Log video status</label>
+<input id="showNativeVideoControls" type="checkbox" onclick="timelapse.setNativeVideoControlsEnabled(this.value)"/><label for="showNativeVideoControls">Show Native Video Controls</label>
 
 <table border="0" cellpadding="3" cellspacing="0" class="control_panel" style="margin-top:10px">
    <tr>
@@ -269,6 +332,7 @@
          <button type="button" id="newSnaplapseButton" onclick="newSnaplapse()">New Snaplapse</button>
          <button type="button" disabled="disabled" id="recordKeyframeButton" onclick="recordKeyframe()">Record Keyframe</button>
          <button type="button" disabled="disabled" id="playStopSnaplapseButton" onclick="playStopSnaplapse()">Play Snaplapse</button>
+         <button type="button" disabled="disabled" id="saveSnaplapseButton" onclick="saveSnaplapse()">Save Snaplapse</button>
       </td>
    </tr>
    <tr>
@@ -286,12 +350,5 @@
       </td>
    </tr>
 </table>
-
-<br/>Debug:
-<input id="logVideoStatus" type="checkbox" onclick="timelapse.setStatusLoggingEnabled(this.value)"/><label for="logVideoStatus">Log video status</label>
-<input id="showNativeVideoControls" type="checkbox" onclick="timelapse.setNativeVideoControlsEnabled(this.value)"/><label for="showNativeVideoControls">Show Native Video Controls</label>
-
-<!-- <textarea id="jsonOutput" style="display:none" rows="30" cols="70" id="json"></textarea> -->
-
 </body>
 </html>
