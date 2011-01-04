@@ -21,7 +21,8 @@
    var timelapse = null;
    var timelapseCurrentTimeInSeconds = 0.0;
    var snaplapse = null;
-   var snaplapseCodeWindow = null;
+   var saveSnaplapseWindow = null;
+   var loadSnaplapseWindow = null;
 
    $(document).ready(function()
       {
@@ -74,7 +75,7 @@
 		 $('#speed').selectToUISlider({
 			labels: 12,
 			labelSrc: "text",
-			tooltipSrc: "text",
+			tooltipSrc: "text"
 		 }).hide();
 
          $('.ui-slider-handle').bind("mouseover", function() {
@@ -145,7 +146,7 @@
       alert("TODO - changing timelapse to: " + timelapse);
    }
 
-   function newSnaplapse()
+   function newSnaplapse(json)
       {
       snaplapse = new org.gigapan.timelapse.Snaplapse(timelapse);
       snaplapse.addEventListener('play',
@@ -165,7 +166,13 @@
       snaplapse.addEventListener('record-keyframe',
                                  function()
                                     {
-                                       $("#numSnaplapseKeyframes").text(snaplapse.getNumKeyframes());
+                                       var numKeyframes = snaplapse.getNumKeyframes();
+                                       $("#numSnaplapseKeyframes").text(numKeyframes);
+                                       if (numKeyframes > 1)
+                                          {
+                                          $("#playStopSnaplapseButton").removeAttr("disabled");
+                                          $("#saveSnaplapseButton").removeAttr("disabled");
+                                          }
                                     });
       snaplapse.addEventListener('warp',
                                  function(frame)
@@ -177,10 +184,17 @@
       $("#saveSnaplapseButton").attr("disabled", "disabled");
       $("#numSnaplapseKeyframes").text("0");
       $("#currentFrame").text("n/a");
-      if (snaplapseCodeWindow)
+      if (saveSnaplapseWindow)
          {
-         snaplapseCodeWindow.close();
+         saveSnaplapseWindow.close();
          }
+
+      if (typeof json != 'undefined')
+         {
+         return snaplapse.loadFromJSON(json);
+         }
+
+      return true;
       }
 
    function recordKeyframe()
@@ -194,11 +208,6 @@
                      "The flow of time in a snaplapse can only be in one\n" +
                      "direction, and the time position of a keyframe cannot\n" +
                      "be the same as the previous keyframe.")
-            }
-         if (snaplapse.getNumKeyframes() > 1)
-            {
-            $("#playStopSnaplapseButton").removeAttr("disabled");
-            $("#saveSnaplapseButton").removeAttr("disabled");
             }
          }
       }
@@ -223,7 +232,7 @@
          // the stringified JSON to itself.  We can't simply have this window write to the new one immediately after
          // opening because we need to wait for the DOM to load.  So, rather than have some timeout lameness, it's easier
          // for the new window to just request the JSON when it's ready for it.
-         snaplapseCodeWindow = popup('save_snaplapse.html', 'saveSnaplapseWindow');
+         saveSnaplapseWindow = popup('save_snaplapse.html', 'saveSnaplapseWindow');
          }
       else
          {
@@ -234,6 +243,26 @@
    function getSnaplapseJSON()
       {
       return snaplapse.getAsJSON();
+      }
+
+   function showLoadSnaplapseWindow()
+      {
+      loadSnaplapseWindow = popup('load_snaplapse.html', 'loadSnaplapseWindow');
+      }
+
+   function loadSnaplapse(json)
+      {
+      if (loadSnaplapseWindow)
+         {
+         if (newSnaplapse(json))
+            {
+            loadSnaplapseWindow.close();
+            }
+         else
+            {
+            alert("ERROR: Invalid snaplapse file.");
+            }
+         }
       }
 
    // Code from:
@@ -333,6 +362,7 @@
          <button type="button" disabled="disabled" id="recordKeyframeButton" onclick="recordKeyframe()">Record Keyframe</button>
          <button type="button" disabled="disabled" id="playStopSnaplapseButton" onclick="playStopSnaplapse()">Play Snaplapse</button>
          <button type="button" disabled="disabled" id="saveSnaplapseButton" onclick="saveSnaplapse()">Save Snaplapse</button>
+         <button type="button" id="loadSnaplapseButton" onclick="showLoadSnaplapseWindow()">Load Snaplapse</button>
       </td>
    </tr>
    <tr>

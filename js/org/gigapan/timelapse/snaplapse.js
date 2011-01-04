@@ -106,6 +106,49 @@ if (!org.gigapan.timelapse.Timelapse)
                   return JSON.stringify(snaplapseJSON, null, 3);
                };
 
+            this.loadFromJSON = function(json)
+               {
+                  try
+                     {
+                     var obj = JSON.parse(json);
+
+                     if (typeof obj['snaplapse'] != 'undefined' &&
+                         typeof obj['snaplapse']['keyframes'] != 'undefined')
+                        {
+                        UTIL.log("Found [" + obj['snaplapse']['keyframes'].length + "] keyframes in the json:\n\n" + json)
+                        for (var i = 0; i < obj['snaplapse']['keyframes'].length; i++)
+                           {
+                           var keyframe = obj['snaplapse']['keyframes'][i];
+                           if (typeof keyframe['time'] != 'undefined' &&
+                               typeof keyframe['bounds'] != 'undefined' &&
+                               typeof keyframe['bounds']['xmin'] != 'undefined' &&
+                               typeof keyframe['bounds']['ymin'] != 'undefined' &&
+                               typeof keyframe['bounds']['xmax'] != 'undefined' &&
+                               typeof keyframe['bounds']['ymax'] != 'undefined')
+                              {
+                              this.recordKeyframe(keyframe['time'], keyframe['bounds']);
+                              }
+                           else
+                              {
+                              UTIL.error("Ignoring invalid keyframe during snaplapse load.")
+                              }
+                           }
+                        }
+                     else
+                        {
+                        UTIL.error("ERROR: Invalid snaplapse file.");
+                        return false;
+                        }
+                     }
+                  catch(e)
+                     {
+                     UTIL.error("ERROR: Invalid snaplapse file.\n\n" + e.name + " while parsing snaplapse JSON: " + e.message, e);
+                     return false;
+                     }
+
+                  return true;
+               };
+
             this.recordKeyframe = function(time, bounds)
                {
                   if (bounds == undefined)
@@ -160,11 +203,6 @@ if (!org.gigapan.timelapse.Timelapse)
                      var boundsXmaxOffset = (currentKeyframe['bounds'].xmax - previousKeyframe['bounds'].xmax ) / numStepsBetweenKeyframes;
                      var boundsYmaxOffset = (currentKeyframe['bounds'].ymax - previousKeyframe['bounds'].ymax ) / numStepsBetweenKeyframes;
                      UTIL.log("Processing snaplapse keyframe " + (keyframes.length - 1) + ": Num steps = [" + numStepsBetweenKeyframes + "]");
-                     UTIL.log("   timeOffset:       " + timeOffset);
-                     UTIL.log("   boundsXminOffset: " + boundsXminOffset);
-                     UTIL.log("   boundsYminOffset: " + boundsYminOffset);
-                     UTIL.log("   boundsXmaxOffset: " + boundsXmaxOffset);
-                     UTIL.log("   boundsYmaxOffset: " + boundsYmaxOffset);
 
                      // record the frames between keyframes
                      var previousFrame = previousKeyframe;
