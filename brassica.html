@@ -14,7 +14,20 @@
 <link href="css/timelapse.css" rel="stylesheet" type="text/css"/>
 <link href="css/jquery-ui/smoothness/jquery-ui-1.8.6.custom.css" rel="stylesheet" type="text/css"/>
 <link href="css/ui.slider.extras.css" rel="stylesheet" type="text/css"/>
+<style type="text/css">
+   .snaplapse_keyframe_list_item {
+      height:50px;
+      display: block;
+      padding: 1px;
+      margin: 0;
+      cursor: pointer;
+      border:solid 1px black;
+      background-color:white;
+   }
 
+   #snaplapse_keyframe_list .ui-selecting { background: #ddddff; }
+	#snaplapse_keyframe_list .ui-selected { background: #eeeeff; color: black; }
+</style>
 <script type="text/javascript">
    var timelapseDurationInSeconds = 0.0;
    var timeStepInSecs = 0.04; // 25 frames per second
@@ -26,11 +39,26 @@
 
    $(document).ready(function()
       {
+         // Remote testing with Safari
+         //timelapse = new org.gigapan.timelapse.Timelapse(
+         //                                                'http://timelapse.gigapan.org/alpha/timelapses/brassica1-15m-halfsize/',
+         //                                                'timelapse',
+         //                                                {"tile_height":256,"height":3876,"fps":25,"frames":2438,"width":9856,"tile_width":256}
+         //                                               );
+
+         // Remote testing with Chrome
          timelapse = new org.gigapan.timelapse.Timelapse(
-                                                         '../timelapses/brassica1-15m-halfsize/',
+                                                         'http://timelapse.gigapan.org/alpha/timelapses/brassica1-15m-halfsize-nb/',
                                                          'timelapse',
                                                          {"tile_height":256,"height":3876,"fps":25,"frames":2438,"width":9856,"tile_width":256}
                                                         );
+
+         // Local testing
+         //timelapse = new org.gigapan.timelapse.Timelapse(
+         //                                                '../timelapses/brassica1-15m-halfsize/',
+         //                                                'timelapse',
+         //                                                {"tile_height":256,"height":3876,"fps":25,"frames":2438,"width":9856,"tile_width":256}
+         //                                               );
 
          timelapse.addTimeChangeListener(function(t)
                                             {
@@ -139,7 +167,7 @@
 
          $("#totalTime").text(org.gigapan.Util.formatTime(timelapseDurationInSeconds));
 
-
+         $("#snaplapse_keyframe_list").selectable();
       });
 
    function changeTimelapse(timelapse) {
@@ -164,7 +192,7 @@
                                        $("#playStopSnaplapseButton").text("Play Snaplapse");
                                     });
       snaplapse.addEventListener('record-keyframe',
-                                 function()
+                                 function(frame)
                                     {
                                        var numKeyframes = snaplapse.getNumKeyframes();
                                        $("#numSnaplapseKeyframes").text(numKeyframes);
@@ -173,17 +201,16 @@
                                           $("#playStopSnaplapseButton").removeAttr("disabled");
                                           $("#saveSnaplapseButton").removeAttr("disabled");
                                           }
-                                    });
-      snaplapse.addEventListener('warp',
-                                 function(frame)
-                                    {
-                                       $("#currentFrame").text(frame['time'].toFixed(2));
+                                       var keyframeListItem = document.createElement("div");
+                                       keyframeListItem.id = "snaplapse_keyframe_" + numKeyframes;
+                                       $("#snaplapse_keyframe_list").append(keyframeListItem);
+                                       $("#" + keyframeListItem.id).html("Keyframe " + numKeyframes + "<br>Time: " + frame['time']).addClass("snaplapse_keyframe_list_item");
                                     });
       $("#recordKeyframeButton").removeAttr("disabled");
       $("#playStopSnaplapseButton").attr("disabled", "disabled");
       $("#saveSnaplapseButton").attr("disabled", "disabled");
       $("#numSnaplapseKeyframes").text("0");
-      $("#currentFrame").text("n/a");
+      $("#snaplapse_keyframe_list").empty();
       if (saveSnaplapseWindow)
          {
          saveSnaplapseWindow.close();
@@ -372,11 +399,10 @@
                <td><label for="numSnaplapseKeyframes">Keyframes:</label></td>
                <td align="right"><span id="numSnaplapseKeyframes">0</span></td>
             </tr>
-            <tr>
-               <td><label for="currentFrame">Current Frame:</label></td>
-               <td align="right"><span id="currentFrame">n/a</span></td>
-            </tr>
          </table>
+         <div id="snaplapse_keyframe_container" style="width:500px; height:300px; display:block; padding:0; margin:0; overflow:auto; border:solid 1px black; background-color:#eeeeee;">
+            <div id="snaplapse_keyframe_list"></div>
+         </div>
       </td>
    </tr>
 </table>
