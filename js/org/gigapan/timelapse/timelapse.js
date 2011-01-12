@@ -301,6 +301,40 @@ if (!org.gigapan.timelapse.Videoset)
                   return videoset.getCurrentTime();
                };
 
+			this.movePos = function(dir)
+			   {
+			  	  var translationSpeedConstant = 20;
+				  var translation = translationSpeedConstant / view.scale;
+ 
+				  if (dir == "left") targetView.x -= translation;
+				  else if (dir == "right") targetView.x += translation;
+				  else if (dir == "up") targetView.y -= translation;
+				  else if (dir == "down") targetView.y += translation;
+				  
+				  setTargetView(targetView);
+			   };
+
+			this.setScale = function(val)
+			   {
+				  targetView.scale = val;
+                  setTargetView(targetView);
+			   };
+		
+			this.minScale = function()
+			   {
+			  	  return _homeView().scale * .5;
+			   };
+			   
+			this.maxScale = function()
+			   {
+			  	  return 2;
+			   };
+			   
+			this.defaultScale = function()
+			   {
+				  return _homeView().scale;
+			   };
+
             ////////////////////////////////////////////////////////////////////////////////////////////////////////////
             //
             // Private methods
@@ -370,6 +404,7 @@ if (!org.gigapan.timelapse.Videoset)
                   view.x = targetView.x;
                   view.y = targetView.y;
                   view.scale = targetView.scale;
+                  $("#slider-vertical")['slider']("option", "value", targetView.scale);
                   refresh();
                };
 
