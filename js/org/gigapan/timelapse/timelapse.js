@@ -320,17 +320,17 @@ if (!org.gigapan.timelapse.Videoset)
                   setTargetView(targetView);
 			   };
 		
-			var getMinScale = function()
+			this.minScale = function()
 			   {
 			  	  return _homeView().scale * .5;
 			   };
 			   
-			var getMaxScale = function()
+			this.maxScale = function()
 			   {
 			  	  return 2;
 			   };
 			   
-			this.getDefaultScale = function()
+			this.defaultScale = function()
 			   {
 				  return _homeView().scale;
 			   };
@@ -384,7 +384,10 @@ if (!org.gigapan.timelapse.Videoset)
 
             var limitScale = function(scale)
                {
-                  return Math.max(getMinScale(), Math.min(getMaxScale(), scale));
+                  var maxScale = 2;
+                  var minScale = _homeView().scale * .5;
+
+                  return Math.max(minScale, Math.min(maxScale, scale));
                };
                   
             var setTargetView = function(newView)
