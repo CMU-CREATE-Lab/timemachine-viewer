@@ -40,11 +40,11 @@
    $(document).ready(function()
       {
          // Remote testing with Safari
-         timelapse = new org.gigapan.timelapse.Timelapse(
-                                                         'http://timelapse.gigapan.org/alpha/timelapses/brassica1-15m-halfsize/',
-                                                         'timelapse',
-                                                         {"tile_height":256,"height":3876,"fps":25,"frames":2438,"width":9856,"tile_width":256}
-                                                        );
+         //timelapse = new org.gigapan.timelapse.Timelapse(
+         //                                                'http://timelapse.gigapan.org/alpha/timelapses/brassica1-15m-halfsize/',
+         //                                                'timelapse',
+         //                                                {"tile_height":256,"height":3876,"fps":25,"frames":2438,"width":9856,"tile_width":256}
+         //                                               );
 
          // Remote testing with Chrome
          //timelapse = new org.gigapan.timelapse.Timelapse(
@@ -54,11 +54,11 @@
          //                                               );
 
          // Local testing
-         //timelapse = new org.gigapan.timelapse.Timelapse(
-         //                                                '../timelapses/brassica1-15m-halfsize/',
-         //                                                'timelapse',
-         //                                                {"tile_height":256,"height":3876,"fps":25,"frames":2438,"width":9856,"tile_width":256}
-         //                                               );
+         timelapse = new org.gigapan.timelapse.Timelapse(
+                                                         '../timelapses/brassica1-15m-halfsize/',
+                                                         'timelapse',
+                                                         {"tile_height":256,"height":3876,"fps":25,"frames":2438,"width":9856,"tile_width":256}
+                                                        );
 
          timelapse.addTimeChangeListener(function(t)
                                             {
@@ -241,8 +241,7 @@
          if (!success)
             {
                alert("ERROR: Invalid time position\n\n" +
-                     "The flow of time in a snaplapse can only be in one\n" +
-                     "direction, and the time position of a keyframe cannot\n" +
+                     "The time position of a keyframe cannot\n" +
                      "be the same as the previous keyframe.")
             }
          }
