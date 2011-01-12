@@ -308,6 +308,9 @@ if (!org.gigapan.timelapse.Timelapse)
                      // clear the time change interval
                      clearInterval(intervalHandle);
 
+                     // remove time change listener from the timelapse
+                     timelapse.removeTimeChangeListener(timeChangeListener);
+
                      isCurrentlyPlaying = false;
 
                      var listeners = eventListeners['stop'];
