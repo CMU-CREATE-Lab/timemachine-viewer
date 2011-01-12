@@ -295,7 +295,7 @@ if (!org.gigapan.Util)
 
                      for (var videoId in activeVideos)
                         {
-                        UTIL.log("video(" + videoId + ") play");
+                        UTIL.log("video(" + videoId + ") pause");
                         activeVideos[videoId].pause();
                         }
 
