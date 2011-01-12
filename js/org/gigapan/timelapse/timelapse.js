@@ -301,6 +301,44 @@ if (!org.gigapan.timelapse.Videoset)
                   return videoset.getCurrentTime();
                };
 
+			this.movePos = function(dir)
+			   {
+			  	  var translationSpeedConstant = 20;
+				  var translation = translationSpeedConstant / view.scale;
+ 
+				  if (dir == "left") targetView.x -= translation;
+				  else if (dir == "right") targetView.x += translation;
+				  else if (dir == "up") targetView.y -= translation;
+				  else if (dir == "down") targetView.y += translation;
+				  
+				  setTargetView(targetView);
+			   };
+
+			this.setScale = function(val)
+			   {
+				  targetView.scale = val;
+                  setTargetView(targetView);
+			   };
+		
+			var _getMinScale = function()
+			   {
+			  	  return _homeView().scale * .5;
+			   };
+			
+			this.getMinScale = _getMinScale
+			
+			var _getMaxScale = function()
+			   {
+			  	  return 2;
+			   };
+			   
+			this.getMaxScale = _getMaxScale
+			
+			this.getDefaultScale = function()
+			   {
+				  return _homeView().scale;
+			   };
+
             ////////////////////////////////////////////////////////////////////////////////////////////////////////////
             //
             // Private methods
@@ -350,10 +388,7 @@ if (!org.gigapan.timelapse.Videoset)
 
             var limitScale = function(scale)
                {
-                  var maxScale = 2;
-                  var minScale = _homeView().scale * .5;
-
-                  return Math.max(minScale, Math.min(maxScale, scale));
+                  return Math.max(_getMinScale(), Math.min(_getMaxScale(), scale));
                };
                   
             var setTargetView = function(newView)
@@ -370,6 +405,7 @@ if (!org.gigapan.timelapse.Videoset)
                   view.x = targetView.x;
                   view.y = targetView.y;
                   view.scale = targetView.scale;
+                  $("#slider-vertical")['slider']("option", "value", targetView.scale);
                   refresh();
                };
 

@@ -5,7 +5,11 @@ body, p, table, tr, td {
 
 #timelineSlider {
  margin: 10px;
- width: 607px;
+ width: 627px;
+}
+
+#slider-vertical {
+ height: 100px;
 }
 
 #playBackSpeedSlider {
@@ -56,21 +60,31 @@ body, p, table, tr, td {
  float: left;
 }
 
-.home_mouseover {
-  width: 20px;
-  height: 23px;
-  background-image: url("../images/home_mouseover.png");
-  cursor: pointer;
-  float: left;
-}
-.home_mouseout {
-  width: 20px;
-  height: 23px;
-  background-image: url("../images/home_mouseout.png");
-  cursor: pointer;
-  float: left;
-}
 .control_panel {
   padding: 10px;
   border: 1px solid black;
+}
+
+.overlay1 {
+  border:0px solid; 
+  border-color:silver;
+  width:50px; 
+  height:220px; 
+  overflow:auto;
+  position:absolute; 
+  z-index:2;
+  top: 40px;
+  left: 20px;
+}
+
+.overlay2 {
+  border:0px solid; 
+  border-color:silver;
+  width:50px; 
+  height:50px; 
+  overflow:auto;
+  position:absolute; 
+  z-index:3;
+  top: 40px;
+  left: 20px;
 }
