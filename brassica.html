@@ -40,18 +40,18 @@
    $(document).ready(function()
       {
          // Remote testing with Safari
-         //timelapse = new org.gigapan.timelapse.Timelapse(
-         //                                                'http://timelapse.gigapan.org/alpha/timelapses/brassica1-15m-halfsize/',
-         //                                                'timelapse',
-         //                                                {"tile_height":256,"height":3876,"fps":25,"frames":2438,"width":9856,"tile_width":256}
-         //                                               );
-
-         // Remote testing with Chrome
          timelapse = new org.gigapan.timelapse.Timelapse(
-                                                         'http://timelapse.gigapan.org/alpha/timelapses/brassica1-15m-halfsize-nb/',
+                                                         'http://timelapse.gigapan.org/alpha/timelapses/brassica1-15m-halfsize/',
                                                          'timelapse',
                                                          {"tile_height":256,"height":3876,"fps":25,"frames":2438,"width":9856,"tile_width":256}
                                                         );
+
+         // Remote testing with Chrome
+         //timelapse = new org.gigapan.timelapse.Timelapse(
+         //                                                'http://timelapse.gigapan.org/alpha/timelapses/brassica1-15m-halfsize-nb/',
+         //                                                'timelapse',
+         //                                                {"tile_height":256,"height":3876,"fps":25,"frames":2438,"width":9856,"tile_width":256}
+         //                                               );
 
          // Local testing
          //timelapse = new org.gigapan.timelapse.Timelapse(
@@ -167,12 +167,21 @@
 
          $("#totalTime").text(org.gigapan.Util.formatTime(timelapseDurationInSeconds));
 
-         $("#snaplapse_keyframe_list").selectable();
+         $("#snaplapse_keyframe_list")['selectable']({
+                                                        selected: handleSnaplapseFrameSelectionChange,
+                                                        unselected: handleSnaplapseFrameSelectionChange
+                                                     });
       });
 
    function changeTimelapse(timelapse) {
       alert("TODO - changing timelapse to: " + timelapse);
    }
+
+   function handleSnaplapseFrameSelectionChange(event, ui)
+      {
+      var numSelected = $("#snaplapse_keyframe_list > .ui-selected").size();
+      $("#numSnaplapseKeyframesSelected").text(numSelected);
+      }
 
    function newSnaplapse(json)
       {
@@ -216,7 +225,7 @@
          saveSnaplapseWindow.close();
          }
 
-      if (typeof json != 'undefined')
+      if (typeof json != 'undefined' && json != null)
          {
          return snaplapse.loadFromJSON(json);
          }
@@ -381,11 +390,11 @@
 
 <table border="0" cellpadding="3" cellspacing="0" class="control_panel" style="margin-top:10px">
    <tr>
-      <th align="center">Snaplapse Creator</th>
+      <th align="center">Snaplapse Composer</th>
    </tr>
    <tr>
       <td align="center">
-         <button type="button" id="newSnaplapseButton" onclick="newSnaplapse()">New Snaplapse</button>
+         <button type="button" id="newSnaplapseButton" onclick="newSnaplapse(null)">New Snaplapse</button>
          <button type="button" disabled="disabled" id="recordKeyframeButton" onclick="recordKeyframe()">Record Keyframe</button>
          <button type="button" disabled="disabled" id="playStopSnaplapseButton" onclick="playStopSnaplapse()">Play Snaplapse</button>
          <button type="button" disabled="disabled" id="saveSnaplapseButton" onclick="saveSnaplapse()">Save Snaplapse</button>
@@ -394,10 +403,10 @@
    </tr>
    <tr>
       <td align="center">
-         <table border="0" cellpadding="3" cellspacing="0">
+         <table border="0" cellpadding="3" cellspacing="0" width="500">
             <tr>
-               <td><label for="numSnaplapseKeyframes">Keyframes:</label></td>
-               <td align="right"><span id="numSnaplapseKeyframes">0</span></td>
+               <td><label for="numSnaplapseKeyframes">Keyframes:</label> <span id="numSnaplapseKeyframes">0</span></td>
+               <td align="right"><label for="numSnaplapseKeyframesSelected">Selected:</label> <span id="numSnaplapseKeyframesSelected">0</span></td>
             </tr>
          </table>
          <div id="snaplapse_keyframe_container" style="width:500px; height:300px; display:block; padding:0; margin:0; overflow:auto; border:solid 1px black; background-color:#eeeeee;">
