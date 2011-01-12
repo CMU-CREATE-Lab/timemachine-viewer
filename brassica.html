@@ -114,8 +114,8 @@
 
 		 $("#slider-vertical").slider({
 			orientation: "vertical",
-			min: timelapse.minScale(),
-			max: timelapse.maxScale(),
+			min: getMinScale(),
+			max: getMaxScale(),
 			step: .01,
 
 		 slide: function(e, ui)
@@ -245,7 +245,7 @@
                                                         unselected: handleSnaplapseFrameSelectionChange
                                                      });
 
-		 $("#slider-vertical")['slider']("option", "value", timelapse.defaultScale());
+		 $("#slider-vertical")['slider']("option", "value", timelapse.getDefaultScale());
 
       });
 
