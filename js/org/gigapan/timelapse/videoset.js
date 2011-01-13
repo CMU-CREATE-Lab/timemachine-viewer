@@ -96,8 +96,11 @@ if (!org.gigapan.Util)
             var syncInterval = null;
             var syncListeners = [];
             var perfInitialSeeks = 0;
-            var perfSeekCorrections = [];
+            var perfTimeCorrections = [];
+            var perfTimeTweaks = 0;
+            var perfTimeSeeks = 0;
             var perfAdded = 0;
+            var syncIntervalTime = 0.2; // in seconds
 
             ////////////////////////////////////////////////////////////////////////////////////////////////////////////
             //
@@ -176,20 +179,23 @@ if (!org.gigapan.Util)
             this.resetPerf = function()
                {
                   perfInitialSeeks = 0;
-                  perfSeekCorrections = [];
                   perfAdded = 0;
+                  perfTimeCorrections = [];
+                  perfTimeTweaks = 0;
+                  perfTimeSeeks = 0;
                }
 
             this.getPerf = function()
                {
                   var perf = "Videos added: " + perfAdded;
                   perf += "; initial seeks: " + perfInitialSeeks;
-                  perf += "; # corrections: " + perfSeekCorrections.length;
+                  perf += "; # time correction seeks: " + perfTimeSeeks;
+                  perf += "; # time correction tweaks: " + perfTimeTweaks;
                   perf += "; Corrections: ";
-                  for (var i = 0; i < perfSeekCorrections.length; i++)
+                  for (var i = 0; i < perfTimeCorrections.length; i++)
                      {
                      if (i) perf += ",";
-                     perf += perfSeekCorrections[i].toFixed(4);
+                     perf += perfTimeCorrections[i].toFixed(4);
                      }
                   return perf;
                }
@@ -318,7 +324,7 @@ if (!org.gigapan.Util)
                         activeVideos[videoId].play();
                         }
 
-                     syncInterval = setInterval(sync, 200);
+                     syncInterval = setInterval(sync, syncIntervalTime*1000);
                      }
                };
 
@@ -443,7 +449,7 @@ if (!org.gigapan.Util)
                {
                   if (errorThreshold == undefined)
                      {
-                     errorThreshold = UTIL.isChrome() ? 0.01 : 0.04;
+                     errorThreshold = UTIL.isChrome() ? 0.005 : 0.04;
                      }
 
                   var t = _getCurrentTime();
@@ -461,19 +467,36 @@ if (!org.gigapan.Util)
                   for (var videoId in activeVideos)
                      {
                      var video = activeVideos[videoId];
-                     if (video.readyState >= 1 && Math.abs(video.currentTime - t) > errorThreshold)
+                     var error = video.currentTime - t;
+                     if (video.readyState >= 1 && Math.abs(error) > errorThreshold)
                         {  // HAVE_METADATA=1
-                        UTIL.log("Corrected video(" + videoId + ") from " + video.currentTime + " to " + t + " (error=" + (video.currentTime - t) + ", state=" + video.readyState + ")");
-                        perfSeekCorrections.push(video.currentTime - t);
-                        video.currentTime = t + errorThreshold * .5; // seek ahead slightly
+                        perfTimeCorrections.push(error);
+                        var rateTweak = 1 - error / syncIntervalTime;
+                        if (paused || rateTweak < .25 || rateTweak > 2)
+                           {
+                           perfTimeSeeks++;
+                           UTIL.log("Time correction: seeking video(" + videoId + ") from " + video.currentTime + " to " + t + " (error=" + error + ", state=" + video.readyState + ")");
+                           video.currentTime = t + errorThreshold * .5; // seek ahead slightly
+                           }
+                        else
+                           {
+                           perfTimeTweaks++;
+                           UTIL.log("Time correction: tweaking video(" + videoId + ") from " + video.currentTime + " to " + t + " (error=" + error + ", rate=" + rateTweak + ", state=" + video.readyState + ")");
+                           // Speed or slow video so that we'll be even by the next sync interval
+                           video.playbackRate = playbackRate * rateTweak;
+                           }
                         }
-                     else if (!video.ready && video.readyState >= 3)
+                     else
                         {
-                        video.ready = true;
-                        video.style.left = parseFloat(video.style.left) + 100000;
+                        if (video.playbackRate != playbackRate) video.playbackRate = playbackRate;
+                        //video.playbackRate = playbackRate;
+                        if (!video.ready && video.readyState >= 3)
+                           {
+                           video.ready = true;
+                           video.style.left = parseFloat(video.style.left) + 100000;
+                           }
                         }
                      }
-
                   for (var i = 0; i < syncListeners.length; i++)
                      {
                      try
