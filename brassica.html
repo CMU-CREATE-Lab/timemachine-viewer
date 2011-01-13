@@ -108,8 +108,6 @@
 
 		 $('#speed').selectToUISlider({
 			labels: 12,
-			labelSrc: "text",
-			tooltipSrc: "text"
 		 }).hide();
 
 		 $("#slider-vertical").slider({
@@ -140,16 +138,6 @@
             $(this).css("cursor", "pointer");
          });
 
-         $('#play_toggle').bind("mousemove", function() {
-            if ($(this).attr("class") == "play_mouseout") $(this).attr("class", "play_mouseover");
-            else if ($(this).attr("class") == "pause_mouseout") $(this).attr("class", "pause_mouseover");
-         });
-
-         $('#play_toggle').bind("mouseout", function() {
-            if ($(this).attr("class") == "play_mouseover") $(this).attr("class", "play_mouseout");
-            else if ($(this).attr("class") == "pause_mouseover") $(this).attr("class", "pause_mouseout");
-         });
-
          $('#play_toggle').bind("click", function()
             {
             if ($(this).attr("class") == "play_mouseover")
@@ -169,74 +157,105 @@
                $(this).attr("title", "Play");
                timelapse.pause();
                }
-         });
+         }).mousemove(function() {
+            if ($(this).attr("class") == "play_mouseout") $(this).attr("class", "play_mouseover");
+            else if ($(this).attr("class") == "pause_mouseout") $(this).attr("class", "pause_mouseover");
+		 }).mouseout(function() {
+            if ($(this).attr("class") == "play_mouseover") $(this).attr("class", "play_mouseout");
+            else if ($(this).attr("class") == "pause_mouseover") $(this).attr("class", "pause_mouseout");
+		 });
 
-         $('#home').bind("mousemove", function() {
-            $(this).attr("title", "Home");
-            $(this).css("cursor", "pointer");
-         });
+		 $("#home").mousemove(function() {
+		   $(this).attr("title", "Home");
+           $(this).css("cursor", "pointer");
+		 }).click(function() {
+		   timelapse.warpTo(timelapse.homeView());
+		 });
 
-         $('#home').bind("click", function() {
-               timelapse.warpTo(timelapse.homeView());
-         });
+		 var intervalId;
 
-         $('#zoom_in').bind("click", function() {
-         	  val = $("#slider-vertical")['slider']("option", "value") + .01;
-              $("#slider-vertical")['slider']("option", "value", val);
-         	  timelapse.setScale(val);
-         });
+		 $("#left").mousedown(function() {
+		   intervalId = setInterval(function() { movePos("left"); },500);
+		 }).click(function() {
+		   movePos("left");
+		 }).mouseup(function() {
+		   clearInterval(intervalId);
+		 }).mousemove(function() {
+           $(this).attr("title", "Move Left");
+           $(this).css("cursor", "pointer");
+		 });
 
-         $('#zoom_in').bind("mousemove", function() {
-            $(this).attr("title", "Zoom In");
-            $(this).css("cursor", "pointer");
-         });
+		 $("#right").mousedown(function() {
+		   intervalId = setInterval(function() { movePos("right"); },500);
+		 }).click(function() {
+		   movePos("right");
+		 }).mouseup(function() {
+		   clearInterval(intervalId);
+		 }).mousemove(function() {
+           $(this).attr("title", "Move Right");
+           $(this).css("cursor", "pointer");
+		 });
 
-         $('#zoom_out').bind("click", function() {
-         	  val = $("#slider-vertical")['slider']("option", "value") - .01;
-         	  $("#slider-vertical")['slider']("option", "value", val);
-         	  timelapse.setScale(val);
-         });
+		 $("#up").mousedown(function() {
+		   intervalId = setInterval(function() { movePos("up"); },500);
+		 }).click(function() {
+		   movePos("up");
+		 }).mouseup(function() {
+		   clearInterval(intervalId);
+		 }).mousemove(function() {
+           $(this).attr("title", "Move Up");
+           $(this).css("cursor", "pointer");
+		 });
 
-         $('#zoom_out').bind("mousemove", function() {
-            $(this).attr("title", "Zoom Out");
-            $(this).css("cursor", "pointer");
-         });
+		 $("#down").mousedown(function() {
+		   intervalId = setInterval(function() { movePos("down"); },500);
+		 }).click(function() {
+		   movePos("down");
+		 }).mouseup(function() {
+		   clearInterval(intervalId);
+		 }).mousemove(function() {
+           $(this).attr("title", "Move Down");
+           $(this).css("cursor", "pointer");
+		 });
 
-         $('#up').bind("mousemove", function() {
-            $(this).attr("title", "Move Up");
-            $(this).css("cursor", "pointer");
-         });
+		 $("#zoom_in").mousedown(function() {
+		   intervalId = setInterval(zoomIn, 500);
+		 }).click(function() {
+		   zoomIn();
+		 }).mouseup(function() {
+		   clearInterval(intervalId);
+		 }).mousemove(function() {
+           $(this).attr("title", "Zoom In");
+           $(this).css("cursor", "pointer");
+		 });
 
-         $('#up').bind("click", function() {
-            timelapse.movePos("up");
-         });
+		 $("#zoom_out").mousedown(function() {
+		   intervalId = setInterval(zoomOut, 500);
+		 }).click(function() {
+		   zoomOut();
+		 }).mouseup(function() {
+		   clearInterval(intervalId);
+		 }).mousemove(function() {
+           $(this).attr("title", "Zoom Out");
+           $(this).css("cursor", "pointer");
+		 });
 
-         $('#down').bind("mousemove", function() {
-            $(this).attr("title", "Move Down");
-            $(this).css("cursor", "pointer");
-         });
+		 function zoomIn() {
+		   val = $("#slider-vertical")['slider']("option", "value") + .01;
+		   $("#slider-vertical")['slider']("option", "value", val);
+           timelapse.setScale(val);
+		 }
 
-         $('#down').bind("click", function() {
-            timelapse.movePos("down");
-         });
+		 function zoomOut() {
+		   val = $("#slider-vertical")['slider']("option", "value") - .01;
+		   $("#slider-vertical")['slider']("option", "value", val);
+           timelapse.setScale(val);
+		 }
 
-         $('#right').bind("mousemove", function() {
-            $(this).attr("title", "Move Right");
-            $(this).css("cursor", "pointer");
-         });
+		 function movePos(dir) {
+		   timelapse.movePos(dir);
+		 }
 
-         $('#right').bind("click", function() {
-            timelapse.movePos("right");
-         });
-
-         $('#left').bind("mousemove", function() {
-            $(this).attr("title", "Move Left");
-            $(this).css("cursor", "pointer");
-         });
-
-         $('#left').bind("click", function() {
-            timelapse.movePos("left");
-         });
 
          $("#totalTime").text(org.gigapan.Util.formatTime(timelapseDurationInSeconds));
 
@@ -246,6 +265,9 @@
                                                      });
 
 		 $("#slider-vertical")['slider']("option", "value", timelapse.getDefaultScale());
+
+
+
 
       });
 
