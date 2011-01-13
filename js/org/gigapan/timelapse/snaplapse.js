@@ -89,15 +89,14 @@ if (!org.gigapan.timelapse.Timelapse)
       org.gigapan.timelapse.Snaplapse = function(timelapse)
          {
             var keyframes = [];
-            var frames = {};
+            var keyframeIntervals = [];
+            var currentKeyframeIntervalIndex = 0;
             var isCurrentlyPlaying = false;
             var eventListeners = {};
             var timeStep = 1 / timelapse.getFps();
             var halfTimeStep = timeStep / 2;
-            var minTime = timelapse.getNumFrames() / timelapse.getFps();
-            var maxTime = 0;
-            var timeDirection = 0;
             var intervalHandle = null;
+            var isInIntervalTransitionMode = false;
 
             this.getAsJSON = function()
                {
@@ -116,7 +115,7 @@ if (!org.gigapan.timelapse.Timelapse)
                      if (typeof obj['snaplapse'] != 'undefined' &&
                          typeof obj['snaplapse']['keyframes'] != 'undefined')
                         {
-                        UTIL.log("Found [" + obj['snaplapse']['keyframes'].length + "] keyframes in the json:\n\n" + json)
+                        UTIL.log("Found [" + obj['snaplapse']['keyframes'].length + "] keyframes in the json:\n\n" + json);
                         for (var i = 0; i < obj['snaplapse']['keyframes'].length; i++)
                            {
                            var keyframe = obj['snaplapse']['keyframes'][i];
@@ -152,34 +151,21 @@ if (!org.gigapan.timelapse.Timelapse)
 
             this.recordKeyframe = function(time, bounds)
                {
-                  if (bounds == undefined)
+                  if (typeof bounds == 'undefined')
                      {
                      bounds = timelapse.getBoundingBoxForCurrentView();
                      }
 
                   var keyframe = {};
-                  keyframe['time'] = (time == undefined) ? timelapse.getCurrentTime() : time;
+                  keyframe['time'] = normalizeTime((typeof time == 'undefined') ? timelapse.getCurrentTime() : time);
 
-                  // check that the time isn't changing direction and that the new keyframe doesn't have the same time as the previous
+                  // check that the new keyframe doesn't have the same time as the previous
                   if (keyframes.length > 0)
                      {
                      var normalizedTimeOfPreviousKeyframe = normalizeTime(keyframes[keyframes.length - 1]['time']);
-                     var normalizedTimeOfCurrentKeyframe = normalizeTime(keyframe['time']);
-                     if (normalizedTimeOfPreviousKeyframe == normalizedTimeOfCurrentKeyframe)
+                     if (normalizedTimeOfPreviousKeyframe == keyframe['time'])
                         {
                         return false;
-                        }
-                     if (keyframes.length == 1)
-                        {
-                        timeDirection = (normalizedTimeOfCurrentKeyframe > normalizedTimeOfPreviousKeyframe) ? 1 : -1;
-                        }
-                     else if (keyframes.length > 1)
-                        {
-                        if ((timeDirection > 0 && normalizedTimeOfCurrentKeyframe <= normalizedTimeOfPreviousKeyframe) ||
-                            (timeDirection < 0 && normalizedTimeOfCurrentKeyframe >= normalizedTimeOfPreviousKeyframe))
-                           {
-                           return false;
-                           }
                         }
                      }
 
@@ -189,45 +175,6 @@ if (!org.gigapan.timelapse.Timelapse)
                   keyframe['bounds'].xmax = bounds.xmax;
                   keyframe['bounds'].ymax = bounds.ymax;
                   keyframes[keyframes.length] = keyframe;
-
-                  // now add the intermediary frames
-                  if (keyframes.length > 1)
-                     {
-                     var previousKeyframe = keyframes[keyframes.length - 2];
-                     var currentKeyframe = keyframes[keyframes.length - 1];
-
-                     var numStepsBetweenKeyframes = Math.abs((currentKeyframe['time'] - previousKeyframe['time']) / timeStep);
-
-                     var timeOffset = (currentKeyframe['time'] - previousKeyframe['time'] ) / numStepsBetweenKeyframes;
-                     var boundsXminOffset = (currentKeyframe['bounds'].xmin - previousKeyframe['bounds'].xmin ) / numStepsBetweenKeyframes;
-                     var boundsYminOffset = (currentKeyframe['bounds'].ymin - previousKeyframe['bounds'].ymin ) / numStepsBetweenKeyframes;
-                     var boundsXmaxOffset = (currentKeyframe['bounds'].xmax - previousKeyframe['bounds'].xmax ) / numStepsBetweenKeyframes;
-                     var boundsYmaxOffset = (currentKeyframe['bounds'].ymax - previousKeyframe['bounds'].ymax ) / numStepsBetweenKeyframes;
-                     UTIL.log("Processing snaplapse keyframe " + (keyframes.length - 1) + ": Num steps = [" + numStepsBetweenKeyframes + "]");
-
-                     // record the frames between keyframes
-                     var previousFrame = previousKeyframe;
-                     for (var frameIndex = 1; frameIndex <= numStepsBetweenKeyframes; frameIndex++)
-                        {
-                        var frame = {};
-                        frame['time'] = previousFrame['time'] + timeOffset;
-                        frame['bounds'] = {};
-                        frame['bounds'].xmin = previousFrame['bounds'].xmin + boundsXminOffset;
-                        frame['bounds'].ymin = previousFrame['bounds'].ymin + boundsYminOffset;
-                        frame['bounds'].xmax = previousFrame['bounds'].xmax + boundsXmaxOffset;
-                        frame['bounds'].ymax = previousFrame['bounds'].ymax + boundsYmaxOffset;
-                        addFrame(frame);
-                        previousFrame = frame;
-                        }
-
-                     }
-                  else
-                     {
-                     UTIL.log("Processing snaplapse keyframe " + (keyframes.length - 1));
-                     }
-
-                  // finally, add the keyframe to the frames collection
-                  addFrame(keyframe);
 
                   var listeners = eventListeners['record-keyframe'];
                   if (listeners)
@@ -250,31 +197,40 @@ if (!org.gigapan.timelapse.Timelapse)
 
             this.play = function()
                {
-                  if (keyframes.length > 0)
+                  UTIL.log("################################################### Snaplapse play!");
+
+                  if (keyframes.length > 1)
                      {
                      if (!isCurrentlyPlaying)
                         {
                         isCurrentlyPlaying = true;
 
-                        // stop playback
+                        // compute the keyframe intervals
+                        for (var k = 1; k < keyframes.length; k++)
+                           {
+                           keyframeIntervals[keyframeIntervals.length] = new org.gigapan.timelapse.FrameInterval(keyframes[k - 1], keyframes[k], timeStep);
+                           UTIL.log("##### Created keyframe interval: between time [" + keyframes[k - 1]['time'] + "] and [" + keyframes[k]['time'] + "]");
+                           }
+
+                        // set the current keyframe interval index
+                        currentKeyframeIntervalIndex = 0;
+
+                        // make sure playback is stopped
                         timelapse.pause();
 
                         // jump to the proper time
                         timelapse.seek(keyframes[0]['time']);
 
-                        // add time change listener to the timelapse
-                        timelapse.addTimeChangeListener(timeChangeListener);
-
                         // set playback rate to the proper direction
-                        timelapse.setPlaybackRate(timeDirection * Math.abs(timelapse.getPlaybackRate()));
+                        setTimelapsePlaybackDirection(keyframeIntervals[0].getTimeDirection());
 
                         // Set an interval which calls the timeChangeListener.  This is much more reliable than adding
                         // a listener to the timelapse because the video element doesn't actually fire time change events
                         // for every time change.
                         intervalHandle = setInterval(function()
-                                                       {
-                                                       timeChangeListener(timelapse.getCurrentTime());
-                                                       }, 1000 / timelapse.getFps());
+                                                        {
+                                                           timeChangeListener(timelapse.getCurrentTime());
+                                                        }, 1000 / timelapse.getFps());
 
                         // start playback
                         timelapse.play();
@@ -298,20 +254,22 @@ if (!org.gigapan.timelapse.Timelapse)
                      }
                };
 
+            var setTimelapsePlaybackDirection = function(timeDirection)
+               {
+                  timelapse.setPlaybackRate(timeDirection * Math.abs(timelapse.getPlaybackRate()));
+               };
+
             var _stop = function()
                {
                   if (isCurrentlyPlaying)
                      {
+                     isCurrentlyPlaying = false;
+
                      // stop playback
                      timelapse.pause();
 
                      // clear the time change interval
                      clearInterval(intervalHandle);
-
-                     // remove time change listener from the timelapse
-                     timelapse.removeTimeChangeListener(timeChangeListener);
-
-                     isCurrentlyPlaying = false;
 
                      var listeners = eventListeners['stop'];
                      if (listeners)
@@ -339,7 +297,6 @@ if (!org.gigapan.timelapse.Timelapse)
                      var keyframe = keyframes[index];
                      if (keyframe)
                         {
-
                         return cloneFrame(keyframe);
                         }
                      }
@@ -367,16 +324,6 @@ if (!org.gigapan.timelapse.Timelapse)
 
                      eventListeners[eventName].push(listener);
                      }
-               };
-
-            this.getKeyframes = function()
-               {
-                  return keyframes;
-               };
-
-            this.getFrames = function()
-               {
-                  return frames;
                };
 
             this.removeEventListener = function(eventName, listener)
@@ -409,20 +356,6 @@ if (!org.gigapan.timelapse.Timelapse)
                      }
 
                   return frameCopy;
-
-               };
-
-            var addFrame = function(frame)
-               {
-                  var normalizedTime = normalizeTime(frame['time']);
-                  minTime = Math.min(minTime, normalizedTime);
-                  maxTime = Math.max(maxTime, normalizedTime);
-                  frames[normalizedTime] = frame;
-               };
-
-            var getFrameAtTime = function(t)
-               {
-                  return frames[normalizeTime(t)];
                };
 
             var normalizeTime = function(t)
@@ -439,45 +372,149 @@ if (!org.gigapan.timelapse.Timelapse)
 
             var timeChangeListener = function(t)
                {
-                  // get the frame (if any)
-                  var frame = getFrameAtTime(t);
-                  if (frame)
+                  var normalizedTime = normalizeTime(t);
+
+                  // get the current keyframe interval
+                  var keyframeInterval = keyframeIntervals[currentKeyframeIntervalIndex];
+
+                  // Make sure the time is in the interval.  If it isn't then just assume we've crossed to the next
+                  // interval. In that case, update things accordingly
+                  if (keyframeInterval.isTimeWithinInterval(normalizedTime))
                      {
-                     UTIL.log("warping to snaplapse view for frame at time [" + t + "|" + normalizeTime(t) + "]");
-
-                     // warp to the correct view
-                     timelapse.warpToBoundingBox(frame['bounds']);
-
-                     var listeners = eventListeners['warp'];
-                     if (listeners)
+                     if (isInIntervalTransitionMode)
                         {
-                        for (var i = 0; i < listeners.length; i++)
-                           {
-                           try
-                              {
-                              listeners[i](cloneFrame(frame));
-                              }
-                           catch(e)
-                              {
-                              UTIL.error(e.name + " while calling snaplapse 'warp' event listener: " + e.message, e);
-                              }
-                           }
+                        // break out of interval transition mode since the time is within the interval now
+                        isInIntervalTransitionMode = false;
                         }
                      }
                   else
                      {
-                     UTIL.log("ERROR: no snaplapse frame found for time [" + t + "|" + normalizeTime(t) + "]");
+                     if (isInIntervalTransitionMode)
+                        {
+                        // set the proper playback direction and time position
+                        setTimelapsePlaybackDirection(keyframeInterval.getTimeDirection());
+                        normalizedTime = keyframeInterval.getStartingTime();
+                        timelapse.seek(normalizedTime);
+                        }
+                     else
+                        {
+                        currentKeyframeIntervalIndex++;
+                        if (currentKeyframeIntervalIndex < keyframeIntervals.length)
+                           {
+                           isInIntervalTransitionMode = true;
+
+                           keyframeInterval = keyframeIntervals[currentKeyframeIntervalIndex];
+
+                           // set the proper playback direction and time position
+                           setTimelapsePlaybackDirection(keyframeInterval.getTimeDirection());
+                           normalizedTime = keyframeInterval.getStartingTime();
+                           timelapse.seek(normalizedTime);
+                           }
+                        else
+                           {
+                           keyframeInterval = null;
+                           }
+                        }
                      }
 
-                  // stop play back if the current playing position is outside the bounds of the snaplapse
-                  var playbackRate = timelapse.getPlaybackRate();
-                  var normalizedTime = normalizeTime(t);
-                  if ((playbackRate > 0 && normalizedTime >= maxTime) ||
-                      (playbackRate < 0 && normalizedTime <= minTime))
+                  if (keyframeInterval)
                      {
+                     // compute the frame for the current (normalized) time
+                     var frame = keyframeInterval.computeFrameAtNormalizedTime(normalizedTime);
+                     if (frame)
+                        {
+                        // warp to the correct view
+                        timelapse.warpToBoundingBox(frame['bounds']);
+
+                        var listeners = eventListeners['warp'];
+                        if (listeners)
+                           {
+                           for (var i = 0; i < listeners.length; i++)
+                              {
+                              try
+                                 {
+                                 listeners[i](cloneFrame(frame));
+                                 }
+                              catch(e)
+                                 {
+                                 UTIL.error(e.name + " while calling snaplapse 'warp' event listener: " + e.message, e);
+                                 }
+                              }
+                           }
+                        }
+                     else
+                        {
+                        UTIL.error("Failed to compute snaplapse frame for time [" + t + "|" + normalizedTime + "]");
+                        _stop();
+                        }
+                     }
+                  else
+                     {
+                     UTIL.error("Failed to compute current keyframe interval for time [" + t + "|" + normalizedTime + "]");
                      _stop();
                      }
-
                };
          };
+
+      org.gigapan.timelapse.FrameInterval = function(startingFrame, endingFrame, timeStep)
+         {
+            var numStepsBetweenKeyframes = Math.abs((endingFrame['time'] - startingFrame['time']) / timeStep);
+
+            var timeOffset = (endingFrame['time'] - startingFrame['time'] ) / numStepsBetweenKeyframes;
+            var boundsXminOffset = (endingFrame['bounds'].xmin - startingFrame['bounds'].xmin ) / numStepsBetweenKeyframes;
+            var boundsYminOffset = (endingFrame['bounds'].ymin - startingFrame['bounds'].ymin ) / numStepsBetweenKeyframes;
+            var boundsXmaxOffset = (endingFrame['bounds'].xmax - startingFrame['bounds'].xmax ) / numStepsBetweenKeyframes;
+            var boundsYmaxOffset = (endingFrame['bounds'].ymax - startingFrame['bounds'].ymax ) / numStepsBetweenKeyframes;
+            var timeDirection = (endingFrame['time'] > startingFrame['time']) ? 1 : -1;
+
+            this.getStartingFrame = function()
+               {
+                  return startingFrame;
+               };
+
+            this.getStartingTime = function()
+               {
+                  return startingFrame['time'];
+               };
+
+            this.getEndingTime = function()
+               {
+                  return endingFrame['time'];
+               };
+
+            this.getTimeDirection = function()
+               {
+                  return timeDirection;
+               };
+
+            this.isTimeWithinInterval = function(t)
+               {
+                  if (timeDirection > 0)
+                     {
+                     return this.getStartingTime() <= t && t <= this.getEndingTime();
+                     }
+                  return this.getEndingTime() <= t && t <= this.getStartingTime();
+               };
+
+            this.computeFrameAtNormalizedTime = function(t)
+               {
+                  if (this.isTimeWithinInterval(t))
+                     {
+                     var numSteps = Math.floor(Math.abs(t - this.getStartingTime()) / timeStep);
+                     var frame = {};
+                     frame['time'] = this.getStartingTime() + timeOffset * numSteps * timeDirection;
+                     frame['bounds'] = {};
+                     frame['bounds'].xmin = startingFrame['bounds'].xmin + boundsXminOffset * numSteps;
+                     frame['bounds'].ymin = startingFrame['bounds'].ymin + boundsYminOffset * numSteps;
+                     frame['bounds'].xmax = startingFrame['bounds'].xmax + boundsXmaxOffset * numSteps;
+                     frame['bounds'].ymax = startingFrame['bounds'].ymax + boundsYmaxOffset * numSteps;
+
+                     return frame;
+                     }
+
+                  UTIL.error("FrameInterval.computeFrameAtNormalizedTime(): time [" + t + "] is not within keframe interval [" + this.getStartingTime() + "," + this.getEndingTime() + "]");
+                  return null;
+               }
+         };
+
    })();
