@@ -97,10 +97,65 @@ if (!org.gigapan.timelapse.Timelapse)
             var minTime = timelapse.getNumFrames() / timelapse.getFps();
             var maxTime = 0;
             var timeDirection = 0;
+            var intervalHandle = null;
+
+            this.getAsJSON = function()
+               {
+                  var snaplapseJSON = {};
+                  snaplapseJSON['snaplapse'] = {};
+                  snaplapseJSON['snaplapse']['keyframes'] = keyframes;
+                  return JSON.stringify(snaplapseJSON, null, 3);
+               };
+
+            this.loadFromJSON = function(json)
+               {
+                  try
+                     {
+                     var obj = JSON.parse(json);
+
+                     if (typeof obj['snaplapse'] != 'undefined' &&
+                         typeof obj['snaplapse']['keyframes'] != 'undefined')
+                        {
+                        UTIL.log("Found [" + obj['snaplapse']['keyframes'].length + "] keyframes in the json:\n\n" + json)
+                        for (var i = 0; i < obj['snaplapse']['keyframes'].length; i++)
+                           {
+                           var keyframe = obj['snaplapse']['keyframes'][i];
+                           if (typeof keyframe['time'] != 'undefined' &&
+                               typeof keyframe['bounds'] != 'undefined' &&
+                               typeof keyframe['bounds']['xmin'] != 'undefined' &&
+                               typeof keyframe['bounds']['ymin'] != 'undefined' &&
+                               typeof keyframe['bounds']['xmax'] != 'undefined' &&
+                               typeof keyframe['bounds']['ymax'] != 'undefined')
+                              {
+                              this.recordKeyframe(keyframe['time'], keyframe['bounds']);
+                              }
+                           else
+                              {
+                              UTIL.error("Ignoring invalid keyframe during snaplapse load.")
+                              }
+                           }
+                        }
+                     else
+                        {
+                        UTIL.error("ERROR: Invalid snaplapse file.");
+                        return false;
+                        }
+                     }
+                  catch(e)
+                     {
+                     UTIL.error("ERROR: Invalid snaplapse file.\n\n" + e.name + " while parsing snaplapse JSON: " + e.message, e);
+                     return false;
+                     }
+
+                  return true;
+               };
 
             this.recordKeyframe = function(time, bounds)
                {
-                  if (bounds == undefined) bounds = timelapse.getBoundingBoxForCurrentView();
+                  if (bounds == undefined)
+                     {
+                     bounds = timelapse.getBoundingBoxForCurrentView();
+                     }
 
                   var keyframe = {};
                   keyframe['time'] = (time == undefined) ? timelapse.getCurrentTime() : time;
@@ -149,11 +204,6 @@ if (!org.gigapan.timelapse.Timelapse)
                      var boundsXmaxOffset = (currentKeyframe['bounds'].xmax - previousKeyframe['bounds'].xmax ) / numStepsBetweenKeyframes;
                      var boundsYmaxOffset = (currentKeyframe['bounds'].ymax - previousKeyframe['bounds'].ymax ) / numStepsBetweenKeyframes;
                      UTIL.log("Processing snaplapse keyframe " + (keyframes.length - 1) + ": Num steps = [" + numStepsBetweenKeyframes + "]");
-                     UTIL.log("   timeOffset:       " + timeOffset);
-                     UTIL.log("   boundsXminOffset: " + boundsXminOffset);
-                     UTIL.log("   boundsYminOffset: " + boundsYminOffset);
-                     UTIL.log("   boundsXmaxOffset: " + boundsXmaxOffset);
-                     UTIL.log("   boundsYmaxOffset: " + boundsYmaxOffset);
 
                      // record the frames between keyframes
                      var previousFrame = previousKeyframe;
@@ -218,6 +268,14 @@ if (!org.gigapan.timelapse.Timelapse)
                         // set playback rate to the proper direction
                         timelapse.setPlaybackRate(timeDirection * Math.abs(timelapse.getPlaybackRate()));
 
+                        // Set an interval which calls the timeChangeListener.  This is much more reliable than adding
+                        // a listener to the timelapse because the video element doesn't actually fire time change events
+                        // for every time change.
+                        intervalHandle = setInterval(function()
+                                                       {
+                                                       timeChangeListener(timelapse.getCurrentTime());
+                                                       }, 1000 / timelapse.getFps());
+
                         // start playback
                         timelapse.play();
 
@@ -246,6 +304,9 @@ if (!org.gigapan.timelapse.Timelapse)
                      {
                      // stop playback
                      timelapse.pause();
+
+                     // clear the time change interval
+                     clearInterval(intervalHandle);
 
                      // remove time change listener from the timelapse
                      timelapse.removeTimeChangeListener(timeChangeListener);

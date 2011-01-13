@@ -1,0 +1,33 @@
+<html>
+<head>
+   <title>Save Snaplapse</title>
+   <script src="js/jquery/jquery.min.js" type="text/javascript"></script>
+   <link href="css/timelapse.css" rel="stylesheet" type="text/css"/>
+   <style type="text/css">
+      .fixed_width {
+         font-family: Monoco, Courier, monospace;
+      }
+
+      #snaplapse_code {
+         border: solid 1px black;
+      }
+   </style>
+   <script type="text/javascript">
+      $(document).ready(function()
+                           {
+                              if (top.opener && top.opener['getSnaplapseJSON'])
+                                 {
+                                 var json = top.opener['getSnaplapseJSON']();
+                                 $("#snaplapse_code").text(json).focus().select();
+                                 }
+                           });
+   </script>
+</head>
+<body>
+<p>
+   To save this snaplapse, copy the code contained in the text box<br>
+   below and paste it into a new file in your favorite text editor.
+</p>
+<textarea rows="30" cols="50" id="snaplapse_code" readonly="readonly" class="fixed_width"></textarea>
+</body>
+</html>
