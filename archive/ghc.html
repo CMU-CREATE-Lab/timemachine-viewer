@@ -1,0 +1,297 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+<title>Gigapan Timelapse Explorer</title>
+<script src="../js/jquery/jquery.min.js" type="text/javascript"></script>
+<script src="js/jquery/jquery-ui-1.8.6.custom.min.js" type="text/javascript"></script>
+<script src="../js/jquery/plugins/mouse/jQuery_mousewheel_plugin.js" type="text/javascript"></script>
+<script src="../js/jquery/plugins/slider/selectToUISlider.jQuery.js" type="text/javascript"></script>
+<script src="../js/org/gigapan/util.js" type="text/javascript"></script>
+<script src="../js/org/gigapan/timelapse/videoset.js" type="text/javascript"></script>
+<script src="../js/org/gigapan/timelapse/timelapse.js" type="text/javascript"></script>
+<script src="../js/org/gigapan/timelapse/snaplapse.js" type="text/javascript"></script>
+
+<link href="../css/timelapse.css" rel="stylesheet" type="text/css"/>
+<link href="css/jquery-ui/smoothness/jquery-ui-1.8.6.custom.css" rel="stylesheet" type="text/css"/>
+<link href="../css/ui.slider.extras.css" rel="stylesheet" type="text/css"/>
+
+<script type="text/javascript">
+   var timelapseDurationInSeconds = 0.0;
+   var timeStepInSecs = 0.04; // 25 frames per second
+   var timelapse = null;
+   var timelapseCurrentTimeInSeconds = 0.0;
+   var snaplapse = null;
+
+   $(document).ready(function()
+      {
+         timelapse = new org.gigapan.timelapse.Timelapse(
+                                                         '../timelapses/ghc1-24h-halfsize/',
+                                                         'timelapse',
+                                                         {"tile_height":256,"height":7068,"fps":25,"frames":205,"width":15060,"tile_width":256}
+                                                        );
+
+         timelapse.addTimeChangeListener(function(t)
+                                            {
+                                            timelapseCurrentTimeInSeconds = t;
+                                            if (timelapseCurrentTimeInSeconds < 0) {
+                                              timelapseCurrentTimeInSeconds = 0;
+                                              $('#play_toggle').attr("class", "play_mouseout");
+                                              $('#play_toggle').attr("title", "Play");
+                                            }
+                                            $("#currentTime").text(org.gigapan.Util.formatTime(timelapseCurrentTimeInSeconds));
+                                            $("#timelineSlider")['slider']("option", "value", timelapseCurrentTimeInSeconds);
+                                            if (timelapseCurrentTimeInSeconds >= timelapseDurationInSeconds)
+                                               {
+                                               $('#play_toggle').attr("class", "play_mouseout");
+                                               $('#play_toggle').attr("title", "Play");
+                                               }
+                                            });
+
+         $(this)['keydown'](timelapse.handleKeydownEvent);
+         $(this)['keyup'](timelapse.handleKeyupEvent);
+         $("#timelapse").mousewheel(timelapse.handleMousescrollEvent);
+
+         window.onunload = timelapse.handleWindowClose;
+
+         timelapseDurationInSeconds = timelapse.getNumFrames() / timelapse.getFps();
+
+         $("#timelineSlider")['slider']({
+                                        animate: true,
+                                        value: 0,
+                                        min: 0,
+                                        max: timelapseDurationInSeconds,
+                                        range: "min",
+                                        step: timeStepInSecs,
+                                        slide: function(e, ui)
+                                           {
+                                           timelapseCurrentTimeInSeconds = ui.value;
+                                           var timeInSecs = ui.value;
+                                           timelapse.seek(timeInSecs);
+                                           }
+                                        });
+
+		 $('#speed').selectToUISlider({
+			labels: 12,
+			labelSrc: "text",
+			tooltipSrc: "text",
+		 }).hide();
+
+         $('.ui-slider-handle').bind("mouseover", function() {
+            $('.ui-slider-handle').css("cursor", "url('css/cursors/openhand.cur')");
+         });
+
+         $('.ui-slider').bind("slide", function() {
+            $('.ui-slider-handle').css("cursor", "url('css/cursors/closedhand.cur')");
+         });
+
+         $('.ui-slider').bind("slidestop", function() {
+            $('.ui-slider-handle').css("cursor", "url('css/cursors/openhand.cur')");
+         });
+
+         $('.ui-slider').bind("mouseover", function() {
+            $(this).css("cursor", "pointer");
+         });
+
+         $('#play_toggle').bind("mousemove", function() {
+            if ($(this).attr("class") == "play_mouseout") $(this).attr("class", "play_mouseover");
+            else if ($(this).attr("class") == "pause_mouseout") $(this).attr("class", "pause_mouseover");
+         });
+
+         $('#play_toggle').bind("mouseout", function() {
+            if ($(this).attr("class") == "play_mouseover") $(this).attr("class", "play_mouseout");
+            else if ($(this).attr("class") == "pause_mouseover") $(this).attr("class", "pause_mouseout");
+         });
+
+         $('#home').bind("mousemove", function() {
+            $(this).attr("class", "home_mouseover");
+         });
+
+         $('#home').bind("mouseout", function() {
+            $(this).attr("class", "home_mouseout");
+         });
+
+         $('#home').bind("click", function() {
+               timelapse.warpTo(timelapse.homeView());
+         });
+
+         $('#play_toggle').bind("click", function()
+            {
+            if ($(this).attr("class") == "play_mouseover")
+               {
+               $(this).attr("class", "pause_mouseout");
+               $(this).attr("title", "Pause");
+               if (timelapseCurrentTimeInSeconds >= timelapseDurationInSeconds)
+                  {
+                  $("#timelineSlider")['slider']("option", "value", 0);
+                  timelapse.seek(0);
+                  }
+               timelapse.play();
+               }
+            else
+               {
+               $(this).attr("class", "play_mouseout");
+               $(this).attr("title", "Play");
+               timelapse.pause();
+               }
+         });
+
+         $("#totalTime").text(org.gigapan.Util.formatTime(timelapseDurationInSeconds));
+
+
+      });
+
+   function changeTimelapse(timelapse) {
+      alert("TODO - changing timelapse to: " + timelapse);
+   }
+
+   function newSnaplapse()
+      {
+      snaplapse = new org.gigapan.timelapse.Snaplapse(timelapse);
+      snaplapse.addEventListener('play',
+                                 function()
+                                    {
+                                       $("#newSnaplapseButton").attr("disabled", "disabled");
+                                       $("#recordKeyframeButton").attr("disabled", "disabled");
+                                       $("#playStopSnaplapseButton").text("Stop Snaplapse");
+                                    });
+      snaplapse.addEventListener('stop',
+                                 function()
+                                    {
+                                       $("#newSnaplapseButton").removeAttr("disabled");
+                                       $("#recordKeyframeButton").removeAttr("disabled");
+                                       $("#playStopSnaplapseButton").text("Play Snaplapse");
+                                    });
+      snaplapse.addEventListener('record-keyframe',
+                                 function()
+                                    {
+                                       $("#numSnaplapseKeyframes").text(snaplapse.getNumKeyframes());
+                                    });
+      snaplapse.addEventListener('warp',
+                                 function(frame)
+                                    {
+                                       $("#currentFrame").text(frame['time'].toFixed(2));
+                                    });
+      $("#recordKeyframeButton").removeAttr("disabled");
+      $("#playStopSnaplapseButton").attr("disabled", "disabled");
+      $("#numSnaplapseKeyframes").text("0");
+      $("#currentFrame").text("n/a");
+      }
+
+   function recordKeyframe()
+      {
+      if (snaplapse)
+         {
+         var success = snaplapse.recordKeyframe();
+         if (!success)
+            {
+               alert("ERROR: Invalid time position\n\n" +
+                     "The flow of time in a snaplapse can only be in one\n" +
+                     "direction, and the time position of a keyframe cannot\n" +
+                     "be the same as the previous keyframe.")
+            }
+         if (snaplapse.getNumKeyframes() > 1)
+            {
+            $("#playStopSnaplapseButton").removeAttr("disabled");
+            }
+         }
+      }
+
+   function playStopSnaplapse()
+      {
+      if (snaplapse.isPlaying())
+         {
+         snaplapse.stop();
+         }
+      else
+         {
+         snaplapse.play();
+         }
+      }
+</script>
+</head>
+<body>
+
+<div style="width:800px; height:450px">
+   <div id="timelapse" style="position: absolute; width:800px; height:450px; background:black; overflow:hidden"></div>
+</div>
+
+<table style="border: 2px solid black;">
+   <tr>
+      <td>
+            <div id="home" class="home_mouseout" title="Home"></div>
+      </td>
+      <td>
+         <div id="play_toggle" class="play_mouseout" title="Play"></div>
+      </td>
+
+      <td colspan="3">
+         <div id="timelineSlider"></div>
+      </td>
+      <td align="right">
+         <span id="currentTime">00:00:00</span>/<span id="totalTime">00:00:00</span><br/>
+      </td>
+   </tr>
+</table>
+<br/>
+<table>
+  <tr>
+    <td>
+      <label for="playBackSpeedSlider">Playback Speed:</label>
+        <div id="playBackSpeedSlider" name="playBackSpeedSlider">
+	       <select name="speed" id="speed">
+		     <option value="-1">-1x</option>
+			 <option value="-.5">-½x</option>
+			 <option value="-.25">-¼x</option>
+			 <option value=".25">¼x</option>
+			 <option value=".5">½x</option>
+			 <option value="1" selected="selected">1x</option>
+		   </select>
+	  </div>
+	</td>
+  </tr>
+</table>
+<br/><br/>
+
+<!--
+<label for="timelapseChooser">Choose a timelapse:</label>
+<select id="timelapseChooser" onchange="changeTimelapse(this.value);">
+   <option value="brassica" selected="selected">Brassica
+</select>
+-->
+
+
+<table border="0" cellpadding="3" cellspacing="0" class="control_panel" style="margin-top:10px">
+   <tr>
+      <th align="center">Snaplapse Creator</th>
+   </tr>
+   <tr>
+      <td align="center">
+         <button type="button" id="newSnaplapseButton" onclick="newSnaplapse()">New Snaplapse</button>
+         <button type="button" disabled="disabled" id="recordKeyframeButton" onclick="recordKeyframe()">Record Keyframe</button>
+         <button type="button" disabled="disabled" id="playStopSnaplapseButton" onclick="playStopSnaplapse()">Play Snaplapse</button>
+      </td>
+   </tr>
+   <tr>
+      <td align="center">
+         <table border="0" cellpadding="3" cellspacing="0">
+            <tr>
+               <td><label for="numSnaplapseKeyframes">Keyframes:</label></td>
+               <td align="right"><span id="numSnaplapseKeyframes">0</span></td>
+            </tr>
+            <tr>
+               <td><label for="currentFrame">Current Frame:</label></td>
+               <td align="right"><span id="currentFrame">n/a</span></td>
+            </tr>
+         </table>
+      </td>
+   </tr>
+</table>
+
+<br/>Debug:
+<input id="logVideoStatus" type="checkbox" onclick="timelapse.setStatusLoggingEnabled(this.value)"/><label for="logVideoStatus">Log video status</label>
+<input id="showNativeVideoControls" type="checkbox" onclick="timelapse.setNativeVideoControlsEnabled(this.value)"/><label for="showNativeVideoControls">Show Native Video Controls</label>
+
+<!-- <textarea id="jsonOutput" style="display:none" rows="30" cols="70" id="json"></textarea> -->
+
+</body>
+</html>

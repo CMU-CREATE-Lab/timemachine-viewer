@@ -2,18 +2,18 @@
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
 <title>Gigapan Timelapse Explorer</title>
-<script src="js/jquery/jquery.min.js" type="text/javascript"></script>
+<script src="../js/jquery/jquery.min.js" type="text/javascript"></script>
 <script src="js/jquery/jquery-ui-1.8.6.custom.min.js" type="text/javascript"></script>
-<script src="js/jquery/plugins/mouse/jQuery_mousewheel_plugin.js" type="text/javascript"></script>
-<script src="js/jquery/plugins/slider/selectToUISlider.jQuery.js" type="text/javascript"></script>
-<script src="js/org/gigapan/util.js" type="text/javascript"></script>
-<script src="js/org/gigapan/timelapse/videoset.js" type="text/javascript"></script>
-<script src="js/org/gigapan/timelapse/timelapse.js" type="text/javascript"></script>
-<script src="js/org/gigapan/timelapse/snaplapse.js" type="text/javascript"></script>
+<script src="../js/jquery/plugins/mouse/jQuery_mousewheel_plugin.js" type="text/javascript"></script>
+<script src="../js/jquery/plugins/slider/selectToUISlider.jQuery.js" type="text/javascript"></script>
+<script src="../js/org/gigapan/util.js" type="text/javascript"></script>
+<script src="../js/org/gigapan/timelapse/videoset.js" type="text/javascript"></script>
+<script src="../js/org/gigapan/timelapse/timelapse.js" type="text/javascript"></script>
+<script src="../js/org/gigapan/timelapse/snaplapse.js" type="text/javascript"></script>
 
-<link href="css/timelapse.css" rel="stylesheet" type="text/css"/>
+<link href="../css/timelapse.css" rel="stylesheet" type="text/css"/>
 <link href="css/jquery-ui/smoothness/jquery-ui-1.8.6.custom.css" rel="stylesheet" type="text/css"/>
-<link href="css/ui.slider.extras.css" rel="stylesheet" type="text/css"/>
+<link href="../css/ui.slider.extras.css" rel="stylesheet" type="text/css"/>
 
 <script type="text/javascript">
    var timelapseDurationInSeconds = 0.0;
@@ -25,9 +25,9 @@
    $(document).ready(function()
       {
          timelapse = new org.gigapan.timelapse.Timelapse(
-                                                         '../timelapses/carnival-10m-halfsize-nb/',
+                                                         '../timelapses/early-universe2-512/',
                                                          'timelapse',
-                                                         {"tile_height":256,"height":4944,"fps":25,"frames":1402,"width":14624,"tile_width":256}
+                                                         {"tile_height":512,"height":36864,"fps":25,"frames":31,"tile_width":512,"width":65536}
                                                         );
 
          timelapse.addTimeChangeListener(function(t)
@@ -177,27 +177,6 @@
       $("#currentFrame").text("n/a");
       }
 
-   function loadPerfSnaplapse()
-      {
-      newSnaplapse();
-      snaplapse.recordKeyframe(0,{xmax: 14624,xmin: 0,ymax: 6585,ymin: -1641});
-      snaplapse.recordKeyframe(10,{xmax: 5027.000000000001,xmin: 3199.000000000001,ymax: 2558.830000000001,ymin: 1530.5800000000006});
-      snaplapse.recordKeyframe(15,{xmax: 9309.089999999997,xmin: 7481.0899999999965,ymax: 1621.9800000000002,ymin: 593.7300000000002});
-      snaplapse.recordKeyframe(20,{xmax: 1832.5699999999952,xmin: 4.569999999995275,ymax: 1871.045,ymin: 842.7950000000001});
-      snaplapse.recordKeyframe(30,{xmax: 14624,xmin: 0,ymax: 6585,ymin: -1641});
-      snaplapse.recordKeyframe(40,{xmax: 5747.346249999999,xmin: 5290.346249999999,ymax: 1222.1050000000002,ymin: 965.0425000000002});
-      snaplapse.recordKeyframe(45,{xmax: 964.8412500000023,xmin: 507.84125000000233,ymax: 2824.4612499999994,ymin: 2567.3987499999994});
-      snaplapse.recordKeyframe(56,{xmax: 14624,xmin: 0,ymax: 6585,ymin: -1641});
-      $("#playStopSnaplapseButton").removeAttr("disabled");
-      }
-
-   function resetPerf()
-      {
-      timelapse.seek(0);
-      timelapse.warpTo(timelapse.homeView());
-      setTimeout('timelapse.resetPerf()', 2000);
-      }
-
    function recordKeyframe()
       {
       if (snaplapse)
@@ -290,7 +269,6 @@
          <button type="button" id="newSnaplapseButton" onclick="newSnaplapse()">New Snaplapse</button>
          <button type="button" disabled="disabled" id="recordKeyframeButton" onclick="recordKeyframe()">Record Keyframe</button>
          <button type="button" disabled="disabled" id="playStopSnaplapseButton" onclick="playStopSnaplapse()">Play Snaplapse</button>
-         <button type="button" onclick="loadPerfSnaplapse()">Load Perf Snaplapse</button>
       </td>
    </tr>
    <tr>
@@ -312,10 +290,6 @@
 <br/>Debug:
 <input id="logVideoStatus" type="checkbox" onclick="timelapse.setStatusLoggingEnabled(this.value)"/><label for="logVideoStatus">Log video status</label>
 <input id="showNativeVideoControls" type="checkbox" onclick="timelapse.setNativeVideoControlsEnabled(this.value)"/><label for="showNativeVideoControls">Show Native Video Controls</label>
-<br>
-<button type="button" onclick="resetPerf()">Reset Perf</button>
-<button type="button" onclick="document.getElementById('perf').innerHTML=timelapse.getPerf()">Show Perf</button>
-<div id="perf"></div>
 
 <!-- <textarea id="jsonOutput" style="display:none" rows="30" cols="70" id="json"></textarea> -->
 
