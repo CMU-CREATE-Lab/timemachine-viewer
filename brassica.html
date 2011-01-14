@@ -6,6 +6,7 @@
 <script src="js/jquery/jquery-ui.custom.min.js" type="text/javascript"></script>
 <script src="js/jquery/plugins/mouse/jQuery_mousewheel_plugin.js" type="text/javascript"></script>
 <script src="js/jquery/plugins/slider/selectToUISlider.jQuery.js" type="text/javascript"></script>
+<script src="js/jquery/plugins/query/jquery.query-2.1.7.js" type="text/javascript"></script>
 <script src="js/org/gigapan/util.js" type="text/javascript"></script>
 <script src="js/org/gigapan/timelapse/videoset.js" type="text/javascript"></script>
 <script src="js/org/gigapan/timelapse/timelapse.js" type="text/javascript"></script>
@@ -26,9 +27,12 @@
    }
 
    #snaplapse_keyframe_list .ui-selecting { background: #ddddff; }
-	#snaplapse_keyframe_list .ui-selected { background: #eeeeff; color: black; }
+   #snaplapse_keyframe_list .ui-selected { background: #eeeeff; color: black; }
 </style>
 <script type="text/javascript">
+   var gigapanId = $.query.get('id') || "brassica1-15m-halfsize";
+   var gigapanUrl = "http://timelapse.gigapan.org/alpha/timelapses/" + gigapanId + '/';
+
    var timelapseDurationInSeconds = 0.0;
    var timeStepInSecs = 0.04; // 25 frames per second
    var timelapse = null;
@@ -39,48 +43,62 @@
 
    $(document).ready(function()
       {
+         if (!browserSupported())
+            {
+            window.location = "browsernotsupported.html";
+            }
 
-		 if (!browserSupported()){
-			window.location = "browsernotsupported.html";
-		 }
+         // Test whether this is being served from timelapse.gigapan.org.  If so, then fetch the JSON from there too.
+         // If not, then assume it's being served from localhost and fetch the JSON from the local machine (since we're
+         // not using JSONP on timelapse.gigapan.org (but we probably should!)).
+         var urlMatchPattern = /^http:\/\/timelapse.gigapan.org\//;
+         var isRemoteUrl = window.location.href.match(urlMatchPattern) != null;
+         var jsonUrl = (isRemoteUrl ? "./timelapses/" : "../timelapses/") + gigapanId + '/r.json';
 
+         org.gigapan.Util.log("Attempting to fetch JSON from URL ["+jsonUrl+"]...");
+         $.ajax(
+         {
+            dataType:'json',
+            url: jsonUrl,
+            success: function(gigapanJSON)
+               {
+                  if (gigapanJSON && gigapanJSON['tile_height'])
+                     {
+                     org.gigapan.Util.log("Loaded this JSON: ["+JSON.stringify(gigapanJSON)+"]");
+                     loadTimelapse(gigapanJSON);
+                     }
+                  else
+                     {
+                     org.gigapan.Util.error("Failed to load json from URL [" + jsonUrl + "]");
+                     }
+               },
+            error: function()
+               {
+                  org.gigapan.Util.error("Error loading json from URL [" + jsonUrl + "]");
+               }
+         });
+      });
 
-         // Remote testing with Safari
-         //timelapse = new org.gigapan.timelapse.Timelapse(
-         //                                                'http://timelapse.gigapan.org/alpha/timelapses/brassica1-15m-halfsize/',
-         //                                                'timelapse',
-         //                                                {"tile_height":256,"height":3876,"fps":25,"frames":2438,"width":9856,"tile_width":256}
-         //                                               );
-
-         // Remote testing with Chrome
-         //timelapse = new org.gigapan.timelapse.Timelapse(
-         //                                                'http://timelapse.gigapan.org/alpha/timelapses/brassica1-15m-halfsize-nb/',
-         //                                                'timelapse',
-         //                                                {"tile_height":256,"height":3876,"fps":25,"frames":2438,"width":9856,"tile_width":256}
-         //                                               );
-
-         // Local testing
-         timelapse = new org.gigapan.timelapse.Timelapse(
-                                                         '../timelapses/brassica1-15m-halfsize/',
-                                                         'timelapse',
-                                                         {"tile_height":256,"height":3876,"fps":25,"frames":2438,"width":9856,"tile_width":256}
-                                                        );
+   function loadTimelapse(gigapanJSON)
+      {
+         timelapse = new org.gigapan.timelapse.Timelapse(gigapanUrl, 'timelapse', gigapanJSON);
 
          timelapse.addTimeChangeListener(function(t)
                                             {
-                                            timelapseCurrentTimeInSeconds = t;
-                                            if (timelapseCurrentTimeInSeconds < 0) {
-                                              timelapseCurrentTimeInSeconds = 0;
-                                              $('#play_toggle').attr("class", "play_mouseout");
-                                              $('#play_toggle').attr("title", "Play");
-                                            }
-                                            $("#currentTime").text(org.gigapan.Util.formatTime(timelapseCurrentTimeInSeconds));
-                                            $("#timelineSlider")['slider']("option", "value", timelapseCurrentTimeInSeconds);
-                                            if (timelapseCurrentTimeInSeconds >= timelapseDurationInSeconds)
-                                               {
-                                               $('#play_toggle').attr("class", "play_mouseout");
-                                               $('#play_toggle').attr("title", "Play");
-                                               }
+                                               timelapseCurrentTimeInSeconds = t;
+                                               if (timelapseCurrentTimeInSeconds < 0)
+                                                  {
+                                                  timelapseCurrentTimeInSeconds = 0;
+                                                  $('#play_toggle').attr("class", "play_mouseout");
+                                                  $('#play_toggle').attr("title", "Play");
+                                                  }
+                                               $("#currentTime").text(org.gigapan.Util.formatTime(timelapseCurrentTimeInSeconds));
+                                               $("#timelineSlider")['slider']("option", "value", timelapseCurrentTimeInSeconds);
+                                               if (timelapseCurrentTimeInSeconds >= timelapseDurationInSeconds)
+                                                  {
+                                                  $('#play_toggle').attr("class", "play_mouseout");
+                                                  $('#play_toggle').attr("title", "Play");
+                                                  }
                                             });
 
          $(this)['keydown'](timelapse.handleKeydownEvent);
@@ -92,35 +110,35 @@
          timelapseDurationInSeconds = timelapse.getNumFrames() / timelapse.getFps();
 
          $("#timelineSlider")['slider']({
-                                        animate: true,
-                                        value: 0,
-                                        min: 0,
-                                        max: timelapseDurationInSeconds,
-                                        range: "min",
-                                        step: timeStepInSecs,
-                                        slide: function(e, ui)
-                                           {
-                                           timelapseCurrentTimeInSeconds = ui.value;
-                                           var timeInSecs = ui.value;
-                                           timelapse.seek(timeInSecs);
-                                           }
+                                           animate: true,
+                                           value: 0,
+                                           min: 0,
+                                           max: timelapseDurationInSeconds,
+                                           range: "min",
+                                           step: timeStepInSecs,
+                                           slide: function(e, ui)
+                                              {
+                                                 timelapseCurrentTimeInSeconds = ui.value;
+                                                 var timeInSecs = ui.value;
+                                                 timelapse.seek(timeInSecs);
+                                              }
                                         });
 
-		 $('#speed').selectToUISlider({
-			labels: 12,
-		 }).hide();
+         $('#speed').selectToUISlider({
+                                         labels: 12
+                                      }).hide();
 
-		 $("#slider-vertical").slider({
-			orientation: "vertical",
-			min: timelapse.getMinScale(),
-			max: timelapse.getMaxScale(),
-			step: .01,
+         $("#slider-vertical").slider({
+                                         orientation: "vertical",
+                                         min: timelapse.getMinScale(),
+                                         max: timelapse.getMaxScale(),
+                                         step: .01,
 
-		 slide: function(e, ui)
-			{
-               timelapse.setScale(ui.value);
-   			}
-		 });
+                                         slide: function(e, ui)
+                                            {
+                                               timelapse.setScale(ui.value);
+                                            }
+                                      });
 
          $('.ui-slider-handle').bind("mouseover", function() {
             $('.ui-slider-handle').css("cursor", "url('css/cursors/openhand.cur')");
@@ -160,102 +178,101 @@
          }).mousemove(function() {
             if ($(this).attr("class") == "play_mouseout") $(this).attr("class", "play_mouseover");
             else if ($(this).attr("class") == "pause_mouseout") $(this).attr("class", "pause_mouseover");
-		 }).mouseout(function() {
+         }).mouseout(function() {
             if ($(this).attr("class") == "play_mouseover") $(this).attr("class", "play_mouseout");
             else if ($(this).attr("class") == "pause_mouseover") $(this).attr("class", "pause_mouseout");
-		 });
+         });
 
-		 $("#home").mousemove(function() {
-		   $(this).attr("title", "Home");
-           $(this).css("cursor", "pointer");
-		 }).click(function() {
-		   timelapse.warpTo(timelapse.homeView());
-		 });
+         $("#home").mousemove(function() {
+            $(this).attr("title", "Home");
+            $(this).css("cursor", "pointer");
+         }).click(function() {
+            timelapse.warpTo(timelapse.homeView());
+         });
 
-		 var intervalId;
+         var intervalId;
 
-		 $("#left").mousedown(function() {
-		   intervalId = setInterval(function() { movePos("left"); },500);
-		 }).click(function() {
-		   movePos("left");
-		 }).mouseup(function() {
-		   clearInterval(intervalId);
-		 }).mousemove(function() {
-           $(this).attr("title", "Move Left");
-           $(this).css("cursor", "pointer");
-		 });
+         $("#left").mousedown(function() {
+            intervalId = setInterval(function() { movePos("left"); },500);
+         }).click(function() {
+            movePos("left");
+         }).mouseup(function() {
+            clearInterval(intervalId);
+         }).mousemove(function() {
+            $(this).attr("title", "Move Left");
+            $(this).css("cursor", "pointer");
+         });
 
-		 $("#right").mousedown(function() {
-		   intervalId = setInterval(function() { movePos("right"); },500);
-		 }).click(function() {
-		   movePos("right");
-		 }).mouseup(function() {
-		   clearInterval(intervalId);
-		 }).mousemove(function() {
-           $(this).attr("title", "Move Right");
-           $(this).css("cursor", "pointer");
-		 });
+         $("#right").mousedown(function() {
+            intervalId = setInterval(function() { movePos("right"); },500);
+         }).click(function() {
+            movePos("right");
+         }).mouseup(function() {
+            clearInterval(intervalId);
+         }).mousemove(function() {
+            $(this).attr("title", "Move Right");
+            $(this).css("cursor", "pointer");
+         });
 
-		 $("#up").mousedown(function() {
-		   intervalId = setInterval(function() { movePos("up"); },500);
-		 }).click(function() {
-		   movePos("up");
-		 }).mouseup(function() {
-		   clearInterval(intervalId);
-		 }).mousemove(function() {
-           $(this).attr("title", "Move Up");
-           $(this).css("cursor", "pointer");
-		 });
+         $("#up").mousedown(function() {
+            intervalId = setInterval(function() { movePos("up"); },500);
+         }).click(function() {
+            movePos("up");
+         }).mouseup(function() {
+            clearInterval(intervalId);
+         }).mousemove(function() {
+            $(this).attr("title", "Move Up");
+            $(this).css("cursor", "pointer");
+         });
 
-		 $("#down").mousedown(function() {
-		   intervalId = setInterval(function() { movePos("down"); },500);
-		 }).click(function() {
-		   movePos("down");
-		 }).mouseup(function() {
-		   clearInterval(intervalId);
-		 }).mousemove(function() {
-           $(this).attr("title", "Move Down");
-           $(this).css("cursor", "pointer");
-		 });
+         $("#down").mousedown(function() {
+            intervalId = setInterval(function() { movePos("down"); },500);
+         }).click(function() {
+            movePos("down");
+         }).mouseup(function() {
+            clearInterval(intervalId);
+         }).mousemove(function() {
+            $(this).attr("title", "Move Down");
+            $(this).css("cursor", "pointer");
+         });
 
-		 $("#zoom_in").mousedown(function() {
-		   intervalId = setInterval(zoomIn, 500);
-		 }).click(function() {
-		   zoomIn();
-		 }).mouseup(function() {
-		   clearInterval(intervalId);
-		 }).mousemove(function() {
-           $(this).attr("title", "Zoom In");
-           $(this).css("cursor", "pointer");
-		 });
+         $("#zoom_in").mousedown(function() {
+            intervalId = setInterval(zoomIn, 500);
+         }).click(function() {
+            zoomIn();
+         }).mouseup(function() {
+            clearInterval(intervalId);
+         }).mousemove(function() {
+            $(this).attr("title", "Zoom In");
+            $(this).css("cursor", "pointer");
+         });
 
-		 $("#zoom_out").mousedown(function() {
-		   intervalId = setInterval(zoomOut, 500);
-		 }).click(function() {
-		   zoomOut();
-		 }).mouseup(function() {
-		   clearInterval(intervalId);
-		 }).mousemove(function() {
-           $(this).attr("title", "Zoom Out");
-           $(this).css("cursor", "pointer");
-		 });
+         $("#zoom_out").mousedown(function() {
+            intervalId = setInterval(zoomOut, 500);
+         }).click(function() {
+            zoomOut();
+         }).mouseup(function() {
+            clearInterval(intervalId);
+         }).mousemove(function() {
+            $(this).attr("title", "Zoom Out");
+            $(this).css("cursor", "pointer");
+         });
 
-		 function zoomIn() {
-		   val = $("#slider-vertical")['slider']("option", "value") + .01;
-		   $("#slider-vertical")['slider']("option", "value", val);
-           timelapse.setScale(val);
-		 }
+         function zoomIn() {
+            val = $("#slider-vertical")['slider']("option", "value") + .01;
+            $("#slider-vertical")['slider']("option", "value", val);
+            timelapse.setScale(val);
+         }
 
-		 function zoomOut() {
-		   val = $("#slider-vertical")['slider']("option", "value") - .01;
-		   $("#slider-vertical")['slider']("option", "value", val);
-           timelapse.setScale(val);
-		 }
+         function zoomOut() {
+            val = $("#slider-vertical")['slider']("option", "value") - .01;
+            $("#slider-vertical")['slider']("option", "value", val);
+            timelapse.setScale(val);
+         }
 
-		 function movePos(dir) {
-		   timelapse.movePos(dir);
-		 }
-
+         function movePos(dir) {
+            timelapse.movePos(dir);
+         }
 
          $("#totalTime").text(org.gigapan.Util.formatTime(timelapseDurationInSeconds));
 
@@ -264,16 +281,12 @@
                                                         unselected: handleSnaplapseFrameSelectionChange
                                                      });
 
-		 $("#slider-vertical")['slider']("option", "value", timelapse.getDefaultScale());
-
-
-
-
-      });
+         $("#slider-vertical")['slider']("option", "value", timelapse.getDefaultScale());
+      }
 
    function browserSupported() {
-     var v = document.createElement('video');
-     return !!(v.canPlayType && v.canPlayType('video/mp4; codecs="avc1.42E01E, mp4a.40.2"').replace(/no/, ''));
+      var v = document.createElement('video');
+      return !!(v.canPlayType && v.canPlayType('video/mp4; codecs="avc1.42E01E, mp4a.40.2"').replace(/no/, ''));
    }
 
    function changeTimelapse(timelapse) {
@@ -343,9 +356,9 @@
          var success = snaplapse.recordKeyframe();
          if (!success)
             {
-               alert("ERROR: Invalid time position\n\n" +
-                     "The time position of a keyframe cannot\n" +
-                     "be the same as the previous keyframe.")
+            alert("ERROR: Invalid time position\n\n" +
+                  "The time position of a keyframe cannot\n" +
+                  "be the same as the previous keyframe.")
             }
          }
       }
@@ -439,20 +452,19 @@
 <body onselectstart="return false">
 
 <div style="width:800px; height:450px" style="position: relative;">
-
    <div class="overlay1">
-      <div id="movement" style="margin:0px 0px 0px 0px;width:43px;"><img src="images/move.png" alt="zoom_in" /></div>
-	  <div id="zoom_in" style="margin:2px 0px 0px 10px;width:22px;"><img src="images/plus.png" alt="zoom_in" /></div>
+      <div id="movement" style="margin:0px 0px 0px 0px;width:43px;"><img src="images/move.png" alt="zoom_in"/></div>
+      <div id="zoom_in" style="margin:2px 0px 0px 10px;width:22px;"><img src="images/plus.png" alt="zoom_in"/></div>
       <div id="slider-vertical" style="margin:0px 0px 0px 19px;"></div>
-      <div id="zoom_out" style="margin:0px 0px 0px 10px;width:22px;"><img src="images/minus.png" alt="zoom_in" /></div>
-      <div id="home" style="margin:5px 0px 0px 10px;width:22px;"><img src="images/home.png" alt="home" /></div>
+      <div id="zoom_out" style="margin:0px 0px 0px 10px;width:22px;"><img src="images/minus.png" alt="zoom_in"/></div>
+      <div id="home" style="margin:5px 0px 0px 10px;width:22px;"><img src="images/home.png" alt="home"/></div>
    </div>
 
    <div class="overlay2">
-      <div id="up" style="margin:10px 0px 0px 16px;width:10px;"><img src="images/up.png" alt="move up" /></div>
-	  <div id="down" style="margin:14px 0px 0px 16px;width:10px;"><img src="images/down.png" alt="move down" /></div>
-	  <div id="right" style="margin:-16px 0px 0px 28px;width:5px;"><img src="images/right.png" alt="move right" /></div>
-	  <div id="left" style="margin:-10px 0px 0px 10px;width:5px;"><img src="images/left.png" alt="move left" /></div>
+      <div id="up" style="margin:10px 0px 0px 16px;width:10px;"><img src="images/up.png" alt="move up"/></div>
+      <div id="down" style="margin:14px 0px 0px 16px;width:10px;"><img src="images/down.png" alt="move down"/></div>
+      <div id="right" style="margin:-16px 0px 0px 28px;width:5px;"><img src="images/right.png" alt="move right"/></div>
+      <div id="left" style="margin:-10px 0px 0px 10px;width:5px;"><img src="images/left.png" alt="move left"/></div>
    </div>
 
    <div id="timelapse" style="position: absolute; width:800px; height:450px; background:black; overflow:hidden"></div>
@@ -463,7 +475,6 @@
       <td>
          <div id="play_toggle" class="play_mouseout" title="Play"></div>
       </td>
-
       <td>
          <div id="timelineSlider"></div>
       </td>
@@ -492,13 +503,6 @@
 </table>
 <br/><br/>
 
-<!--
-<label for="timelapseChooser">Choose a timelapse:</label>
-<select id="timelapseChooser" onchange="changeTimelapse(this.value);">
-   <option value="brassica" selected="selected">Brassica
-</select>
--->
-
 <br/>Debug:
 <input id="logVideoStatus" type="checkbox" onclick="timelapse.setStatusLoggingEnabled(this.value)"/><label for="logVideoStatus">Log video status</label>
 <input id="showNativeVideoControls" type="checkbox" onclick="timelapse.setNativeVideoControlsEnabled(this.value)"/><label for="showNativeVideoControls">Show Native Video Controls</label>
@@ -521,7 +525,10 @@
          <table border="0" cellpadding="3" cellspacing="0" width="500">
             <tr>
                <td><label for="numSnaplapseKeyframes">Keyframes:</label> <span id="numSnaplapseKeyframes">0</span></td>
-               <td align="right"><label for="numSnaplapseKeyframesSelected">Selected:</label> <span id="numSnaplapseKeyframesSelected">0</span></td>
+               <td align="right">
+                  <label for="numSnaplapseKeyframesSelected">Selected:</label>
+                  <span id="numSnaplapseKeyframesSelected">0</span>
+               </td>
             </tr>
          </table>
          <div id="snaplapse_keyframe_container" style="width:500px; height:300px; display:block; padding:0; margin:0; overflow:auto; border:solid 1px black; background-color:#eeeeee;">
