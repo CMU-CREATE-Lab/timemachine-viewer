@@ -40,16 +40,17 @@ jQuery.event.mousewheel = {
 	giveFocus: function(el, up, down, preventDefault) {
 		if (el._handleMousewheel) jQuery(el).unmousewheel();
 		
-		if (preventDefault == window.undefined && down && down.constructor != Function) {
-			preventDefault = down;
-			down = null;
-		}
+		//if (preventDefault == window.undefined && down && down.constructor != Function) {
+		//	preventDefault = down;
+		//	down = null;
+		//}
 		
 		el._handleMousewheel = function(event) {
 			if (!event) event = window.event;
-			if (preventDefault)
-				if (event.preventDefault) event.preventDefault();
-				else event.returnValue = false;
+                event.preventDefault();
+			//if (preventDefault)
+			//	if (event.preventDefault) event.preventDefault();
+			//	else event.returnValue = false;
 			var delta = 0;
 			if (event.wheelDelta) {
 				delta = event.wheelDelta/120;
