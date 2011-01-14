@@ -447,67 +447,90 @@
          }
       return newWindow;
       }
+
+   function changeViewerSize(newWidth)
+      {
+      var newHeight = newWidth * 0.5625;  // 0.5625 is the aspect ratio of the default 800x450 viewer
+      var bounds = timelapse.getBoundingBoxForCurrentView();
+      $("#timelapse_container").width(newWidth);
+      $("#timelapse_container").height(newHeight);
+      $("#timelapse").width(newWidth);
+      $("#timelapse").height(newHeight);
+      timelapse.updateDimensions();
+      timelapse.warpToBoundingBox(bounds);
+      }
 </script>
 </head>
 <body onselectstart="return false">
 
-<div style="width:800px; height:450px" style="position: relative;">
+<div id="timelapse_container" style="width:800px; height:450px; position:relative;">
    <div class="overlay1">
-      <div id="movement" style="margin:0px 0px 0px 0px;width:43px;"><img src="images/move.png" alt="zoom_in"/></div>
-      <div id="zoom_in" style="margin:2px 0px 0px 10px;width:22px;"><img src="images/plus.png" alt="zoom_in"/></div>
-      <div id="slider-vertical" style="margin:0px 0px 0px 19px;"></div>
-      <div id="zoom_out" style="margin:0px 0px 0px 10px;width:22px;"><img src="images/minus.png" alt="zoom_in"/></div>
-      <div id="home" style="margin:5px 0px 0px 10px;width:22px;"><img src="images/home.png" alt="home"/></div>
+      <div id="movement" style="margin:0 0 0 0;width:43px;"><img src="images/move.png" alt="zoom_in"/></div>
+      <div id="zoom_in" style="margin:2px 0 0 10px;width:22px;"><img src="images/plus.png" alt="zoom_in"/></div>
+      <div id="slider-vertical" style="margin:0 0 0 19px;"></div>
+      <div id="zoom_out" style="margin:0 0 0 10px;width:22px;"><img src="images/minus.png" alt="zoom_in"/></div>
+      <div id="home" style="margin:5px 0 0 10px;width:22px;"><img src="images/home.png" alt="home"/></div>
    </div>
 
    <div class="overlay2">
-      <div id="up" style="margin:10px 0px 0px 16px;width:10px;"><img src="images/up.png" alt="move up"/></div>
-      <div id="down" style="margin:14px 0px 0px 16px;width:10px;"><img src="images/down.png" alt="move down"/></div>
-      <div id="right" style="margin:-16px 0px 0px 28px;width:5px;"><img src="images/right.png" alt="move right"/></div>
-      <div id="left" style="margin:-10px 0px 0px 10px;width:5px;"><img src="images/left.png" alt="move left"/></div>
+      <div id="up" style="margin:10px 0 0 16px;width:10px;"><img src="images/up.png" alt="move up"/></div>
+      <div id="down" style="margin:14px 0 0 16px;width:10px;"><img src="images/down.png" alt="move down"/></div>
+      <div id="right" style="margin:-16px 0 0 28px;width:5px;"><img src="images/right.png" alt="move right"/></div>
+      <div id="left" style="margin:-10px 0 0 10px;width:5px;"><img src="images/left.png" alt="move left"/></div>
    </div>
 
-   <div id="timelapse" style="position: absolute; width:800px; height:450px; background:black; overflow:hidden"></div>
+   <div id="timelapse" style="position: absolute; width:800px; height:450px; background:black; overflow:hidden; border: 2px solid black;"></div>
 </div>
 
-<table style="width:800px; border: 2px solid black;">
-   <tr>
-      <td>
-         <div id="play_toggle" class="play_mouseout" title="Play"></div>
-      </td>
-      <td>
-         <div id="timelineSlider"></div>
-      </td>
-      <td align="right">
-         <span id="currentTime">00:00:00</span>/<span id="totalTime">00:00:00</span><br/>
-      </td>
-   </tr>
-</table>
-<br/>
-<table>
-   <tr>
-      <td>
-         <label for="playBackSpeedSlider">Playback Speed:</label>
-         <div id="playBackSpeedSlider" name="playBackSpeedSlider">
-            <select name="speed" id="speed">
-               <option value="-1">-1x</option>
-               <option value="-.5">-½x</option>
-               <option value="-.25">-¼x</option>
-               <option value=".25">¼x</option>
-               <option value=".5">½x</option>
-               <option value="1" selected="selected">1x</option>
+<div style="width:800px; border: 2px solid black; margin-top:4px">
+   <table>
+      <tr>
+         <td>
+            <div id="play_toggle" class="play_mouseout" title="Play"></div>
+         </td>
+         <td>
+            <div id="timelineSlider"></div>
+         </td>
+         <td align="right">
+            <span id="currentTime">00:00:00</span>/<span id="totalTime">00:00:00</span><br/>
+         </td>
+      </tr>
+   </table>
+</div>
+<div style="width:800px; border: 2px solid black; border-top:0">
+   <table style="width:800px;">
+      <tr>
+         <td style="padding:10px 20px 20px 20px;">
+            <label for="speed">Playback Speed:</label>
+            <div id="playBackSpeedSlider">
+               <select name="speed" id="speed">
+                  <option value="-1">-1x</option>
+                  <option value="-.5">-½x</option>
+                  <option value="-.25">-¼x</option>
+                  <option value=".25">¼x</option>
+                  <option value=".5">½x</option>
+                  <option value="1" selected="selected">1x</option>
+               </select>
+            </div>
+         </td>
+         <td align="right">
+            <label for="viewer_size">Viewer Size:</label>
+            <select name="viewer_size" id="viewer_size" onchange="changeViewerSize($('#viewer_size').val());">
+               <option value="500">Small</option>
+               <option value="800" selected="selected">Normal</option>
+               <option value="1200">Large</option>
+               <option value="1600">Courageous</option>
             </select>
-         </div>
-      </td>
-   </tr>
-</table>
-<br/><br/>
+            <br>
+            <br>
+            Debug: <input id="logVideoStatus" type="checkbox" onclick="timelapse.setStatusLoggingEnabled(this.value)"/><label for="logVideoStatus">Log video status</label>
+            <input id="showNativeVideoControls" type="checkbox" onclick="timelapse.setNativeVideoControlsEnabled(this.value)"/><label for="showNativeVideoControls">Show Native Video Controls</label>
+         </td>
+      </tr>
+   </table>
+</div>
 
-<br/>Debug:
-<input id="logVideoStatus" type="checkbox" onclick="timelapse.setStatusLoggingEnabled(this.value)"/><label for="logVideoStatus">Log video status</label>
-<input id="showNativeVideoControls" type="checkbox" onclick="timelapse.setNativeVideoControlsEnabled(this.value)"/><label for="showNativeVideoControls">Show Native Video Controls</label>
-
-<table border="0" cellpadding="3" cellspacing="0" class="control_panel" style="margin-top:10px">
+<table border="0" cellpadding="3" cellspacing="0" class="control_panel" style="margin-top:10px; padding: 10px; border: 2px solid black;">
    <tr>
       <th align="center">Snaplapse Composer</th>
    </tr>
