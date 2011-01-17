@@ -293,10 +293,18 @@
       alert("TODO - changing timelapse to: " + timelapse);
    }
 
-   function handleSnaplapseFrameSelectionChange(event, ui)
+   function handleSnaplapseFrameSelectionChange()
       {
       var numSelected = $("#snaplapse_keyframe_list > .ui-selected").size();
       $("#numSnaplapseKeyframesSelected").text(numSelected);
+      if (numSelected == 1)
+         {
+         $("#deleteKeyframeButton").removeAttr("disabled");
+         }
+      else  // either 0 or more than 1
+         {
+         $("#deleteKeyframeButton").attr("disabled", "disabled");
+         }
       }
 
    function newSnaplapse(json)
@@ -316,20 +324,11 @@
                                        $("#recordKeyframeButton").removeAttr("disabled");
                                        $("#playStopSnaplapseButton").text("Play Snaplapse");
                                     });
-      snaplapse.addEventListener('record-keyframe',
-                                 function(frame)
+      snaplapse.addEventListener('keyframe-added',
+                                 function(frame, insertionIndex)
                                     {
-                                       var numKeyframes = snaplapse.getNumKeyframes();
-                                       $("#numSnaplapseKeyframes").text(numKeyframes);
-                                       if (numKeyframes > 1)
-                                          {
-                                          $("#playStopSnaplapseButton").removeAttr("disabled");
-                                          $("#saveSnaplapseButton").removeAttr("disabled");
-                                          }
-                                       var keyframeListItem = document.createElement("div");
-                                       keyframeListItem.id = "snaplapse_keyframe_" + numKeyframes;
-                                       $("#snaplapse_keyframe_list").append(keyframeListItem);
-                                       $("#" + keyframeListItem.id).html("Keyframe " + numKeyframes + "<br>Time: " + frame['time']).addClass("snaplapse_keyframe_list_item");
+                                       toggleSnaplapseButtons();
+                                       addSnaplapseKeyframeListItem(frame, insertionIndex);
                                     });
       $("#recordKeyframeButton").removeAttr("disabled");
       $("#playStopSnaplapseButton").attr("disabled", "disabled");
@@ -347,6 +346,43 @@
          }
 
       return true;
+      }
+
+   function toggleSnaplapseButtons()
+      {
+      var numKeyframes = snaplapse.getNumKeyframes();
+      $("#numSnaplapseKeyframes").text(numKeyframes);
+      if (numKeyframes > 1)
+         {
+         $("#playStopSnaplapseButton").removeAttr("disabled");
+         $("#saveSnaplapseButton").removeAttr("disabled");
+         }
+      else
+         {
+         $("#playStopSnaplapseButton").attr("disabled", "disabled");
+         $("#saveSnaplapseButton").attr("disabled", "disabled");
+         }
+      }
+
+   function addSnaplapseKeyframeListItem(frame, insertionIndex)
+      {
+      var keyframeListItem = document.createElement("div");
+      keyframeListItem.id = "snaplapse_keyframe_" + insertionIndex;
+      $("#snaplapse_keyframe_list").append(keyframeListItem);
+      $("#" + keyframeListItem.id).html("Keyframe " + (insertionIndex+1) + "<br>Time: " + frame['time']).addClass("snaplapse_keyframe_list_item");
+      }
+
+   function refreshKeyframesUI()
+      {
+      toggleSnaplapseButtons();
+
+      var keyframes = snaplapse.getKeyframes();
+
+      $("#snaplapse_keyframe_list").empty();
+      for (var i = 0; i < keyframes.length; i++)
+         {
+         addSnaplapseKeyframeListItem(keyframes[i], i);
+         }
       }
 
    function recordKeyframe()
@@ -387,7 +423,7 @@
          }
       else
          {
-         alert("ERROR: No snaplapse to save--please create a snaplapse and add at least once keyframe to it.")
+         alert("ERROR: No snaplapse to save--please create a snaplapse and add at least two keyframes to it.")
          }
       }
 
@@ -412,6 +448,23 @@
          else
             {
             alert("ERROR: Invalid snaplapse file.");
+            }
+         }
+      }
+
+   function deleteSelectedKeyframe()
+      {
+      var selectedItems = $("#snaplapse_keyframe_list > .ui-selected");
+      var numSelected = selectedItems.size();
+      if (numSelected == 1)
+         {
+         var id = selectedItems.get(0).id;
+         var index = id.substring("snaplapse_keyframe_".length);
+         if (snaplapse.deleteKeyframeAtIndex(index))
+            {
+            refreshKeyframesUI();
+            toggleSnaplapseButtons();
+            handleSnaplapseFrameSelectionChange();
             }
          }
       }
@@ -537,7 +590,6 @@
    <tr>
       <td align="center">
          <button type="button" id="newSnaplapseButton" onclick="newSnaplapse(null)">New Snaplapse</button>
-         <button type="button" disabled="disabled" id="recordKeyframeButton" onclick="recordKeyframe()">Record Keyframe</button>
          <button type="button" disabled="disabled" id="playStopSnaplapseButton" onclick="playStopSnaplapse()">Play Snaplapse</button>
          <button type="button" disabled="disabled" id="saveSnaplapseButton" onclick="saveSnaplapse()">Save Snaplapse</button>
          <button type="button" id="loadSnaplapseButton" onclick="showLoadSnaplapseWindow()">Load Snaplapse</button>
@@ -545,6 +597,19 @@
    </tr>
    <tr>
       <td align="center">
+         <table border="0" cellpadding="3" cellspacing="0" width="500">
+            <tr align="center">
+               <td>
+                  <button type="button" disabled="disabled" id="recordKeyframeButton" onclick="recordKeyframe()">Record Keyframe</button>
+               </td>
+               <td>
+                  <button type="button" disabled="disabled" id="deleteKeyframeButton" onclick="deleteSelectedKeyframe()">Delete Keyframe</button>
+               </td>
+            </tr>
+         </table>
+         <div id="snaplapse_keyframe_container" style="width:500px; height:300px; display:block; padding:0; margin:0; overflow:auto; border:solid 1px black; background-color:#eeeeee;">
+            <div id="snaplapse_keyframe_list"></div>
+         </div>
          <table border="0" cellpadding="3" cellspacing="0" width="500">
             <tr>
                <td><label for="numSnaplapseKeyframes">Keyframes:</label> <span id="numSnaplapseKeyframes">0</span></td>
@@ -554,9 +619,6 @@
                </td>
             </tr>
          </table>
-         <div id="snaplapse_keyframe_container" style="width:500px; height:300px; display:block; padding:0; margin:0; overflow:auto; border:solid 1px black; background-color:#eeeeee;">
-            <div id="snaplapse_keyframe_list"></div>
-         </div>
       </td>
    </tr>
 </table>

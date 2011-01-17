@@ -174,25 +174,46 @@ if (!org.gigapan.timelapse.Timelapse)
                   keyframe['bounds'].ymin = bounds.ymin;
                   keyframe['bounds'].xmax = bounds.xmax;
                   keyframe['bounds'].ymax = bounds.ymax;
-                  keyframes[keyframes.length] = keyframe;
+                  var insertionIndex = keyframes.length;
+                  keyframes[insertionIndex] = keyframe;
 
-                  var listeners = eventListeners['record-keyframe'];
+                  var listeners = eventListeners['keyframe-added'];
                   if (listeners)
                      {
                      for (var i = 0; i < listeners.length; i++)
                         {
                         try
                            {
-                           listeners[i](cloneFrame(keyframe));
+                           listeners[i](cloneFrame(keyframe), insertionIndex);
                            }
                         catch(e)
                            {
-                           UTIL.error(e.name + " while calling snaplapse 'record-keyframe' event listener: " + e.message, e);
+                           UTIL.error(e.name + " while calling snaplapse 'keyframe-added' event listener: " + e.message, e);
                            }
                         }
                      }
 
                   return true;
+               };
+
+            this.deleteKeyframeAtIndex = function(index)
+               {
+                  if (index >= 0 && index < keyframes.length)
+                     {
+                     keyframes.splice(index, 1);
+                     return true;
+                     }
+                  return false;
+               };
+
+            this.getKeyframes = function()
+               {
+                  var keyframesClone = [];
+                  for (var i = 0; i < keyframes.length; i++)
+                     {
+                     keyframesClone[i] = cloneFrame(keyframes[i]);
+                     }
+                  return keyframesClone;
                };
 
             this.play = function()
