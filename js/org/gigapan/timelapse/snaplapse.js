@@ -126,7 +126,7 @@ if (!org.gigapan.timelapse.Timelapse)
                                typeof keyframe['bounds']['xmax'] != 'undefined' &&
                                typeof keyframe['bounds']['ymax'] != 'undefined')
                               {
-                              this.recordKeyframe(keyframe['time'], keyframe['bounds']);
+                              this.recordKeyframe(keyframe['time'], keyframe['bounds'], keyframe['title'], keyframe['description']);
                               }
                            else
                               {
@@ -149,7 +149,7 @@ if (!org.gigapan.timelapse.Timelapse)
                   return true;
                };
 
-            this.recordKeyframe = function(time, bounds)
+            this.recordKeyframe = function(time, bounds, title, description)
                {
                   if (typeof bounds == 'undefined')
                      {
@@ -177,6 +177,9 @@ if (!org.gigapan.timelapse.Timelapse)
                   var insertionIndex = keyframes.length;
                   keyframes[insertionIndex] = keyframe;
 
+                  keyframe['title'] = (typeof title == 'undefined') ? '' : title;
+                  keyframe['description'] = (typeof description == 'undefined') ? '' : description;
+                  
                   var listeners = eventListeners['keyframe-added'];
                   if (listeners)
                      {
@@ -194,6 +197,18 @@ if (!org.gigapan.timelapse.Timelapse)
                      }
 
                   return true;
+               };
+
+            this.setTextAnnotationForKeyframe = function(index, title, description)
+               {
+                  UTIL.log("setTextAnnotationForKeyframe(" + index + "," + title + "," + description + ")");
+                  if (index >= 0 && index < keyframes.length)
+                     {
+                     keyframes[index]['title'] = title;
+                     keyframes[index]['description'] = description;
+                     return true;
+                     }
+                  return false;
                };
 
             this.deleteKeyframeAtIndex = function(index)
@@ -369,6 +384,8 @@ if (!org.gigapan.timelapse.Timelapse)
                      {
                      frameCopy = {};
                      frameCopy['time'] = frame['time'];
+                     frameCopy['title'] = frame['title'];
+                     frameCopy['description'] = frame['description'];
                      frameCopy['bounds'] = {};
                      frameCopy['bounds'].xmin = frame['bounds'].xmin;
                      frameCopy['bounds'].ymin = frame['bounds'].ymin;

@@ -17,9 +17,8 @@
 <link href="css/ui.slider.extras.css" rel="stylesheet" type="text/css"/>
 <style type="text/css">
    .snaplapse_keyframe_list_item {
-      height:50px;
       display: block;
-      padding: 1px;
+      padding: 2px;
       margin: 0;
       cursor: pointer;
       border:solid 1px black;
@@ -276,12 +275,13 @@
 
          $("#totalTime").text(org.gigapan.Util.formatTime(timelapseDurationInSeconds));
 
-         $("#snaplapse_keyframe_list")['selectable']({
-                                                        selected: handleSnaplapseFrameSelectionChange,
-                                                        unselected: handleSnaplapseFrameSelectionChange
-                                                     });
+      $("#snaplapse_keyframe_list")['selectable']({
+                                                     selected: handleSnaplapseFrameSelectionChange,
+                                                     unselected: handleSnaplapseFrameSelectionChange,
+         cancel: ':input,option,span'
+                                                  });
 
-         $("#slider-vertical")['slider']("option", "value", timelapse.getDefaultScale());
+      $("#slider-vertical")['slider']("option", "value", timelapse.getDefaultScale());
       }
 
    function browserSupported() {
@@ -296,7 +296,6 @@
    function handleSnaplapseFrameSelectionChange()
       {
       var numSelected = $("#snaplapse_keyframe_list > .ui-selected").size();
-      $("#numSnaplapseKeyframesSelected").text(numSelected);
       if (numSelected == 1)
          {
          $("#deleteKeyframeButton").removeAttr("disabled");
@@ -333,7 +332,6 @@
       $("#recordKeyframeButton").removeAttr("disabled");
       $("#playStopSnaplapseButton").attr("disabled", "disabled");
       $("#saveSnaplapseButton").attr("disabled", "disabled");
-      $("#numSnaplapseKeyframes").text("0");
       $("#snaplapse_keyframe_list").empty();
       if (saveSnaplapseWindow)
          {
@@ -351,7 +349,6 @@
    function toggleSnaplapseButtons()
       {
       var numKeyframes = snaplapse.getNumKeyframes();
-      $("#numSnaplapseKeyframes").text(numKeyframes);
       if (numKeyframes > 1)
          {
          $("#playStopSnaplapseButton").removeAttr("disabled");
@@ -369,11 +366,84 @@
       var keyframeListItem = document.createElement("div");
       keyframeListItem.id = "snaplapse_keyframe_" + insertionIndex;
       $("#snaplapse_keyframe_list").append(keyframeListItem);
-      $("#" + keyframeListItem.id).html("Keyframe " + (insertionIndex+1) + "<br>Time: " + frame['time']).addClass("snaplapse_keyframe_list_item");
+
+      var togglableClass = keyframeListItem.id + "_togglable";
+      var titleId = keyframeListItem.id + "_title";
+      var descriptionId = keyframeListItem.id + "_description";
+      var saveButtonId = keyframeListItem.id + "_save_button";
+      var showTextAnnotationAreaButtonId = keyframeListItem.id + "_show_text_annotation_area_button";
+      var hasTextAnnotationIndicatorId = keyframeListItem.id + "_has_text_annotation";
+
+      var hasTextAnnotation = function(title, description)
+         {
+            return (typeof title != 'undefined' && title.length > 0) ||
+                   (typeof description != 'undefined' && description.length > 0);
+         };
+      var content = '<table border="0" cellpadding="1" cellspacing="0">' +
+                    '   <tr>' +
+                    '      <td style="width:10px;"><span id="'+showTextAnnotationAreaButtonId+'" class="ui-icon ui-icon-triangle-1-e"></span></td>' +
+                    '      <td style="width:90px;">Keyframe ' + (insertionIndex + 1) + ': </td>' +
+                    '      <td style="width:5px;"></td>' +
+                    '      <td style="width:305px;">' + frame['time'] + '</td>' +
+                    '      <td style="width:90px;" align="right"><span ' + (!hasTextAnnotation(frame['title'],frame['description']) ? 'style="display:none"' : '') + ' id="' + hasTextAnnotationIndicatorId + '" class="ui-icon ui-icon-comment"></span></td>' +
+                    '   </tr>' +
+                    '   <tr class="' + togglableClass + '" style="display:none">' +
+                    '      <td style="width:10px;"></td>' +
+                    '      <td style="width:90px;" align="right"><label for="' + titleId + '">Title:</label></td>' +
+                    '      <td style="width:5px;"></td>' +
+                    '      <td style="width:305px;"><input type="text" id="' + titleId + '" value="' + frame['title'] + '" style="width:290px;"></td>' +
+                    '      <td style="width:90px;">&nbsp;</td>' +
+                    '   </tr>' +
+                    '   <tr class="' + togglableClass + '" style="display:none" valign="top">' +
+                    '      <td style="width:10px;"></td>' +
+                    '      <td style="width:90px;" align="right"><label for="' + descriptionId + '">Description:</label></td>' +
+                    '      <td style="width:5px;"></td>' +
+                    '      <td style="width:305px;"><textarea id="' + descriptionId + '" rows="5" style="width:290px;">' + frame['description'] + '</textarea></td>' +
+                    '      <td style="width:90px;" valign="bottom"><button type="button" id="' + saveButtonId + '">Save</button></td>' +
+                    '   </tr>' +
+                    '</table>';
+
+      $("#" + keyframeListItem.id).html(content).addClass("snaplapse_keyframe_list_item");
+      $("#" + keyframeListItem.id).dblclick(function()
+                                               {
+                                                  timelapse.seek(frame['time']);
+                                                  timelapse.warpToBoundingBox(frame['bounds']);
+                                               });
+
+      var saveTextAnnotion = function()
+         {
+            var title = $("#" + titleId).val();
+            var description = $("#" + descriptionId).val();
+            snaplapse.setTextAnnotationForKeyframe(insertionIndex, title, description);
+            if (hasTextAnnotation(title, description))
+               {
+               $("#" + hasTextAnnotationIndicatorId).show();
+               }
+            else
+               {
+               $("#" + hasTextAnnotationIndicatorId).hide();
+               }
+         };
+      $("#" + showTextAnnotationAreaButtonId).click(saveTextAnnotion).click(function()
+                                                                                                   {
+                                                                                                      if ($("." + togglableClass).is(':visible'))
+                                                                                                         {
+                                                                                                         $("." + togglableClass).hide();
+                                                                                                         $("#" + showTextAnnotationAreaButtonId).removeClass("ui-icon-triangle-1-s");
+                                                                                                         $("#" + showTextAnnotationAreaButtonId).addClass("ui-icon-triangle-1-e");
+                                                                                                         }
+                                                                                                      else
+                                                                                                         {
+                                                                                                         $("." + togglableClass).show();
+                                                                                                         $("#" + showTextAnnotationAreaButtonId).removeClass("ui-icon-triangle-1-e");
+                                                                                                         $("#" + showTextAnnotationAreaButtonId).addClass("ui-icon-triangle-1-s");
+                                                                                                         }
+                                                                                                   });
+      $("#" + saveButtonId).click(saveTextAnnotion);
       }
 
    function refreshKeyframesUI()
-      {
+         {
       toggleSnaplapseButtons();
 
       var keyframes = snaplapse.getKeyframes();
@@ -610,15 +680,6 @@
          <div id="snaplapse_keyframe_container" style="width:500px; height:300px; display:block; padding:0; margin:0; overflow:auto; border:solid 1px black; background-color:#eeeeee;">
             <div id="snaplapse_keyframe_list"></div>
          </div>
-         <table border="0" cellpadding="3" cellspacing="0" width="500">
-            <tr>
-               <td><label for="numSnaplapseKeyframes">Keyframes:</label> <span id="numSnaplapseKeyframes">0</span></td>
-               <td align="right">
-                  <label for="numSnaplapseKeyframesSelected">Selected:</label>
-                  <span id="numSnaplapseKeyframesSelected">0</span>
-               </td>
-            </tr>
-         </table>
       </td>
    </tr>
 </table>
