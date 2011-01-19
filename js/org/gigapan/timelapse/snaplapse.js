@@ -90,7 +90,7 @@ if (!org.gigapan.timelapse.Timelapse)
          {
             var keyframes = [];
             var keyframeIntervals = [];
-            var currentKeyframeIntervalIndex = 0;
+            var currentKeyframeIntervalIndex = -1;
             var isCurrentlyPlaying = false;
             var eventListeners = {};
             var timeStep = 1 / timelapse.getFps();
@@ -179,7 +179,7 @@ if (!org.gigapan.timelapse.Timelapse)
 
                   keyframe['title'] = (typeof title == 'undefined') ? '' : title;
                   keyframe['description'] = (typeof description == 'undefined') ? '' : description;
-                  
+
                   var listeners = eventListeners['keyframe-added'];
                   if (listeners)
                      {
@@ -201,7 +201,6 @@ if (!org.gigapan.timelapse.Timelapse)
 
             this.setTextAnnotationForKeyframe = function(index, title, description)
                {
-                  UTIL.log("setTextAnnotationForKeyframe(" + index + "," + title + "," + description + ")");
                   if (index >= 0 && index < keyframes.length)
                      {
                      keyframes[index]['title'] = title;
@@ -249,7 +248,10 @@ if (!org.gigapan.timelapse.Timelapse)
                            }
 
                         // set the current keyframe interval index
-                        currentKeyframeIntervalIndex = 0;
+                        currentKeyframeIntervalIndex = -1;
+
+                        // we're not in interval transition mode
+                        isInIntervalTransitionMode = false;
 
                         // make sure playback is stopped
                         timelapse.pause();
@@ -413,11 +415,11 @@ if (!org.gigapan.timelapse.Timelapse)
                   var normalizedTime = normalizeTime(t);
 
                   // get the current keyframe interval
-                  var keyframeInterval = keyframeIntervals[currentKeyframeIntervalIndex];
+                  var keyframeInterval = (0 <= currentKeyframeIntervalIndex) ? keyframeIntervals[currentKeyframeIntervalIndex] : null;
 
                   // Make sure the time is in the interval.  If it isn't then just assume we've crossed to the next
                   // interval. In that case, update things accordingly
-                  if (keyframeInterval.isTimeWithinInterval(normalizedTime))
+                  if (keyframeInterval != null && keyframeInterval.isTimeWithinInterval(normalizedTime))
                      {
                      if (isInIntervalTransitionMode)
                         {
@@ -437,6 +439,7 @@ if (!org.gigapan.timelapse.Timelapse)
                      else
                         {
                         currentKeyframeIntervalIndex++;
+                        UTIL.log("######################################################################################################## currentKeyframeIntervalIndex = " + currentKeyframeIntervalIndex);
                         if (currentKeyframeIntervalIndex < keyframeIntervals.length)
                            {
                            isInIntervalTransitionMode = true;
@@ -451,6 +454,23 @@ if (!org.gigapan.timelapse.Timelapse)
                         else
                            {
                            keyframeInterval = null;
+                           }
+
+                        // notify listeners of keyframe interval change
+                        var listeners = eventListeners['keyframe-interval-change'];
+                        if (listeners)
+                           {
+                           for (var i = 0; i < listeners.length; i++)
+                              {
+                              try
+                                 {
+                                 listeners[i](currentKeyframeIntervalIndex, cloneFrame(keyframeInterval ? keyframeInterval.getStartingFrame() : keyframes[keyframes.length - 1]));
+                                 }
+                              catch(e)
+                                 {
+                                 UTIL.error(e.name + " while calling snaplapse 'keyframe-interval-change' event listener: " + e.message, e);
+                                 }
+                              }
                            }
                         }
                      }
@@ -508,6 +528,11 @@ if (!org.gigapan.timelapse.Timelapse)
             this.getStartingFrame = function()
                {
                   return startingFrame;
+               };
+
+            this.getEndingFrame = function()
+               {
+                  return endingFrame;
                };
 
             this.getStartingTime = function()

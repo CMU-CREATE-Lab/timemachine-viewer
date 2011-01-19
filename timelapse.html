@@ -278,7 +278,7 @@
       $("#snaplapse_keyframe_list")['selectable']({
                                                      selected: handleSnaplapseFrameSelectionChange,
                                                      unselected: handleSnaplapseFrameSelectionChange,
-         cancel: ':input,option,span'
+         cancel: ':input,option,span,textarea'
                                                   });
 
       $("#slider-vertical")['slider']("option", "value", timelapse.getDefaultScale());
@@ -295,14 +295,41 @@
 
    function handleSnaplapseFrameSelectionChange()
       {
-      var numSelected = $("#snaplapse_keyframe_list > .ui-selected").size();
+      var selectedItems = $("#snaplapse_keyframe_list > .ui-selected");
+      var numSelected = selectedItems.size();
+
       if (numSelected == 1)
          {
          $("#deleteKeyframeButton").removeAttr("disabled");
+
+         var id = selectedItems.get(0).id;
+         var index = id.substring("snaplapse_keyframe_".length);
+         var frame = snaplapse.getKeyframe(index);
+
+         displaySnaplapseFrameAnnotation(frame);
          }
       else  // either 0 or more than 1
          {
          $("#deleteKeyframeButton").attr("disabled", "disabled");
+         displaySnaplapseFrameAnnotation(null);
+         }
+      }
+
+   function displaySnaplapseFrameAnnotation(frame)
+      {
+      $("#snaplapse-annotation-title").hide();
+      $("#snaplapse-annotation-description").hide();
+
+      if (frame)
+         {
+         if (isTextNonEmpty(frame['title']))
+            {
+            $("#snaplapse-annotation-title").html(frame['title']).show();
+            }
+         if (isTextNonEmpty(frame['description']))
+            {
+            $("#snaplapse-annotation-description").html(frame['description']).show();
+            }
          }
       }
 
@@ -328,6 +355,12 @@
                                     {
                                        toggleSnaplapseButtons();
                                        addSnaplapseKeyframeListItem(frame, insertionIndex);
+                                    });
+      snaplapse.addEventListener('keyframe-interval-change',
+                                 function(index, frame)
+                                    {
+                                       org.gigapan.Util.log("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ keyframe-interval-change: ["+index+"|"+frame['title']+"|"+frame['description']+"]");
+                                       displaySnaplapseFrameAnnotation(frame);
                                     });
       $("#recordKeyframeButton").removeAttr("disabled");
       $("#playStopSnaplapseButton").attr("disabled", "disabled");
@@ -361,6 +394,11 @@
          }
       }
 
+   function isTextNonEmpty(text)
+      {
+      return (typeof text != 'undefined' && text.length > 0);
+      }
+
    function addSnaplapseKeyframeListItem(frame, insertionIndex)
       {
       var keyframeListItem = document.createElement("div");
@@ -376,8 +414,7 @@
 
       var hasTextAnnotation = function(title, description)
          {
-            return (typeof title != 'undefined' && title.length > 0) ||
-                   (typeof description != 'undefined' && description.length > 0);
+            return isTextNonEmpty(title) || isTextNonEmpty(description);
          };
       var content = '<table border="0" cellpadding="1" cellspacing="0">' +
                     '   <tr>' +
@@ -423,22 +460,23 @@
                {
                $("#" + hasTextAnnotationIndicatorId).hide();
                }
+            displaySnaplapseFrameAnnotation(snaplapse.getKeyframe(insertionIndex));
          };
       $("#" + showTextAnnotationAreaButtonId).click(saveTextAnnotion).click(function()
-                                                                                                   {
-                                                                                                      if ($("." + togglableClass).is(':visible'))
-                                                                                                         {
-                                                                                                         $("." + togglableClass).hide();
-                                                                                                         $("#" + showTextAnnotationAreaButtonId).removeClass("ui-icon-triangle-1-s");
-                                                                                                         $("#" + showTextAnnotationAreaButtonId).addClass("ui-icon-triangle-1-e");
-                                                                                                         }
-                                                                                                      else
-                                                                                                         {
-                                                                                                         $("." + togglableClass).show();
-                                                                                                         $("#" + showTextAnnotationAreaButtonId).removeClass("ui-icon-triangle-1-e");
-                                                                                                         $("#" + showTextAnnotationAreaButtonId).addClass("ui-icon-triangle-1-s");
-                                                                                                         }
-                                                                                                   });
+                                                                               {
+                                                                                  if ($("." + togglableClass).is(':visible'))
+                                                                                     {
+                                                                                     $("." + togglableClass).hide();
+                                                                                     $("#" + showTextAnnotationAreaButtonId).removeClass("ui-icon-triangle-1-s");
+                                                                                     $("#" + showTextAnnotationAreaButtonId).addClass("ui-icon-triangle-1-e");
+                                                                                     }
+                                                                                  else
+                                                                                     {
+                                                                                     $("." + togglableClass).show();
+                                                                                     $("#" + showTextAnnotationAreaButtonId).removeClass("ui-icon-triangle-1-e");
+                                                                                     $("#" + showTextAnnotationAreaButtonId).addClass("ui-icon-triangle-1-s");
+                                                                                     }
+                                                                               });
       $("#" + saveButtonId).click(saveTextAnnotion);
       }
 
@@ -653,35 +691,52 @@
    </table>
 </div>
 
-<table border="0" cellpadding="3" cellspacing="0" class="control_panel" style="margin-top:10px; padding: 10px; border: 2px solid black;">
-   <tr>
-      <th align="center">Snaplapse Composer</th>
-   </tr>
-   <tr>
-      <td align="center">
-         <button type="button" id="newSnaplapseButton" onclick="newSnaplapse(null)">New Snaplapse</button>
-         <button type="button" disabled="disabled" id="playStopSnaplapseButton" onclick="playStopSnaplapse()">Play Snaplapse</button>
-         <button type="button" disabled="disabled" id="saveSnaplapseButton" onclick="saveSnaplapse()">Save Snaplapse</button>
-         <button type="button" id="loadSnaplapseButton" onclick="showLoadSnaplapseWindow()">Load Snaplapse</button>
-      </td>
-   </tr>
-   <tr>
-      <td align="center">
-         <table border="0" cellpadding="3" cellspacing="0" width="500">
-            <tr align="center">
-               <td>
-                  <button type="button" disabled="disabled" id="recordKeyframeButton" onclick="recordKeyframe()">Record Keyframe</button>
+<table border="0" cellpadding="0" cellspacing="0">
+   <tr valign="top">
+      <td>
+         <table border="0" cellpadding="0" cellspacing="0" class="control_panel" style="margin-top:10px; padding: 10px; width:520px; border: 2px solid black;">
+            <tr>
+               <th align="center" style="padding-bottom:5px">Snaplapse Composer</th>
+            </tr>
+            <tr>
+               <td align="center" style="padding-bottom:5px">
+                  <button type="button" id="newSnaplapseButton" onclick="newSnaplapse(null)">New Snaplapse</button>
+                  <button type="button" disabled="disabled" id="playStopSnaplapseButton" onclick="playStopSnaplapse()">Play Snaplapse</button>
+                  <button type="button" disabled="disabled" id="saveSnaplapseButton" onclick="saveSnaplapse()">Save Snaplapse</button>
+                  <button type="button" id="loadSnaplapseButton" onclick="showLoadSnaplapseWindow()">Load Snaplapse</button>
                </td>
-               <td>
-                  <button type="button" disabled="disabled" id="deleteKeyframeButton" onclick="deleteSelectedKeyframe()">Delete Keyframe</button>
+            </tr>
+            <tr>
+               <td align="center">
+                  <table border="0" cellpadding="3" cellspacing="0" width="500" style="padding-bottom:5px">
+                     <tr align="center">
+                        <td>
+                           <button type="button" disabled="disabled" id="recordKeyframeButton" onclick="recordKeyframe()">Record Keyframe</button>
+                        </td>
+                        <td>
+                           <button type="button" disabled="disabled" id="deleteKeyframeButton" onclick="deleteSelectedKeyframe()">Delete Keyframe</button>
+                        </td>
+                     </tr>
+                  </table>
+                  <div id="snaplapse_keyframe_container" style="width:500px; height:300px; display:block; padding:0; margin:0; overflow:auto; border:solid 1px black; background-color:#eeeeee;">
+                     <div id="snaplapse_keyframe_list"></div>
+                  </div>
                </td>
             </tr>
          </table>
-         <div id="snaplapse_keyframe_container" style="width:500px; height:300px; display:block; padding:0; margin:0; overflow:auto; border:solid 1px black; background-color:#eeeeee;">
-            <div id="snaplapse_keyframe_list"></div>
-         </div>
+      </td>
+      <td>
+         <table border="0" cellpadding="0" cellspacing="0" class="control_panel" style="margin-top:10px; width:278px; padding: 10px; border: 2px solid black; border-left:0">
+            <tr>
+               <th id="snaplapse-annotation-title" align="center" style="display:none"></th>
+            <tr>
+            <tr>
+               <td id="snaplapse-annotation-description" align="left" style="display:none"></td>
+            </tr>
+         </table>
       </td>
    </tr>
 </table>
+
 </body>
 </html>
