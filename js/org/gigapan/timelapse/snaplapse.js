@@ -241,10 +241,11 @@ if (!org.gigapan.timelapse.Timelapse)
                         isCurrentlyPlaying = true;
 
                         // compute the keyframe intervals
+                        keyframeIntervals = [];
                         for (var k = 1; k < keyframes.length; k++)
                            {
                            keyframeIntervals[keyframeIntervals.length] = new org.gigapan.timelapse.FrameInterval(keyframes[k - 1], keyframes[k], timeStep);
-                           UTIL.log("##### Created keyframe interval: between time [" + keyframes[k - 1]['time'] + "] and [" + keyframes[k]['time'] + "]");
+                           UTIL.log("##### Created keyframe interval ("+(keyframeIntervals.length-1)+"): between time [" + keyframes[k - 1]['time'] + "] and [" + keyframes[k]['time'] + "]");
                            }
 
                         // set the current keyframe interval index
@@ -439,7 +440,7 @@ if (!org.gigapan.timelapse.Timelapse)
                      else
                         {
                         currentKeyframeIntervalIndex++;
-                        UTIL.log("######################################################################################################## currentKeyframeIntervalIndex = " + currentKeyframeIntervalIndex);
+                        UTIL.log("#################################################### currentKeyframeIntervalIndex = " + currentKeyframeIntervalIndex);
                         if (currentKeyframeIntervalIndex < keyframeIntervals.length)
                            {
                            isInIntervalTransitionMode = true;
