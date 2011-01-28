@@ -341,14 +341,33 @@
                                     {
                                        $("#newSnaplapseButton").attr("disabled", "disabled");
                                        $("#recordKeyframeButton").attr("disabled", "disabled");
+                                       $("#loadSnaplapseButton").attr("disabled", "disabled");
+                                       $("#saveSnaplapseButton").attr("disabled", "disabled");
                                        $("#playStopSnaplapseButton").text("Stop Snaplapse");
+
+                           						 $("#timelineSlider").slider("option", "disabled", true);
+										                   $("#slider-vertical").slider("option", "disabled", true);
+										                   $('#playBackSpeedSlider').hide();
+										                   $('#play_toggle').attr("class", "");
+										                   $('.overlay1').hide();
+										                   $('.overlay2').hide();
+
                                     });
       snaplapse.addEventListener('stop',
                                  function()
                                     {
                                        $("#newSnaplapseButton").removeAttr("disabled");
                                        $("#recordKeyframeButton").removeAttr("disabled");
+                                       $("#loadSnaplapseButton").removeAttr("disabled");
+                                       $("#saveSnaplapseButton").removeAttr("disabled");
                                        $("#playStopSnaplapseButton").text("Play Snaplapse");
+
+                           						 $("#timelineSlider").slider("option", "disabled", false);
+										                   $("#slider-vertical").slider("option", "disabled", false);
+										                   $('#playBackSpeedSlider').show();
+										                   $('#play_toggle').attr("class", "play_mouseout");
+										                   $('.overlay1').show();
+										                   $('.overlay2').show();
                                     });
       snaplapse.addEventListener('keyframe-added',
                                  function(frame, insertionIndex)
