@@ -4,7 +4,7 @@
 <title>GigaPan Timelapse Explorer</title>
 <script src="js/jquery/jquery.min.js" type="text/javascript"></script>
 <script src="js/jquery/jquery-ui.custom.min.js" type="text/javascript"></script>
-<script src="js/jquery/plugins/mouse/jQuery_mousewheel_plugin.js" type="text/javascript"></script>
+<script src="js/jquery/plugins/mouse/jquery.mousewheel.js" type="text/javascript"></script>
 <script src="js/jquery/plugins/slider/selectToUISlider.jQuery.js" type="text/javascript"></script>
 <script src="js/jquery/plugins/query/jquery.query-2.1.7.js" type="text/javascript"></script>
 <script src="js/org/gigapan/util.js" type="text/javascript"></script>
@@ -296,7 +296,7 @@
    function handleSnaplapseFrameSelectionChange()
       {
 
-			if (snaplapse.isPlaying())
+      if (snaplapse.isPlaying())
          {
          $("#deleteKeyframeButton").attr("disabled", "disabled");
          return;
@@ -305,10 +305,10 @@
       var selectedItems = $("#snaplapse_keyframe_list > .ui-selected");
       var numSelected = selectedItems.size();
 
+      $("#deleteKeyframeButton").removeAttr("disabled");
+
       if (numSelected == 1)
          {
-         $("#deleteKeyframeButton").removeAttr("disabled");
-
          var id = selectedItems.get(0).id;
          var index = id.substring("snaplapse_keyframe_".length);
          var frame = snaplapse.getKeyframe(index);
@@ -317,7 +317,6 @@
          }
       else  // either 0 or more than 1
          {
-         $("#deleteKeyframeButton").attr("disabled", "disabled");
          displaySnaplapseFrameAnnotation(null);
          }
       }
@@ -586,15 +585,24 @@
          }
       }
 
-   function deleteSelectedKeyframe()
+   function deleteSelectedKeyframes()
       {
       var selectedItems = $("#snaplapse_keyframe_list > .ui-selected");
       var numSelected = selectedItems.size();
-      if (numSelected == 1)
+
+      var keyframes = snaplapse.getKeyframes();
+
+      for (var i = 0; i < numSelected; i++)
          {
-         var id = selectedItems.get(0).id;
+         var id = selectedItems.get(i).id;
          var index = id.substring("snaplapse_keyframe_".length);
-         if (snaplapse.deleteKeyframeAtIndex(index))
+
+         if (index < 0 || index > keyframes.length)
+            return;
+
+         var time = keyframes[index]['time'];
+
+         if (snaplapse.deleteKeyframeAtTime(time))
             {
             refreshKeyframesUI();
             toggleSnaplapseButtons();
@@ -740,7 +748,7 @@
                            <button type="button" disabled="disabled" id="recordKeyframeButton" onclick="recordKeyframe()">Record Keyframe</button>
                         </td>
                         <td>
-                           <button type="button" disabled="disabled" id="deleteKeyframeButton" onclick="deleteSelectedKeyframe()">Delete Keyframe</button>
+                           <button type="button" disabled="disabled" id="deleteKeyframeButton" onclick="deleteSelectedKeyframes()">Delete Keyframe(s)</button>
                         </td>
                      </tr>
                   </table>

@@ -220,6 +220,19 @@ if (!org.gigapan.timelapse.Timelapse)
                   return false;
                };
 
+            this.deleteKeyframeAtTime = function(time)
+               {
+               for (var i = 0; i < keyframes.length; i++)
+                  {
+                  if (keyframes[i]['time'] == time)
+                     {
+                     keyframes.splice(i, 1);
+                     return true;
+                     }
+                  }
+                  return false;
+               };
+               
             this.getKeyframes = function()
                {
                   var keyframesClone = [];
