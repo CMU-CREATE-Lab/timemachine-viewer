@@ -325,14 +325,14 @@ if (!org.gigapan.timelapse.Videoset)
                   return _homeView().scale * .5;
                };
 
-            this.getMinScale = _getMinScale
+            this.getMinScale = _getMinScale;
 
             var _getMaxScale = function()
                {
                   return 2;
                };
 
-            this.getMaxScale = _getMaxScale
+            this.getMaxScale = _getMaxScale;
 
             this.getDefaultScale = function()
                {
@@ -343,6 +343,14 @@ if (!org.gigapan.timelapse.Videoset)
                {
                   readVideoDivSize();
                };
+
+            var _viewScaleToZoomSlider = function(value)
+               {
+                  var tmpValue = Math.sqrt((value - _getMinScale()) / (_getMaxScale() - _getMinScale()));
+                  var newValue = (1/(Math.log(2)))*(Math.log(tmpValue+1));
+                  return newValue;
+               }
+            this.viewScaleToZoomSlider = _viewScaleToZoomSlider;
 
             ////////////////////////////////////////////////////////////////////////////////////////////////////////////
             //
@@ -383,8 +391,10 @@ if (!org.gigapan.timelapse.Videoset)
                   targetView.y += 1 * (1-1/actualZoom) * (event.y - viewportHeight*.5) / targetView.scale;
                   targetView.scale = newScale;
                   setTargetView(targetView);
+                  //make the scale map to the zoom slider range
+                  $("#slider-vertical")['slider']("option", "value", _viewScaleToZoomSlider(targetView.scale));
                };
-              
+
             var handleDoubleClickEvent = function(event)
                {
                   UTIL.log('double click');
@@ -410,7 +420,7 @@ if (!org.gigapan.timelapse.Videoset)
                   view.x = targetView.x;
                   view.y = targetView.y;
                   view.scale = targetView.scale;
-                  $("#slider-vertical")['slider']("option", "value", targetView.scale);
+
                   refresh();
                };
 

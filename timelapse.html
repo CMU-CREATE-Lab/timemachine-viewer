@@ -26,7 +26,8 @@
    }
 
    #snaplapse_keyframe_list .ui-selecting { background: #ddddff; }
-   #snaplapse_keyframe_list .ui-selected { background: #eeeeff; color: black; }
+   #snaplapse_keyframe_list .ui-selected { background: #a5a7ff; color: black; }
+
 </style>
 <script type="text/javascript">
    var gigapanId = $.query.get('id') || "brassica1-15m-halfsize";
@@ -129,8 +130,8 @@
 
          $("#slider-vertical").slider({
                                          orientation: "vertical",
-                                         min: timelapse.getMinScale(),
-                                         max: timelapse.getMaxScale(),
+                                         min: 0,
+                                         max: 1,
                                          step: .01,
 
                                          slide: function(e, ui)
@@ -281,8 +282,9 @@
          cancel: ':input,option,span,textarea'
                                                   });
 
-      $("#slider-vertical")['slider']("option", "value", timelapse.getDefaultScale());
-      }
+      $("#slider-vertical")['slider']("option", "value", timelapse.viewScaleToZoomSlider(timelapse.getDefaultScale()));
+
+   }
 
    function browserSupported() {
       var v = document.createElement('video');
@@ -295,7 +297,6 @@
 
    function handleSnaplapseFrameSelectionChange()
       {
-
       if (snaplapse.isPlaying())
          {
          $("#deleteKeyframeButton").attr("disabled", "disabled");
@@ -358,6 +359,15 @@
                                     $('#play_toggle').attr("class", "");
                                     $('.overlay1').hide();
                                     $('.overlay2').hide();
+                                    //$("#snaplapse_keyframe_list").selectable( "option", "disabled", true );
+
+                                    var keyframes = $("#snaplapse_keyframe_list > div");
+                                    for (i = 0; i < keyframes.size(); i++)
+                                    {
+                                       frame = keyframes[i];
+                                       $(frame).removeClass().addClass("snaplapse_keyframe_list_item");
+                                    }
+
                                     });
       snaplapse.addEventListener('stop',
                                  function()
@@ -374,6 +384,15 @@
                                     $('#play_toggle').attr("class", "play_mouseout");
                                     $('.overlay1').show();
                                     $('.overlay2').show();
+                                    //$("#snaplapse_keyframe_list").selectable( "option", "disabled", false );
+
+                                    var keyframes = $("#snaplapse_keyframe_list > div");
+                                    for (i = 0; i < keyframes.size(); i++)
+                                    {
+                                       frame = keyframes[i];
+                                       $(frame).removeClass().addClass("snaplapse_keyframe_list_item");
+                                    }
+
                                     });
       snaplapse.addEventListener('keyframe-added',
                                  function(frame, insertionIndex)
@@ -384,6 +403,7 @@
       snaplapse.addEventListener('keyframe-interval-change',
                                  function(index, frame)
                                     {
+
                                        org.gigapan.Util.log("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ keyframe-interval-change: ["+index+"|"+frame['title']+"|"+frame['description']+"]");
                                        displaySnaplapseFrameAnnotation(frame);
                                     });
