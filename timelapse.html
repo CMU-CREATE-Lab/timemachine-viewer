@@ -694,6 +694,11 @@
       $("#timelapse_container").height(newHeight);
       $("#timelapse").width(newWidth);
       $("#timelapse").height(newHeight);
+      $("#time_slider_container").width(newWidth);
+      $("#misc_controls_container").width(newWidth);
+      $("#misc_controls_container_table").width(newWidth);
+      $("#timelineSlider").width(newWidth - 173);
+
       timelapse.updateDimensions();
       timelapse.warpToBoundingBox(bounds);
       }
@@ -720,7 +725,7 @@
    <div id="timelapse" style="position: absolute; width:800px; height:450px; background:black; overflow:hidden; border: 2px solid black;"></div>
 </div>
 
-<div style="width:800px; border: 2px solid black; margin-top:4px">
+<div id="time_slider_container" style="width:800px; border: 2px solid black; margin-top:4px">
    <table>
       <tr>
          <td>
@@ -735,8 +740,8 @@
       </tr>
    </table>
 </div>
-<div style="width:800px; border: 2px solid black; border-top:0">
-   <table style="width:800px;">
+<div id="misc_controls_container" style="width:800px; border: 2px solid black; border-top:0">
+   <table id="misc_controls_container_table" style="width:800px;">
       <tr>
          <td style="padding:10px 20px 20px 20px;">
             <label for="speed">Playback Speed:</label>
