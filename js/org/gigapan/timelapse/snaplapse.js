@@ -232,7 +232,7 @@ if (!org.gigapan.timelapse.Timelapse)
                   }
                   return false;
                };
-               
+
             this.getKeyframes = function()
                {
                   var keyframesClone = [];

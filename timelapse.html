@@ -359,7 +359,7 @@
                                     $('#play_toggle').attr("class", "");
                                     $('.overlay1').hide();
                                     $('.overlay2').hide();
-                                    //$("#snaplapse_keyframe_list").selectable( "option", "disabled", true );
+                                    $("#snaplapse_keyframe_list").selectable( "option", "disabled", true );
 
                                     var keyframes = $("#snaplapse_keyframe_list > div");
                                     for (i = 0; i < keyframes.size(); i++)
@@ -384,7 +384,7 @@
                                     $('#play_toggle').attr("class", "play_mouseout");
                                     $('.overlay1').show();
                                     $('.overlay2').show();
-                                    //$("#snaplapse_keyframe_list").selectable( "option", "disabled", false );
+                                    $("#snaplapse_keyframe_list").selectable( "option", "disabled", false );
 
                                     var keyframes = $("#snaplapse_keyframe_list > div");
                                     for (i = 0; i < keyframes.size(); i++)
@@ -547,7 +547,7 @@
             {
             alert("ERROR: Invalid time position\n\n" +
                   "The time position of a keyframe cannot\n" +
-                  "be the same as the previous keyframe.")
+                  "be the same as the previous keyframe.");
             }
          }
       }
@@ -605,30 +605,53 @@
          }
       }
 
+   function sortDescendingById(a, b)
+      {
+      valOne = parseInt(a.id.substring("snaplapse_keyframe_".length));
+      valTwo = parseInt(b.id.substring("snaplapse_keyframe_".length));
+      return ((valOne > valTwo) ? -1 : ((valOne < valTwo) ? 1 : 0));
+      }
+
    function deleteSelectedKeyframes()
       {
       var selectedItems = $("#snaplapse_keyframe_list > .ui-selected");
       var numSelected = selectedItems.size();
 
-      var keyframes = snaplapse.getKeyframes();
+      var selectedItemsSortedDescending = selectedItems.sort(sortDescendingById);
 
       for (var i = 0; i < numSelected; i++)
          {
-         var id = selectedItems.get(i).id;
+         var id = selectedItemsSortedDescending.get(i).id;
          var index = id.substring("snaplapse_keyframe_".length);
 
-         if (index < 0 || index > keyframes.length)
-            return;
-
-         var time = keyframes[index]['time'];
-
-         if (snaplapse.deleteKeyframeAtTime(time))
+         if (snaplapse.deleteKeyframeAtIndex(index))
             {
             refreshKeyframesUI();
             toggleSnaplapseButtons();
             handleSnaplapseFrameSelectionChange();
             }
          }
+
+         //check if we have any invalid time positions now
+         //and delete one of them.
+         for (var i = 1; i < snaplapse.getNumKeyframes(); i++)
+            {
+            if (snaplapse.getKeyframe(i)['time'] == snaplapse.getKeyframe(i-1)['time'])
+               {
+               alert("ERROR: Invalid time position detected\n\n" +
+                     "The time position of a keyframe cannot\n" +
+                     "be the same as the previous keyframe.\n" +
+                     "One of these invalid keyframes has been\n" +
+                     "removed.");
+               if (snaplapse.deleteKeyframeAtIndex(i))
+                  {
+                  refreshKeyframesUI();
+                  toggleSnaplapseButtons();
+                  handleSnaplapseFrameSelectionChange();
+                  i -= 1; //go back one since we removed an item
+                  }
+               }
+            }
       }
 
    // Code from:
