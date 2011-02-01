@@ -23,3 +23,9 @@ while (read(FH, $buffer, 10240)) {
     print $buffer;
 }
 close(FH);
+
+# TODO:
+# * Add support for Range request header
+# * Add support for specifying the resource to load via query string, but
+#   need to be careful for security (can't allow people to request files
+#   other than timelapse videos).
