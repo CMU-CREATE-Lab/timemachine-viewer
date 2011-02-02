@@ -136,7 +136,7 @@
 
                                          slide: function(e, ui)
                                             {
-                                               timelapse.setScale(ui.value);
+                                               timelapse.setScaleFromSlider(ui.value);
                                             }
                                       });
 
@@ -261,13 +261,13 @@
          function zoomIn() {
             val = $("#slider-vertical")['slider']("option", "value") + .01;
             $("#slider-vertical")['slider']("option", "value", val);
-            timelapse.setScale(val);
+            timelapse.setScaleFromSlider(val);
          }
 
          function zoomOut() {
             val = $("#slider-vertical")['slider']("option", "value") - .01;
             $("#slider-vertical")['slider']("option", "value", val);
-            timelapse.setScale(val);
+            timelapse.setScaleFromSlider(val);
          }
 
          function movePos(dir) {
