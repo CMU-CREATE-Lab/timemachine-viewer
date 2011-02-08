@@ -199,6 +199,17 @@ if (!org.gigapan.Util)
                      }
                   return perf;
                }
+               
+            this.showSpinner = function()
+               {
+                  $('.spinnerOverlay').show();
+               }
+               
+            this.hideSpinner = function()
+               {
+                  $('.spinnerOverlay').hide();
+               }
+               
 
             ///////////////////////////
             // Add and remove videos
