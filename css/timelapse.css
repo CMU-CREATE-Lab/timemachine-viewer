@@ -83,3 +83,15 @@ body, p, table, tr, td {
   top: 30px;
   left: 10px;
 }
+
+.spinnerOverlay {
+  border:0px solid; 
+  border-color:silver;
+  width:240px; 
+  height:240px; 
+  overflow:auto;
+  position:absolute; 
+  z-index:3;
+  top: 105px;
+  left: 280px;
+}

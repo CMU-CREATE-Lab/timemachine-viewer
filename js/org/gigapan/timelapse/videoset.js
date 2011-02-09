@@ -199,7 +199,27 @@ if (!org.gigapan.Util)
                      }
                   return perf;
                }
-
+               
+            this.createSpinner = function()
+               {
+                  $('<div/>', {
+                     id: "overlay3",
+                     "class": "spinnerOverlay"
+							    }).prependTo('#timelapse_container');
+							    
+                  $('<img/>', {
+                     id: "spinner",
+                     src: "images/spinner.gif",
+                     alt: "spinner",
+                     title: "Buffering..."
+                  }).appendTo('#overlay3');
+               }
+               
+            this.deleteSpinner = function()
+               {
+                  $('.spinnerOverlay').remove();
+               }
+               
             ///////////////////////////
             // Add and remove videos
             //
