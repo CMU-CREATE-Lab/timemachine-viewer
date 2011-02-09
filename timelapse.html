@@ -283,7 +283,6 @@
                                                   });
 
       $("#slider-vertical")['slider']("option", "value", timelapse.viewScaleToZoomSlider(timelapse.getDefaultScale()));
-			timelapse.hideSpinner();
    }
 
    function browserSupported() {
@@ -698,8 +697,11 @@
       $("#misc_controls_container").width(newWidth);
       $("#misc_controls_container_table").width(newWidth);
       $("#timelineSlider").width(newWidth - 173);
-			$('.spinnerOverlay').css("top", newHeight/2 - $("#spinner").height()/2 + "px");
-			$('.spinnerOverlay').css("left", newWidth/2 - $("#spinner").width()/2 + "px");
+      if ($('.spinnerOverlay').length != 0)
+         {
+         $('.spinnerOverlay').css("top", newHeight/2 - $("#spinner").height()/2 + "px");
+         $('.spinnerOverlay').css("left", newWidth/2 - $("#spinner").width()/2 + "px");
+         }
 
       timelapse.updateDimensions();
       timelapse.warpToBoundingBox(bounds);
@@ -722,10 +724,6 @@
       <div id="down" style="margin:18px 0 0 17px;width:10px;"><img src="images/joystick_down.png" alt="move down"/></div>
       <div id="right" style="margin:-18px 0 0 32px;width:5px;"><img src="images/joystick_right.png" alt="move right"/></div>
       <div id="left" style="margin:-9px 0 0 9px;width:5px;"><img src="images/joystick_left.png" alt="move left"/></div>
-   </div>
-
-   <div class="spinnerOverlay">
-      <div id="spinner" style="width:240px;"><img src="images/spinner.gif" alt="buffering..."/></div>
    </div>
 
    <div id="timelapse" style="position: absolute; width:800px; height:450px; background:black; overflow:hidden; border: 2px solid black;"></div>
