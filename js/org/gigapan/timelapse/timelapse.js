@@ -365,16 +365,6 @@ if (!org.gigapan.timelapse.Videoset)
                }
             this.zoomSliderToViewScale = _zoomSliderToViewScale;
 
-            this.showSpinner = function()
-               {
-                  videoset.showSpinner();
-               };
-               
-            this.hideSpinner = function()
-               {
-                  videoset.hideSpinner();
-               };
-
             ////////////////////////////////////////////////////////////////////////////////////////////////////////////
             //
             // Private methods

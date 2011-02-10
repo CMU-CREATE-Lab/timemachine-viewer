@@ -205,16 +205,25 @@ if (!org.gigapan.Util)
             var showSpinner = function()
                {
                   UTIL.log("showSpinner");
-                  $('.spinnerOverlay').show();
+                  $('<div/>', {
+                     id: "overlay3",
+                     "class": "spinnerOverlay"
+							    }).prependTo('#timelapse_container');
+							    
+                  $('<img/>', {
+                     id: "spinner",
+                     src: "images/spinner.gif",
+                     alt: "spinner",
+                     title: "Buffering..."
+                  }).appendTo('#overlay3');
                }
                
-            this.hideSpinner = function()
+            var hideSpinner = function()
                {
                   UTIL.log("hideSpinner");
-                  $('.spinnerOverlay').hide();
+                  $('.spinnerOverlay').remove();
                }
                
-
             ///////////////////////////
             // Add and remove videos
             //
@@ -353,6 +362,7 @@ if (!org.gigapan.Util)
                      clearInterval(syncInterval);
                      paused = true;
                      _updateVideoAdvance();
+                     unstall();
                      }
                };
 
