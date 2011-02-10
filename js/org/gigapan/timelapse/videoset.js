@@ -216,6 +216,9 @@ if (!org.gigapan.Util)
                      alt: "spinner",
                      title: "Buffering..."
                   }).appendTo('#overlay3');
+                  
+                  $('.spinnerOverlay').css("top", $("#timelapse_container").height()/2 - $("#spinner").height()/2 + "px");
+                  $('.spinnerOverlay').css("left", $("#timelapse_container").width()/2 - $("#spinner").width()/2 + "px");                  
                }
                
             var hideSpinner = function()
