@@ -88,7 +88,6 @@ else
       #carp "   read $numBytesRead bytes, remaining $numBytesRemaining";
       $bufferSize = min($bufferSize, $numBytesRemaining);
       print $buffer;
-      last;
    }
 
    # close the file
