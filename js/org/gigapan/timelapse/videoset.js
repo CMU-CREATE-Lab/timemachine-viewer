@@ -187,7 +187,7 @@ if (!org.gigapan.Util)
                   perfTimeSeeks = 0;
                }
 
-            this.getPerf = function()
+            var getPerf = function()
                {
                   var perf = "Videos added: " + perfAdded;
                   perf += "; initial seeks: " + perfInitialSeeks;
@@ -202,13 +202,15 @@ if (!org.gigapan.Util)
                   return perf;
                }
                
-            this.showSpinner = function()
+            var showSpinner = function()
                {
+                  UTIL.log("showSpinner");
                   $('.spinnerOverlay').show();
                }
                
             this.hideSpinner = function()
                {
+                  UTIL.log("hideSpinner");
                   $('.spinnerOverlay').hide();
                }
                
@@ -504,14 +506,18 @@ if (!org.gigapan.Util)
                }
 
             var stall = function () {
+               if (stalled) return;
                UTIL.log("Video stalling...");
                stalled = true;
+               showSpinner();
                _updateVideoAdvance();
             }
 
             var unstall = function () {
+               if (!stalled) return;
                UTIL.log("Video unstalled...");
                stalled = false;
+               hideSpinner();
                _updateVideoAdvance();
             }
 
