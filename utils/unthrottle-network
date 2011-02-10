@@ -1,0 +1,5 @@
+#!/bin/sh
+
+# turn off bandwidth limit
+
+sudo ipfw pipe 1 config bw 0

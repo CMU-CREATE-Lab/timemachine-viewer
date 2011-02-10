@@ -1,0 +1,9 @@
+#!/bin/sh
+
+# route all traffic *from* t0,t1,t2,t3 through pipe 1
+
+sudo ipfw add pipe 1 src-ip t0.timelapse.gigapan.org
+sudo ipfw add pipe 1 src-ip t1.timelapse.gigapan.org
+sudo ipfw add pipe 1 src-ip t2.timelapse.gigapan.org
+sudo ipfw add pipe 1 src-ip t3.timelapse.gigapan.org
+sudo ipfw pipe 1 config bw 100Kbit/s
