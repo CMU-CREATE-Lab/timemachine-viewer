@@ -31,7 +31,6 @@
 </style>
 <script type="text/javascript">
    var gigapanId = $.query.get('id') || "brassica1-15m-halfsize";
-   var gigapanUrl = "http://timelapse.gigapan.org/alpha/timelapses/" + gigapanId + '/';
 
    var timelapseDurationInSeconds = 0.0;
    var timeStepInSecs = 0.04; // 25 frames per second
@@ -81,6 +80,11 @@
 
    function loadTimelapse(gigapanJSON)
       {
+         // Build the gigapan URL.  We use the CGI for Chrome, but plain ol' MP4s for Safari.
+         var isChrome = navigator.userAgent.match(/Chrome/) != null;
+         var gigapanUrl = "http://timelapse.gigapan.org/alpha/" + (isChrome ? "cgi-bin/video_streamer.cgi?id="+gigapanId+"&t=" : "timelapses/" + gigapanId + '/');
+
+         // Create the timelapse
          timelapse = new org.gigapan.timelapse.Timelapse(gigapanUrl, 'timelapse', gigapanJSON);
 
          timelapse.addTimeChangeListener(function(t)
