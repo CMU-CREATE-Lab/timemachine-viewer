@@ -259,13 +259,13 @@
          });
 
          function zoomIn() {
-            val = $("#slider-vertical")['slider']("option", "value") + .01;
+            var val = $("#slider-vertical")['slider']("option", "value") + .01;
             $("#slider-vertical")['slider']("option", "value", val);
             timelapse.setScaleFromSlider(val);
          }
 
          function zoomOut() {
-            val = $("#slider-vertical")['slider']("option", "value") - .01;
+            var val = $("#slider-vertical")['slider']("option", "value") - .01;
             $("#slider-vertical")['slider']("option", "value", val);
             timelapse.setScaleFromSlider(val);
          }
@@ -285,14 +285,11 @@
       $("#slider-vertical")['slider']("option", "value", timelapse.viewScaleToZoomSlider(timelapse.getDefaultScale()));
    }
 
-   function browserSupported() {
+   function browserSupported()
+      {
       var v = document.createElement('video');
       return !!(v.canPlayType && v.canPlayType('video/mp4; codecs="avc1.42E01E, mp4a.40.2"').replace(/no/, ''));
-   }
-
-   function changeTimelapse(timelapse) {
-      alert("TODO - changing timelapse to: " + timelapse);
-   }
+      }
 
    function handleSnaplapseFrameSelectionChange()
       {
@@ -358,14 +355,14 @@
                                     $('#play_toggle').attr("class", "");
                                     $('.overlay1').hide();
                                     $('.overlay2').hide();
-                                    $("#snaplapse_keyframe_list").selectable( "option", "disabled", true );
+                                    $("#snaplapse_keyframe_list").selectable("option", "disabled", true);
 
                                     var keyframes = $("#snaplapse_keyframe_list > div");
-                                    for (i = 0; i < keyframes.size(); i++)
-                                    {
-                                       frame = keyframes[i];
+                                    for (var i = 0; i < keyframes.size(); i++)
+                                       {
+                                       var frame = keyframes[i];
                                        $(frame).removeClass().addClass("snaplapse_keyframe_list_item");
-                                    }
+                                       }
 
                                     });
       snaplapse.addEventListener('stop',
@@ -383,28 +380,27 @@
                                     $('#play_toggle').attr("class", "play_mouseout");
                                     $('.overlay1').show();
                                     $('.overlay2').show();
-                                    $("#snaplapse_keyframe_list").selectable( "option", "disabled", false );
+                                    $("#snaplapse_keyframe_list").selectable("option", "disabled", false);
 
                                     var keyframes = $("#snaplapse_keyframe_list > div");
-                                    for (i = 0; i < keyframes.size(); i++)
-                                    {
-                                       frame = keyframes[i];
+                                    for (var i = 0; i < keyframes.size(); i++)
+                                       {
+                                       var frame = keyframes[i];
                                        $(frame).removeClass().addClass("snaplapse_keyframe_list_item");
-                                    }
+                                       }
 
                                     });
       snaplapse.addEventListener('keyframe-added',
                                  function(frame, insertionIndex)
                                     {
-                                       toggleSnaplapseButtons();
-                                       addSnaplapseKeyframeListItem(frame, insertionIndex);
+                                    toggleSnaplapseButtons();
+                                    addSnaplapseKeyframeListItem(frame, insertionIndex);
                                     });
       snaplapse.addEventListener('keyframe-interval-change',
                                  function(index, frame)
                                     {
-
-                                       org.gigapan.Util.log("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ keyframe-interval-change: ["+index+"|"+frame['title']+"|"+frame['description']+"]");
-                                       displaySnaplapseFrameAnnotation(frame);
+                                    org.gigapan.Util.log("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ keyframe-interval-change: [" + index + "|" + frame['title'] + "|" + frame['description'] + "]");
+                                    displaySnaplapseFrameAnnotation(frame);
                                     });
       $("#recordKeyframeButton").removeAttr("disabled");
       $("#playStopSnaplapseButton").attr("disabled", "disabled");
@@ -458,15 +454,15 @@
 
       var hasTextAnnotation = function(title, description)
          {
-            return isTextNonEmpty(title) || isTextNonEmpty(description);
+         return isTextNonEmpty(title) || isTextNonEmpty(description);
          };
       var content = '<table border="0" cellpadding="1" cellspacing="0">' +
                     '   <tr>' +
-                    '      <td style="width:10px;"><span id="'+showTextAnnotationAreaButtonId+'" class="ui-icon ui-icon-triangle-1-e"></span></td>' +
+                    '      <td style="width:10px;"><span id="' + showTextAnnotationAreaButtonId + '" class="ui-icon ui-icon-triangle-1-e"></span></td>' +
                     '      <td style="width:90px;">Keyframe ' + (insertionIndex + 1) + ': </td>' +
                     '      <td style="width:5px;"></td>' +
                     '      <td style="width:305px;">' + frame['time'] + '</td>' +
-                    '      <td style="width:90px;" align="right"><div ' + (!hasTextAnnotation(frame['title'],frame['description']) ? 'style="display:none"' : '') + ' id="' + hasTextAnnotationIndicatorId + '" class="ui-icon ui-icon-comment"></div></td>' +
+                    '      <td style="width:90px;" align="right"><div ' + (!hasTextAnnotation(frame['title'], frame['description']) ? 'style="display:none"' : '') + ' id="' + hasTextAnnotationIndicatorId + '" class="ui-icon ui-icon-comment"></div></td>' +
                     '   </tr>' +
                     '   <tr class="' + togglableClass + '" style="display:none">' +
                     '      <td style="width:10px;"></td>' +
@@ -485,47 +481,48 @@
                     '</table>';
 
       $("#" + keyframeListItem.id).html(content).addClass("snaplapse_keyframe_list_item");
-      $("#" + keyframeListItem.id).dblclick(function()
-                                               {
+      $("#" + keyframeListItem.id)['dblclick'](function()
+                                                  {
                                                   timelapse.seek(frame['time']);
                                                   timelapse.warpToBoundingBox(frame['bounds']);
-                                               });
+                                                  });
 
       var saveTextAnnotion = function()
          {
-            var title = $("#" + titleId).val();
-            var description = $("#" + descriptionId).val();
-            snaplapse.setTextAnnotationForKeyframe(insertionIndex, title, description);
-            if (hasTextAnnotation(title, description))
-               {
-               $("#" + hasTextAnnotationIndicatorId).show();
-               }
-            else
-               {
-               $("#" + hasTextAnnotationIndicatorId).hide();
-               }
-            displaySnaplapseFrameAnnotation(snaplapse.getKeyframe(insertionIndex));
+         var title = $("#" + titleId).val();
+         var description = $("#" + descriptionId).val();
+         snaplapse.setTextAnnotationForKeyframe(insertionIndex, title, description);
+         if (hasTextAnnotation(title, description))
+            {
+            $("#" + hasTextAnnotationIndicatorId).show();
+            }
+         else
+            {
+            $("#" + hasTextAnnotationIndicatorId).hide();
+            }
+         displaySnaplapseFrameAnnotation(snaplapse.getKeyframe(insertionIndex));
          };
+
       $("#" + showTextAnnotationAreaButtonId).click(saveTextAnnotion).click(function()
                                                                                {
-                                                                                  if ($("." + togglableClass).is(':visible'))
-                                                                                     {
-                                                                                     $("." + togglableClass).hide();
-                                                                                     $("#" + showTextAnnotationAreaButtonId).removeClass("ui-icon-triangle-1-s");
-                                                                                     $("#" + showTextAnnotationAreaButtonId).addClass("ui-icon-triangle-1-e");
-                                                                                     }
-                                                                                  else
-                                                                                     {
-                                                                                     $("." + togglableClass).show();
-                                                                                     $("#" + showTextAnnotationAreaButtonId).removeClass("ui-icon-triangle-1-e");
-                                                                                     $("#" + showTextAnnotationAreaButtonId).addClass("ui-icon-triangle-1-s");
-                                                                                     }
+                                                                               if ($("." + togglableClass).is(':visible'))
+                                                                                  {
+                                                                                  $("." + togglableClass).hide();
+                                                                                  $("#" + showTextAnnotationAreaButtonId).removeClass("ui-icon-triangle-1-s");
+                                                                                  $("#" + showTextAnnotationAreaButtonId).addClass("ui-icon-triangle-1-e");
+                                                                                  }
+                                                                               else
+                                                                                  {
+                                                                                  $("." + togglableClass).show();
+                                                                                  $("#" + showTextAnnotationAreaButtonId).removeClass("ui-icon-triangle-1-e");
+                                                                                  $("#" + showTextAnnotationAreaButtonId).addClass("ui-icon-triangle-1-s");
+                                                                                  }
                                                                                });
       $("#" + saveButtonId).click(saveTextAnnotion);
       }
 
    function refreshKeyframesUI()
-         {
+      {
       toggleSnaplapseButtons();
 
       var keyframes = snaplapse.getKeyframes();
@@ -606,8 +603,8 @@
 
    function sortDescendingById(a, b)
       {
-      valOne = parseInt(a.id.substring("snaplapse_keyframe_".length));
-      valTwo = parseInt(b.id.substring("snaplapse_keyframe_".length));
+      var valOne = parseInt(a.id.substring("snaplapse_keyframe_".length));
+      var valTwo = parseInt(b.id.substring("snaplapse_keyframe_".length));
       return ((valOne > valTwo) ? -1 : ((valOne < valTwo) ? 1 : 0));
       }
 
@@ -631,26 +628,26 @@
             }
          }
 
-         //check if we have any invalid time positions now
-         //and delete one of them.
-         for (var i = 1; i < snaplapse.getNumKeyframes(); i++)
+      //check if we have any invalid time positions now
+      //and delete one of them.
+      for (var j = 1; j < snaplapse.getNumKeyframes(); j++)
+         {
+         if (snaplapse.getKeyframe(j)['time'] == snaplapse.getKeyframe(j - 1)['time'])
             {
-            if (snaplapse.getKeyframe(i)['time'] == snaplapse.getKeyframe(i-1)['time'])
+            alert("ERROR: Invalid time position detected\n\n" +
+                  "The time position of a keyframe cannot\n" +
+                  "be the same as the previous keyframe.\n" +
+                  "One of these invalid keyframes has been\n" +
+                  "removed.");
+            if (snaplapse.deleteKeyframeAtIndex(j))
                {
-               alert("ERROR: Invalid time position detected\n\n" +
-                     "The time position of a keyframe cannot\n" +
-                     "be the same as the previous keyframe.\n" +
-                     "One of these invalid keyframes has been\n" +
-                     "removed.");
-               if (snaplapse.deleteKeyframeAtIndex(i))
-                  {
-                  refreshKeyframesUI();
-                  toggleSnaplapseButtons();
-                  handleSnaplapseFrameSelectionChange();
-                  i -= 1; //go back one since we removed an item
-                  }
+               refreshKeyframesUI();
+               toggleSnaplapseButtons();
+               handleSnaplapseFrameSelectionChange();
+               j -= 1; //go back one since we removed an item
                }
             }
+         }
       }
 
    // Code from:
@@ -699,8 +696,8 @@
       $("#timelineSlider").width(newWidth - 173);
       if ($('.spinnerOverlay').length != 0)
          {
-         $('.spinnerOverlay').css("top", newHeight/2 - $("#spinner").height()/2 + "px");
-         $('.spinnerOverlay').css("left", newWidth/2 - $("#spinner").width()/2 + "px");
+         $('.spinnerOverlay').css("top", newHeight / 2 - $("#spinner").height() / 2 + "px");
+         $('.spinnerOverlay').css("left", newWidth / 2 - $("#spinner").width() / 2 + "px");
          }
 
       timelapse.updateDimensions();
@@ -712,7 +709,7 @@
 
 <div id="timelapse_container" style="width:800px; height:450px; position:relative;">
    <div class="overlay1">
-      <div id="joystick" style="margin:0 0 0 4;width:38px;"><img src="images/joystick.png" alt="zoom_in"/></div>
+      <div id="joystick" style="margin:0 0 0 4px;width:38px;"><img src="images/joystick.png" alt="zoom_in"/></div>
       <div id="zoom_in" style="margin:2px 0 0 12px;width:19px;"><img src="images/plus.png" alt="zoom_in"/></div>
       <div id="slider-vertical" style="margin:0 0 0 20px;"></div>
       <div id="zoom_out" style="margin:0 0 0 12px;width:19px;"><img src="images/minus.png" alt="zoom_in"/></div>
