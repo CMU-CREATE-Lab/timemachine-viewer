@@ -1,0 +1,82 @@
+<html>
+<head>
+   <title>Seek speed test</title>
+   <script>
+      var test_seek_times = null;
+      var test_seek_time;
+      var begin_seek_timestamp;
+      var video;
+      var mp4UrlPrefix = 'http://timelapse.gigapan.org/alpha/timelapses/brassica1-15m-halfsize/r01/r012.mp4?';
+      var cgiUrlPrefix = 'http://timelapse.gigapan.org/alpha/cgi-bin/video_streamer.cgi?id=brassica1-15m-halfsize&t=r01/r012.mp4&';
+      var currentUrlPrefix = null;
+
+      function log(msg)
+         {
+         document.getElementById('log').innerHTML += msg + '<br>';
+         }
+
+      function runTest(srcPrefix)
+         {
+         currentUrlPrefix = srcPrefix;
+         var theVideo = document.getElementById('theVideo');
+         if (theVideo)
+            {
+            document.getElementById('videoContainer').removeChild(theVideo);
+            }
+         init();
+         }
+
+      function init()
+         {
+         log("<hr>");
+         test_seek_times = [40,50,60,70,80,90];
+         video = document.createElement('video');
+         document.getElementById('videoContainer').appendChild(video);
+         video.setAttribute('id', 'theVideo');
+         video.setAttribute('controls', true);
+         video.addEventListener('loadedmetadata', video_loaded_metadata, false);
+         video.addEventListener('seeked', video_seeked, false);
+         video.pause();
+         test_seek();
+         }
+
+      function test_seek()
+         {
+         if (!test_seek_times.length)
+            {
+            return;
+            }
+         test_seek_time = test_seek_times.shift();
+         var src = currentUrlPrefix + (new Date()).getTime();
+         log('<i># Loading video ' + src + '</i>');
+         video.setAttribute('src', src);
+         video.load();
+         }
+
+      function video_loaded_metadata(event)
+         {
+         log('<i># Loaded metadata; seeking to position ' + test_seek_time + ' secs.</i>');
+         begin_seek_timestamp = (new Date()).getTime();
+         video.currentTime = test_seek_time;
+         }
+
+      function video_seeked(event)
+         {
+         var elapsed = (new Date()).getTime() - begin_seek_timestamp;
+         log('<b>Seek to position ' + test_seek_time + ' took ' + elapsed + ' milliseconds</b>');
+         setTimeout(test_seek, 500);
+         }
+
+   </script>
+
+</head>
+<body>
+<form onsubmit="return false">
+   <button id="testCGIButton" onclick="runTest(cgiUrlPrefix);">Test CGI</button>
+   <button id="testMP4Button" onclick="runTest(mp4UrlPrefix);">Test MP4</button>
+</form>
+<div id="videoContainer" style="width:256px; height:256px"></div>
+<div id="log"></div>
+</body>
+</html>
+
