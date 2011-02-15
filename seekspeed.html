@@ -1,3 +1,4 @@
+<!DOCTYPE html>
 <html>
 <head>
    <title>Seek speed test</title>
@@ -35,8 +36,13 @@
          document.getElementById('videoContainer').appendChild(video);
          video.setAttribute('id', 'theVideo');
          video.setAttribute('controls', true);
-         video.addEventListener('loadedmetadata', video_loaded_metadata, false);
-         video.addEventListener('seeked', video_seeked, false);
+         if (video.addEventListener){
+            video.addEventListener('loadedmetadata',video_loaded_metadata, false);
+            video.addEventListener('seeked', video_seeked, false);
+         } else if (video.attachEvent){
+            video.attachEvent('loadedmetadata', video_loaded_metadata);
+            video.attachEvent('seeked', video_seeked);
+         }
          video.pause();
          test_seek();
          }
