@@ -8,6 +8,7 @@
       var video;
       var mp4UrlPrefix = 'http://timelapse.gigapan.org/alpha/timelapses/brassica1-15m-halfsize/r01/r012.mp4?';
       var cgiUrlPrefix = 'http://timelapse.gigapan.org/alpha/cgi-bin/video_streamer.cgi?id=brassica1-15m-halfsize&t=r01/r012.mp4&';
+      var cgiWithConnectionDroppingUrlPrefix = 'http://timelapse.gigapan.org/alpha/cgi-bin/video_streamer.cgi?id=brassica1-15m-halfsize&t=r01/r012.mp4&drop=1&';
       var currentUrlPrefix = null;
 
       function log(msg)
@@ -73,6 +74,7 @@
 <body>
 <form onsubmit="return false">
    <button id="testCGIButton" onclick="runTest(cgiUrlPrefix);">Test CGI</button>
+   <button id="testCGIWithConnectionDroppingButton" onclick="runTest(cgiWithConnectionDroppingUrlPrefix);">Test CGI (with connection dropping)</button>
    <button id="testMP4Button" onclick="runTest(mp4UrlPrefix);">Test MP4</button>
 </form>
 <div id="videoContainer" style="width:256px; height:256px"></div>
