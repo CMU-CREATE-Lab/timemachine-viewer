@@ -12,10 +12,13 @@ use HTTP::Date;
 require "http_utils.pl";
 
 #-----------------------------------------------------------------------------------------------------------------------
-use constant MAX_BUFFER_SIZE => 65536;    # 64 K
-use constant CGI_PARAM_ID => 'id';        # For specifying the dataset
-use constant CGI_PARAM_TILE => 't';       # For specifying the tile
-use constant CGI_PARAM_DROP => 'drop';    # For specifying the whether the CGI should prematurely drop the connection (default is false)
+use constant MIN_BUFFER_SIZE => 32768;       # 32 KB
+use constant DEFAULT_BUFFER_SIZE => 65536;   # 64 KB
+use constant MAX_BUFFER_SIZE => 4194304;     #  4 MB
+use constant CGI_PARAM_ID => 'id';           # For specifying the dataset
+use constant CGI_PARAM_TILE => 't';          # For specifying the tile
+use constant CGI_PARAM_DROP => 'drop';       # For specifying the whether the CGI should prematurely drop the connection (default is false)
+use constant CGI_PARAM_BUFFER => 'buffer';   # For specifying the size of the read buffer
 use constant HTTP_STATUS_200 => '200 OK';
 use constant HTTP_STATUS_206 => '206 Partial Content';
 use constant HTTP_STATUS_304 => '304 Not Modified';
@@ -26,6 +29,18 @@ use constant HTTP_STATUS_404 => '404 Not Found';
 my $cgi = CGI->new;
 
 my $willPrematurelyDropConnection = defined $cgi->param(CGI_PARAM_DROP) && $cgi->param(CGI_PARAM_DROP);
+
+# allow user to specify read buffer size
+my $requestedBufferSize = MAX_BUFFER_SIZE;
+if (defined $cgi->param(CGI_PARAM_BUFFER) && $cgi->param(CGI_PARAM_BUFFER) =~ /^\d+$/)
+   {
+   my $tempBufferSize = $cgi->param(CGI_PARAM_BUFFER);
+   if ($tempBufferSize >= MIN_BUFFER_SIZE && $tempBufferSize <= MAX_BUFFER_SIZE)
+      {
+      $requestedBufferSize = $tempBufferSize;
+      }
+   }
+carp "Buffer size IS = [$requestedBufferSize]";
 
 if (defined $cgi->param(CGI_PARAM_ID) && defined $cgi->param(CGI_PARAM_TILE))
    {
@@ -70,8 +85,8 @@ if (defined $cgi->param(CGI_PARAM_ID) && defined $cgi->param(CGI_PARAM_TILE))
             my ($rangeMin, $rangeMax) = &parseRangeRequestHeader($length);
             my $numBytesToRead = $rangeMax - $rangeMin + 1;
 
-            # the actual buffer size is the min of the number of bytes to read and the MAX_BUFFER_SIZE
-            my $bufferSize = min($numBytesToRead, MAX_BUFFER_SIZE);
+            # the actual buffer size is the min of the number of bytes to read and the $requestedBufferSize
+            my $bufferSize = min($numBytesToRead, $requestedBufferSize);
 
             # open the file
             open (FILE, '<', $file) || die "Could not open $file: $!";
