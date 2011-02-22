@@ -81,7 +81,7 @@
             {
             jumpToTime(timelapseCurrentTimeInSeconds, true);
             timelapseCurrentTimeInSeconds += timeStepInSecs;
-            setTimeoutHandle = setTimeout("playVideoBySettingCurrentTime()", 1);
+            setTimeoutHandle = setTimeout("playVideoBySettingCurrentTime()", $("#intervalDelay").val());
             }
          else
             {
@@ -129,6 +129,9 @@
 <video id="theVideo" width="256" height="256" style="border:1px solid black"></video>
 <table style="border: 2px solid black; margin-top:4px">
    <tr>
+      <td>
+         <label for="intervalDelay">Interval Delay (ms)</label><input id="intervalDelay" type="text" value="40" size="3">
+      </td>
       <td>
          <button id="playStopButton" type="button" onclick="playOrStop()">Play</button>
       </td>
