@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html>
+<head>
+   <title>Transition Test</title>
+   <link href="css/timelapse.css" rel="stylesheet" type="text/css"/>
+   <link href="css/jquery-ui/smoothness/jquery-ui.custom.css" rel="stylesheet" type="text/css"/>
+   <style type="text/css">
+      #video_container {
+         position: relative;
+         border: 1px solid black;
+         overflow: hidden;
+         width: 1024px;
+         height: 432px;
+      }
+
+      #timelapse {
+         position: absolute;
+      }
+
+      .vid {
+         position: absolute;
+         width: 768px;
+         height: 432px;
+      }
+
+      #video0 {
+         top: 0;
+         left: 0;
+      }
+
+      #video1 {
+         left: 256px;
+         border: 0 solid red;
+         width: 0;
+         height: 0;
+      }
+   </style>
+   <script src="js/jquery/jquery.min.js" type="text/javascript"></script>
+   <script src="js/jquery/jquery-ui.custom.min.js" type="text/javascript"></script>
+   <script src="js/jquery/plugins/query/jquery.query-2.1.7.js" type="text/javascript"></script>
+   <script src="js/org/gigapan/util.js" type="text/javascript"></script>
+   <script type="text/javascript">
+      var gigapanId = $.query.get('id') || "overlapping-video-test-v4";
+      var tile0 = "0.mp4";
+      var tile1 = "1.mp4";
+      var isPlaying = false;
+      var didCallTransition = false;
+      var videoSeekEpsilon = 0.04;
+      var videoLoadTimeoutInMillis = 5000;
+
+      $(document).ready(function()
+                           {
+                           $("#video0").attr("src", buildTileUrl(tile0));
+                           });
+
+      function playOrStop()
+         {
+         if (isPlaying)
+            {
+            $.each($("video").get(), function(index, vid)
+               {
+               vid.pause();
+               });
+            $("#playStopButton").text("Play");
+            $("#transitionButton").attr("disabled", "disabled");
+            }
+         else
+            {
+            $.each($("video").get(), function(index, vid)
+               {
+               vid.play();
+               });
+            $("#playStopButton").text("Stop");
+            if (!didCallTransition)
+               {
+               $("#transitionButton").removeAttr("disabled");
+               }
+            }
+         isPlaying = !isPlaying;
+         }
+
+      function performTransition()
+         {
+         if (!didCallTransition)
+            {
+            $("#transitionButton").attr("disabled", "disabled");
+            didCallTransition = true;
+
+            var src = buildTileUrl(tile1);
+            var videoElem = $("#video1");
+            var video = videoElem.get(0);
+            var timeout = null;
+
+            var finish = function(success)
+               {
+               if (timeout)
+                  {
+                  window.clearTimeout(timeout);
+                  }
+
+               if (success)
+                  {
+                  org.gigapan.Util.log("success!");
+                  video.play();
+                  videoElem.width(768);
+                  videoElem.height(432);
+                  videoElem.show();
+                  if ($("#willRemoveVideo0").is(':checked'))
+                     {
+                     $("#video0").detach();
+                     }
+                  }
+               else
+                  {
+                  org.gigapan.Util.log("failure!");
+                  videoElem.detach();
+                  }
+               };
+
+            var timeoutFunc = function()
+               {
+               org.gigapan.Util.log("VIDEO TIMED OUT: " + src);
+               org.gigapan.Util.log("Video readyState: " + video.readyState);
+               finish(false);
+               };
+
+            var doneSeeking = function()
+               {
+               videoElem.unbind('seeked', doneSeeking, false);
+               org.gigapan.Util.log("DONE SEEKING: (" + video.currentTime + "|" + video.seeking + ")" + src);
+               finish(true);
+               };
+
+            var seekIfNecessary = function()
+               {
+               org.gigapan.Util.log("IN SEEK-IF-NECESSARY...");
+               var currentPlaybackTimeInSecs = $("#video0").get(0).currentTime;
+               org.gigapan.Util.log("IN SEEK-IF-NECESSARY: currentPlaybackTimeInSecs = " + currentPlaybackTimeInSecs);
+
+               if (Math.abs(video.currentTime - currentPlaybackTimeInSecs) > videoSeekEpsilon)
+                  {
+                  org.gigapan.Util.log("At (" + video.currentTime + "), seeking to [" + currentPlaybackTimeInSecs + "] for video: " + src);
+                  videoElem.unbind('canplay', seekIfNecessary, false);
+                  videoElem.bind('seeked', doneSeeking, false);
+                  video.currentTime = currentPlaybackTimeInSecs;
+                  }
+               else
+                  {
+                  finish(true);
+                  }
+               };
+
+            org.gigapan.Util.log("beginning transition...");
+            videoElem.bind('canplay', seekIfNecessary, false);
+            timeout = window.setTimeout(timeoutFunc, videoLoadTimeoutInMillis);
+            videoElem.attr("src", src);
+            video.load();   // explicitly calling load may encourage some browsers to load the video
+            org.gigapan.Util.log("just called video.load()");
+            }
+         }
+
+      function buildTileUrl(tile)
+         {
+         var url = "http://timelapse.gigapan.org/alpha/timelapses/" + gigapanId + "/" + tile + generateNoCacheQueryStringParam();
+         org.gigapan.Util.log("URL = [" + url + "]");
+         return url;
+         }
+
+      function generateNoCacheQueryStringParam()
+         {
+         return "?nocache=" + Math.floor(Math.random() * 1000000000000);
+         }
+
+   </script>
+</head>
+<body>
+<div id="video_container">
+   <div id="timelapse">
+      <video id="video0" class="vid"></video>
+      <video id="video1" class="vid"></video>
+   </div>
+</div>
+<table style="margin-top:5px">
+   <tr>
+      <td>
+         <button id="playStopButton" type="button" onclick="playOrStop()">Play</button>
+      </td>
+      <td>
+         <button id="transitionButton" type="button" onclick="performTransition()" disabled="disabled">Transition</button>
+      </td>
+      <td>
+         <input id="willRemoveVideo0" type="checkbox"><label for="willRemoveVideo0">Remove first video upon successful load of second video</label>
+      </td>
+   </tr>
+</table>
+
+</body>
+</html>
