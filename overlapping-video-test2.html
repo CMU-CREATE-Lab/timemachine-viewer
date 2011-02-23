@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html>
+<head>
+   <title>Transition Test</title>
+   <link href="css/timelapse.css" rel="stylesheet" type="text/css"/>
+   <link href="css/jquery-ui/smoothness/jquery-ui.custom.css" rel="stylesheet" type="text/css"/>
+   <style type="text/css">
+      #video_container {
+         position: relative;
+         border: 1px solid black;
+         overflow: hidden;
+         width: 1024px;
+         height: 432px;
+      }
+
+      #timelapse {
+         position: absolute;
+      }
+
+      .vid {
+         position: absolute;
+         width: 768px;
+         height: 432px;
+      }
+
+      #video0 {
+         top: 0;
+         left: 0;
+      }
+
+      #video1 {
+         left: 256px;
+         width: 0;
+         height: 0;
+      }
+   </style>
+   <script src="js/jquery/jquery.min.js" type="text/javascript"></script>
+   <script src="js/jquery/jquery-ui.custom.min.js" type="text/javascript"></script>
+   <script src="js/jquery/plugins/query/jquery.query-2.1.7.js" type="text/javascript"></script>
+   <script src="js/org/gigapan/util.js" type="text/javascript"></script>
+   <script type="text/javascript">
+      var gigapanId = $.query.get('id') || "overlapping-video-test-v4";
+      var tile0 = "0.mp4";
+      var tile1 = "1.mp4";
+      var tileWidth = 768;
+      var tileHeight = 432;
+      var isPlaying = false;
+      var videoSeekEpsilon = 0.04;
+      var videoLoadTimeoutInMillis = 5000;
+      var videoAttrs = [
+         {
+            "id":"video0",
+            "src":"0.mp4",
+            "left": 0
+         },
+         {
+            "id":"video1",
+            "src":"1.mp4",
+            "left": 256
+         }
+      ];
+      var videoAttrIndex = 0;
+
+      $(document).ready(function()
+                           {
+                           var videoElem = createVideoAndAddToDOM();
+                           videoElem.width(tileWidth);
+                           videoElem.height(tileHeight);
+                           });
+
+      function createVideoAndAddToDOM()
+         {
+         var id = videoAttrs[videoAttrIndex]['id'];
+         var src = buildTileUrl(videoAttrs[videoAttrIndex]['src']);
+         var left = videoAttrs[videoAttrIndex]['left'];
+         var videoElem = $('<video class="vid" id="' + id + '" src="' + src + '" style="width:0; height:0; left:' + left + 'px"></video>');
+         $("#timelapse").append(videoElem);
+         videoElem.get(0).load();
+         org.gigapan.Util.log("Added video [" + id + "] with src [" + src + "] and left [" + left + "] to DOM...");
+
+         return videoElem;
+         }
+
+      function playOrStop()
+         {
+         if (isPlaying)
+            {
+            $.each($("video").get(), function(index, vid)
+               {
+               vid.pause();
+               });
+            $("#playStopButton").text("Play");
+            }
+         else
+            {
+            $.each($("video").get(), function(index, vid)
+               {
+               vid.play();
+               });
+            $("#playStopButton").text("Stop");
+            }
+         isPlaying = !isPlaying;
+         }
+
+      function performTransition()
+         {
+         var currentVideoAttrIndex = videoAttrIndex;
+         var newVideoAttrIndex = (videoAttrIndex == 0) ? 1 : 0;
+         videoAttrIndex = newVideoAttrIndex;
+
+         org.gigapan.Util.log("videoAttrIndex is now ["+videoAttrIndex+"]");
+
+
+         var videoElem = createVideoAndAddToDOM();
+         var video = videoElem.get(0);
+         var src = video.src;
+         var timeout = null;
+
+         var finish = function(success)
+            {
+            if (timeout)
+               {
+               window.clearTimeout(timeout);
+               }
+
+            if (success)
+               {
+               org.gigapan.Util.log("success!");
+               if (isPlaying)
+                  {
+                  video.play();
+                  }
+               videoElem.width(tileWidth);
+               videoElem.height(tileHeight);
+               videoElem.show();
+               org.gigapan.Util.log("detaching video ["+videoAttrs[currentVideoAttrIndex]['id']+"]");
+               var videoToDetach = $("#" + videoAttrs[currentVideoAttrIndex]['id']);
+               videoToDetach.get(0).pause();
+               videoToDetach.detach();
+               }
+            else
+               {
+               org.gigapan.Util.log("failure!");
+               videoElem.detach();
+               }
+            };
+
+         var timeoutFunc = function()
+            {
+            org.gigapan.Util.log("VIDEO TIMED OUT: " + src);
+            org.gigapan.Util.log("Video readyState: " + video.readyState);
+            finish(false);
+            };
+
+         var doneSeeking = function()
+            {
+            videoElem.unbind('seeked', doneSeeking, false);
+            org.gigapan.Util.log("DONE SEEKING: (" + video.currentTime + "|" + video.seeking + ")" + src);
+            finish(true);
+            };
+
+         var seekIfNecessary = function()
+            {
+            org.gigapan.Util.log("IN SEEK-IF-NECESSARY...");
+            var currentPlaybackTimeInSecs = $("#" + videoAttrs[currentVideoAttrIndex]['id']).get(0).currentTime;
+            org.gigapan.Util.log("IN SEEK-IF-NECESSARY: currentPlaybackTimeInSecs = " + currentPlaybackTimeInSecs);
+
+            if (Math.abs(video.currentTime - currentPlaybackTimeInSecs) > videoSeekEpsilon)
+               {
+               org.gigapan.Util.log("At (" + video.currentTime + "), seeking to [" + currentPlaybackTimeInSecs + "] for video: " + src);
+               videoElem.unbind('canplay', seekIfNecessary, false);
+               videoElem.bind('seeked', doneSeeking, false);
+               video.currentTime = currentPlaybackTimeInSecs;
+               }
+            else
+               {
+               finish(true);
+               }
+            };
+
+         org.gigapan.Util.log("beginning transition...");
+         videoElem.bind('canplay', seekIfNecessary, false);
+         timeout = window.setTimeout(timeoutFunc, videoLoadTimeoutInMillis);
+         videoElem.attr("src", src);
+         video.load();   // explicitly calling load may encourage some browsers to load the video
+         org.gigapan.Util.log("just called video.load()");
+         }
+
+      function buildTileUrl(tile)
+         {
+         var url = "http://timelapse.gigapan.org/alpha/timelapses/" + gigapanId + "/" + tile + generateNoCacheQueryStringParam();
+         org.gigapan.Util.log("URL = [" + url + "]");
+         return url;
+         }
+
+      function generateNoCacheQueryStringParam()
+         {
+         return "?nocache=" + Math.floor(Math.random() * 1000000000000);
+         }
+
+   </script>
+</head>
+<body>
+<div id="video_container">
+   <div id="timelapse"></div>
+</div>
+<table style="margin-top:5px">
+   <tr>
+      <td>
+         <button id="playStopButton" type="button" onclick="playOrStop()">Play</button>
+      </td>
+      <td>
+         <button id="transitionButton" type="button" onclick="performTransition()">Transition</button>
+      </td>
+   </tr>
+</table>
+
+</body>
+</html>
