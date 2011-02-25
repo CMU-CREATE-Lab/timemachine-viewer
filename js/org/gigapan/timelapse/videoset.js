@@ -232,7 +232,7 @@ if (!org.gigapan.Util)
             // Add and remove videos
             //
 
-            this.addVideo = function(src, geometry)
+            this.addVideo = function(src, geometry, videoBeingReplaced)
                {
                   perfAdded++;
                   id++;
@@ -263,6 +263,10 @@ if (!org.gigapan.Util)
                   video.id = id;
                   video.active = true;
                   video.ready = false;
+                  if (typeof videoBeingReplaced != 'undefined')
+                     {
+                     video.videoBeingReplaced = videoBeingReplaced;
+                     }
                   //UTIL.log(getVideoSummaryAsString(video));
                   video.setAttribute('src', src);
                   //UTIL.log("set src successfully");
@@ -294,7 +298,7 @@ if (!org.gigapan.Util)
                   video.style.height = geometry.height;
                };
 
-            this.deleteVideo = function(video)
+            var _deleteVideo = function(video)
                {
                   UTIL.log("video(" + video.id + ") delete");
                   video.active = false;
@@ -307,6 +311,7 @@ if (!org.gigapan.Util)
                   delete activeVideos[video.id];
                   inactiveVideos[video.id] = video;
                };
+            this.deleteVideo = _deleteVideo;
 
             ///////////////////////////
             // Time controls
@@ -458,6 +463,10 @@ if (!org.gigapan.Util)
                      {
                      video.ready = true;
                      video.style.left = parseFloat(video.style.left) + 100000;
+                     if (video.videoBeingReplaced)
+                        {
+                        _deleteVideo(video.videoBeingReplaced);
+                        }
                      }
                };
 

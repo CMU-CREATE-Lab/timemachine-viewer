@@ -1,0 +1,136 @@
+<html>
+<head>
+   <title>Transition Test</title>
+   <link href="css/timelapse.css" rel="stylesheet" type="text/css"/>
+   <link href="css/jquery-ui/smoothness/jquery-ui.custom.css" rel="stylesheet" type="text/css"/>
+   <style type="text/css">
+      #timelapse_container {
+         position: relative;
+         width: 1024px;
+         height: 432px;
+      }
+
+      #timelapse {
+         position: absolute;
+         width: 1024px;
+         height: 432px;
+         background: black;
+         overflow: hidden;
+         border: 2px solid black;
+      }
+
+      .vid {
+         position: absolute;
+         width: 768px;
+         height: 432px;
+      }
+
+      #video0 {
+         top: 0;
+         left: 0;
+      }
+
+      #video1 {
+         left: 256px;
+         width: 0;
+         height: 0;
+      }
+   </style>
+   <script src="js/jquery/jquery.min.js" type="text/javascript"></script>
+   <script src="js/jquery/jquery-ui.custom.min.js" type="text/javascript"></script>
+   <script src="js/jquery/plugins/query/jquery.query-2.1.7.js" type="text/javascript"></script>
+   <script src="js/org/gigapan/util.js" type="text/javascript"></script>
+   <script src="js/org/gigapan/timelapse/videoset.js" type="text/javascript"></script>
+   <script type="text/javascript">
+      var gigapanId = $.query.get('id') || "overlapping-video-test-v4";
+      var tile0 = "0.mp4";
+      var tile1 = "1.mp4";
+      var tileWidth = 768;
+      var tileHeight = 432;
+      var isPlaying = false;
+      var videoSeekEpsilon = 0.04;
+      var videoLoadTimeoutInMillis = 5000;
+      var videoAttrs = [
+         {
+            "id":"video0",
+            "src":"0.mp4",
+            "left": 0
+         },
+         {
+            "id":"video1",
+            "src":"1.mp4",
+            "left": 256
+         }
+      ];
+      var videoAttrIndex = 0;
+
+      var videoset = null;
+      var currentVideo = null;
+
+      $(document).ready(function()
+                           {
+                           videoset = new org.gigapan.timelapse.Videoset("timelapse");
+                           currentVideo = videoset.addVideo(buildTileUrl(videoAttrs[videoAttrIndex]['src']), {top:0,left:videoAttrs[videoAttrIndex]['left'],width:768,height:432});
+                           });
+
+      function playOrStop()
+         {
+         if (isPlaying)
+            {
+            videoset.pause();
+            $("#playStopButton").text("Play");
+            }
+         else
+            {
+            videoset.play();
+            $("#playStopButton").text("Stop");
+            }
+         isPlaying = !isPlaying;
+         }
+
+      function performTransition()
+         {
+         var currentVideoAttrIndex = videoAttrIndex;
+         var newVideoAttrIndex = (videoAttrIndex == 0) ? 1 : 0;
+         videoAttrIndex = newVideoAttrIndex;
+
+         org.gigapan.Util.log("videoAttrIndex is now [" + videoAttrIndex + "]");
+
+         org.gigapan.Util.log("beginning transition...");
+
+         currentVideo = videoset.addVideo(buildTileUrl(videoAttrs[videoAttrIndex]['src']), {top:0,left:videoAttrs[videoAttrIndex]['left'],width:768,height:432}, currentVideo);
+
+         org.gigapan.Util.log("just called videoset.addVideo()");
+         }
+
+      function buildTileUrl(tile)
+         {
+         var url = "http://timelapse.gigapan.org/alpha/timelapses/" + gigapanId + "/" + tile + generateNoCacheQueryStringParam();
+         org.gigapan.Util.log("URL = [" + url + "]");
+         return url;
+         }
+
+      function generateNoCacheQueryStringParam()
+         {
+         return "?nocache=" + Math.floor(Math.random() * 1000000000000);
+         }
+
+   </script>
+</head>
+<body>
+<div id="timelapse_container">
+   <div id="timelapse"></div>
+</div>
+<table style="margin-top:5px">
+   <tr>
+      <td>
+         <button id="playStopButton" type="button" onclick="playOrStop()">Play</button>
+      </td>
+      <td>
+         <button id="transitionButton" type="button" onclick="performTransition()">Transition</button>
+      </td>
+   </tr>
+</table>
+
+</body>
+</html>
