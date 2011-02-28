@@ -1,0 +1,146 @@
+<html>
+<head>
+   <title>Transition Test</title>
+   <link href="css/timelapse.css" rel="stylesheet" type="text/css"/>
+   <link href="css/jquery-ui/smoothness/jquery-ui.custom.css" rel="stylesheet" type="text/css"/>
+   <style type="text/css">
+      #timelapse_container {
+         position: relative;
+         width: 1024px;
+         height: 432px;
+      }
+
+      #timelapse {
+         position: absolute;
+         width: 1024px;
+         height: 432px;
+         background: black;
+         overflow: hidden;
+         border: 2px solid black;
+      }
+   </style>
+   <script src="js/jquery/jquery.min.js" type="text/javascript"></script>
+   <script src="js/jquery/jquery-ui.custom.min.js" type="text/javascript"></script>
+   <script src="js/jquery/plugins/query/jquery.query-2.1.7.js" type="text/javascript"></script>
+   <script src="js/org/gigapan/util.js" type="text/javascript"></script>
+   <script src="js/org/gigapan/timelapse/videoset.js" type="text/javascript"></script>
+   <script type="text/javascript">
+      var gigapanId = $.query.get('id') || "carnival-10m-halfsize-g10-bf0-l30-768x432";
+      var videoset = null;
+      var video0Attrs = {top:0,left:0,width:768,height:432,src:'3/0/2.mp4'};
+      var video1Attrs = {top:0,left:256,width:768,height:432,src:'3/0/3.mp4'};
+      var video0 = null;
+      var video1 = null;
+
+      var leader = 30;  // seconds of "leader" before actual video, to work around chrome seek problem
+      var data = [ [], [] ];
+      var test_seek_times = [0.1,0.5,1,2,3,4,5,7,10,15,20,25,30,35,40,45,50,55,60,75,90,105,115];
+      //test_seek_times = test_seek_times.concat(test_seek_times);
+      var transitionTime;
+      var begin_seek_timestamp;
+
+      $(document).ready(function()
+                           {
+                           setup();
+                           });
+
+      function setup()
+         {
+         if (!test_seek_times.length)
+            {
+            graph();
+            return;
+            }
+         transitionTime = test_seek_times.shift();
+         logDivider();
+         videoset = new org.gigapan.timelapse.Videoset("timelapse");
+         video0 = videoset.addVideo(buildTileUrl(video0Attrs['src']), video0Attrs);
+         log('added video0 to videoset: ' + video0.src);
+         video0.addEventListener('seeked', video_seeked, false);
+         video0.addEventListener('loadedmetadata', video_loaded_metadata, false);
+         }
+
+      function video_loaded_metadata()
+         {
+         video0.currentTime = transitionTime + leader;
+         log("video_loaded_metadata");
+         }
+
+      function video_seeked()
+         {
+         video0.removeEventListener('seeked', video_seeked);
+         log("video_seeked, playing for 1 second before calling transition: " + video0.currentTime);
+         videoset.play();
+         window.setTimeout(transitionBegin, 1000);
+         }
+
+      function transitionBegin()
+         {
+         log("beginning transition...");
+         begin_seek_timestamp = (new Date()).getTime();
+         video1 = videoset.addVideo(buildTileUrl(video1Attrs['src']), video1Attrs, video0, transitionEnd);
+         log('added video1 to videoset: ' + video1.src);
+         }
+
+      function transitionEnd()
+         {
+         var elapsed = (new Date()).getTime() - begin_seek_timestamp;
+         log('<b>transition ' + transitionTime + ' took ' + elapsed + ' milliseconds</b>');
+         data[0].push(transitionTime);
+         data[1].push(elapsed);
+
+         log("transition complete, will now teardown!");
+         window.setTimeout(teardown, 250);
+         }
+
+      function teardown()
+         {
+         videoset.pause();
+         videoset.deleteVideo(video0);
+         videoset.deleteVideo(video1);
+         window.setTimeout(setup, 250);
+         log("teardown complete, next test will begin in 250 ms");
+         }
+
+      function buildTileUrl(tile)
+         {
+         return "http://timelapse.gigapan.org/alpha/timelapses/" + gigapanId + "/" + tile + generateNoCacheQueryStringParam();
+         }
+
+      function generateNoCacheQueryStringParam()
+         {
+         return "?nocache=" + (new Date()).getTime() + '_' + Math.floor(Math.random() * 1000000000000);
+         }
+
+      function graph()
+         {
+         var url = "http://chart.apis.google.com/chart?&chg=-1,-1&chxr=0,0,120|1,0,3000&chxt=x,y&chs=650x450&cht=s&chco=0000FF&chds=0,120,0,3000&chd=t:";
+         url += data[0].join(",") + "|" + data[1].join(",");
+         logDivider();
+         log(url);
+         var img = document.createElement('image');
+         img.setAttribute('src', url);
+         document.getElementById('graph').appendChild(img);
+         }
+
+      function log(msg)
+         {
+         document.getElementById('log').innerHTML += msg + '<br>';
+         }
+
+      function logDivider()
+         {
+         document.getElementById('log').innerHTML += '<hr>';
+         }
+
+   </script>
+</head>
+<body>
+<div id="timelapse_container">
+   <div id="timelapse"></div>
+</div>
+<div id="graph" style="margin-top:10px"></div>
+<br>
+<div id="log"></div>
+</body>
+</html>
