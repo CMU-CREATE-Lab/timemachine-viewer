@@ -53,7 +53,7 @@
          // not using JSONP on timelapse.gigapan.org (but we probably should!)).
          var urlMatchPattern = /^http:\/\/timelapse.gigapan.org\//;
          var isRemoteUrl = window.location.href.match(urlMatchPattern) != null;
-         var jsonUrl = (isRemoteUrl ? "./timelapses/" : "../timelapses/") + gigapanId + '/r.json';
+         var jsonUrl = (isRemoteUrl ? "../alpha/timelapses/" : "../timelapses/") + gigapanId + '/r.json';
 
          org.gigapan.Util.log("Attempting to fetch JSON from URL ["+jsonUrl+"]...");
          $.ajax(
@@ -83,6 +83,7 @@
       {
          // Build the gigapan URL.  We use the CGI for Chrome, but plain ol' MP4s for Safari.
          var isChrome = navigator.userAgent.match(/Chrome/) != null;
+         isChrome = false;
          var dropConnectionParam = willAddConnectionDropParam ? "drop=1&" : "";
          var gigapanUrl = "http://timelapse.gigapan.org/alpha/" + (isChrome ? "cgi-bin/video_streamer.cgi?"+dropConnectionParam+"id="+gigapanId+"&t=" : "timelapses/" + gigapanId + '/');
 
@@ -713,7 +714,7 @@
 </head>
 <body onselectstart="return false">
 
-<div id="timelapse_container" style="width:800px; height:450px; position:relative;">
+<div id="timelapse_container" style="width:512px; height:288px; position:relative;">
    <div class="overlay1">
       <div id="joystick" style="margin:0 0 0 4px;width:38px;"><img src="images/joystick.png" alt="zoom_in" ondragstart="return false" onselectstart="return false" /></div>
       <div id="zoom_in" style="margin:2px 0 0 12px;width:19px;"><img src="images/plus.png" alt="zoom_in" ondragstart="return false" onselectstart="return false" /></div>
@@ -729,17 +730,17 @@
       <div id="left" style="margin:-9px 0 0 9px;width:5px;"><img src="images/joystick_left.png" alt="move left" ondragstart="return false" onselectstart="return false" /></div>
    </div>
 
-   <div id="timelapse" style="position: absolute; width:800px; height:450px; background:black; overflow:hidden; border: 2px solid black;"></div>
+   <div id="timelapse" style="position: absolute; width:512px; height:288px; background:black; overflow:hidden; border: 2px solid black;"></div>
 </div>
 
-<div id="time_slider_container" style="width:800px; border: 2px solid black; margin-top:4px">
+<div id="time_slider_container" style="width:512px; border: 2px solid black; margin-top:4px">
    <table>
       <tr>
          <td>
             <div id="play_toggle" class="play_mouseout" title="Play"></div>
          </td>
          <td>
-            <div id="timelineSlider"></div>
+            <div id="timelineSlider" style="width:339px"></div>
          </td>
          <td align="right">
             <span id="currentTime">00:00:00</span>/<span id="totalTime">00:00:00</span><br/>
@@ -747,8 +748,8 @@
       </tr>
    </table>
 </div>
-<div id="misc_controls_container" style="width:800px; border: 2px solid black; border-top:0">
-   <table id="misc_controls_container_table" style="width:800px;">
+<div id="misc_controls_container" style="width:512px; border: 2px solid black; border-top:0">
+   <table id="misc_controls_container_table" style="width:512px;">
       <tr>
          <td style="padding:10px 20px 20px 20px;">
             <label for="speed">Playback Speed:</label>
@@ -766,10 +767,9 @@
          <td align="right">
             <label for="viewer_size">Viewer Size:</label>
             <select name="viewer_size" id="viewer_size" onchange="changeViewerSize($('#viewer_size').val());">
-               <option value="500">Small</option>
-               <option value="800" selected="selected">Normal</option>
+               <option value="512" selected="selected">Small</option>
+               <option value="768">Normal</option>
                <option value="1200">Large</option>
-               <option value="1600">Courageous</option>
             </select>
             <br>
             <br>

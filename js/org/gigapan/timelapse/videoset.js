@@ -103,6 +103,7 @@ if (!org.gigapan.Util)
             var perfTimeSeeks = 0;
             var perfAdded = 0;
             var syncIntervalTime = 0.2; // in seconds
+            var leader = 0;
 
             ////////////////////////////////////////////////////////////////////////////////////////////////////////////
             //
@@ -178,6 +179,21 @@ if (!org.gigapan.Util)
                   return fps;
                }
 
+            this.setLeader = function(newLeader)
+               {
+                  leader = newLeader;
+               }
+
+            this.getLeader = function()
+               {
+                  return leader;
+               }
+
+            this.getActiveVideos = function()
+               {
+                  return activeVideos;
+               }
+
             this.resetPerf = function()
                {
                   perfInitialSeeks = 0;
@@ -240,7 +256,7 @@ if (!org.gigapan.Util)
                      {
                      src += "?nocache=" + UTIL.getCurrentTimeInSecs() + "." + id;
                      }
-                  UTIL.log("video(" + id + ") added from " + src + " at left=" + geometry.left + ",top=" + geometry.top + ", w=" + geometry.width + ",h=" + geometry.height);
+                  UTIL.log("video(" + id + ") added from " + src + " at left=" + geometry.left + ",top=" + geometry.top + ", w=" + geometry.width + ",h=" + geometry.height + "; replace=" + videoBeingReplaced);
 
                   var video = null;
                   // Try to find an existing video to recycle
@@ -263,7 +279,7 @@ if (!org.gigapan.Util)
                   video.id = id;
                   video.active = true;
                   video.ready = false;
-                  if (typeof videoBeingReplaced != 'undefined')
+                  if (typeof videoBeingReplaced != 'undefined' && videoBeingReplaced != null)
                      {
                      video.videoBeingReplaced = videoBeingReplaced;
                      }
@@ -414,10 +430,10 @@ if (!org.gigapan.Util)
                   new_time = (Math.round(new_time * fps) + .25) / fps;
                   if (new_time != _getCurrentTime())
                      {
-                     UTIL.log("_getCurrentTime() was " + _getCurrentTime());
+                     //UTIL.log("_getCurrentTime() was " + _getCurrentTime());
                      timeOffset = new_time - UTIL.getCurrentTimeInSecs() * (advancing ? playbackRate : 0);
-                     console.log("seek: timeOffset is " + timeOffset + ", frame " + timeOffset * 25);
-                     UTIL.log("_getCurrentTime() now " + _getCurrentTime());
+                     //console.log("seek: timeOffset is " + timeOffset + ", frame " + timeOffset * 25);
+                     //UTIL.log("_getCurrentTime() now " + _getCurrentTime());
                      sync(0.0);
                      }
                };
@@ -449,7 +465,7 @@ if (!org.gigapan.Util)
                      }
                   UTIL.log("video(" + video.id + ") videoLoadedMetadata; seek to " + _getCurrentTime());
                   perfInitialSeeks++;
-                  video.currentTime = _getCurrentTime();
+                  video.currentTime = leader+_getCurrentTime();
                   if (advancing)
                      {
                      video.play();
@@ -463,6 +479,7 @@ if (!org.gigapan.Util)
                      {
                      video.ready = true;
                      video.style.left = parseFloat(video.style.left) + 100000;
+                     UTIL.log("video being replaced " + video.videoBeingReplaced);
                      if (video.videoBeingReplaced)
                         {
                         _deleteVideo(video.videoBeingReplaced);
@@ -546,7 +563,7 @@ if (!org.gigapan.Util)
 
             var sync = function(errorThreshold)
                {
-                  UTIL.log("sync");
+                  //UTIL.log("sync");
                   if (errorThreshold == undefined)
                      {
                      errorThreshold = UTIL.isChrome() ? 0.005 : 0.04;
@@ -573,7 +590,7 @@ if (!org.gigapan.Util)
                   for (var videoId in activeVideos)
                      {
                      var video = activeVideos[videoId];
-                     var error = video.currentTime - t;
+                     var error = video.currentTime - leader - t;
                      if (video.ready) stats[video.readyState]++;
                      if (video.readyState >= 1 && Math.abs(error) > errorThreshold)
                         {  // HAVE_METADATA=1
@@ -582,13 +599,15 @@ if (!org.gigapan.Util)
                         if (!advancing || rateTweak < .25 || rateTweak > 2)
                            {
                            perfTimeSeeks++;
-                           UTIL.log("Time correction: seeking video(" + videoId + ") from " + video.currentTime + " to " + t + " (error=" + error + ", state=" + video.readyState + ")");
-                           video.currentTime = t + errorThreshold * .5; // seek ahead slightly
+                           UTIL.log("current time " + video.currentTime);
+                           UTIL.log("leader " + leader);
+                           UTIL.log("Time correction: seeking video(" + videoId + ") from " + (video.currentTime-leader) + " to " + t + " (error=" + error + ", state=" + video.readyState + ")");
+                           video.currentTime = leader + t + errorThreshold * .5; // seek ahead slightly
                            }
                         else
                            {
                            perfTimeTweaks++;
-                           UTIL.log("Time correction: tweaking video(" + videoId + ") from " + video.currentTime + " to " + t + " (error=" + error + ", rate=" + rateTweak + ", state=" + video.readyState + ")");
+                           UTIL.log("Time correction: tweaking video(" + videoId + ") from " + (video.currentTime-leader) + " to " + t + " (error=" + error + ", rate=" + rateTweak + ", state=" + video.readyState + ")");
                            // Speed or slow video so that we'll be even by the next sync interval
                            video.playbackRate = playbackRate * rateTweak;
                            }

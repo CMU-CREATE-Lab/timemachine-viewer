@@ -97,11 +97,15 @@ if (!org.gigapan.timelapse.Videoset)
             var viewportHeight = 0;
             var tileWidth = 0;
             var tileHeight = 0;
+            var videoWidth = 0;
+            var videoHeight = 0;
             var frames = 0;
             var maxLevel = 0;
             var playbackRate = .5;
             var view = null;
             var targetView = null;
+            var currentIdx = null;
+            var currentVideo = null;
 
             // levelThreshold sets the quality of display by deciding what level of tile to show for a given level of zoom:
             //
@@ -222,6 +226,10 @@ if (!org.gigapan.timelapse.Videoset)
             this.getPerf = function()
                {
                   return videoset.getPerf();
+               }
+            this.getView = function()
+               {
+                   return view;
                }
               
             ///////////////////////////
@@ -375,11 +383,11 @@ if (!org.gigapan.timelapse.Videoset)
                   var lastEvent = event;
                   var saveMouseMove = document.onmousemove;
                   var saveMouseUp = document.onmouseup;
-                  UTIL.log("mousedown");
+                  //UTIL.log("mousedown");
                   videoDiv.style.cursor = "url('css/cursors/closedhand.cur')";
                   document.onmousemove = function(event)
                      {
-                        UTIL.log("mousemove");
+                         //UTIL.log("mousemove");
                         targetView.x += (lastEvent.pageX - event.pageX) / view.scale;
                         targetView.y += (lastEvent.pageY - event.pageY) / view.scale;
                         setTargetView(targetView);
@@ -388,7 +396,7 @@ if (!org.gigapan.timelapse.Videoset)
                      };
                   document.onmouseup = function()
                      {
-                        UTIL.log("mouseup");
+                        //UTIL.log("mouseup");
                         videoDiv.style.cursor = "url('css/cursors/openhand.cur')";
                         document.onmousemove = saveMouseMove;
                         document.onmouseup = saveMouseUp;
@@ -458,15 +466,12 @@ if (!org.gigapan.timelapse.Videoset)
                   panoHeight = data['height'];
                   tileWidth = data['tile_width'];
                   tileHeight = data['tile_height'];
+                  videoWidth = data['video_width'];
+                  videoHeight = data['video_height'];
                   videoset.setFps(data['fps']);
+                  videoset.setLeader(data['leader']/data['fps']);
                   frames = data['frames'];
-
-                  // Compute max level #
-                  for (maxLevel = 1;
-                       (tileWidth << maxLevel) < panoWidth || (tileHeight << maxLevel) < panoHeight;
-                       maxLevel++)
-                     {
-                     }
+                  maxLevel = data['nlevels']-1;
 
                   readVideoDivSize();
                   _warpTo(_homeView());
@@ -480,77 +485,89 @@ if (!org.gigapan.timelapse.Videoset)
 
             var refresh = function()
                {
-                  UTIL.log('vvvvvvvvvvvvvvvvvvvvvvvv start refresh');
+                   //UTIL.log('vvvvvvvvvvvvvvvvvvvvvvvv start refresh');
                   logReadyVideos();
                   
-                  for (var tileidx in tiles) tiles[tileidx].needed = false;
+                  //for (var tileidx in tiles) tiles[tileidx].needed = false;
 
-                  var tileidxs = computeNeededTiles(view);
-                  var currentLevel = scale2level(view.scale);
-                  // Add new tiles, hold on to too-low-res tiles still needed
-                  for (var tileidx1 in tileidxs)
-                     {
-                     var tile = tiles[tileidx1];
-                     if (!tile)
-                        {
-                        UTIL.log('need ' + dumpTileidx(tileidx1) + ' from ' + getTileidxUrl(tileidx1));
-                        tile = addTileidx(tileidx1);
-                        }
-                     tile.needed = true;
-                     if (!tile.video.ready) needFirstAncestor(tileidx1);
-                     }
+                  var bestIdx = computeBestVideo(view);
+                  if (bestIdx != currentIdx) {
+                     currentVideo = addTileidx(bestIdx, currentVideo);
+                     currentIdx = bestIdx;
+                  }
 
-                  // Sort ready, higher-level tiles according to level
-                  // TODO: only consider on-screen tiles
-                  var highLevelTileidxs = [];
-                  for (var tileidx in tiles)
-                     {
-                     if (getTileidxLevel(tileidx) > currentLevel && tiles[tileidx].video.ready)
-                        {
-                        highLevelTileidxs.push(tileidx);
-                        }
-                     }
-                  highLevelTileidxs = highLevelTileidxs.sort();
+                  var activeVideos = videoset.getActiveVideos();
+                  for (var key in videoset.getActiveVideos()) {
+                     var video = activeVideos[key];
+                     //console.log("reposition " + video.tileidx);
+                     repositionVideo(video);
+                  }
 
-                  // Look for higher-level tiles we need to keep for now
-                  for (var i = 0; i < highLevelTileidxs.length; i++)
-                     {
-                     var tileidx = highLevelTileidxs[i];
-                     var ancestoridx = findFirstNeededAncestor(tileidx);
-                     if (ancestoridx != false && !tiles[ancestoridx].video.ready)
-                        {
-                        UTIL.log("Need " + dumpTileidx(tileidx) + " because " + dumpTileidx(ancestoridx) + " isn't ready");
-                        tiles[tileidx].needed = true;
-                        }
-                     }
-
-                  // Delete tiles we no longer need and reposition the ones we need
-                  for (var tileidx in tiles)
-                     {
-                     if (!tiles[tileidx].needed) deleteTileidx(tileidx);
-                     else repositionTileidx(tileidx);
-                     }
-                  logReadyVideos();
-                  UTIL.log('^^^^^^^^^^^^^^^^^^^^^^^^ end refresh');
+                  //var currentLevel = scale2level(view.scale);
+                  //// Add new tiles, hold on to too-low-res tiles still needed
+                  //for (var tileidx1 in tileidxs)
+                  //   {
+                  //   var tile = tiles[tileidx1];
+                  //   if (!tile)
+                  //      {
+                  //      UTIL.log('need ' + dumpTileidx(tileidx1) + ' from ' + getTileidxUrl(tileidx1));
+                  //      tile = addTileidx(tileidx1);
+                  //      }
+                  //   tile.needed = true;
+                  //   if (!tile.video.ready) needFirstAncestor(tileidx1);
+                  //   }
+                  //
+                  //// Sort ready, higher-level tiles according to level
+                  //// TODO: only consider on-screen tiles
+                  //var highLevelTileidxs = [];
+                  //for (var tileidx in tiles)
+                  //   {
+                  //   if (getTileidxLevel(tileidx) > currentLevel && tiles[tileidx].video.ready)
+                  //      {
+                  //      highLevelTileidxs.push(tileidx);
+                  //      }
+                  //   }
+                  //highLevelTileidxs = highLevelTileidxs.sort();
+                  //
+                  //// Look for higher-level tiles we need to keep for now
+                  //for (var i = 0; i < highLevelTileidxs.length; i++)
+                  //   {
+                  //   var tileidx = highLevelTileidxs[i];
+                  //   var ancestoridx = findFirstNeededAncestor(tileidx);
+                  //   if (ancestoridx != false && !tiles[ancestoridx].video.ready)
+                  //      {
+                  //      UTIL.log("Need " + dumpTileidx(tileidx) + " because " + dumpTileidx(ancestoridx) + " isn't ready");
+                  //      tiles[tileidx].needed = true;
+                  //      }
+                  //   }
+                  //
+                  //// Delete tiles we no longer need and reposition the ones we need
+                  //for (var tileidx in tiles)
+                  //   {
+                  //   if (!tiles[tileidx].needed) deleteTileidx(tileidx);
+                  //   else repositionTileidx(tileidx);
+                  //   }
+                  //logReadyVideos();
+                  //UTIL.log('^^^^^^^^^^^^^^^^^^^^^^^^ end refresh');
                };
 
             var logReadyVideos = function()
                {
-                  var levelCounts=[];
-                  for (var tileidx in tiles)
-                     {
-                     if (tiles[tileidx].video.ready)
-                        {
-                        levelCounts[getTileidxLevel(tileidx)] = 1 + (levelCounts[getTileidxLevel(tileidx)] || 0);
-                        }
-                     }
-                  var msg = "level counts:";
-                  for (var i = 0; i < levelCounts.length; i++)
-                     {
-                     if (levelCounts[i]) msg += " " + i + ":" + levelCounts[i];
-                     }
-                  if (levelCounts.length == 0) msg += "**************************************************************************";
-                  UTIL.log(msg);
+                  //var levelCounts=[];
+                  //for (var tileidx in tiles)
+                  //   {
+                  //   if (tiles[tileidx].video.ready)
+                  //      {
+                  //      levelCounts[getTileidxLevel(tileidx)] = 1 + (levelCounts[getTileidxLevel(tileidx)] || 0);
+                  //      }
+                  //   }
+                  //var msg = "level counts:";
+                  //for (var i = 0; i < levelCounts.length; i++)
+                  //   {
+                  //   if (levelCounts[i]) msg += " " + i + ":" + levelCounts[i];
+                  //   }
+                  //if (levelCounts.length == 0) msg += "**************************************************************************";
+                  //UTIL.log(msg);
                   //msg = "ready tiles:";
                   //for (var tileidx in tiles)
                   //   {
@@ -592,19 +609,19 @@ if (!org.gigapan.timelapse.Videoset)
                   return false;
                }
 
-            var addTileidx = function(tileidx)
+               var addTileidx = function(tileidx, videoToUnload)
                {
-                  if (tiles[tileidx])
-                     {
-                     UTIL.error('addTileidx(' + dumpTileidx(tileidx) + '): already loaded');
-                     return;
-                     }
+                  //if (tiles[tileidx])
+                  //   {
+                  //   UTIL.error('addTileidx(' + dumpTileidx(tileidx) + '): already loaded');
+                  //   return;
+                  //   }
                   var url = getTileidxUrl(tileidx);
                   var geom = tileidxGeometry(tileidx);
                   UTIL.log("adding tile " + dumpTileidx(tileidx) + " from " + url + " and geom = (left:" + geom['left'] + " ,top:" + geom['top'] + ", width:" + geom['width'] + ", height:" + geom['height'] + ")");
-                  var video = videoset.addVideo(url, geom);
-
-                  return tiles[tileidx] = {video:video};
+                  var video = videoset.addVideo(url, geom, videoToUnload);
+                  video.tileidx = tileidx;
+                  return video;
                };
 
             var deleteTileidx = function(tileidx)
@@ -623,50 +640,31 @@ if (!org.gigapan.timelapse.Videoset)
 
             var getTileidxUrl = function(tileidx)
                {
-                  var shardIndex = (getTileidxRow(tileidx) % 2) * 2 + (getTileidxColumn(tileidx) % 2);
-                  var urlPrefix = url.replace("//", "//t" + shardIndex + ".");
-                  return urlPrefix + getTileidxPath(tileidx) + ".mp4";
+                  //var shardIndex = (getTileidxRow(tileidx) % 2) * 2 + (getTileidxColumn(tileidx) % 2);
+                  //var urlPrefix = url.replace("//", "//t" + shardIndex + ".");
+                  return url + getTileidxLevel(tileidx) + "/" + getTileidxRow(tileidx) + "/" + getTileidxColumn(tileidx) + ".mp4";
                };
 
-            var computeNeededTiles = function(theView)
+            var computeBestVideo = function(theView)
                {
-                  var level = scale2level(theView.scale);
-                  var bbox = computeBoundingBox(theView);
-                  var tilemin = tileidxAt(level, Math.max(0, bbox.xmin), Math.max(0, bbox.ymin));
-                  var tilemax = tileidxAt(level, Math.min(panoWidth - 1, bbox.xmax), Math.min(panoHeight - 1, bbox.ymax));
-                  UTIL.log("needed tiles " + dumpTileidx(tilemin) + " to " + dumpTileidx(tilemax));
-                  var tiles = [];
-                  for (var r = getTileidxRow(tilemin); r <= getTileidxRow(tilemax); r++)
-                     {
-                     for (var c = getTileidxColumn(tilemin); c <= getTileidxColumn(tilemax); c++)
-                        {
-                        var tileidx1 = tileidxCreate(level, c, r);
-                        var tileCtr = tileidxCenter(tileidx1);
-                        var distSq = (tileCtr.x - theView.x) * (tileCtr.x - theView.x) + (tileCtr.y - theView.y) * (tileCtr.y - theView.y);
-                        tiles.push({distSq:distSq, tileidx:tileidx1});
-                        }
-                     }
-                  tiles.sort(function(a, b)
-                                {
-                                   return a['distSq'] - b['distSq'];
-                                });
-                  var tileidxs = {};
-                  for (var i in tiles)
-                     {
-                     var tileidx = tiles[i].tileidx;
-                     tileidxs[tileidx] = tileidx;
-                     }
-                  return tileidxs;
-               };
+                  var level = scale2level(view.scale);
+                  var levelScale = Math.pow(2, maxLevel - level);
+                  var col = Math.round((theView.x - (videoWidth * levelScale * .5)) / (tileWidth * levelScale));
+                  if (col < 0) col=0;
+                  var row = Math.round((theView.y - (videoHeight * levelScale * .5)) / (tileHeight * levelScale));
+                  if (row < 0) row=0;
+                  UTIL.log("computeBestVideo l=" + level + ", c=" + col + ", r=" + row);
+                  return tileidxCreate(level,col,row);
+               }
 
-            var tileidxAt = function(level, x, y)
-               {
-                  var ret = tileidxCreate(level,
-                                           Math.floor(x / (tileWidth << (maxLevel - level))),
-                                           Math.floor(y / (tileHeight << (maxLevel - level))));
-                  //UTIL.log('tileidxAt(' + x + ',' + y + ',' + level + ')=' + dumpTileidx(ret));
-                  return ret;
-               };
+            //var tileidxAt = function(level, x, y)
+            //   {
+            //      var ret = tileidxCreate(level,
+            //                               Math.floor(x / (tileWidth << (maxLevel - level))),
+            //                               Math.floor(y / (tileHeight << (maxLevel - level))));
+            //      //UTIL.log('tileidxAt(' + x + ',' + y + ',' + level + ')=' + dumpTileidx(ret));
+            //      return ret;
+            //   };
 
             var scale2level = function(scale)
                {
@@ -680,42 +678,39 @@ if (!org.gigapan.timelapse.Videoset)
                   return selectedLevel;
                };
 
-            var tileidxCenter = function(t)
-               {
-                  var levelShift = maxLevel - getTileidxLevel(t);
-                  return {
-                     x: (getTileidxColumn(t) + .5) * (tileWidth << levelShift),
-                     y: (getTileidxRow(t) + .5) * (tileHeight << levelShift)
-                  };
-               };
+            //var tileidxCenter = function(t)
+            //   {
+            //      var levelShift = maxLevel - getTileidxLevel(t);
+            //      return {
+            //         x: (getTileidxColumn(t) + .5) * (tileWidth << levelShift),
+            //         y: (getTileidxRow(t) + .5) * (tileHeight << levelShift)
+            //      };
+            //   };
 
             var tileidxGeometry = function(tileidx)
                {
-                  var levelShift = maxLevel - getTileidxLevel(tileidx);
-                  var tileWidthTemp = tileWidth << levelShift;
-                  var tileHeightTemp = tileHeight << levelShift;
+                  var levelScale = Math.pow(2, maxLevel - getTileidxLevel(tileidx));
+                  //console.log("w="+tileWidth);
+                  //console.log("h="+tileHeight);
+                  //console.log("ls="+levelScale);
 
                   // Calculate left, right, top, bottom, rounding to nearest pixel;  avoid gaps between tiles.
-                  var left = Math.round(view.scale * (getTileidxColumn(tileidx) * tileWidthTemp - view.x) + viewportWidth * .5);
-                  var right = Math.round(view.scale * ((getTileidxColumn(tileidx) + 1) * tileWidthTemp - view.x) + viewportWidth * .5);
+                  var left = view.scale * (getTileidxColumn(tileidx) * tileWidth * levelScale - view.x) + viewportWidth * .5;
+                  var right = Math.round(left + view.scale * levelScale * videoWidth);
+                  left = Math.round(left);
+                  
                   //if (!tile.loaded) { left = -10000; }
-                  var top = Math.round(view.scale * (getTileidxRow(tileidx) * tileHeightTemp - view.y) + viewportHeight * .5);
-                  var bottom = Math.round(view.scale * ((getTileidxRow(tileidx) + 1) * tileHeightTemp - view.y) + viewportHeight * .5);
-
+                  
+                  var top = view.scale * (getTileidxRow(tileidx) * tileHeight * levelScale - view.y) + viewportHeight * .5;
+                  var bottom = Math.round(top + view.scale * levelScale * videoHeight);
+                  top = Math.round(top);
+                  
                   return {left:left, top:top, width:(right - left), height:(bottom - top)};
                };
 
-            var repositionTileidx = function(tileidx)
+            var repositionVideo = function(video)
                {
-                  var tile = tiles[tileidx];
-                  if (!tile)
-                     {
-                     UTIL.error('repositionTileidx(' + dumpTileidx(tileidx) + '): tile does not exist');
-                     return;
-                     }
-                  //UTIL.log('repositionTileidx('+dumpTileidx(tileidx)+')');
-
-                  videoset.repositionVideo(tile['video'], tileidxGeometry(tileidx));
+                  videoset.repositionVideo(video, tileidxGeometry(video.tileidx));
                };
 
             this.writeStatusToLog = function()
@@ -760,22 +755,6 @@ if (!org.gigapan.timelapse.Videoset)
             var dumpTileidx = function(t)
                {
                   return "{l:" + getTileidxLevel(t) + ",c:" + getTileidxColumn(t) + ",r:" + getTileidxRow(t) + "}";
-               };
-
-            var getTileidxPath = function(t)
-               {
-                  var name = "r";
-                  for (var pos = getTileidxLevel(t) - 1; pos >= 0; pos--)
-                     {
-                     // Append 0-3 depending on bits from col and row
-                     name += (1 & (getTileidxColumn(t) >> pos)) + 2 * (1 & (getTileidxRow(t) >> pos));
-                     }
-                  var dir = '';
-                  for (var i = 0; i < name.length - 3; i += 3)
-                     {
-                     dir += name.substr(i, 3) + "/";
-                     }
-                  return dir + name;
                };
 
             ////////////////////////////////////////////////////////////////////////////////////////////////////////////
