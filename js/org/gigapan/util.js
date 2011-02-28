@@ -50,6 +50,7 @@ else
 (function()
    {
       var isChromeCached;
+      var areLogging = true;
       
       org.gigapan.Util = function()
          {
@@ -57,10 +58,12 @@ else
 
       org.gigapan.Util.log = function(str)
          {
-            var now = (new Date()).getTime();
-            var mins = ("0" + Math.floor((now / 60000) % 60)).substr(-2);
-            var secs = ("0" + ((now / 1000) % 60).toFixed(3)).substr(-6);
-            console.log(mins + ":" + secs + ": " + str);
+						if (areLogging && typeof(console) !== 'undefined' && console != null) {
+            	var now = (new Date()).getTime();
+            	var mins = ("0" + Math.floor((now / 60000) % 60)).substr(-2);
+            	var secs = ("0" + ((now / 1000) % 60).toFixed(3)).substr(-6);
+            	console.log(mins + ":" + secs + ": " + str);
+            }
          };
 
       org.gigapan.Util.error = function(str)

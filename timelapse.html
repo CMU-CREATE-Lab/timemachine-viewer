@@ -1,3 +1,4 @@
+<!DOCTYPE html>
 <html>
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
@@ -147,19 +148,26 @@
                                       });
 
          $('.ui-slider-handle').bind("mouseover", function() {
-            $('.ui-slider-handle').css("cursor", "url('css/cursors/openhand.cur')");
+         		this.style.cursor = 'url("css/cursors/openhand.png"),move';
+           $('.ui-slider-handle').bind("mouseup", function() {
+					   this.style.cursor = 'url("css/cursors/openhand.png"),move';
+					 });
          });
 
          $('.ui-slider').bind("slide", function() {
-            $('.ui-slider-handle').css("cursor", "url('css/cursors/closedhand.cur')");
+				   $('.ui-slider-handle').bind("mousemove", function() {
+					   this.style.cursor = 'url("css/cursors/closedhand.png"),move';
+					 });
          });
 
          $('.ui-slider').bind("slidestop", function() {
-            $('.ui-slider-handle').css("cursor", "url('css/cursors/openhand.cur')");
+           $('.ui-slider-handle').bind("mousemove", function() {
+					   this.style.cursor = 'url("css/cursors/openhand.png"),move';
+					 });
          });
 
          $('.ui-slider').bind("mouseover", function() {
-            $(this).css("cursor", "pointer");
+         		this.style.cursor = 'pointer';
          });
 
          $('#play_toggle').bind("click", function()
@@ -191,7 +199,8 @@
 
          $("#home").mousemove(function() {
             $(this).attr("title", "Home");
-            $(this).css("cursor", "pointer");
+            //$(this).css("cursor", "pointer");
+            this.style.cursor = 'pointer';
          }).click(function() {
             timelapse.warpTo(timelapse.homeView());
          });
@@ -206,7 +215,8 @@
             clearInterval(intervalId);
          }).mousemove(function() {
             $(this).attr("title", "Move Left");
-            $(this).css("cursor", "pointer");
+            //$(this).css("cursor", "pointer");
+            this.style.cursor = 'pointer';
          });
 
          $("#right").mousedown(function() {
@@ -217,7 +227,8 @@
             clearInterval(intervalId);
          }).mousemove(function() {
             $(this).attr("title", "Move Right");
-            $(this).css("cursor", "pointer");
+            //$(this).css("cursor", "pointer");
+            this.style.cursor = 'pointer';
          });
 
          $("#up").mousedown(function() {
@@ -228,7 +239,8 @@
             clearInterval(intervalId);
          }).mousemove(function() {
             $(this).attr("title", "Move Up");
-            $(this).css("cursor", "pointer");
+            //$(this).css("cursor", "pointer");
+            this.style.cursor = 'pointer';
          });
 
          $("#down").mousedown(function() {
@@ -239,7 +251,8 @@
             clearInterval(intervalId);
          }).mousemove(function() {
             $(this).attr("title", "Move Down");
-            $(this).css("cursor", "pointer");
+            //$(this).css("cursor", "pointer");
+            this.style.cursor = 'pointer';
          });
 
          $("#zoom_in").mousedown(function() {
@@ -250,7 +263,8 @@
             clearInterval(intervalId);
          }).mousemove(function() {
             $(this).attr("title", "Zoom In");
-            $(this).css("cursor", "pointer");
+            //$(this).css("cursor", "pointer");
+            this.style.cursor = 'pointer';
          });
 
          $("#zoom_out").mousedown(function() {
@@ -261,7 +275,8 @@
             clearInterval(intervalId);
          }).mousemove(function() {
             $(this).attr("title", "Zoom Out");
-            $(this).css("cursor", "pointer");
+            //$(this).css("cursor", "pointer");
+            this.style.cursor = 'pointer';
          });
 
          function zoomIn() {
@@ -716,17 +731,17 @@
 <div id="timelapse_container" style="width:800px; height:450px; position:relative;">
    <div class="overlay1">
       <div id="joystick" style="margin:0 0 0 4px;width:38px;"><img src="images/joystick.png" alt="zoom_in" ondragstart="return false" onselectstart="return false" /></div>
-      <div id="zoom_in" style="margin:2px 0 0 12px;width:19px;"><img src="images/plus.png" alt="zoom_in" ondragstart="return false" onselectstart="return false" /></div>
-      <div id="slider-vertical" style="margin:0 0 0 20px;"></div>
-      <div id="zoom_out" style="margin:0 0 0 12px;width:19px;"><img src="images/minus.png" alt="zoom_in" ondragstart="return false" onselectstart="return false" /></div>
-      <div id="home" style="margin:5px 0 0 0;width:48px;"><img src="images/viewall.png" alt="home" ondragstart="return false" onselectstart="return false" /></div>
+      <div id="zoom_in" style="margin:2px 0 0 14px;width:19px;"><img src="images/plus.png" alt="zoom_in" ondragstart="return false" onselectstart="return false" /></div>
+      <div id="slider-vertical" style="margin:-2px 0 0 22px;"></div>
+      <div id="zoom_out" style="margin:0 0 0 14px;width:19px;"><img src="images/minus.png" alt="zoom_in" ondragstart="return false" onselectstart="return false" /></div>
+      <div id="home" style="margin:5px 0 0 2px;width:48px;"><img src="images/viewall.png" alt="home" ondragstart="return false" onselectstart="return false" /></div>
    </div>
 
    <div class="overlay2">
-      <div id="up" style="margin: 5px 0 0 19px;width:10px;"><img src="images/joystick_up.png" alt="move up" ondragstart="return false" onselectstart="return false" /></div>
-      <div id="down" style="margin:18px 0 0 17px;width:10px;"><img src="images/joystick_down.png" alt="move down" ondragstart="return false" onselectstart="return false" /></div>
-      <div id="right" style="margin:-18px 0 0 32px;width:5px;"><img src="images/joystick_right.png" alt="move right" ondragstart="return false" onselectstart="return false" /></div>
-      <div id="left" style="margin:-9px 0 0 9px;width:5px;"><img src="images/joystick_left.png" alt="move left" ondragstart="return false" onselectstart="return false" /></div>
+      <div id="up" style="margin: -1px 0 0 19px;width:10px;"><img src="images/joystick_up.png" alt="move up" ondragstart="return false" onselectstart="return false" /></div>
+      <div id="down" style="margin:10px 0 0 18px;width:10px;"><img src="images/joystick_down.png" alt="move down" ondragstart="return false" onselectstart="return false" /></div>
+      <div id="right" style="margin:-22px 0 0 32px;width:5px;"><img src="images/joystick_right.png" alt="move right" ondragstart="return false" onselectstart="return false" /></div>
+      <div id="left" style="margin:-13px 0 0 9px;width:5px;"><img src="images/joystick_left.png" alt="move left" ondragstart="return false" onselectstart="return false" /></div>
    </div>
 
    <div id="timelapse" style="position: absolute; width:800px; height:450px; background:black; overflow:hidden; border: 2px solid black;"></div>

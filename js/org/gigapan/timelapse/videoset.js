@@ -287,11 +287,11 @@ if (!org.gigapan.Util)
                {
                   //UTIL.log("video(" + video.id + ") reposition to left=" + geometry.left + ",top=" + geometry.top + ", w=" + geometry.width + ",h=" + geometry.height + "; ready="+video.ready);
                   // toFixed prevents going to scientific notation when close to zero;  this confuses the DOM
-                  video.style.left = geometry.left.toFixed(4) - (video.ready ? 0 : 100000);
-                  video.style.top = geometry.top.toFixed(4);
+                  video.style.left = (geometry.left.toFixed(4) - (video.ready ? 0 : 100000)) + "px";
+                  video.style.top = (geometry.top.toFixed(4)) + "px";
 
-                  video.style.width = geometry.width;
-                  video.style.height = geometry.height;
+                  video.style.width = geometry.width + "px";
+                  video.style.height = geometry.height + "px";
                };
 
             this.deleteVideo = function(video)
@@ -411,7 +411,7 @@ if (!org.gigapan.Util)
                      {
                      UTIL.log("_getCurrentTime() was " + _getCurrentTime());
                      timeOffset = new_time - UTIL.getCurrentTimeInSecs() * (advancing ? playbackRate : 0);
-                     console.log("seek: timeOffset is " + timeOffset + ", frame " + timeOffset * 25);
+                     UTIL.log("seek: timeOffset is " + timeOffset + ", frame " + timeOffset * 25);
                      UTIL.log("_getCurrentTime() now " + _getCurrentTime());
                      sync(0.0);
                      }
@@ -457,7 +457,7 @@ if (!org.gigapan.Util)
                   if (!video.ready)
                      {
                      video.ready = true;
-                     video.style.left = parseFloat(video.style.left) + 100000;
+                     video.style.left = (parseFloat(video.style.left) + 100000) + "px";
                      }
                };
 
@@ -591,7 +591,7 @@ if (!org.gigapan.Util)
                         if (!video.ready && video.readyState >= 3)
                            {
                            video.ready = true;
-                           video.style.left = parseFloat(video.style.left) + 100000;
+                           video.style.left = (parseFloat(video.style.left) + 100000) + "px";
                            }
                         }
                      }
