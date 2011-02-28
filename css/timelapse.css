@@ -62,9 +62,9 @@ body, p, table, tr, td {
 
 .overlay1 {
   border:0px solid; 
-  width:50px;
+  width:52px;
   border-color:silver;
-  height:210px; 
+  height:212px; 
   overflow:auto;
   position:absolute; 
   z-index:2;
@@ -74,7 +74,7 @@ body, p, table, tr, td {
 
 .overlay2 {
   border:0px solid; 
-  width:50px; 
+  width:52px; 
   border-color:silver;
   height:40px; 
   overflow:auto;
