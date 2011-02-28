@@ -232,7 +232,7 @@ if (!org.gigapan.Util)
             // Add and remove videos
             //
 
-            this.addVideo = function(src, geometry, videoBeingReplaced)
+            this.addVideo = function(src, geometry, videoBeingReplaced, onloadCallback)
                {
                   perfAdded++;
                   id++;
@@ -266,6 +266,10 @@ if (!org.gigapan.Util)
                   if (typeof videoBeingReplaced != 'undefined')
                      {
                      video.videoBeingReplaced = videoBeingReplaced;
+                     }
+                  if (typeof onloadCallback == 'function')
+                     {
+                     video.onloadCallback = onloadCallback;
                      }
                   //UTIL.log(getVideoSummaryAsString(video));
                   video.setAttribute('src', src);
@@ -463,9 +467,27 @@ if (!org.gigapan.Util)
                      {
                      video.ready = true;
                      video.style.left = parseFloat(video.style.left) + 100000;
-                     if (video.videoBeingReplaced)
+
+                     // delete video which is being replaced, following the chain until we get to a null
+                     var videoToDelete = video.videoBeingReplaced;
+                     while (videoToDelete)
                         {
-                        _deleteVideo(video.videoBeingReplaced);
+                        var nextVideoToDelete = videoToDelete.videoBeingReplaced;
+                        _deleteVideo(videoToDelete);
+                        videoToDelete = nextVideoToDelete;
+                        }
+
+                     // notify onload listener by calling the callback, if any
+                     if (video.onloadCallback)
+                        {
+                        try
+                           {
+                           video.onloadCallback();
+                           }
+                        catch(e)
+                           {
+                           UTIL.error(e.name + " while calling callback function for onload of video ["+video.src+"]: " + e.message, e);
+                           }
                         }
                      }
                };
