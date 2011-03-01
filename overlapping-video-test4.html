@@ -49,15 +49,9 @@
                            {
                            videoset = new org.gigapan.timelapse.Videoset("timelapse");
                            videoset.setLeader(leader);
-                           videoset.addSyncListener(handleVideosetSyncEvents);
 
                            setup();
                            });
-
-      function handleVideosetSyncEvents(currentTime)
-         {
-         org.gigapan.Util.log("handleVideosetSyncEvents(" + currentTime + "):  video0.ready=["+(video0 != null ? video0.ready : null)+"]  video1.ready=["+(video1 != null ? video1.ready : null)+"]");
-         }
 
       function setup()
          {
