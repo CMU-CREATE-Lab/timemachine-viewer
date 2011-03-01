@@ -172,27 +172,27 @@ if (!org.gigapan.Util)
             this.setFps = function(newFps)
                {
                   fps = newFps;
-               }
+               };
 
             this.getFps = function()
                {
                   return fps;
-               }
+               };
 
             this.setLeader = function(newLeader)
                {
                   leader = newLeader;
-               }
+               };
 
             this.getLeader = function()
                {
                   return leader;
-               }
+               };
 
             this.getActiveVideos = function()
                {
                   return activeVideos;
-               }
+               };
 
             this.resetPerf = function()
                {
@@ -201,7 +201,7 @@ if (!org.gigapan.Util)
                   perfTimeCorrections = [];
                   perfTimeTweaks = 0;
                   perfTimeSeeks = 0;
-               }
+               };
 
             var getPerf = function()
                {
@@ -216,7 +216,7 @@ if (!org.gigapan.Util)
                      perf += perfTimeCorrections[i].toFixed(4);
                      }
                   return perf;
-               }
+               };
                
             var showSpinner = function()
                {
@@ -236,13 +236,13 @@ if (!org.gigapan.Util)
                   $('.spinnerOverlay').css("top", $("#timelapse_container").height()/2 - $("#spinner").height()/2 + "px");
                   $('.spinnerOverlay').css("left", $("#timelapse_container").width()/2 - $("#spinner").width()/2 + "px");
                   $('#spinner').bind('dragstart', function(event) { event.preventDefault(); });
-               }
+               };
                
             var hideSpinner = function()
                {
                   UTIL.log("hideSpinner");
                   $('.spinnerOverlay').remove();
-               }
+               };
                
             ///////////////////////////
             // Add and remove videos
@@ -567,7 +567,7 @@ if (!org.gigapan.Util)
                  } else if (stalled) {
                    UTIL.log("Still stalled...");
                  }
-               }
+               };
 
             var stall = function () {
                if (stalled) return;
@@ -575,7 +575,7 @@ if (!org.gigapan.Util)
                stalled = true;
                showSpinner();
                _updateVideoAdvance();
-            }
+            };
 
             var unstall = function () {
                if (!stalled) return;
