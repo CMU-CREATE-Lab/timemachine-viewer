@@ -305,6 +305,9 @@ if (!org.gigapan.Util)
                   videoDiv.appendChild(video);
                   video.addEventListener('loadedmetadata', videoLoadedMetadata, false);
                   video.addEventListener('seeked', videoSeeked, false);
+                  video.bwLastTime = UTIL.getCurrentTimeInSecs();
+                  video.bwLastBuf = 0;
+                  video.bandwidth = 0;
                   return video;
                };
 
@@ -621,6 +624,21 @@ if (!org.gigapan.Util)
                _updateVideoAdvance();
             };
 
+            var updateVideoBandwidth = function(video)
+               {
+                  var newTime = UTIL.getCurrentTimeInSecs();
+                  var b = video.buffered
+                  var newBufferPosition = (b && b.length) ? b.end(b.length-1) : 0;
+                  UTIL.log("newTime " + newTime + " video.bwLastTime " + video.bwLastTime);
+                  var deltaTime = newTime - video.bwLastTime;
+                  UTIL.log("newBufferPosition " + newBufferPosition + " video.bwLastBuf " + video.bwLastBuf);
+                  var deltaBuffer = newBufferPosition - video.bwLastBuf;
+                  video.bwLastTime = newTime;
+                  video.bwLastBuf = newBufferPosition;
+                  video.bandwidth = (deltaTime==0) ? 0 : deltaBuffer / deltaTime;
+                  UTIL.log("bandwidth is " + video.bandwidth);
+               };
+
             var sync = function(errorThreshold)
                {
                   //UTIL.log("sync");
@@ -646,14 +664,14 @@ if (!org.gigapan.Util)
                   //updateStallState();
                   //if (stalled) return;
                   
-                  var ready_stats=[0,0,0,0,0];
-                  var not_ready_stats=[0,0,0,0,0];
+                  var ready_stats=[[],[],[],[],[]];
+                  var not_ready_stats=[[],[],[],[],[]];
                   for (var videoId in activeVideos)
                      {
                      var video = activeVideos[videoId];
+                     updateVideoBandwidth(video);
                      var error = video.currentTime - leader - t;
-                     if (video.ready) ready_stats[video.readyState]++;
-                     else not_ready_stats[video.readyState]++;
+                     (video.ready ? ready_stats : not_ready_stats)[video.readyState].push(video.bandwidth.toFixed(0));
                      if (video.readyState >= 1 && Math.abs(error) > errorThreshold)
                         {  // HAVE_METADATA=1
                         perfTimeCorrections.push(error);
@@ -685,14 +703,15 @@ if (!org.gigapan.Util)
                            }
                         }
                      }
-                  var inactive_stats=[0,0,0,0,0];
+                  var inactive_stats=[[],[],[],[],[]];
                   for (var videoId in inactiveVideos)
                      {
                      var video = inactiveVideos[videoId];
-                     inactive_stats[video.readyState]++;
+                     updateVideoBandwidth(video);
+                     inactive_stats[video.readyState].push(video.bandwidth.toFixed(0));
                      }
 
-                  UTIL.log("video readyStates.  ready: " + ready_stats + "; not ready: " + not_ready_stats + "; inactive: " + inactive_stats);
+                  UTIL.log("video readyStates.  ready: " + ready_stats.join('|') + "; not ready: " + not_ready_stats.join('|') + "; inactive: " + inactive_stats.join('|'));
                   for (var i = 0; i < syncListeners.length; i++)
                      {
                      try
