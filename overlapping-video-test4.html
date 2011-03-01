@@ -25,6 +25,7 @@
    <script src="js/org/gigapan/util.js" type="text/javascript"></script>
    <script src="js/org/gigapan/timelapse/videoset.js" type="text/javascript"></script>
    <script type="text/javascript">
+      var millisBetweenTests = 250;
       var gigapanId = $.query.get('id') || "carnival-10m-halfsize-g10-bf0-l30-768x432";
       var videoset = null;
       var video0Attrs = {top:0,left:0,width:768,height:432,src:'3/0/2.mp4'};
@@ -33,17 +34,30 @@
       var video1 = null;
 
       var leader = 30;  // seconds of "leader" before actual video, to work around chrome seek problem
-      var data = [ [], [] ];
-      var test_seek_times = [0.1,0.5,1,2,3,4,5,7,10,15,20,25,30,35,40,45,50,55,60,75,90,105,115];
-      //var test_seek_times = [1,2,5,10,20,50,100];
-      //test_seek_times = test_seek_times.concat(test_seek_times);
+      var data = [
+         [],
+         []
+      ];
+      //var test_seek_times = [0.1,0.5,1,2,3,4,5,7,10,15,20,25,30,35,40,45,50,55,60,75,90,105,115];
+      var test_seek_times = [1,2,5,10,20,50,100];
+      test_seek_times = test_seek_times.concat(test_seek_times);
       var transitionTime;
       var begin_seek_timestamp;
+      var intervalHandle = null;
 
       $(document).ready(function()
                            {
+                           videoset = new org.gigapan.timelapse.Videoset("timelapse");
+                           videoset.setLeader(leader);
+                           videoset.addSyncListener(handleVideosetSyncEvents);
+
                            setup();
                            });
+
+      function handleVideosetSyncEvents(currentTime)
+         {
+         org.gigapan.Util.log("handleVideosetSyncEvents(" + currentTime + "):  video0.ready=["+(video0 != null ? video0.ready : null)+"]  video1.ready=["+(video1 != null ? video1.ready : null)+"]");
+         }
 
       function setup()
          {
@@ -54,26 +68,13 @@
             }
          transitionTime = test_seek_times.shift();
          logDivider();
-         videoset = new org.gigapan.timelapse.Videoset("timelapse");
-         videoset.setLeader(leader);
-         video0 = videoset.addVideo(buildTileUrl(video0Attrs['src']), video0Attrs);
-         log('added video0 to videoset: ' + video0.src);
-         video0.addEventListener('seeked', video_seeked, false);
-         video0.addEventListener('loadedmetadata', video_loaded_metadata, false);
-         }
-
-      function video_loaded_metadata()
-         {
-         video0.currentTime = transitionTime;
-         log("video_loaded_metadata");
-         }
-
-      function video_seeked()
-         {
-         video0.removeEventListener('seeked', video_seeked);
-         log("video_seeked, playing for 1 second before calling transition: " + video0.currentTime);
-         videoset.play();
-         window.setTimeout(transitionBegin, 1000);
+         video0 = videoset.addVideo(buildTileUrl(video0Attrs['src']), video0Attrs, null, function()
+            {
+            videoset.seek(transitionTime);
+            log('added video0 [' + video0Attrs['src'] + '] to videoset, and set seek to [' + transitionTime + '].');
+            videoset.play();
+            window.setTimeout(transitionBegin, 1000);
+            });
          }
 
       function transitionBegin()
@@ -92,7 +93,7 @@
          data[1].push(elapsed);
 
          log("transition complete, will now teardown!");
-         window.setTimeout(teardown, 250);
+         window.setTimeout(teardown, 1000);
          }
 
       function teardown()
@@ -100,8 +101,8 @@
          videoset.pause();
          videoset.deleteVideo(video0);
          videoset.deleteVideo(video1);
-         window.setTimeout(setup, 250);
-         log("teardown complete, next test will begin in 250 ms");
+         window.setTimeout(setup, millisBetweenTests);
+         log("teardown complete, next test will begin in "+millisBetweenTests+" ms");
          }
 
       function buildTileUrl(tile)
@@ -111,7 +112,7 @@
 
       function generateNoCacheQueryStringParam()
          {
-         return "?nocache=" + (new Date()).getTime() + '_' + Math.floor(Math.random() * 1000000000000);
+         return "?t="+transitionTime+"&nocache=" + (new Date()).getTime() + '_' + Math.floor(Math.random() * 1000000000000);
          }
 
       function graph()
