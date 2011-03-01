@@ -347,7 +347,7 @@ if (!org.gigapan.Util)
                   for (var i = 0; i < idsOfVideosToDelete.length; i++)
                      {
                      var id = idsOfVideosToDelete[i];
-                     UTIL.log("garbage collecting video [" + id + "|"+inactiveVideos[id].src+"]");
+                     UTIL.log("garbage collecting video [" + id + "]");
                      delete inactiveVideos[id];
                      }
                   }
