@@ -54,6 +54,7 @@
          transitionTime = test_seek_times.shift();
          logDivider();
          videoset = new org.gigapan.timelapse.Videoset("timelapse");
+         videoset.setLeader(leader);
          video0 = videoset.addVideo(buildTileUrl(video0Attrs['src']), video0Attrs);
          log('added video0 to videoset: ' + video0.src);
          video0.addEventListener('seeked', video_seeked, false);
@@ -62,7 +63,7 @@
 
       function video_loaded_metadata()
          {
-         video0.currentTime = transitionTime + leader;
+         video0.currentTime = transitionTime;
          log("video_loaded_metadata");
          }
 
