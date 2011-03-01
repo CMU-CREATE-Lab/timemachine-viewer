@@ -346,10 +346,10 @@ if (!org.gigapan.Util)
 
             var _updateVideoAdvance = function()
                {
-                 UTIL.log("_updateVideoAdvance");
+                 //UTIL.log("_updateVideoAdvance");
                  if (!advancing && !(paused || stalled))
                     {
-                       UTIL.log("resume advance");
+                       //UTIL.log("resume advance");
                        // Resume advancing
                        var time = _getCurrentTime();
                        advancing = true;
@@ -364,7 +364,7 @@ if (!org.gigapan.Util)
                     }
                  else if (advancing && (paused || stalled))
                     {
-                       UTIL.log("stop advance");
+                       //UTIL.log("stop advance");
                        // Stop advancing
                        var time = _getCurrentTime();
                        advancing = false;
@@ -604,15 +604,17 @@ if (!org.gigapan.Util)
                      return;
                      }
 
-                  updateStallState();
-                  if (stalled) return;
+                  //updateStallState();
+                  //if (stalled) return;
                   
-                  var stats=[0,0,0,0,0];
+                  var ready_stats=[0,0,0,0,0];
+                  var not_ready_stats=[0,0,0,0,0];
                   for (var videoId in activeVideos)
                      {
                      var video = activeVideos[videoId];
                      var error = video.currentTime - leader - t;
-                     if (video.ready) stats[video.readyState]++;
+                     if (video.ready) ready_stats[video.readyState]++;
+                     else not_ready_stats[video.readyState]++;
                      if (video.readyState >= 1 && Math.abs(error) > errorThreshold)
                         {  // HAVE_METADATA=1
                         perfTimeCorrections.push(error);
@@ -620,8 +622,8 @@ if (!org.gigapan.Util)
                         if (!advancing || rateTweak < .25 || rateTweak > 2)
                            {
                            perfTimeSeeks++;
-                           UTIL.log("current time " + video.currentTime);
-                           UTIL.log("leader " + leader);
+                           //UTIL.log("current time " + video.currentTime);
+                           //UTIL.log("leader " + leader);
                            UTIL.log("Time correction: seeking video(" + videoId + ") from " + (video.currentTime-leader) + " to " + t + " (error=" + error + ", state=" + video.readyState + ")");
                            video.currentTime = leader + t + errorThreshold * .5; // seek ahead slightly
                            }
@@ -644,7 +646,14 @@ if (!org.gigapan.Util)
                            }
                         }
                      }
-                  UTIL.log("video.readyStates: " + stats);
+                  var inactive_stats=[0,0,0,0,0];
+                  for (var videoId in inactiveVideos)
+                     {
+                     var video = inactiveVideos[videoId];
+                     inactive_stats[video.readyState]++;
+                     }
+
+                  UTIL.log("video readyStates.  ready: " + ready_stats + "; not ready: " + not_ready_stats + "; inactive: " + inactive_stats);
                   for (var i = 0; i < syncListeners.length; i++)
                      {
                      try
