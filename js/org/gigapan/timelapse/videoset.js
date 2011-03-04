@@ -197,6 +197,11 @@ if (!org.gigapan.Util)
                   return activeVideos;
                };
 
+            this.getInactiveVideos = function()
+               {
+                  return inactiveVideos;
+               };
+
             this.resetPerf = function()
                {
                   perfInitialSeeks = 0;
@@ -261,24 +266,7 @@ if (!org.gigapan.Util)
                      }
                   UTIL.log("video(" + id + ") added from " + src + " at left=" + geometry.left + ",top=" + geometry.top + ", w=" + geometry.width + ",h=" + geometry.height + "; replace=" + videoBeingReplaced);
 
-                  var video = null;
-                  // Try to find an existing video to recycle
-
-                  for (var videoId in inactiveVideos)
-                     {
-                     var candidate = inactiveVideos[videoId];
-                     if (candidate.readyState >= 4 && !candidate.seeking)
-                        {
-                        video = candidate;
-                        delete inactiveVideos[videoId];
-                        UTIL.log("video(" + id + "): reusing video(" + candidate.id + ")");
-                        break;
-                        }
-                     }
-                  if (video == null)
-                     {
-                     video = document.createElement('video');
-                     }
+                  var video = document.createElement('video');
                   video.id = id;
                   video.active = true;
                   video.ready = false;
@@ -336,12 +324,17 @@ if (!org.gigapan.Util)
                      {
                      idsOfVideosToDelete[idsOfVideosToDelete.length] = candidate.id;
                      }
+                  else
+                     {
+                     UTIL.log("### NOT garbage collecting video ["+candidate.id+"] because readyState=["+candidate.readyState+"] and/or seeking=["+candidate.seeking+"]");
+                     }
                   }
 
                if (numInactiveVideos == 0)
                   {
                   // shutdown the garbage collection timeout if there are no more inactive videos
                   clearInterval(garbageCollectionInterval);
+                  garbageCollectionInterval = null;
                   UTIL.log("Stopped garbage collection");
                   }
                else
@@ -350,6 +343,11 @@ if (!org.gigapan.Util)
                      {
                      var id = idsOfVideosToDelete[i];
                      UTIL.log("garbage collecting video [" + id + "]");
+                     var videoElement = document.getElementById(id);
+                     if (videoElement)
+                        {
+                        videoDiv.removeChild(inactiveVideos[id]);
+                        }
                      delete inactiveVideos[id];
                      }
                   }
