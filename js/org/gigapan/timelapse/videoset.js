@@ -320,7 +320,7 @@ if (!org.gigapan.Util)
                   {
                   numInactiveVideos++;
                   var candidate = inactiveVideos[videoId];
-                  if (candidate.readyState >= 0 && !candidate.seeking)  // TODO: watch out! having readyState >= 0 here might cause crashes...
+                  if ((!org.gigapan.Util.isChrome() || candidate.readyState >= 4) && !candidate.seeking)  // TODO: watch out! not checking readyState in non-chrome browsers might cause crashes!
                      {
                      idsOfVideosToDelete[idsOfVideosToDelete.length] = candidate.id;
                      }
@@ -354,17 +354,26 @@ if (!org.gigapan.Util)
                   UTIL.log("video(" + video.id + ") delete");
                   video.active = false;
                   video.pause();
-                  try
+
+                  if (org.gigapan.Util.isChrome())
                      {
-                     // set the current time to the end of the video to encourage Chrome to stop streaming the video
-                     video.currentTime = duration;
+                     try
+                        {
+                        // set the current time to the end of the video to encourage Chrome to stop streaming the video
+                        video.currentTime = duration;
+                        }
+                     catch(e)
+                        {
+                        UTIL.error("_deleteVideo(): failed to set video.currentTime = duration");
+                        }
                      }
-                  catch(e)
+                  else
                      {
-                     UTIL.error("_deleteVideo(): failed to set video.currentTime = duration");
+                     // this causes Safari and IE to stop streaming the video
+                     video.src = "data:video/mp4;base64";
                      }
+                  
                   //UTIL.log(getVideoSummaryAsString(video));
-                  video.removeAttribute('src');
                   //UTIL.log(getVideoSummaryAsString(video));
                   video.style.display = 'none';
                   //UTIL.log(getVideoSummaryAsString(video));
