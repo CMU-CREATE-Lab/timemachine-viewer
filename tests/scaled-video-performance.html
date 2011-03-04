@@ -1,0 +1,28 @@
+<!doctype HTML>
+<html>
+<head>
+<title>Scaled video perforance</title>
+<script>
+function play() { document.getElementById("video").currentTime = 30; document.getElementById("video").play(); }
+function pause() { document.getElementById("video").pause(); }
+function scale(s) { document.getElementById("video").style.width = 256*3*s + "px";  document.getElementById("video").style.height = 144*3*s + "px"; }
+</script>
+</head>
+<body>
+<div style="width: 512px; height: 288px; position: relative">
+<div style="width: 512px; height: 288px; overflow:hidden; position:absolute; left: 0px; top: 0px">
+<video id="video" src="http://timelapse.gigapan.org/alpha/timelapses/carnival-10m-halfsize-g10-bf0-l30-768x432/5/18/20.mp4" style="position: absolute; left: 0px; top: 0px">
+</div>
+</div>
+</body>
+<br>
+<button onclick="scale(.5)">scale .5</button>
+<button onclick="scale(1)">scale 1</button>
+<button onclick="scale(1.05)">scale 1.05</button>
+<button onclick="scale(2)">scale 2</button>
+<button onclick="scale(4)">scale 4</button>
+<button onclick="scale(8)">scale 8</button>
+<button onclick="scale(16)">scale 16</button>
+<button onclick="play()">play</button>
+<button onclick="pause()">pause</button>
+</html>
