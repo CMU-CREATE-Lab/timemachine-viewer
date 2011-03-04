@@ -517,37 +517,64 @@ if (!org.gigapan.Util)
                      }
                };
 
+            var _makeVideoVisible = function(video, callingFunction)
+               {
+               video.ready = true;
+               video.style.left = parseFloat(video.style.left) + 100000;
+
+               var error = video.currentTime - leader - _getCurrentTime();
+               UTIL.log("_makeVideoVisible("+callingFunction+"): id=["+video.id+"] ready=["+video.ready+"] readyState=["+video.readyState+"] networkState=["+video.networkState+"] error=["+error+"]");
+
+               // delete video which is being replaced, following the chain until we get to a null
+               var videoToDelete = video.videoBeingReplaced;
+               while (videoToDelete)
+                  {
+                  var nextVideoToDelete = videoToDelete.videoBeingReplaced;
+                  videoToDelete.videoBeingReplaced = null;  // mark this as null to prevent multiple deletes
+                  _deleteVideo(videoToDelete);
+                  videoToDelete = nextVideoToDelete;
+                  }
+
+               // notify onload listener by calling the callback, if any
+               if (video.onloadCallback)
+                  {
+                  try
+                     {
+                     video.onloadCallback();
+                     }
+                  catch(e)
+                     {
+                     UTIL.error(e.name + " while calling callback function for onload of video ["+video.src+"]: " + e.message, e);
+                     }
+                  }
+               };
+
             var videoSeeked = function(event)
                {
-                  var video = event.target;
-                  if (!video.ready)
+               var video = event.target;
+
+               if (!video.ready)
+                  {
+                  var checkVideoReadyState = function()
                      {
-                     video.ready = true;
-                     video.style.left = parseFloat(video.style.left) + 100000;
-
-                     // delete video which is being replaced, following the chain until we get to a null
-                     var videoToDelete = video.videoBeingReplaced;
-                     while (videoToDelete)
+                     video.isWaitingOnReadyState = true;
+                     if (video.readyState >= 3)
                         {
-                        var nextVideoToDelete = videoToDelete.videoBeingReplaced;
-                        videoToDelete.videoBeingReplaced = null;  // mark this as null to prevent multiple deletes
-                        _deleteVideo(videoToDelete);
-                        videoToDelete = nextVideoToDelete;
-                        }
+                        video.isWaitingOnReadyState = false;
 
-                     // notify onload listener by calling the callback, if any
-                     if (video.onloadCallback)
-                        {
-                        try
-                           {
-                           video.onloadCallback();
-                           }
-                        catch(e)
-                           {
-                           UTIL.error(e.name + " while calling callback function for onload of video ["+video.src+"]: " + e.message, e);
-                           }
+                        _makeVideoVisible(video, "seek");
                         }
+                     else
+                        {
+                        window.setTimeout(checkVideoReadyState, 10);
+                        }
+                     };
+
+                  if (!video.isWaitingOnReadyState)
+                     {
+                     checkVideoReadyState();
                      }
+                  }
                };
 
             // Call periodically, when video is running
@@ -627,7 +654,7 @@ if (!org.gigapan.Util)
             var updateVideoBandwidth = function(video)
                {
                   var newTime = UTIL.getCurrentTimeInSecs();
-                  var b = video.buffered
+                  var b = video.buffered;
                   var newBufferPosition = (b && b.length) ? b.end(b.length-1) : 0;
                   UTIL.log("newTime " + newTime + " video.bwLastTime " + video.bwLastTime);
                   var deltaTime = newTime - video.bwLastTime;
@@ -698,8 +725,7 @@ if (!org.gigapan.Util)
                         //video.playbackRate = playbackRate;
                         if (!video.ready && video.readyState >= 3)
                            {
-                           video.ready = true;
-                           video.style.left = parseFloat(video.style.left) + 100000;
+                           _makeVideoVisible(video, "sync");
                            }
                         }
                      }
