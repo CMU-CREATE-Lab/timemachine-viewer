@@ -51,9 +51,15 @@ else
    {
       var isChromeCached;
       var areLogging = true;
+      var isChromeUserAgent = navigator.userAgent.match(/Chrome/) != null;
 
       org.gigapan.Util = function()
          {
+         };
+
+      org.gigapan.Util.isChrome = function()
+         {
+            return isChromeUserAgent;
          };
 
       org.gigapan.Util.log = function(str)
