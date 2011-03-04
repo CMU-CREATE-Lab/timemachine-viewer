@@ -226,11 +226,11 @@ if (!org.gigapan.timelapse.Videoset)
             this.getPerf = function()
                {
                   return videoset.getPerf();
-               }
+               };
             this.getView = function()
                {
                    return view;
-               }
+               };
               
             ///////////////////////////
             // Timelapse video control
@@ -361,16 +361,14 @@ if (!org.gigapan.timelapse.Videoset)
             var _viewScaleToZoomSlider = function(value)
                {
                   var tmpValue = Math.sqrt((value - _getMinScale()) / (_getMaxScale() - _getMinScale()));
-                  var newValue = (1/(Math.log(2)))*(Math.log(tmpValue+1));
-                  return newValue;
-               }
+                  return (1/(Math.log(2)))*(Math.log(tmpValue+1));
+               };
             this.viewScaleToZoomSlider = _viewScaleToZoomSlider;
 
             var _zoomSliderToViewScale = function(value)
                {
-                  newValue = 2*_getMinScale() - _getMaxScale() - _getMinScale()*Math.exp(value*Math.log(2)) + _getMaxScale()*Math.exp(value*Math.log(2));
-                  return newValue;
-               }
+               return 2*_getMinScale() - _getMaxScale() - _getMinScale()*Math.exp(value*Math.log(2)) + _getMaxScale()*Math.exp(value*Math.log(2));
+               };
             this.zoomSliderToViewScale = _zoomSliderToViewScale;
 
             ////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -596,7 +594,7 @@ if (!org.gigapan.timelapse.Videoset)
                         }
                      }
                   //UTIL.log("need ancestor " + dumpTileidx(tileidx) + ": none found");
-               }
+               };
 
             var findFirstNeededAncestor = function(tileidx)
                {
@@ -607,7 +605,7 @@ if (!org.gigapan.timelapse.Videoset)
                      if (tiles[a] && tiles[a].needed) return a;
                      }
                   return false;
-               }
+               };
 
                var addTileidx = function(tileidx, videoToUnload)
                {
@@ -655,7 +653,7 @@ if (!org.gigapan.timelapse.Videoset)
                   if (row < 0) row=0;
                   UTIL.log("computeBestVideo l=" + level + ", c=" + col + ", r=" + row);
                   return tileidxCreate(level,col,row);
-               }
+               };
 
             //var tileidxAt = function(level, x, y)
             //   {
