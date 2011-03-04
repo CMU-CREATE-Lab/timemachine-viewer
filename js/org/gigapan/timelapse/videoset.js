@@ -182,7 +182,9 @@ if (!org.gigapan.Util)
 
             this.setLeader = function(newLeader)
                {
+                  var currentTime = _getCurrentTime();
                   leader = newLeader;
+                  _seek(currentTime);
                };
 
             this.getLeader = function()
