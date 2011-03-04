@@ -86,7 +86,7 @@
          data[0].push(transitionTime);
          data[1].push(elapsed);
 
-         log("transition complete, will now teardown!");
+         log("transition complete!");
          window.setTimeout(teardown, 1000);
          }
 
@@ -96,7 +96,6 @@
          videoset.deleteVideo(video0);
          videoset.deleteVideo(video1);
          window.setTimeout(setup, millisBetweenTests);
-         log("teardown complete, next test will begin in "+millisBetweenTests+" ms");
          }
 
       function buildTileUrl(tile)
