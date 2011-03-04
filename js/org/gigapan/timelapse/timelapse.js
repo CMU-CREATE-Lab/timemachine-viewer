@@ -231,6 +231,11 @@ if (!org.gigapan.timelapse.Videoset)
                {
                    return view;
                };
+
+            this.getVideoset = function()
+               {
+               return videoset;
+               };
               
             ///////////////////////////
             // Timelapse video control
