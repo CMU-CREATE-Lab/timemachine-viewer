@@ -18,7 +18,7 @@ body, p, table, tr, td {
 }
 
 #timelapse {
- cursor: url("cursors/openhand.cur")
+ cursor: url("cursors/openhand.png"),move
 }
 
 #mouse_debug_info {
@@ -62,9 +62,9 @@ body, p, table, tr, td {
 
 .overlay1 {
   border:0px solid; 
+  width:52px;
   border-color:silver;
-  width:48px; 
-  height:205px; 
+  height:212px; 
   overflow:auto;
   position:absolute; 
   z-index:2;
@@ -74,9 +74,9 @@ body, p, table, tr, td {
 
 .overlay2 {
   border:0px solid; 
+  width:52px; 
   border-color:silver;
-  width:48px; 
-  height:50px; 
+  height:40px; 
   overflow:auto;
   position:absolute; 
   z-index:3;
@@ -86,9 +86,8 @@ body, p, table, tr, td {
 
 .spinnerOverlay {
   border:0px solid; 
-  border-color:silver;
-  width:120px; 
-  height:120px; 
+  width:140px; 
+  height:140px; 
   overflow:auto;
   position:absolute; 
   z-index:3;

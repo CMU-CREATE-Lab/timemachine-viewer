@@ -1,3 +1,4 @@
+﻿<!DOCTYPE html>
 <html>
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
@@ -131,11 +132,11 @@
                                               }
                                         });
 
-         $('#speed').selectToUISlider({
+         			$('#speed').selectToUISlider({
                                          labels: 12
                                       }).hide();
 
-         $("#slider-vertical").slider({
+         			$("#slider-vertical").slider({
                                          orientation: "vertical",
                                          min: 0,
                                          max: 1,
@@ -147,150 +148,171 @@
                                             }
                                       });
 
-         $('.ui-slider-handle').bind("mouseover", function() {
-            $('.ui-slider-handle').css("cursor", "url('css/cursors/openhand.cur')");
-         });
+				$('.ui-slider-handle').bind("mouseover", function() {
+					 this.style.cursor = 'url("css/cursors/openhand.png"),move';
+					 $('.ui-slider-handle').bind("mouseup", function() {
+					    this.style.cursor = 'url("css/cursors/openhand.png"),move';
+				   });
+				});
 
-         $('.ui-slider').bind("slide", function() {
-            $('.ui-slider-handle').css("cursor", "url('css/cursors/closedhand.cur')");
-         });
+				$('.ui-slider').bind("slide", function() {
+				   $('.ui-slider-handle').bind("mousemove", function() {
+					    this.style.cursor = 'url("css/cursors/closedhand.png"),move';
+				   });
+				});
 
-         $('.ui-slider').bind("slidestop", function() {
-            $('.ui-slider-handle').css("cursor", "url('css/cursors/openhand.cur')");
-         });
+				$('.ui-slider').bind("slidestop", function() {
+			     	   $('.ui-slider-handle').bind("mousemove", function() {
+			              this.style.cursor = 'url("css/cursors/openhand.png"),move';
+				   });
+				});
 
-         $('.ui-slider').bind("mouseover", function() {
-            $(this).css("cursor", "pointer");
-         });
+				$('.ui-slider').bind("mouseover", function() {
+				   this.style.cursor = 'pointer';
+				});
 
-         $('#play_toggle').bind("click", function()
-            {
-            if ($(this).attr("class") == "play_mouseover")
-               {
-               $(this).attr("class", "pause_mouseout");
-               $(this).attr("title", "Pause");
-               if (timelapseCurrentTimeInSeconds >= timelapseDurationInSeconds)
-                  {
-                  $("#timelineSlider")['slider']("option", "value", 0);
-                  timelapse.seek(0);
-                  }
-               timelapse.play();
-               }
-            else
-               {
-               $(this).attr("class", "play_mouseout");
-               $(this).attr("title", "Play");
-               timelapse.pause();
-               }
-         }).mousemove(function() {
-            if ($(this).attr("class") == "play_mouseout") $(this).attr("class", "play_mouseover");
-            else if ($(this).attr("class") == "pause_mouseout") $(this).attr("class", "pause_mouseover");
-         }).mouseout(function() {
-            if ($(this).attr("class") == "play_mouseover") $(this).attr("class", "play_mouseout");
-            else if ($(this).attr("class") == "pause_mouseover") $(this).attr("class", "pause_mouseout");
-         });
 
-         $("#home").mousemove(function() {
-            $(this).attr("title", "Home");
-            $(this).css("cursor", "pointer");
-         }).click(function() {
-            timelapse.warpTo(timelapse.homeView());
-         });
+				$('#timelapse').bind("mouseover", function() {
+				    this.style.cursor = 'url("css/cursors/openhand.png"),move';
+				});
 
-         var intervalId;
+				$('#play_toggle').bind("click", function()
+					 {
+					 if ($(this).attr("class") == "play_mouseover")
+							{
+							$(this).attr("class", "pause_mouseout");
+							$(this).attr("title", "Pause");
+							if (timelapseCurrentTimeInSeconds >= timelapseDurationInSeconds)
+								 {
+								 $("#timelineSlider")['slider']("option", "value", 0);
+								 timelapse.seek(0);
+								 }
+							timelapse.play();
+							}
+					 else
+							{
+							$(this).attr("class", "play_mouseout");
+							$(this).attr("title", "Play");
+							timelapse.pause();
+							}
+				}).mousemove(function() {
+				   if ($(this).attr("class") == "play_mouseout") $(this).attr("class", "play_mouseover");
+					 else if ($(this).attr("class") == "pause_mouseout") $(this).attr("class", "pause_mouseover");
+				}).mouseout(function() {
+					 if ($(this).attr("class") == "play_mouseover") $(this).attr("class", "play_mouseout");
+					 else if ($(this).attr("class") == "pause_mouseover") $(this).attr("class", "pause_mouseout");
+				});
 
-         $("#left").mousedown(function() {
-            intervalId = setInterval(function() { movePos("left"); },500);
-         }).click(function() {
-            movePos("left");
-         }).mouseup(function() {
-            clearInterval(intervalId);
-         }).mousemove(function() {
-            $(this).attr("title", "Move Left");
-            $(this).css("cursor", "pointer");
-         });
+				$("#home").mousemove(function() {
+					 $(this).attr("title", "Home");
+					 //$(this).css("cursor", "pointer");
+					 this.style.cursor = 'pointer';
+				}).click(function() {
+					 timelapse.warpTo(timelapse.homeView());
+				});
 
-         $("#right").mousedown(function() {
-            intervalId = setInterval(function() { movePos("right"); },500);
-         }).click(function() {
-            movePos("right");
-         }).mouseup(function() {
-            clearInterval(intervalId);
-         }).mousemove(function() {
-            $(this).attr("title", "Move Right");
-            $(this).css("cursor", "pointer");
-         });
+				var intervalId;
 
-         $("#up").mousedown(function() {
-            intervalId = setInterval(function() { movePos("up"); },500);
-         }).click(function() {
-            movePos("up");
-         }).mouseup(function() {
-            clearInterval(intervalId);
-         }).mousemove(function() {
-            $(this).attr("title", "Move Up");
-            $(this).css("cursor", "pointer");
-         });
+				$("#left").mousedown(function() {
+					 intervalId = setInterval(function() { movePos("left"); },500);
+				}).click(function() {
+					 movePos("left");
+				}).mouseup(function() {
+					 clearInterval(intervalId);
+				}).mousemove(function() {
+					 $(this).attr("title", "Move Left");
+					 //$(this).css("cursor", "pointer");
+					 this.style.cursor = 'pointer';
+				});
 
-         $("#down").mousedown(function() {
-            intervalId = setInterval(function() { movePos("down"); },500);
-         }).click(function() {
-            movePos("down");
-         }).mouseup(function() {
-            clearInterval(intervalId);
-         }).mousemove(function() {
-            $(this).attr("title", "Move Down");
-            $(this).css("cursor", "pointer");
-         });
+				$("#right").mousedown(function() {
+					 intervalId = setInterval(function() { movePos("right"); },500);
+				}).click(function() {
+					 movePos("right");
+				}).mouseup(function() {
+					 clearInterval(intervalId);
+				}).mousemove(function() {
+					 $(this).attr("title", "Move Right");
+					 //$(this).css("cursor", "pointer");
+					 this.style.cursor = 'pointer';
+				});
 
-         $("#zoom_in").mousedown(function() {
-            intervalId = setInterval(zoomIn, 500);
-         }).click(function() {
-            zoomIn();
-         }).mouseup(function() {
-            clearInterval(intervalId);
-         }).mousemove(function() {
-            $(this).attr("title", "Zoom In");
-            $(this).css("cursor", "pointer");
-         });
+				$("#up").mousedown(function() {
+					 intervalId = setInterval(function() { movePos("up"); },500);
+				}).click(function() {
+					 movePos("up");
+				}).mouseup(function() {
+					 clearInterval(intervalId);
+				}).mousemove(function() {
+					 $(this).attr("title", "Move Up");
+					 //$(this).css("cursor", "pointer");
+					 this.style.cursor = 'pointer';
+				});
 
-         $("#zoom_out").mousedown(function() {
-            intervalId = setInterval(zoomOut, 500);
-         }).click(function() {
-            zoomOut();
-         }).mouseup(function() {
-            clearInterval(intervalId);
-         }).mousemove(function() {
-            $(this).attr("title", "Zoom Out");
-            $(this).css("cursor", "pointer");
-         });
+				$("#down").mousedown(function() {
+					 intervalId = setInterval(function() { movePos("down"); },500);
+				}).click(function() {
+					 movePos("down");
+				}).mouseup(function() {
+					 clearInterval(intervalId);
+				}).mousemove(function() {
+					 $(this).attr("title", "Move Down");
+					 //$(this).css("cursor", "pointer");
+					 this.style.cursor = 'pointer';
+				});
 
-         function zoomIn() {
-            var val = $("#slider-vertical")['slider']("option", "value") + .01;
-            $("#slider-vertical")['slider']("option", "value", val);
-            timelapse.setScaleFromSlider(val);
-         }
+				$("#zoom_in").mousedown(function() {
+					 intervalId = setInterval(zoomIn, 500);
+				}).click(function() {
+					 zoomIn();
+				}).mouseup(function() {
+					 clearInterval(intervalId);
+				}).mousemove(function() {
+					 $(this).attr("title", "Zoom In");
+					 //$(this).css("cursor", "pointer");
+					 this.style.cursor = 'pointer';
+				});
 
-         function zoomOut() {
-            var val = $("#slider-vertical")['slider']("option", "value") - .01;
-            $("#slider-vertical")['slider']("option", "value", val);
-            timelapse.setScaleFromSlider(val);
-         }
+				$("#zoom_out").mousedown(function() {
+					 intervalId = setInterval(zoomOut, 500);
+				}).click(function() {
+					 zoomOut();
+				}).mouseup(function() {
+					 clearInterval(intervalId);
+				}).mousemove(function() {
+					 $(this).attr("title", "Zoom Out");
+					 //$(this).css("cursor", "pointer");
+					 this.style.cursor = 'pointer';
+				});
 
-         function movePos(dir) {
-            timelapse.movePos(dir);
-         }
+				function zoomIn() {
+					 var val = $("#slider-vertical")['slider']("option", "value") + .01;
+					 $("#slider-vertical")['slider']("option", "value", val);
+					 timelapse.setScaleFromSlider(val);
+				}
 
-         $("#totalTime").text(org.gigapan.Util.formatTime(timelapseDurationInSeconds));
+				function zoomOut() {
+					 var val = $("#slider-vertical")['slider']("option", "value") - .01;
+					 $("#slider-vertical")['slider']("option", "value", val);
+					 timelapse.setScaleFromSlider(val);
+				}
 
-      $("#snaplapse_keyframe_list")['selectable']({
-                                                     selected: handleSnaplapseFrameSelectionChange,
-                                                     unselected: handleSnaplapseFrameSelectionChange,
-         cancel: ':input,option,span,textarea'
-                                                  });
+				function movePos(dir) {
+					 timelapse.movePos(dir);
+				}
 
-      $("#slider-vertical")['slider']("option", "value", timelapse.viewScaleToZoomSlider(timelapse.getDefaultScale()));
-   }
+				$("#totalTime").text(org.gigapan.Util.formatTime(timelapseDurationInSeconds));
+
+		 $("#snaplapse_keyframe_list")['selectable']({
+																										selected: handleSnaplapseFrameSelectionChange,
+																										unselected: handleSnaplapseFrameSelectionChange,
+				cancel: ':input,option,span,textarea'
+																								 });
+
+		 $("#slider-vertical")['slider']("option", "value", timelapse.viewScaleToZoomSlider(timelapse.getDefaultScale()));
+	}
+
+
 
    function browserSupported()
       {
@@ -717,17 +739,17 @@
 <div id="timelapse_container" style="width:512px; height:288px; position:relative;">
    <div class="overlay1">
       <div id="joystick" style="margin:0 0 0 4px;width:38px;"><img src="images/joystick.png" alt="zoom_in" ondragstart="return false" onselectstart="return false" /></div>
-      <div id="zoom_in" style="margin:2px 0 0 12px;width:19px;"><img src="images/plus.png" alt="zoom_in" ondragstart="return false" onselectstart="return false" /></div>
-      <div id="slider-vertical" style="margin:0 0 0 20px;"></div>
-      <div id="zoom_out" style="margin:0 0 0 12px;width:19px;"><img src="images/minus.png" alt="zoom_in" ondragstart="return false" onselectstart="return false" /></div>
-      <div id="home" style="margin:5px 0 0 0;width:48px;"><img src="images/viewall.png" alt="home" ondragstart="return false" onselectstart="return false" /></div>
+      <div id="zoom_in" style="margin:2px 0 0 14px;width:19px;"><img src="images/plus.png" alt="zoom_in" ondragstart="return false" onselectstart="return false" /></div>
+      <div id="slider-vertical" style="margin:-2px 0 0 22px;"></div>
+      <div id="zoom_out" style="margin:0 0 0 14px;width:19px;"><img src="images/minus.png" alt="zoom_in" ondragstart="return false" onselectstart="return false" /></div>
+      <div id="home" style="margin:5px 0 0 2px;width:48px;"><img src="images/viewall.png" alt="home" ondragstart="return false" onselectstart="return false" /></div>
    </div>
 
    <div class="overlay2">
-      <div id="up" style="margin: 5px 0 0 19px;width:10px;"><img src="images/joystick_up.png" alt="move up" ondragstart="return false" onselectstart="return false" /></div>
-      <div id="down" style="margin:18px 0 0 17px;width:10px;"><img src="images/joystick_down.png" alt="move down" ondragstart="return false" onselectstart="return false" /></div>
-      <div id="right" style="margin:-18px 0 0 32px;width:5px;"><img src="images/joystick_right.png" alt="move right" ondragstart="return false" onselectstart="return false" /></div>
-      <div id="left" style="margin:-9px 0 0 9px;width:5px;"><img src="images/joystick_left.png" alt="move left" ondragstart="return false" onselectstart="return false" /></div>
+      <div id="up" style="margin: -1px 0 0 19px;width:10px;"><img src="images/joystick_up.png" alt="move up" ondragstart="return false" onselectstart="return false" /></div>
+      <div id="down" style="margin:10px 0 0 18px;width:10px;"><img src="images/joystick_down.png" alt="move down" ondragstart="return false" onselectstart="return false" /></div>
+      <div id="right" style="margin:-22px 0 0 32px;width:5px;"><img src="images/joystick_right.png" alt="move right" ondragstart="return false" onselectstart="return false" /></div>
+      <div id="left" style="margin:-13px 0 0 9px;width:5px;"><img src="images/joystick_left.png" alt="move left" ondragstart="return false" onselectstart="return false" /></div>
    </div>
 
    <div id="timelapse" style="position: absolute; width:512px; height:288px; background:black; overflow:hidden; border: 2px solid black;"></div>

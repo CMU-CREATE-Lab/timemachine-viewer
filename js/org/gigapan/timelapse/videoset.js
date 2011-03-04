@@ -305,11 +305,11 @@ if (!org.gigapan.Util)
                {
                   //UTIL.log("video(" + video.id + ") reposition to left=" + geometry.left + ",top=" + geometry.top + ", w=" + geometry.width + ",h=" + geometry.height + "; ready="+video.ready);
                   // toFixed prevents going to scientific notation when close to zero;  this confuses the DOM
-                  video.style.left = geometry.left.toFixed(4) - (video.ready ? 0 : 100000);
-                  video.style.top = geometry.top.toFixed(4);
+                  video.style.left = geometry.left.toFixed(4) - (video.ready ? 0 : 100000) + "px";
+                  video.style.top = geometry.top.toFixed(4) + "px";
 
-                  video.style.width = geometry.width;
-                  video.style.height = geometry.height;
+                  video.style.width = geometry.width + "px";
+                  video.style.height = geometry.height + "px";
                };
 
             var garbageCollect = function()
@@ -520,7 +520,7 @@ if (!org.gigapan.Util)
             var _makeVideoVisible = function(video, callingFunction)
                {
                video.ready = true;
-               video.style.left = parseFloat(video.style.left) + 100000;
+               video.style.left = parseFloat(video.style.left) + 100000 + "px";
 
                var error = video.currentTime - leader - _getCurrentTime();
                UTIL.log("_makeVideoVisible("+callingFunction+"): id=["+video.id+"] ready=["+video.ready+"] readyState=["+video.readyState+"] networkState=["+video.networkState+"] error=["+error+"]");
