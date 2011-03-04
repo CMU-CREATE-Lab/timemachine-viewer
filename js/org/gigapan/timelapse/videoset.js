@@ -320,13 +320,9 @@ if (!org.gigapan.Util)
                   {
                   numInactiveVideos++;
                   var candidate = inactiveVideos[videoId];
-                  if (candidate.readyState >= 4 && !candidate.seeking)
+                  if (candidate.readyState >= 0 && !candidate.seeking)  // TODO: watch out! having readyState >= 0 here might cause crashes...
                      {
                      idsOfVideosToDelete[idsOfVideosToDelete.length] = candidate.id;
-                     }
-                  else
-                     {
-                     UTIL.log("### NOT garbage collecting video ["+candidate.id+"] because readyState=["+candidate.readyState+"] and/or seeking=["+candidate.seeking+"]");
                      }
                   }
 
@@ -358,6 +354,15 @@ if (!org.gigapan.Util)
                   UTIL.log("video(" + video.id + ") delete");
                   video.active = false;
                   video.pause();
+                  try
+                     {
+                     // set the current time to the end of the video to encourage Chrome to stop streaming the video
+                     video.currentTime = duration;
+                     }
+                  catch(e)
+                     {
+                     UTIL.error("_deleteVideo(): failed to set video.currentTime = duration");
+                     }
                   //UTIL.log(getVideoSummaryAsString(video));
                   video.removeAttribute('src');
                   //UTIL.log(getVideoSummaryAsString(video));
