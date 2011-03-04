@@ -83,7 +83,7 @@
    function loadTimelapse(gigapanJSON)
       {
          // Build the gigapan URL.  We use the CGI for Chrome, but plain ol' MP4s for Safari.
-         var isChrome = navigator.userAgent.match(/Chrome/) != null;
+         var isChrome = org.gigapan.Util.isChrome();
          isChrome = false;
          var dropConnectionParam = willAddConnectionDropParam ? "drop=1&" : "";
          var gigapanUrl = "http://timelapse.gigapan.org/alpha/" + (isChrome ? "cgi-bin/video_streamer.cgi?"+dropConnectionParam+"id="+gigapanId+"&t=" : "timelapses/" + gigapanId + '/');
