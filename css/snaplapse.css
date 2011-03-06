@@ -1,0 +1,11 @@
+.snaplapse_keyframe_list_item {
+  display: block;
+  padding: 2px;
+  margin: 0;
+  cursor: pointer;
+  border:solid 1px black;
+  background-color:white;
+}
+
+#snaplapse_keyframe_list .ui-selecting { background: #ddddff; }
+#snaplapse_keyframe_list .ui-selected { background: #a5a7ff; color: black; }

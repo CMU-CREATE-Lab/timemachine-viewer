@@ -1,853 +1,149 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html>
-<head>
-<meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
-<title>GigaPan Timelapse Explorer</title>
-<script src="js/jquery/jquery.min.js" type="text/javascript"></script>
-<script src="js/jquery/jquery-ui.custom.min.js" type="text/javascript"></script>
-<script src="js/jquery/plugins/mouse/jquery.mousewheel.js" type="text/javascript"></script>
-<script src="js/jquery/plugins/slider/selectToUISlider.jQuery.js" type="text/javascript"></script>
-<script src="js/jquery/plugins/query/jquery.query-2.1.7.js" type="text/javascript"></script>
-<script src="js/org/gigapan/util.js" type="text/javascript"></script>
-<script src="js/org/gigapan/timelapse/videoset.js" type="text/javascript"></script>
-<script src="js/org/gigapan/timelapse/timelapse.js" type="text/javascript"></script>
-<script src="js/org/gigapan/timelapse/snaplapse.js" type="text/javascript"></script>
-
-<link href="css/timelapse.css" rel="stylesheet" type="text/css"/>
-<link href="css/jquery-ui/smoothness/jquery-ui.custom.css" rel="stylesheet" type="text/css"/>
-<link href="css/ui.slider.extras.css" rel="stylesheet" type="text/css"/>
-<style type="text/css">
-   .snaplapse_keyframe_list_item {
-      display: block;
-      padding: 2px;
-      margin: 0;
-      cursor: pointer;
-      border:solid 1px black;
-      background-color:white;
-   }
-
-   #snaplapse_keyframe_list .ui-selecting { background: #ddddff; }
-   #snaplapse_keyframe_list .ui-selected { background: #a5a7ff; color: black; }
-
-</style>
-<script type="text/javascript">
-   var gigapanId = $.query.get('id') || "brassica1-15m-halfsize";
-   var willAddConnectionDropParam = $.query.get('drop') == 1 || $.query.get('drop') == "true";
-
-   var timelapseDurationInSeconds = 0.0;
-   var timeStepInSecs = 0.04; // 25 frames per second
-   var timelapse = null;
-   var timelapseCurrentTimeInSeconds = 0.0;
-   var snaplapse = null;
-   var saveSnaplapseWindow = null;
-   var loadSnaplapseWindow = null;
-
-   $(document).ready(function()
-      {
-         if (!browserSupported())
-            {
-            window.location = "browsernotsupported.html";
-            }
-
-         // Test whether this is being served from timelapse.gigapan.org.  If so, then fetch the JSON from there too.
-         // If not, then assume it's being served from localhost and fetch the JSON from the local machine (since we're
-         // not using JSONP on timelapse.gigapan.org (but we probably should!)).
-         var urlMatchPattern = /^http:\/\/timelapse.gigapan.org\//;
-         var isRemoteUrl = window.location.href.match(urlMatchPattern) != null;
-         var jsonUrl = (isRemoteUrl ? "../alpha/timelapses/" : "../timelapses/") + gigapanId + '/r.json';
-
-         org.gigapan.Util.log("Attempting to fetch JSON from URL ["+jsonUrl+"]...");
-         $.ajax(
-         {
-            dataType:'json',
-            url: jsonUrl,
-            success: function(gigapanJSON)
-               {
-                  if (gigapanJSON && gigapanJSON['tile_height'])
-                     {
-                     org.gigapan.Util.log("Loaded this JSON: ["+JSON.stringify(gigapanJSON)+"]");
-                     loadTimelapse(gigapanJSON);
-                     }
-                  else
-                     {
-                     org.gigapan.Util.error("Failed to load json from URL [" + jsonUrl + "]");
-                     }
-               },
-            error: function()
-               {
-                  org.gigapan.Util.error("Error loading json from URL [" + jsonUrl + "]");
-               }
-         });
-      });
-
-   function loadTimelapse(gigapanJSON)
-      {
-         // Build the gigapan URL.  We use the CGI for Chrome, but plain ol' MP4s for Safari.
-         var isChrome = org.gigapan.Util.isChrome();
-         isChrome = false;
-         var dropConnectionParam = willAddConnectionDropParam ? "drop=1&" : "";
-         var gigapanUrl = "http://timelapse.gigapan.org/alpha/" + (isChrome ? "cgi-bin/video_streamer.cgi?"+dropConnectionParam+"id="+gigapanId+"&t=" : "timelapses/" + gigapanId + '/');
-
-         // Create the timelapse
-         timelapse = new org.gigapan.timelapse.Timelapse(gigapanUrl, 'timelapse', gigapanJSON);
-
-         timelapse.addTimeChangeListener(function(t)
-                                            {
-                                               timelapseCurrentTimeInSeconds = t;
-                                               if (timelapseCurrentTimeInSeconds < 0)
-                                                  {
-                                                  timelapseCurrentTimeInSeconds = 0;
-                                                  $('#play_toggle').attr("class", "play_mouseout");
-                                                  $('#play_toggle').attr("title", "Play");
-                                                  }
-                                               $("#currentTime").text(org.gigapan.Util.formatTime(timelapseCurrentTimeInSeconds));
-                                               $("#timelineSlider")['slider']("option", "value", timelapseCurrentTimeInSeconds);
-                                               if (timelapseCurrentTimeInSeconds >= timelapseDurationInSeconds)
-                                                  {
-                                                  $('#play_toggle').attr("class", "play_mouseout");
-                                                  $('#play_toggle').attr("title", "Play");
-                                                  }
-                                            });
-
-         $(this)['keydown'](timelapse.handleKeydownEvent);
-         $(this)['keyup'](timelapse.handleKeyupEvent);
-         $("#timelapse").mousewheel(timelapse.handleMousescrollEvent);
-
-         window.onunload = timelapse.handleWindowClose;
-
-         timelapseDurationInSeconds = timelapse.getNumFrames() / timelapse.getFps();
-
-         $("#timelineSlider")['slider']({
-                                           animate: true,
-                                           value: 0,
-                                           min: 0,
-                                           max: timelapseDurationInSeconds,
-                                           range: "min",
-                                           step: timeStepInSecs,
-                                           slide: function(e, ui)
-                                              {
-                                                 timelapseCurrentTimeInSeconds = ui.value;
-                                                 var timeInSecs = ui.value;
-                                                 timelapse.seek(timeInSecs);
-                                              }
-                                        });
-
-         			$('#speed').selectToUISlider({
-                                         labels: 12
-                                      }).hide();
-
-         			$("#slider-vertical").slider({
-                                         orientation: "vertical",
-                                         min: 0,
-                                         max: 1,
-                                         step: .01,
-
-                                         slide: function(e, ui)
-                                            {
-                                               timelapse.setScaleFromSlider(ui.value);
-                                            }
-                                      });
-
-				$('.ui-slider-handle').bind("mouseover", function() {
-					 this.style.cursor = 'url("css/cursors/openhand.png"),move';
-					 $('.ui-slider-handle').bind("mouseup", function() {
-					    this.style.cursor = 'url("css/cursors/openhand.png"),move';
-				   });
-				});
-
-				$('.ui-slider').bind("slide", function() {
-				   $('.ui-slider-handle').bind("mousemove", function() {
-					    this.style.cursor = 'url("css/cursors/closedhand.png"),move';
-				   });
-				});
-
-				$('.ui-slider').bind("slidestop", function() {
-			     	   $('.ui-slider-handle').bind("mousemove", function() {
-			              this.style.cursor = 'url("css/cursors/openhand.png"),move';
-				   });
-				});
-
-				$('.ui-slider').bind("mouseover", function() {
-				   this.style.cursor = 'pointer';
-				});
-
-
-				$('#timelapse').bind("mouseover", function() {
-				    this.style.cursor = 'url("css/cursors/openhand.png"),move';
-				});
-
-				$('#play_toggle').bind("click", function()
-					 {
-					 if ($(this).attr("class") == "play_mouseover")
-							{
-							$(this).attr("class", "pause_mouseout");
-							$(this).attr("title", "Pause");
-							if (timelapseCurrentTimeInSeconds >= timelapseDurationInSeconds)
-								 {
-								 $("#timelineSlider")['slider']("option", "value", 0);
-								 timelapse.seek(0);
-								 }
-							timelapse.play();
-							}
-					 else
-							{
-							$(this).attr("class", "play_mouseout");
-							$(this).attr("title", "Play");
-							timelapse.pause();
-							}
-				}).mousemove(function() {
-				   if ($(this).attr("class") == "play_mouseout") $(this).attr("class", "play_mouseover");
-					 else if ($(this).attr("class") == "pause_mouseout") $(this).attr("class", "pause_mouseover");
-				}).mouseout(function() {
-					 if ($(this).attr("class") == "play_mouseover") $(this).attr("class", "play_mouseout");
-					 else if ($(this).attr("class") == "pause_mouseover") $(this).attr("class", "pause_mouseout");
-				});
-
-				$("#home").mousemove(function() {
-					 $(this).attr("title", "Home");
-					 //$(this).css("cursor", "pointer");
-					 this.style.cursor = 'pointer';
-				}).click(function() {
-					 timelapse.warpTo(timelapse.homeView());
-				});
-
-				var intervalId;
-
-				$("#left").mousedown(function() {
-					 intervalId = setInterval(function() { movePos("left"); },500);
-				}).click(function() {
-					 movePos("left");
-				}).mouseup(function() {
-					 clearInterval(intervalId);
-				}).mousemove(function() {
-					 $(this).attr("title", "Move Left");
-					 //$(this).css("cursor", "pointer");
-					 this.style.cursor = 'pointer';
-				});
-
-				$("#right").mousedown(function() {
-					 intervalId = setInterval(function() { movePos("right"); },500);
-				}).click(function() {
-					 movePos("right");
-				}).mouseup(function() {
-					 clearInterval(intervalId);
-				}).mousemove(function() {
-					 $(this).attr("title", "Move Right");
-					 //$(this).css("cursor", "pointer");
-					 this.style.cursor = 'pointer';
-				});
-
-				$("#up").mousedown(function() {
-					 intervalId = setInterval(function() { movePos("up"); },500);
-				}).click(function() {
-					 movePos("up");
-				}).mouseup(function() {
-					 clearInterval(intervalId);
-				}).mousemove(function() {
-					 $(this).attr("title", "Move Up");
-					 //$(this).css("cursor", "pointer");
-					 this.style.cursor = 'pointer';
-				});
-
-				$("#down").mousedown(function() {
-					 intervalId = setInterval(function() { movePos("down"); },500);
-				}).click(function() {
-					 movePos("down");
-				}).mouseup(function() {
-					 clearInterval(intervalId);
-				}).mousemove(function() {
-					 $(this).attr("title", "Move Down");
-					 //$(this).css("cursor", "pointer");
-					 this.style.cursor = 'pointer';
-				});
-
-				$("#zoom_in").mousedown(function() {
-					 intervalId = setInterval(zoomIn, 500);
-				}).click(function() {
-					 zoomIn();
-				}).mouseup(function() {
-					 clearInterval(intervalId);
-				}).mousemove(function() {
-					 $(this).attr("title", "Zoom In");
-					 //$(this).css("cursor", "pointer");
-					 this.style.cursor = 'pointer';
-				});
-
-				$("#zoom_out").mousedown(function() {
-					 intervalId = setInterval(zoomOut, 500);
-				}).click(function() {
-					 zoomOut();
-				}).mouseup(function() {
-					 clearInterval(intervalId);
-				}).mousemove(function() {
-					 $(this).attr("title", "Zoom Out");
-					 //$(this).css("cursor", "pointer");
-					 this.style.cursor = 'pointer';
-				});
-
-				function zoomIn() {
-					 var val = $("#slider-vertical")['slider']("option", "value") + .01;
-					 $("#slider-vertical")['slider']("option", "value", val);
-					 timelapse.setScaleFromSlider(val);
-				}
-
-				function zoomOut() {
-					 var val = $("#slider-vertical")['slider']("option", "value") - .01;
-					 $("#slider-vertical")['slider']("option", "value", val);
-					 timelapse.setScaleFromSlider(val);
-				}
-
-				function movePos(dir) {
-					 timelapse.movePos(dir);
-				}
-
-				$("#totalTime").text(org.gigapan.Util.formatTime(timelapseDurationInSeconds));
-
-		 $("#snaplapse_keyframe_list")['selectable']({
-																										selected: handleSnaplapseFrameSelectionChange,
-																										unselected: handleSnaplapseFrameSelectionChange,
-				cancel: ':input,option,span,textarea'
-																								 });
-
-		 $("#slider-vertical")['slider']("option", "value", timelapse.viewScaleToZoomSlider(timelapse.getDefaultScale()));
-	}
-
-
-
-   function browserSupported()
-      {
-      var v = document.createElement('video');
-      return !!(v.canPlayType && v.canPlayType('video/mp4; codecs="avc1.42E01E, mp4a.40.2"').replace(/no/, ''));
-      }
-
-   function handleSnaplapseFrameSelectionChange()
-      {
-      if (snaplapse.isPlaying())
-         {
-         $("#deleteKeyframeButton").attr("disabled", "disabled");
-         return;
-         }
-
-      var selectedItems = $("#snaplapse_keyframe_list > .ui-selected");
-      var numSelected = selectedItems.size();
-
-      $("#deleteKeyframeButton").removeAttr("disabled");
-
-      if (numSelected == 1)
-         {
-         var id = selectedItems.get(0).id;
-         var index = id.substring("snaplapse_keyframe_".length);
-         var frame = snaplapse.getKeyframe(index);
-
-         displaySnaplapseFrameAnnotation(frame);
-         }
-      else  // either 0 or more than 1
-         {
-         displaySnaplapseFrameAnnotation(null);
-         }
-      }
-
-   function displaySnaplapseFrameAnnotation(frame)
-      {
-      $("#snaplapse-annotation-title").hide();
-      $("#snaplapse-annotation-description").hide();
-
-      if (frame)
-         {
-         if (isTextNonEmpty(frame['title']))
-            {
-            $("#snaplapse-annotation-title").html(frame['title']).show();
-            }
-         if (isTextNonEmpty(frame['description']))
-            {
-            $("#snaplapse-annotation-description").html(frame['description']).show();
-            }
-         }
-      }
-
-   function newSnaplapse(json)
-      {
-      snaplapse = new org.gigapan.timelapse.Snaplapse(timelapse);
-      snaplapse.addEventListener('play',
-                                 function()
-                                    {
-                                    $("#newSnaplapseButton").attr("disabled", "disabled");
-                                    $("#recordKeyframeButton").attr("disabled", "disabled");
-                                    $("#loadSnaplapseButton").attr("disabled", "disabled");
-                                    $("#saveSnaplapseButton").attr("disabled", "disabled");
-                                    $("#playStopSnaplapseButton").text("Stop Snaplapse");
-                                    $("#deleteKeyframeButton").attr("disabled", "disabled");
-
-                                    $("#timelineSlider").slider("option", "disabled", true);
-                                    $("#slider-vertical").slider("option", "disabled", true);
-                                    $('#playBackSpeedSlider').hide();
-                                    $('#play_toggle').attr("class", "");
-                                    $('.overlay1').hide();
-                                    $('.overlay2').hide();
-                                    $("#snaplapse_keyframe_list").selectable("option", "disabled", true);
-
-                                    var keyframes = $("#snaplapse_keyframe_list > div");
-                                    for (var i = 0; i < keyframes.size(); i++)
-                                       {
-                                       var frame = keyframes[i];
-                                       $(frame).removeClass().addClass("snaplapse_keyframe_list_item");
-                                       }
-
-                                    });
-      snaplapse.addEventListener('stop',
-                                 function()
-                                    {
-                                    $("#newSnaplapseButton").removeAttr("disabled");
-                                    $("#recordKeyframeButton").removeAttr("disabled");
-                                    $("#loadSnaplapseButton").removeAttr("disabled");
-                                    $("#saveSnaplapseButton").removeAttr("disabled");
-                                    $("#playStopSnaplapseButton").text("Play Snaplapse");
-
-                                    $("#timelineSlider").slider("option", "disabled", false);
-                                    $("#slider-vertical").slider("option", "disabled", false);
-                                    $('#playBackSpeedSlider').show();
-                                    $('#play_toggle').attr("class", "play_mouseout");
-                                    $('.overlay1').show();
-                                    $('.overlay2').show();
-                                    $("#snaplapse_keyframe_list").selectable("option", "disabled", false);
-
-                                    var keyframes = $("#snaplapse_keyframe_list > div");
-                                    for (var i = 0; i < keyframes.size(); i++)
-                                       {
-                                       var frame = keyframes[i];
-                                       $(frame).removeClass().addClass("snaplapse_keyframe_list_item");
-                                       }
-
-                                    });
-      snaplapse.addEventListener('keyframe-added',
-                                 function(frame, insertionIndex)
-                                    {
-                                    toggleSnaplapseButtons();
-                                    addSnaplapseKeyframeListItem(frame, insertionIndex);
-                                    });
-      snaplapse.addEventListener('keyframe-interval-change',
-                                 function(index, frame)
-                                    {
-                                    org.gigapan.Util.log("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ keyframe-interval-change: [" + index + "|" + frame['title'] + "|" + frame['description'] + "]");
-                                    displaySnaplapseFrameAnnotation(frame);
-                                    });
-      $("#recordKeyframeButton").removeAttr("disabled");
-      $("#playStopSnaplapseButton").attr("disabled", "disabled");
-      $("#saveSnaplapseButton").attr("disabled", "disabled");
-      $("#snaplapse_keyframe_list").empty();
-      if (saveSnaplapseWindow)
-         {
-         saveSnaplapseWindow.close();
-         }
-
-      if (typeof json != 'undefined' && json != null)
-         {
-         return snaplapse.loadFromJSON(json);
-         }
-
-      return true;
-      }
-
-   function toggleSnaplapseButtons()
-      {
-      var numKeyframes = snaplapse.getNumKeyframes();
-      if (numKeyframes > 1)
-         {
-         $("#playStopSnaplapseButton").removeAttr("disabled");
-         $("#saveSnaplapseButton").removeAttr("disabled");
-         }
-      else
-         {
-         $("#playStopSnaplapseButton").attr("disabled", "disabled");
-         $("#saveSnaplapseButton").attr("disabled", "disabled");
-         }
-      }
-
-   function isTextNonEmpty(text)
-      {
-      return (typeof text != 'undefined' && text.length > 0);
-      }
-
-   function addSnaplapseKeyframeListItem(frame, insertionIndex)
-      {
-      var keyframeListItem = document.createElement("div");
-      keyframeListItem.id = "snaplapse_keyframe_" + insertionIndex;
-      $("#snaplapse_keyframe_list").append(keyframeListItem);
-
-      var togglableClass = keyframeListItem.id + "_togglable";
-      var titleId = keyframeListItem.id + "_title";
-      var descriptionId = keyframeListItem.id + "_description";
-      var saveButtonId = keyframeListItem.id + "_save_button";
-      var showTextAnnotationAreaButtonId = keyframeListItem.id + "_show_text_annotation_area_button";
-      var hasTextAnnotationIndicatorId = keyframeListItem.id + "_has_text_annotation";
-
-      var hasTextAnnotation = function(title, description)
-         {
-         return isTextNonEmpty(title) || isTextNonEmpty(description);
-         };
-      var content = '<table border="0" cellpadding="1" cellspacing="0">' +
-                    '   <tr>' +
-                    '      <td style="width:10px;"><span id="' + showTextAnnotationAreaButtonId + '" class="ui-icon ui-icon-triangle-1-e"></span></td>' +
-                    '      <td style="width:90px;">Keyframe ' + (insertionIndex + 1) + ': </td>' +
-                    '      <td style="width:5px;"></td>' +
-                    '      <td style="width:305px;">' + frame['time'] + '</td>' +
-                    '      <td style="width:90px;" align="right"><div ' + (!hasTextAnnotation(frame['title'], frame['description']) ? 'style="display:none"' : '') + ' id="' + hasTextAnnotationIndicatorId + '" class="ui-icon ui-icon-comment"></div></td>' +
-                    '   </tr>' +
-                    '   <tr class="' + togglableClass + '" style="display:none">' +
-                    '      <td style="width:10px;"></td>' +
-                    '      <td style="width:90px;" align="right"><label for="' + titleId + '">Title:</label></td>' +
-                    '      <td style="width:5px;"></td>' +
-                    '      <td style="width:305px;"><input type="text" id="' + titleId + '" value="' + frame['title'] + '" style="width:290px;"></td>' +
-                    '      <td style="width:90px;">&nbsp;</td>' +
-                    '   </tr>' +
-                    '   <tr class="' + togglableClass + '" style="display:none" valign="top">' +
-                    '      <td style="width:10px;"></td>' +
-                    '      <td style="width:90px;" align="right"><label for="' + descriptionId + '">Description:</label></td>' +
-                    '      <td style="width:5px;"></td>' +
-                    '      <td style="width:305px;"><textarea id="' + descriptionId + '" rows="5" style="width:290px;">' + frame['description'] + '</textarea></td>' +
-                    '      <td style="width:90px;" valign="bottom"><button type="button" id="' + saveButtonId + '">Save</button></td>' +
-                    '   </tr>' +
-                    '</table>';
-
-      $("#" + keyframeListItem.id).html(content).addClass("snaplapse_keyframe_list_item");
-      $("#" + keyframeListItem.id)['dblclick'](function()
-                                                  {
-                                                  timelapse.seek(frame['time']);
-                                                  timelapse.warpToBoundingBox(frame['bounds']);
-                                                  });
-
-      var saveTextAnnotion = function()
-         {
-         var title = $("#" + titleId).val();
-         var description = $("#" + descriptionId).val();
-         snaplapse.setTextAnnotationForKeyframe(insertionIndex, title, description);
-         if (hasTextAnnotation(title, description))
-            {
-            $("#" + hasTextAnnotationIndicatorId).show();
-            }
-         else
-            {
-            $("#" + hasTextAnnotationIndicatorId).hide();
-            }
-         displaySnaplapseFrameAnnotation(snaplapse.getKeyframe(insertionIndex));
-         };
-
-      $("#" + showTextAnnotationAreaButtonId).click(saveTextAnnotion).click(function()
-                                                                               {
-                                                                               if ($("." + togglableClass).is(':visible'))
-                                                                                  {
-                                                                                  $("." + togglableClass).hide();
-                                                                                  $("#" + showTextAnnotationAreaButtonId).removeClass("ui-icon-triangle-1-s");
-                                                                                  $("#" + showTextAnnotationAreaButtonId).addClass("ui-icon-triangle-1-e");
-                                                                                  }
-                                                                               else
-                                                                                  {
-                                                                                  $("." + togglableClass).show();
-                                                                                  $("#" + showTextAnnotationAreaButtonId).removeClass("ui-icon-triangle-1-e");
-                                                                                  $("#" + showTextAnnotationAreaButtonId).addClass("ui-icon-triangle-1-s");
-                                                                                  }
-                                                                               });
-      $("#" + saveButtonId).click(saveTextAnnotion);
-      }
-
-   function refreshKeyframesUI()
-      {
-      toggleSnaplapseButtons();
-
-      var keyframes = snaplapse.getKeyframes();
-
-      $("#snaplapse_keyframe_list").empty();
-      for (var i = 0; i < keyframes.length; i++)
-         {
-         addSnaplapseKeyframeListItem(keyframes[i], i);
-         }
-      }
-
-   function recordKeyframe()
-      {
-      if (snaplapse)
-         {
-         var success = snaplapse.recordKeyframe();
-         if (!success)
-            {
-            alert("ERROR: Invalid time position\n\n" +
-                  "The time position of a keyframe cannot\n" +
-                  "be the same as the previous keyframe.");
-            }
-         }
-      }
-
-   function playStopSnaplapse()
-      {
-      if (snaplapse.isPlaying())
-         {
-         snaplapse.stop();
-         }
-      else
-         {
-         snaplapse.play();
-         }
-      }
-
-   function saveSnaplapse()
-      {
-      if (snaplapse && (snaplapse.getNumKeyframes() > 1))
-         {
-         // open a new window--that new window will call this window's getSnaplapseJSON() function to dynamically write
-         // the stringified JSON to itself.  We can't simply have this window write to the new one immediately after
-         // opening because we need to wait for the DOM to load.  So, rather than have some timeout lameness, it's easier
-         // for the new window to just request the JSON when it's ready for it.
-         saveSnaplapseWindow = popup('save_snaplapse.html', 'saveSnaplapseWindow');
-         }
-      else
-         {
-         alert("ERROR: No snaplapse to save--please create a snaplapse and add at least two keyframes to it.")
-         }
-      }
-
-   function getSnaplapseJSON()
-      {
-      return snaplapse.getAsJSON();
-      }
-
-   function showLoadSnaplapseWindow()
-      {
-      loadSnaplapseWindow = popup('load_snaplapse.html', 'loadSnaplapseWindow');
-      }
-
-   function loadSnaplapse(json)
-      {
-      if (loadSnaplapseWindow)
-         {
-         if (newSnaplapse(json))
-            {
-            loadSnaplapseWindow.close();
-            }
-         else
-            {
-            alert("ERROR: Invalid snaplapse file.");
-            }
-         }
-      }
-
-   function sortDescendingById(a, b)
-      {
-      var valOne = parseInt(a.id.substring("snaplapse_keyframe_".length));
-      var valTwo = parseInt(b.id.substring("snaplapse_keyframe_".length));
-      return ((valOne > valTwo) ? -1 : ((valOne < valTwo) ? 1 : 0));
-      }
-
-   function deleteSelectedKeyframes()
-      {
-      var selectedItems = $("#snaplapse_keyframe_list > .ui-selected");
-      var numSelected = selectedItems.size();
-
-      var selectedItemsSortedDescending = selectedItems.sort(sortDescendingById);
-
-      for (var i = 0; i < numSelected; i++)
-         {
-         var id = selectedItemsSortedDescending.get(i).id;
-         var index = id.substring("snaplapse_keyframe_".length);
-
-         if (snaplapse.deleteKeyframeAtIndex(index))
-            {
-            refreshKeyframesUI();
-            toggleSnaplapseButtons();
-            handleSnaplapseFrameSelectionChange();
-            }
-         }
-
-      //check if we have any invalid time positions now
-      //and delete one of them.
-      for (var j = 1; j < snaplapse.getNumKeyframes(); j++)
-         {
-         if (snaplapse.getKeyframe(j)['time'] == snaplapse.getKeyframe(j - 1)['time'])
-            {
-            alert("ERROR: Invalid time position detected\n\n" +
-                  "The time position of a keyframe cannot\n" +
-                  "be the same as the previous keyframe.\n" +
-                  "One of these invalid keyframes has been\n" +
-                  "removed.");
-            if (snaplapse.deleteKeyframeAtIndex(j))
-               {
-               refreshKeyframesUI();
-               toggleSnaplapseButtons();
-               handleSnaplapseFrameSelectionChange();
-               j -= 1; //go back one since we removed an item
-               }
-            }
-         }
-      }
-
-   // Code from:
-   //    http://javascript-array.com/scripts/window_open/
-   //    http://www.webdeveloper.com/forum/showthread.php?t=15735
-   function popup(url, windowName)
-      {
-      // get dimensions of parent window so we can center the new window within the parent
-      var parentWidth = $(window).width();
-      var parentHeight = $(window).height();
-      var parentX = (document.all) ? window.screenLeft : window['screenX'];
-      var parentY = (document.all) ? window.screenTop : window['screenY'];
-
-      var width = 500;
-      var height = 545;
-      var left = parentX + (parentWidth - width) / 2;
-      var top = parentY + (parentHeight - height) / 2;
-      var params = 'width=' + width + ', height=' + height;
-      params += ', top=' + top + ', left=' + left;
-      params += ', directories=no';
-      params += ', location=no';
-      params += ', menubar=no';
-      params += ', resizable=yes';
-      params += ', scrollbars=auto';
-      params += ', status=no';
-      params += ', toolbar=no';
-      var newWindow = window.open(url, windowName, params);
-      if (window.focus)
-         {
-         newWindow.focus()
-         }
-      return newWindow;
-      }
-
-   function changeViewerSize(newWidth)
-      {
-      var newHeight = newWidth * 0.5625;  // 0.5625 is the aspect ratio of the default 800x450 viewer
-      var bounds = timelapse.getBoundingBoxForCurrentView();
-      $("#timelapse_container").width(newWidth);
-      $("#timelapse_container").height(newHeight);
-      $("#timelapse").width(newWidth);
-      $("#timelapse").height(newHeight);
-      $("#time_slider_container").width(newWidth);
-      $("#misc_controls_container").width(newWidth);
-      $("#misc_controls_container_table").width(newWidth);
-      $("#timelineSlider").width(newWidth - 173);
-      if ($('.spinnerOverlay').length != 0)
-         {
-         $('.spinnerOverlay').css("top", newHeight / 2 - $("#spinner").height() / 2 + "px");
-         $('.spinnerOverlay').css("left", newWidth / 2 - $("#spinner").width() / 2 + "px");
-         }
-
-      timelapse.updateDimensions();
-      timelapse.warpToBoundingBox(bounds);
-      }
-</script>
-</head>
-<body onselectstart="return false">
-
-<div id="timelapse_container" style="width:512px; height:288px; position:relative;">
-   <div class="overlay1">
-      <div id="joystick" style="margin:0 0 0 4px;width:38px;"><img src="images/joystick.png" alt="zoom_in" ondragstart="return false" onselectstart="return false" /></div>
-      <div id="zoom_in" style="margin:2px 0 0 14px;width:19px;"><img src="images/plus.png" alt="zoom_in" ondragstart="return false" onselectstart="return false" /></div>
-      <div id="slider-vertical" style="margin:-2px 0 0 22px;"></div>
-      <div id="zoom_out" style="margin:0 0 0 14px;width:19px;"><img src="images/minus.png" alt="zoom_in" ondragstart="return false" onselectstart="return false" /></div>
-      <div id="home" style="margin:5px 0 0 2px;width:48px;"><img src="images/viewall.png" alt="home" ondragstart="return false" onselectstart="return false" /></div>
-   </div>
-
-   <div class="overlay2">
-      <div id="up" style="margin: -1px 0 0 19px;width:10px;"><img src="images/joystick_up.png" alt="move up" ondragstart="return false" onselectstart="return false" /></div>
-      <div id="down" style="margin:10px 0 0 18px;width:10px;"><img src="images/joystick_down.png" alt="move down" ondragstart="return false" onselectstart="return false" /></div>
-      <div id="right" style="margin:-22px 0 0 32px;width:5px;"><img src="images/joystick_right.png" alt="move right" ondragstart="return false" onselectstart="return false" /></div>
-      <div id="left" style="margin:-13px 0 0 9px;width:5px;"><img src="images/joystick_left.png" alt="move left" ondragstart="return false" onselectstart="return false" /></div>
-   </div>
-
-   <div id="timelapse" style="position: absolute; width:512px; height:288px; background:black; overflow:hidden; border: 2px solid black;"></div>
-</div>
-
-<div id="time_slider_container" style="width:512px; border: 2px solid black; margin-top:4px">
-   <table>
-      <tr>
-         <td>
-            <div id="play_toggle" class="play_mouseout" title="Play"></div>
-         </td>
-         <td>
-            <div id="timelineSlider" style="width:339px"></div>
-         </td>
-         <td align="right">
-            <span id="currentTime">00:00:00</span>/<span id="totalTime">00:00:00</span><br/>
-         </td>
-      </tr>
-   </table>
-</div>
-<div id="misc_controls_container" style="width:512px; border: 2px solid black; border-top:0">
-   <table id="misc_controls_container_table" style="width:512px;">
-      <tr>
-         <td style="padding:10px 20px 20px 20px;">
-            <label for="speed">Playback Speed:</label>
-            <div id="playBackSpeedSlider">
-               <select name="speed" id="speed">
-                  <option value="-1">-1x</option>
-                  <option value="-.5">-½x</option>
-                  <option value="-.25">-¼x</option>
-                  <option value=".25">¼x</option>
-                  <option value=".5">½x</option>
-                  <option value="1" selected="selected">1x</option>
-               </select>
-            </div>
-         </td>
-         <td align="right">
-            <label for="viewer_size">Viewer Size:</label>
-            <select name="viewer_size" id="viewer_size" onchange="changeViewerSize($('#viewer_size').val());">
-               <option value="512" selected="selected">Small</option>
-               <option value="768">Normal</option>
-               <option value="1200">Large</option>
-            </select>
-            <br>
-            <br>
-            Debug: <input id="logVideoStatus" type="checkbox" onclick="timelapse.setStatusLoggingEnabled(this.value)"/><label for="logVideoStatus">Log video status</label>
-            <input id="showNativeVideoControls" type="checkbox" onclick="timelapse.setNativeVideoControlsEnabled(this.value)"/><label for="showNativeVideoControls">Show Native Video Controls</label>
-         </td>
-      </tr>
-   </table>
-</div>
-
-<table border="0" cellpadding="0" cellspacing="0">
-   <tr valign="top">
-      <td>
-         <table border="0" cellpadding="0" cellspacing="0" class="control_panel" style="margin-top:10px; padding: 10px; width:520px; border: 2px solid black;">
+   <head>
+      <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+      <title>GigaPan Timelapse Explorer</title>
+      <script src="js/jquery/jquery.min.js" type="text/javascript"></script>
+      <script src="js/jquery/jquery-ui.custom.min.js" type="text/javascript"></script>
+      <script src="js/jquery/plugins/mouse/jquery.mousewheel.js" type="text/javascript"></script>
+      <script src="js/jquery/plugins/slider/selectToUISlider.jQuery.js" type="text/javascript"></script>
+      <script src="js/jquery/plugins/query/jquery.query-2.1.7.js" type="text/javascript"></script>
+      <script src="js/org/gigapan/util.js" type="text/javascript"></script>
+      <script src="js/org/gigapan/timelapse/videoset.js" type="text/javascript"></script>
+      <script src="js/org/gigapan/timelapse/timelapse.js" type="text/javascript"></script>
+      <script src="js/org/gigapan/timelapse/snaplapse.js" type="text/javascript"></script>
+      <script src="js/org/gigapan/timelapse/timelapseViewer.js" type="text/javascript"></script>
+      <script src="js/org/gigapan/timelapse/snaplapseViewer.js" type="text/javascript"></script>
+
+      <link href="css/timelapse.css" rel="stylesheet" type="text/css"/>
+      <link href="css/snaplapse.css" rel="stylesheet" type="text/css"/>
+      <link href="css/jquery-ui/smoothness/jquery-ui.custom.css" rel="stylesheet" type="text/css"/>
+      <link href="css/ui.slider.extras.css" rel="stylesheet" type="text/css"/>
+
+      <script type="text/javascript">
+         var gigapanId = $.query.get('id') || "brassica1-15m-halfsize";
+         var willAddConnectionDropParam = $.query.get('drop') == 1 || $.query.get('drop') == "true";
+         var timelapseDurationInSeconds = 0.0;
+         var timeStepInSecs = 0.04; // 25 frames per second
+         var timelapse = null;
+         var timelapseCurrentTimeInSeconds = 0.0;
+         var snaplapse = null;
+         var saveSnaplapseWindow = null;
+         var loadSnaplapseWindow = null;
+      </script>
+   </head>
+
+   <body>
+      <div id="timelapse_container" style="width:512px; height:288px; position:relative;">
+         <div class="overlay1">
+            <div id="joystick" style="margin:0 0 0 4px;width:38px;"><img src="images/joystick.png" alt="zoom_in" /></div>
+            <div id="zoom_in" style="margin:2px 0 0 14px;width:19px;"><img src="images/plus.png" alt="zoom_in" /></div>
+            <div id="slider-vertical" style="margin:-2px 0 0 22px;"></div>
+            <div id="zoom_out" style="margin:0 0 0 14px;width:19px;"><img src="images/minus.png" alt="zoom_in" /></div>
+            <div id="home" style="margin:5px 0 0 2px;width:48px;"><img src="images/viewall.png" alt="home" /></div>
+         </div>
+
+         <div class="overlay2">
+            <div id="up" style="margin: -1px 0 0 19px;width:10px;"><img src="images/joystick_up.png" alt="move up" /></div>
+            <div id="down" style="margin:10px 0 0 18px;width:10px;"><img src="images/joystick_down.png" alt="move down" /></div>
+            <div id="right" style="margin:-22px 0 0 32px;width:5px;"><img src="images/joystick_right.png" alt="move right" /></div>
+            <div id="left" style="margin:-13px 0 0 9px;width:5px;"><img src="images/joystick_left.png" alt="move left" /></div>
+         </div>
+
+         <div id="timelapse" style="position: absolute; width:512px; height:288px; background:black; overflow:hidden; border: 2px solid black;"></div>
+      </div>
+
+      <div id="time_slider_container" style="width:512px; border: 2px solid black; margin-top:4px">
+         <table>
             <tr>
-               <th align="center" style="padding-bottom:5px">Snaplapse Composer</th>
-            </tr>
-            <tr>
-               <td align="center" style="padding-bottom:5px">
-                  <button type="button" id="newSnaplapseButton" onclick="newSnaplapse(null)">New Snaplapse</button>
-                  <button type="button" disabled="disabled" id="playStopSnaplapseButton" onclick="playStopSnaplapse()">Play Snaplapse</button>
-                  <button type="button" disabled="disabled" id="saveSnaplapseButton" onclick="saveSnaplapse()">Save Snaplapse</button>
-                  <button type="button" id="loadSnaplapseButton" onclick="showLoadSnaplapseWindow()">Load Snaplapse</button>
+               <td>
+                  <div id="play_toggle" class="play_mouseout" title="Play"></div>
+               </td>
+               <td>
+                  <div id="timelineSlider" style="width:339px"></div>
+               </td>
+               <td>
+                  <span id="currentTime">00:00:00</span>/<span id="totalTime">00:00:00</span><br/>
                </td>
             </tr>
+         </table>
+      </div>
+
+      <div id="misc_controls_container" style="width:512px; border: 2px solid black; border-top:0">
+         <table id="misc_controls_container_table" style="width:512px;">
             <tr>
-               <td align="center">
-                  <table border="0" cellpadding="3" cellspacing="0" width="500" style="padding-bottom:5px">
-                     <tr align="center">
-                        <td>
-                           <button type="button" disabled="disabled" id="recordKeyframeButton" onclick="recordKeyframe()">Record Keyframe</button>
-                        </td>
-                        <td>
-                           <button type="button" disabled="disabled" id="deleteKeyframeButton" onclick="deleteSelectedKeyframes()">Delete Keyframe(s)</button>
-                        </td>
-                     </tr>
-                  </table>
-                  <div id="snaplapse_keyframe_container" style="width:500px; height:300px; display:block; padding:0; margin:0; overflow:auto; border:solid 1px black; background-color:#eeeeee;">
-                     <div id="snaplapse_keyframe_list"></div>
+               <td style="padding:10px 20px 20px 20px;">
+                  <label for="speed">Playback Speed:</label>
+                  <div id="playBackSpeedSlider">
+                     <select name="speed" id="speed">
+                       <option value="-1">-1x</option>
+                        <option value="-.5">-½x</option>
+                        <option value="-.25">-¼x</option>
+                        <option value=".25">¼x</option>
+                        <option value=".5">½x</option>
+                        <option value="1" selected="selected">1x</option>
+                     </select>
                   </div>
                </td>
+               <td class="align-right">
+                  <label for="viewer_size">Viewer Size:</label>
+                  <select name="viewer_size" id="viewer_size" onchange="changeViewerSize($('#viewer_size').val());">
+                     <option value="512" selected="selected">Small</option>
+                     <option value="768">Normal</option>
+                     <option value="1200">Large</option>
+                  </select>
+                  <br>
+                  <br>
+                  Debug: <input id="logVideoStatus" type="checkbox" onclick="timelapse.setStatusLoggingEnabled(this.value)"/><label for="logVideoStatus">Log video status</label>
+                  <input id="showNativeVideoControls" type="checkbox" onclick="timelapse.setNativeVideoControlsEnabled(this.value)"/><label for="showNativeVideoControls">Show Native Video Controls</label>
+               </td>
             </tr>
          </table>
-      </td>
-      <td>
-         <table border="0" cellpadding="0" cellspacing="0" class="control_panel" style="margin-top:10px; width:278px; padding: 10px; border: 2px solid black; border-left:0">
-            <tr>
-               <th id="snaplapse-annotation-title" align="center" style="display:none"></th>
-            <tr>
-            <tr>
-               <td id="snaplapse-annotation-description" align="left" style="display:none"></td>
-            </tr>
-         </table>
-      </td>
-   </tr>
-</table>
+      </div>
 
-</body>
+      <table class="no-padding">
+         <tr class="valign-top">
+            <td>
+               <table class="no-padding" style="margin-left:-2px; margin-top:10px; padding: 10px; width:516px; border: 2px solid black;">
+                  <tr>
+                     <th class="align-center" style="padding-bottom:5px">Snaplapse Composer</th>
+                  </tr>
+                  <tr>
+                     <td class="align-center" style="padding-bottom:5px">
+                        <button type="button" id="newSnaplapseButton" onclick="newSnaplapse(null)">New Snaplapse</button>
+                        <button type="button" disabled="disabled" id="playStopSnaplapseButton" onclick="playStopSnaplapse()">Play Snaplapse</button>
+                        <button type="button" disabled="disabled" id="saveSnaplapseButton" onclick="saveSnaplapse()">Save Snaplapse</button>
+                        <button type="button" id="loadSnaplapseButton" onclick="showLoadSnaplapseWindow()">Load Snaplapse</button>
+                     </td>
+                  </tr>
+                  <tr>
+                     <td class="align-center">
+                        <table style="width:485px; padding-bottom:5px">
+                           <tr class="align-center">
+                              <td>
+                                 <button type="button" disabled="disabled" id="recordKeyframeButton" onclick="recordKeyframe()">Record Keyframe</button>
+                              </td>
+                              <td>
+                                 <button type="button" disabled="disabled" id="deleteKeyframeButton" onclick="deleteSelectedKeyframes()">Delete Keyframe(s)</button>
+                              </td>
+                           </tr>
+                        </table>
+                        <div id="snaplapse_keyframe_container" style="width:485px; height:300px; display:block; padding:0; margin:0; overflow:auto; border:solid 1px black; background-color:#eeeeee;">
+                           <div id="snaplapse_keyframe_list"></div>
+                        </div>
+                     </td>
+                  </tr>
+               </table>
+            </td>
+           <td>
+              <table class="no-padding" style="margin-left:-2px; margin-top:10px; width:278px; padding: 10px; border: 2px solid black; border-left:0">
+                 <tr>
+                    <th id="snaplapse-annotation-title" class="align-center" style="display:none"></th>
+                    <td id="snaplapse-annotation-description" class="align-left" style="display:none"></td>
+                 </tr>
+              </table>
+				   </td>
+         </tr>
+      </table>
+   </body>
 </html>

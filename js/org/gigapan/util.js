@@ -57,6 +57,12 @@ else
          {
          };
 
+			org.gigapan.Util.browserSupported = function()
+			   {
+            var v = document.createElement('video');
+            return !!(v.canPlayType && v.canPlayType('video/mp4; codecs="avc1.42E01E, mp4a.40.2"').replace(/no/, ''));   
+			   }
+			
       org.gigapan.Util.isChrome = function()
          {
             return isChromeUserAgent;

@@ -1,6 +1,12 @@
-body, p, table, tr, td {
+body, p, table, tr, td, img{
  font-family: Verdana, sans-serif;
  font-size: 8pt;
+ 
+ -moz-user-select: -moz-none;
+ -khtml-user-select: none;
+ -webkit-user-select: none;
+ -o-user-select: none;
+ user-select: none;
 }
 
 #timelineSlider {
@@ -93,4 +99,24 @@ body, p, table, tr, td {
   z-index:3;
   top: 165px;
   left: 340px;
+}
+
+table.align-left tr, td, th{ 
+   text-align: left;
+}
+
+table.align-right tr, td, th{ 
+   text-align: right;
+}
+
+table.align-center tr, td, th{ 
+   text-align: center;
+}
+
+tr.valign-top {
+   vertical-align: top;
+}
+
+table.no-padding td {
+   padding: 0px
 }
