@@ -474,6 +474,7 @@ if (!org.gigapan.timelapse.Videoset)
                   videoset.setLeader(data['leader']/data['fps']);
                   frames = data['frames'];
                   maxLevel = data['nlevels']-1;
+                  levelInfo = data['level_info'];
 
                   readVideoDivSize();
                   _warpTo(_homeView());
@@ -652,9 +653,11 @@ if (!org.gigapan.timelapse.Videoset)
                   var level = scale2level(view.scale);
                   var levelScale = Math.pow(2, maxLevel - level);
                   var col = Math.round((theView.x - (videoWidth * levelScale * .5)) / (tileWidth * levelScale));
-                  if (col < 0) col=0;
+                  col = Math.max(col, 0);
+                  col = Math.min(col, levelInfo[level].cols-1);
                   var row = Math.round((theView.y - (videoHeight * levelScale * .5)) / (tileHeight * levelScale));
-                  if (row < 0) row=0;
+                  row = Math.max(row, 0);
+                  row = Math.min(row, levelInfo[level].rows-1);
                   //UTIL.log("computeBestVideo l=" + level + ", c=" + col + ", r=" + row);
                   return tileidxCreate(level,col,row);
                };
