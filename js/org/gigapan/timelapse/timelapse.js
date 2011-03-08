@@ -101,7 +101,6 @@ if (!org.gigapan.timelapse.Videoset)
             var videoHeight = 0;
             var frames = 0;
             var maxLevel = 0;
-            var playbackRate = .5;
             var view = null;
             var targetView = null;
             var currentIdx = null;
@@ -150,7 +149,7 @@ if (!org.gigapan.timelapse.Videoset)
 
             this.handleKeydownEvent = function(event)
                {
-                  UTIL.log('keydown ' + event.which);
+                   //UTIL.log('keydown ' + event.which);
                   var translationSpeedConstant = 20;
                   var translation = translationSpeedConstant / view.scale;
                   switch (event.which)
@@ -181,7 +180,7 @@ if (!org.gigapan.timelapse.Videoset)
 
             this.handleMousescrollEvent = function(event)
                {
-                  UTIL.log('mousescroll delta  ' + event.wheelDelta);
+                  //UTIL.log('mousescroll delta  ' + event.wheelDelta);
                   if (event.wheelDelta > 0)
                      {
                      zoomAbout(1/.9, event.x, event.y);
@@ -421,7 +420,7 @@ if (!org.gigapan.timelapse.Videoset)
 
             var handleDoubleClickEvent = function(event)
                {
-                  UTIL.log('double click');
+                   //UTIL.log('double click');
                   zoomAbout(2., event.x, event.y);
                };
 
@@ -621,7 +620,7 @@ if (!org.gigapan.timelapse.Videoset)
                   //   }
                   var url = getTileidxUrl(tileidx);
                   var geom = tileidxGeometry(tileidx);
-                  UTIL.log("adding tile " + dumpTileidx(tileidx) + " from " + url + " and geom = (left:" + geom['left'] + " ,top:" + geom['top'] + ", width:" + geom['width'] + ", height:" + geom['height'] + ")");
+                  //UTIL.log("adding tile " + dumpTileidx(tileidx) + " from " + url + " and geom = (left:" + geom['left'] + " ,top:" + geom['top'] + ", width:" + geom['width'] + ", height:" + geom['height'] + ")");
                   var video = videoset.addVideo(url, geom, videoToUnload);
                   video.tileidx = tileidx;
                   return video;
@@ -656,7 +655,7 @@ if (!org.gigapan.timelapse.Videoset)
                   if (col < 0) col=0;
                   var row = Math.round((theView.y - (videoHeight * levelScale * .5)) / (tileHeight * levelScale));
                   if (row < 0) row=0;
-                  UTIL.log("computeBestVideo l=" + level + ", c=" + col + ", r=" + row);
+                  //UTIL.log("computeBestVideo l=" + level + ", c=" + col + ", r=" + row);
                   return tileidxCreate(level,col,row);
                };
 
@@ -767,7 +766,6 @@ if (!org.gigapan.timelapse.Videoset)
 
             view = _homeView();
             targetView = view;
-            UTIL.log("playback rate is " + playbackRate);
             UTIL.log('Timelapse("' + url + '")');
             videoDiv['onmousedown'] = handleMousedownEvent;
             videoDiv['ondblclick'] = handleDoubleClickEvent;
