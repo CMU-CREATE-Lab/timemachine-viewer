@@ -275,7 +275,7 @@ if (!org.gigapan.Util)
                   video.ready = false;
                   if (typeof videoBeingReplaced != 'undefined' && videoBeingReplaced != null)
                      {
-                     video.videoBeingReplaced = videoBeingReplaced;
+                     video.idOfVideoBeingReplaced = videoBeingReplaced.id;
                      }
                   if (typeof onloadCallback == 'function')
                      {
@@ -543,11 +543,11 @@ if (!org.gigapan.Util)
                UTIL.log("video("+video.id+") _makeVideoVisible("+callingFunction+"): ready=["+video.ready+"] error=["+error+"] " + videoStats(video));
 
                // delete video which is being replaced, following the chain until we get to a null
-               var videoToDelete = video.videoBeingReplaced;
+               var videoToDelete = activeVideos[video.idOfVideoBeingReplaced];
                while (videoToDelete)
                   {
-                  var nextVideoToDelete = videoToDelete.videoBeingReplaced;
-                  videoToDelete.videoBeingReplaced = null;  // mark this as null to prevent multiple deletes
+                  var nextVideoToDelete = activeVideos[videoToDelete.idOfVideoBeingReplaced];
+                  delete videoToDelete.idOfVideoBeingReplaced;  // delete this to prevent multiple deletes
                   _deleteVideo(videoToDelete);
                   videoToDelete = nextVideoToDelete;
                   }
