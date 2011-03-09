@@ -323,7 +323,9 @@ if (!org.gigapan.Util)
                   {
                   numInactiveVideos++;
                   var candidate = inactiveVideos[videoId];
-                  if ((!org.gigapan.Util.isChrome() || candidate.readyState >= 4) && !candidate.seeking)  // TODO: watch out! not checking readyState in non-chrome browsers might cause crashes!
+
+                  // TODO: is it safe to allow garbage collection for Chrome when readyState is 0?
+                  if ((!org.gigapan.Util.isChrome() || (candidate.readyState == 0 || candidate.readyState >= 4)) && !candidate.seeking)  // TODO: watch out! not checking readyState in non-chrome browsers might cause crashes!
                      {
                      idsOfVideosToDelete[idsOfVideosToDelete.length] = candidate.id;
                      }
@@ -341,13 +343,16 @@ if (!org.gigapan.Util)
                   for (var i = 0; i < idsOfVideosToDelete.length; i++)
                      {
                      var id = idsOfVideosToDelete[i];
-                     UTIL.log("video(" + id + ") garbage collected");
                      var videoElement = document.getElementById(id);
                      if (videoElement)
                         {
+                        // try to force browser to stop streaming the video
+                        videoElement.src = "data:video/mp4;base64";
+
                         videoDiv.removeChild(inactiveVideos[id]);
                         }
                      delete inactiveVideos[id];
+                     UTIL.log("video(" + id + ") garbage collected");
                      }
                   }
                };
