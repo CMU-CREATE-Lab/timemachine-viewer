@@ -352,30 +352,18 @@ if (!org.gigapan.Util)
                   }
                };
 
-            var _deleteVideo = function(video)
-               {
+               var _deleteVideo = function(video)
+                  {
                   UTIL.log("video(" + video.id + ") deleted");
                   video.active = false;
                   video.pause();
 
-                  if (org.gigapan.Util.isChrome())
-                     {
-                     try
-                        {
-                        // set the current time to the end of the video to encourage Chrome to stop streaming the video
-                        video.currentTime = duration;
-                        }
-                     catch(e)
-                        {
-                        UTIL.error("_deleteVideo(): failed to set video.currentTime = duration");
-                        }
-                     }
-                  else
+                  if (!org.gigapan.Util.isChrome())
                      {
                      // this causes Safari and IE to stop streaming the video
                      video.src = "data:video/mp4;base64";
                      }
-                  
+
                   //UTIL.log(getVideoSummaryAsString(video));
                   //UTIL.log(getVideoSummaryAsString(video));
                   video.style.display = 'none';
@@ -388,8 +376,8 @@ if (!org.gigapan.Util)
                      garbageCollectionInterval = window.setInterval(garbageCollect, 100);
                      //UTIL.log("Started garbage collection");
                      }
-               };
-            this.deleteVideo = _deleteVideo;
+                  };
+               this.deleteVideo = _deleteVideo;
 
             ///////////////////////////
             // Time controls
