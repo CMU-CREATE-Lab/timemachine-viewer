@@ -76,6 +76,12 @@ if (!org.gigapan.timelapse.Videoset)
    alert(noVideosetMsg);
    throw new Error(noVideosetMsg);
    }
+if (!org.gigapan.timelapse.VideosetStats)
+   {
+   var noVideosetStatsMsg = "The org.gigapan.timelapse.VideosetStats library is required by org.gigapan.timelapse.Timelapse";
+   alert(noVideosetStatsMsg);
+   throw new Error(noVideosetStatsMsg);
+   }
 //======================================================================================================================
 
 //======================================================================================================================
@@ -86,9 +92,10 @@ if (!org.gigapan.timelapse.Videoset)
    {
       var UTIL = org.gigapan.Util;
 
-      org.gigapan.timelapse.Timelapse = function(url, videoDivName, optionalInfo)
+      org.gigapan.timelapse.Timelapse = function(url, videoDivName, optionalInfo, videosetStatsDivName)
          {
             var videoset = new org.gigapan.timelapse.Videoset(videoDivName);
+            var videosetStats = new org.gigapan.timelapse.VideosetStats(videoset, videosetStatsDivName);
             var videoDiv = document.getElementById(videoDivName);
             var tiles = {};
             var panoWidth = 0;
@@ -300,12 +307,12 @@ if (!org.gigapan.timelapse.Videoset)
 
             this.addTimeChangeListener = function(listener)
                {
-                  videoset.addSyncListener(listener);
+                  videoset.addEventListener('sync', listener);
                };
 
             this.removeTimeChangeListener = function(listener)
                {
-                  videoset.removeSyncListener(listener);
+                  videoset.removeEventListener('sync', listener);
                };
 
             this.getCurrentTime = function()

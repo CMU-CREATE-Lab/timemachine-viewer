@@ -96,7 +96,6 @@ if (!org.gigapan.Util)
             var timeOffset = 0;
             var logInterval = null;
             var syncInterval = null;
-            var syncListeners = [];
             var garbageCollectionInterval = null;
             var perfInitialSeeks = 0;
             var perfTimeCorrections = [];
@@ -105,6 +104,7 @@ if (!org.gigapan.Util)
             var perfAdded = 0;
             var syncIntervalTime = 0.2; // in seconds
             var leader = 0;
+            var eventListeners = {};
 
             ////////////////////////////////////////////////////////////////////////////////////////////////////////////
             //
@@ -145,29 +145,6 @@ if (!org.gigapan.Util)
                      {
                      var v2 = inactiveVideos[videoId2];
                      enable ? v2.setAttribute('controls', true) : v2.removeAttribute('controls');
-                     }
-               };
-
-            this.addSyncListener = function(listener)
-               {
-                  if (listener && typeof(listener) == "function")
-                     {
-                     syncListeners.push(listener);
-                     }
-               };
-
-            this.removeSyncListener = function(listener)
-               {
-                  if (listener && typeof(listener) == "function")
-                     {
-                     for (var i = 0; i < syncListeners.length; i++)
-                        {
-                        if (listener == syncListeners[i])
-                           {
-                           syncListeners.splice(i, 1);
-                           return;
-                           }
-                        }
                      }
                };
 
@@ -269,6 +246,7 @@ if (!org.gigapan.Util)
                   if (videoBeingReplaced != null) msg += "; replace=video(" + videoBeingReplaced.id + ")";
                   UTIL.log(msg);
 
+                  var currentTime = new Date();
                   var video = document.createElement('video');
                   video.id = id;
                   video.active = true;
@@ -301,6 +279,9 @@ if (!org.gigapan.Util)
                   video.bwLastTime = UTIL.getCurrentTimeInSecs();
                   video.bwLastBuf = 0;
                   video.bandwidth = 0;
+
+                  publishVideoEvent(video.id, 'video-added', currentTime);
+
                   return video;
                };
 
@@ -353,13 +334,22 @@ if (!org.gigapan.Util)
                         }
                      delete inactiveVideos[id];
                      UTIL.log("video(" + id + ") garbage collected");
+
+                     publishVideoEvent(id, 'video-garbage-collected', new Date());
                      }
                   }
                };
 
                var _deleteVideo = function(video)
                   {
-                  UTIL.log("video(" + video.id + ") deleted");
+                  var msg = "video(" + video.id + ") deleted";
+                  var videoWhichCausedTheDelete = null;
+                  if (arguments.length > 1)
+                     {
+                     videoWhichCausedTheDelete = arguments[1];
+                     msg += " and replaced by video("+videoWhichCausedTheDelete.id+")";
+                     }
+                  UTIL.log(msg);
                   video.active = false;
                   video.pause();
 
@@ -375,6 +365,23 @@ if (!org.gigapan.Util)
                   //UTIL.log(getVideoSummaryAsString(video));
                   delete activeVideos[video.id];
                   inactiveVideos[video.id] = video;
+
+                  var currentTime = new Date();
+                  var listeners = eventListeners['video-deleted'];
+                  if (listeners)
+                     {
+                     for (var i = 0; i < listeners.length; i++)
+                        {
+                        try
+                           {
+                           listeners[i](video.id, currentTime, videoWhichCausedTheDelete ? videoWhichCausedTheDelete.id : null);
+                           }
+                        catch(e)
+                           {
+                           UTIL.error(e.name + " while publishing to videoset 'video-deleted' event listener: " + e.message, e);
+                           }
+                        }
+                     }
 
                   if (garbageCollectionInterval == null)
                      {
@@ -500,7 +507,59 @@ if (!org.gigapan.Util)
                };
             this.getCurrentTime = _getCurrentTime;
 
-            ////////////////////////////////////////////////////////////////////////////////////////////////////////////
+         this.addEventListener = function(eventName, listener)
+            {
+            if (eventName && listener && typeof(listener) == "function")
+               {
+               if (!eventListeners[eventName])
+                  {
+                  eventListeners[eventName] = [];
+                  }
+
+               eventListeners[eventName].push(listener);
+               }
+            };
+
+         this.removeEventListener = function(eventName, listener)
+            {
+            if (eventName && eventListeners[eventName] && listener && typeof(listener) == "function")
+               {
+               for (var i = 0; i < eventListeners[eventName].length; i++)
+                  {
+                  if (listener == eventListeners[eventName][i])
+                     {
+                     eventListeners[eventName].splice(i, 1);
+                     return;
+                     }
+                  }
+               }
+            };
+
+         var publishVideoEvent = function(videoId, eventName, theTime)
+            {
+            var listeners = eventListeners[eventName];
+            if (listeners)
+               {
+               for (var i = 0; i < listeners.length; i++)
+                  {
+                  try
+                     {
+                     listeners[i](videoId, theTime);
+                     }
+                  catch(e)
+                     {
+                     UTIL.error(e.name + " while publishing to videoset '" + eventName + "' event listener: " + e.message, e);
+                     }
+                  }
+               }
+            };
+
+         this.getLatencyStats = function()
+            {
+            return latencyStats;
+            };
+
+         ////////////////////////////////////////////////////////////////////////////////////////////////////////////
             //
             // Private methods
             //
@@ -509,6 +568,8 @@ if (!org.gigapan.Util)
             var videoLoadedMetadata = function(event)
                {
                   var video = event.target;
+                  publishVideoEvent(video.id, 'video-loaded-metadata', new Date());
+
                   if (!video.active)
                      {
                      //UTIL.log("video(" + video.id + ") videoLoadedMetadata after deactivation!");
@@ -529,21 +590,31 @@ if (!org.gigapan.Util)
 
             var _makeVideoVisible = function(video, callingFunction)
                {
+               if (!video.active)
+                  {
+                  UTIL.log("video("+video.id+") _makeVideoVisible, but it has already been deleted, so do nothing");
+                  return;
+                  }
+                  
                video.ready = true;
                video.style.left = parseFloat(video.style.left) + 100000 + "px";
 
                var error = video.currentTime - leader - _getCurrentTime();
+               publishVideoEvent(video.id, 'video-made-visible', new Date());
                UTIL.log("video("+video.id+") _makeVideoVisible("+callingFunction+"): ready=["+video.ready+"] error=["+error+"] " + videoStats(video));
 
                // delete video which is being replaced, following the chain until we get to a null
                var videoToDelete = activeVideos[video.idOfVideoBeingReplaced];
+               var chainOfDeletes = "";
                while (videoToDelete)
                   {
                   var nextVideoToDelete = activeVideos[videoToDelete.idOfVideoBeingReplaced];
                   delete videoToDelete.idOfVideoBeingReplaced;  // delete this to prevent multiple deletes
-                  _deleteVideo(videoToDelete);
+                  chainOfDeletes += videoToDelete.id + ",";
+                  _deleteVideo(videoToDelete, video);
                   videoToDelete = nextVideoToDelete;
                   }
+               UTIL.log("video("+video.id+") _makeVideoVisible("+callingFunction+"): chain of deletes: " + chainOfDeletes);
 
                // notify onload listener by calling the callback, if any
                if (video.onloadCallback)
@@ -783,16 +854,20 @@ if (!org.gigapan.Util)
                   //UTIL.log("video readyStates.  ready: " + ready_stats.join('|') + "; not ready: " + not_ready_stats.join('|') + "; inactive: " + inactive_stats.join('|'));
 
                   //allStats();
-                  
-                  for (var i = 0; i < syncListeners.length; i++)
+
+                  var listeners = eventListeners['sync'];
+                  if (listeners)
                      {
-                     try
+                     for (var i = 0; i < listeners.length; i++)
                         {
-                        syncListeners[i](t);
-                        }
-                     catch(e)
-                        {
-                        UTIL.error(e.name + " while executing videoset sync listener handler: " + e.message, e);
+                        try
+                           {
+                           listeners[i](t);
+                           }
+                        catch(e)
+                           {
+                           UTIL.error(e.name + " while publishing to videoset 'sync' event listener: " + e.message, e);
+                           }
                         }
                      }
                };

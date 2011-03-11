@@ -1,0 +1,22 @@
+#videoset_stats {
+   overflow: scroll;
+   border: 2px solid black;
+   padding-right: 20px;
+   height:288px;
+}
+
+#videoset_stats_summary {
+   margin-top:5px;
+   border: 2px solid black;
+}
+
+#videoset_stats table tr th, #videoset_stats table tr td {
+   border:1px solid #eeeeee;
+   font-size:7pt;
+   padding:0 5px;
+}
+
+.stats_cascaded_from_another_video {
+   color:#ff0000;
+   background-color:#ffeeee;
+}

@@ -1,3 +1,8 @@
+var timelapseDurationInSeconds = 0.0;
+var timeStepInSecs = 0.04; // 25 frames per second
+var timelapse = null;
+var timelapseCurrentTimeInSeconds = 0.0;
+
 function createTimelineSlider() {
   timelapseDurationInSeconds = timelapse.getNumFrames() / timelapse.getFps();
   $("#totalTime").text(org.gigapan.Util.formatTime(timelapseDurationInSeconds));
@@ -208,7 +213,7 @@ function loadTimelapse(gigapanJSON) {
 	var gigapanUrl = "http://timelapse.gigapan.org/alpha/" + (isChrome ? "cgi-bin/video_streamer.cgi?"+dropConnectionParam+"id="+gigapanId+"&t=" : "timelapses/" + gigapanId + '/');
 
 	// Create the timelapse
-	timelapse = new org.gigapan.timelapse.Timelapse(gigapanUrl, 'timelapse', gigapanJSON);
+	timelapse = new org.gigapan.timelapse.Timelapse(gigapanUrl, 'timelapse', gigapanJSON, 'videoset_stats_container');
 
 	timelapse.addTimeChangeListener(function(t) {
 		 timelapseCurrentTimeInSeconds = t;
