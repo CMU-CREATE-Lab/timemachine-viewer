@@ -205,6 +205,25 @@ function setupMouseHandlers() {
    $("#timelapse").mousewheel(timelapse.handleMousescrollEvent);
 }
 
+function changeViewerSize(newWidth) {
+   var newHeight = newWidth * 0.5625;  // 0.5625 is the aspect ratio of the default 800x450 viewer
+   var bounds = timelapse.getBoundingBoxForCurrentView();
+   $("#timelapse_container").width(newWidth);
+   $("#timelapse_container").height(newHeight);
+   $("#timelapse").width(newWidth);
+   $("#timelapse").height(newHeight);
+   $("#time_slider_container").width(newWidth);
+   $("#misc_controls_container").width(newWidth);
+   $("#misc_controls_container_table").width(newWidth);
+   $("#timelineSlider").width(newWidth - 173);
+   if ($('.spinnerOverlay').length != 0) {
+      $('.spinnerOverlay').css("top", newHeight / 2 - $("#spinner").height() / 2 + "px");
+      $('.spinnerOverlay').css("left", newWidth / 2 - $("#spinner").width() / 2 + "px");
+   }
+   timelapse.updateDimensions();
+   timelapse.warpToBoundingBox(bounds);
+}
+
 function loadTimelapse(gigapanJSON) {
 	// Build the gigapan URL.  We use the CGI for Chrome, but plain ol' MP4s for Safari.
 	var isChrome = org.gigapan.Util.isChrome();
