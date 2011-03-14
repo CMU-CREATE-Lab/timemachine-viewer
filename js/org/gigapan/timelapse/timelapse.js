@@ -76,6 +76,12 @@ if (!org.gigapan.timelapse.Videoset)
    alert(noVideosetMsg);
    throw new Error(noVideosetMsg);
    }
+if (!org.gigapan.timelapse.VideosetStats)
+   {
+   var noVideosetStatsMsg = "The org.gigapan.timelapse.VideosetStats library is required by org.gigapan.timelapse.Timelapse";
+   alert(noVideosetStatsMsg);
+   throw new Error(noVideosetStatsMsg);
+   }
 //======================================================================================================================
 
 //======================================================================================================================
@@ -86,9 +92,10 @@ if (!org.gigapan.timelapse.Videoset)
    {
       var UTIL = org.gigapan.Util;
 
-      org.gigapan.timelapse.Timelapse = function(url, videoDivName, optionalInfo)
+      org.gigapan.timelapse.Timelapse = function(url, videoDivName, optionalInfo, videosetStatsDivName)
          {
             var videoset = new org.gigapan.timelapse.Videoset(videoDivName);
+            var videosetStats = new org.gigapan.timelapse.VideosetStats(videoset, videosetStatsDivName);
             var videoDiv = document.getElementById(videoDivName);
             var tiles = {};
             var panoWidth = 0;
@@ -300,12 +307,12 @@ if (!org.gigapan.timelapse.Videoset)
 
             this.addTimeChangeListener = function(listener)
                {
-                  videoset.addSyncListener(listener);
+                  videoset.addEventListener('sync', listener);
                };
 
             this.removeTimeChangeListener = function(listener)
                {
-                  videoset.removeSyncListener(listener);
+                  videoset.removeEventListener('sync', listener);
                };
 
             this.getCurrentTime = function()
@@ -474,6 +481,7 @@ if (!org.gigapan.timelapse.Videoset)
                   videoset.setLeader(data['leader']/data['fps']);
                   frames = data['frames'];
                   maxLevel = data['nlevels']-1;
+                  levelInfo = data['level_info'];
 
                   readVideoDivSize();
                   _warpTo(_homeView());
@@ -652,9 +660,11 @@ if (!org.gigapan.timelapse.Videoset)
                   var level = scale2level(view.scale);
                   var levelScale = Math.pow(2, maxLevel - level);
                   var col = Math.round((theView.x - (videoWidth * levelScale * .5)) / (tileWidth * levelScale));
-                  if (col < 0) col=0;
+                  col = Math.max(col, 0);
+                  col = Math.min(col, levelInfo[level].cols-1);
                   var row = Math.round((theView.y - (videoHeight * levelScale * .5)) / (tileHeight * levelScale));
-                  if (row < 0) row=0;
+                  row = Math.max(row, 0);
+                  row = Math.min(row, levelInfo[level].rows-1);
                   //UTIL.log("computeBestVideo l=" + level + ", c=" + col + ", r=" + row);
                   return tileidxCreate(level,col,row);
                };

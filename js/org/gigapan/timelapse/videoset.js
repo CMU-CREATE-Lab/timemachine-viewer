@@ -1,6 +1,17 @@
 //======================================================================================================================
 // Class for managing timelapse videosets.
 //
+// Supports the following events to which listeners can subscribe.  Event handlers are called with the arguments listed
+// in parentheses:
+// * video-added (videoId, time)
+// * video-loaded-metadata (videoId, time)
+// * video-made-visible (videoId, time)
+// * video-deleted (video.id, currentTime, videoWhichCausedTheDelete)
+//   NOTE: the videoWhichCausedTheDelete parameter may be null
+// * video-garbage-collected (videoId, time)
+// * stall-status-change (isStalled)
+// * sync (currentTime)
+//
 // Dependencies:
 // * org.gigapan.Util
 //
@@ -77,6 +88,7 @@ if (!org.gigapan.Util)
 (function()
    {
       var UTIL = org.gigapan.Util;
+      var MAX_QUEUED_VIDEO_LENGTH = 2;   // max number of videos allowed to be queued without stalling
 
       org.gigapan.timelapse.Videoset = function(videoDivName)
          {
@@ -96,7 +108,6 @@ if (!org.gigapan.Util)
             var timeOffset = 0;
             var logInterval = null;
             var syncInterval = null;
-            var syncListeners = [];
             var garbageCollectionInterval = null;
             var perfInitialSeeks = 0;
             var perfTimeCorrections = [];
@@ -105,6 +116,9 @@ if (!org.gigapan.Util)
             var perfAdded = 0;
             var syncIntervalTime = 0.2; // in seconds
             var leader = 0;
+            var eventListeners = {};
+
+            $('#spinner').bind('dragstart', function(event) { event.preventDefault(); });
 
             ////////////////////////////////////////////////////////////////////////////////////////////////////////////
             //
@@ -148,29 +162,6 @@ if (!org.gigapan.Util)
                      }
                };
 
-            this.addSyncListener = function(listener)
-               {
-                  if (listener && typeof(listener) == "function")
-                     {
-                     syncListeners.push(listener);
-                     }
-               };
-
-            this.removeSyncListener = function(listener)
-               {
-                  if (listener && typeof(listener) == "function")
-                     {
-                     for (var i = 0; i < syncListeners.length; i++)
-                        {
-                        if (listener == syncListeners[i])
-                           {
-                           syncListeners.splice(i, 1);
-                           return;
-                           }
-                        }
-                     }
-               };
-
             this.setFps = function(newFps)
                {
                   fps = newFps;
@@ -211,7 +202,7 @@ if (!org.gigapan.Util)
                   perfTimeTweaks = 0;
                   perfTimeSeeks = 0;
                };
-
+         
             var getPerf = function()
                {
                   var perf = "Videos added: " + perfAdded;
@@ -226,31 +217,19 @@ if (!org.gigapan.Util)
                      }
                   return perf;
                };
-               
+         
             var showSpinner = function()
                {
-                  UTIL.log("showSpinner");
-                  $('<div/>', {
-                     id: "overlay3",
-                     "class": "spinnerOverlay"
-							    }).prependTo('#timelapse_container');
-							    
-                  $('<img/>', {
-                     id: "spinner",
-                     src: "images/spinner.gif",
-                     alt: "spinner",
-                     title: "Buffering..."
-                  }).appendTo('#overlay3');
-                  
-                  $('.spinnerOverlay').css("top", $("#timelapse_container").height()/2 - $("#spinner").height()/2 + "px");
-                  $('.spinnerOverlay').css("left", $("#timelapse_container").width()/2 - $("#spinner").width()/2 + "px");
-                  $('#spinner').bind('dragstart', function(event) { event.preventDefault(); });
+               UTIL.log("showSpinner");
+               $('#spinnerOverlay').css("top", $("#timelapse_container").height()/2 - $("#spinner").height()/2 + "px");
+               $('#spinnerOverlay').css("left", $("#timelapse_container").width()/2 - $("#spinner").width()/2 + "px");
+               $('#spinnerOverlay').show();
                };
                
             var hideSpinner = function()
                {
-                  UTIL.log("hideSpinner");
-                  $('.spinnerOverlay').remove();
+               UTIL.log("hideSpinner");
+               $('#spinnerOverlay').hide();
                };
                
             ///////////////////////////
@@ -269,13 +248,14 @@ if (!org.gigapan.Util)
                   if (videoBeingReplaced != null) msg += "; replace=video(" + videoBeingReplaced.id + ")";
                   UTIL.log(msg);
 
+                  var currentTime = new Date();
                   var video = document.createElement('video');
                   video.id = id;
                   video.active = true;
                   video.ready = false;
                   if (typeof videoBeingReplaced != 'undefined' && videoBeingReplaced != null)
                      {
-                     video.videoBeingReplaced = videoBeingReplaced;
+                     video.idOfVideoBeingReplaced = videoBeingReplaced.id;
                      }
                   if (typeof onloadCallback == 'function')
                      {
@@ -301,6 +281,11 @@ if (!org.gigapan.Util)
                   video.bwLastTime = UTIL.getCurrentTimeInSecs();
                   video.bwLastBuf = 0;
                   video.bandwidth = 0;
+
+                  publishVideoEvent(video.id, 'video-added', currentTime);
+
+                  updateStallState();
+                  
                   return video;
                };
 
@@ -323,7 +308,9 @@ if (!org.gigapan.Util)
                   {
                   numInactiveVideos++;
                   var candidate = inactiveVideos[videoId];
-                  if ((!org.gigapan.Util.isChrome() || candidate.readyState >= 4) && !candidate.seeking)  // TODO: watch out! not checking readyState in non-chrome browsers might cause crashes!
+
+                  // TODO: is it safe to allow garbage collection for Chrome when readyState is 0?
+                  if ((!org.gigapan.Util.isChrome() || (candidate.readyState == 0 || candidate.readyState >= 4)) && !candidate.seeking)  // TODO: watch out! not checking readyState in non-chrome browsers might cause crashes!
                      {
                      idsOfVideosToDelete[idsOfVideosToDelete.length] = candidate.id;
                      }
@@ -345,37 +332,38 @@ if (!org.gigapan.Util)
                      var videoElement = document.getElementById(id);
                      if (videoElement)
                         {
+                        // try to force browser to stop streaming the video
+                        videoElement.src = "data:video/mp4;base64";
+
                         videoDiv.removeChild(inactiveVideos[id]);
                         }
                      delete inactiveVideos[id];
+                     UTIL.log("video(" + id + ") garbage collected");
+
+                     publishVideoEvent(id, 'video-garbage-collected', new Date());
                      }
                   }
                };
 
-            var _deleteVideo = function(video)
-               {
-                  UTIL.log("video(" + video.id + ") deleted");
+               var _deleteVideo = function(video)
+                  {
+                  var msg = "video(" + video.id + ") deleted";
+                  var videoWhichCausedTheDelete = null;
+                  if (arguments.length > 1)
+                     {
+                     videoWhichCausedTheDelete = arguments[1];
+                     msg += " and replaced by video("+videoWhichCausedTheDelete.id+")";
+                     }
+                  UTIL.log(msg);
                   video.active = false;
                   video.pause();
 
-                  if (org.gigapan.Util.isChrome())
-                     {
-                     try
-                        {
-                        // set the current time to the end of the video to encourage Chrome to stop streaming the video
-                        video.currentTime = duration;
-                        }
-                     catch(e)
-                        {
-                        UTIL.error("_deleteVideo(): failed to set video.currentTime = duration");
-                        }
-                     }
-                  else
+                  if (!org.gigapan.Util.isChrome())
                      {
                      // this causes Safari and IE to stop streaming the video
                      video.src = "data:video/mp4;base64";
                      }
-                  
+
                   //UTIL.log(getVideoSummaryAsString(video));
                   //UTIL.log(getVideoSummaryAsString(video));
                   video.style.display = 'none';
@@ -383,13 +371,32 @@ if (!org.gigapan.Util)
                   delete activeVideos[video.id];
                   inactiveVideos[video.id] = video;
 
+                  updateStallState();
+
+                  var currentTime = new Date();
+                  var listeners = eventListeners['video-deleted'];
+                  if (listeners)
+                     {
+                     for (var i = 0; i < listeners.length; i++)
+                        {
+                        try
+                           {
+                           listeners[i](video.id, currentTime, videoWhichCausedTheDelete ? videoWhichCausedTheDelete.id : null);
+                           }
+                        catch(e)
+                           {
+                           UTIL.error(e.name + " while publishing to videoset 'video-deleted' event listener: " + e.message, e);
+                           }
+                        }
+                     }
+
                   if (garbageCollectionInterval == null)
                      {
                      garbageCollectionInterval = window.setInterval(garbageCollect, 100);
                      //UTIL.log("Started garbage collection");
                      }
-               };
-            this.deleteVideo = _deleteVideo;
+                  };
+               this.deleteVideo = _deleteVideo;
 
             ///////////////////////////
             // Time controls
@@ -507,7 +514,59 @@ if (!org.gigapan.Util)
                };
             this.getCurrentTime = _getCurrentTime;
 
-            ////////////////////////////////////////////////////////////////////////////////////////////////////////////
+         this.addEventListener = function(eventName, listener)
+            {
+            if (eventName && listener && typeof(listener) == "function")
+               {
+               if (!eventListeners[eventName])
+                  {
+                  eventListeners[eventName] = [];
+                  }
+
+               eventListeners[eventName].push(listener);
+               }
+            };
+
+         this.removeEventListener = function(eventName, listener)
+            {
+            if (eventName && eventListeners[eventName] && listener && typeof(listener) == "function")
+               {
+               for (var i = 0; i < eventListeners[eventName].length; i++)
+                  {
+                  if (listener == eventListeners[eventName][i])
+                     {
+                     eventListeners[eventName].splice(i, 1);
+                     return;
+                     }
+                  }
+               }
+            };
+
+         var publishVideoEvent = function(videoId, eventName, theTime)
+            {
+            var listeners = eventListeners[eventName];
+            if (listeners)
+               {
+               for (var i = 0; i < listeners.length; i++)
+                  {
+                  try
+                     {
+                     listeners[i](videoId, theTime);
+                     }
+                  catch(e)
+                     {
+                     UTIL.error(e.name + " while publishing to videoset '" + eventName + "' event listener: " + e.message, e);
+                     }
+                  }
+               }
+            };
+
+         this.isStalled = function()
+            {
+            return stalled;
+            };
+
+         ////////////////////////////////////////////////////////////////////////////////////////////////////////////
             //
             // Private methods
             //
@@ -516,6 +575,8 @@ if (!org.gigapan.Util)
             var videoLoadedMetadata = function(event)
                {
                   var video = event.target;
+                  publishVideoEvent(video.id, 'video-loaded-metadata', new Date());
+
                   if (!video.active)
                      {
                      //UTIL.log("video(" + video.id + ") videoLoadedMetadata after deactivation!");
@@ -536,21 +597,31 @@ if (!org.gigapan.Util)
 
             var _makeVideoVisible = function(video, callingFunction)
                {
+               if (!video.active)
+                  {
+                  UTIL.log("video("+video.id+") _makeVideoVisible, but it has already been deleted, so do nothing");
+                  return;
+                  }
+                  
                video.ready = true;
                video.style.left = parseFloat(video.style.left) + 100000 + "px";
 
                var error = video.currentTime - leader - _getCurrentTime();
+               publishVideoEvent(video.id, 'video-made-visible', new Date());
                UTIL.log("video("+video.id+") _makeVideoVisible("+callingFunction+"): ready=["+video.ready+"] error=["+error+"] " + videoStats(video));
 
                // delete video which is being replaced, following the chain until we get to a null
-               var videoToDelete = video.videoBeingReplaced;
+               var videoToDelete = activeVideos[video.idOfVideoBeingReplaced];
+               var chainOfDeletes = "";
                while (videoToDelete)
                   {
-                  var nextVideoToDelete = videoToDelete.videoBeingReplaced;
-                  videoToDelete.videoBeingReplaced = null;  // mark this as null to prevent multiple deletes
-                  _deleteVideo(videoToDelete);
+                  var nextVideoToDelete = activeVideos[videoToDelete.idOfVideoBeingReplaced];
+                  delete videoToDelete.idOfVideoBeingReplaced;  // delete this to prevent multiple deletes
+                  chainOfDeletes += videoToDelete.id + ",";
+                  _deleteVideo(videoToDelete, video);
                   videoToDelete = nextVideoToDelete;
                   }
+               UTIL.log("video("+video.id+") _makeVideoVisible("+callingFunction+"): chain of deletes: " + chainOfDeletes);
 
                // notify onload listener by calling the callback, if any
                if (video.onloadCallback)
@@ -635,40 +706,75 @@ if (!org.gigapan.Util)
                   return ret;
                };
 
-            var updateStallState = function()
+         var updateStallState = function()
+            {
+            // We stall if there are more than MAX_QUEUED_VIDEO_LENGTH videos queued, so count the number of active videos
+            var numQueued = 0;
+            for (var v in activeVideos)
                {
-                 var nstalled = 0;
-                  for (var videoId in activeVideos)
+               numQueued++;
+               }
+
+            if (stalled && numQueued <= MAX_QUEUED_VIDEO_LENGTH)
+               {
+               unstall();
+               }
+            else if (!stalled && numQueued > MAX_QUEUED_VIDEO_LENGTH)
+               {
+               stall();
+               }
+            else if (stalled)
+               {
+               UTIL.log("Still stalled...");
+               }
+            };
+
+         var stall = function ()
+            {
+            if (stalled)
+               {
+               return;
+               }
+            UTIL.log("Video stalling...");
+            stalled = true;
+            showSpinner();
+            notifyStallEventListeners();
+            _updateVideoAdvance();
+            };
+
+         var unstall = function ()
+            {
+            if (!stalled)
+               {
+               return;
+               }
+            UTIL.log("Video unstalled...");
+            stalled = false;
+            hideSpinner();
+            notifyStallEventListeners();
+            _updateVideoAdvance();
+            };
+
+         var notifyStallEventListeners = function()
+            {
+            var listeners = eventListeners['stall-status-change'];
+            if (listeners)
+               {
+               for (var i = 0; i < listeners.length; i++)
+                  {
+                  try
                      {
-                     var video = activeVideos[videoId];
-                     if (video.ready && video.readyState <= 2) nstalled++;
+                     listeners[i](stalled);
                      }
-                 if (stalled && nstalled == 0) {
-                   unstall();
-                 } else if (!stalled && nstalled > 0) {
-                   stall();
-                 } else if (stalled) {
-                   UTIL.log("Still stalled...");
-                 }
-               };
-
-            var stall = function () {
-               if (stalled) return;
-               UTIL.log("Video stalling...");
-               stalled = true;
-               showSpinner();
-               _updateVideoAdvance();
+                  catch(e)
+                     {
+                     UTIL.error(e.name + " while publishing to videoset 'stall-status-change' event listener: " + e.message, e);
+                     }
+                  }
+               }
             };
 
-            var unstall = function () {
-               if (!stalled) return;
-               UTIL.log("Video unstalled...");
-               stalled = false;
-               hideSpinner();
-               _updateVideoAdvance();
-            };
-
-            var updateVideoBandwidth = function(video)
+         var updateVideoBandwidth = function(video)
                {
                   var newTime = UTIL.getCurrentTimeInSecs();
                   var b = video.buffered;
@@ -681,6 +787,39 @@ if (!org.gigapan.Util)
                   video.bwLastBuf = newBufferPosition;
                   video.bandwidth = (deltaTime==0) ? 0 : deltaBuffer / deltaTime;
                   //UTIL.log("bandwidth is " + video.bandwidth);
+               };
+
+            var videoStats = function(video)
+               {
+                  var netstates=["Empty","Idle","Loading","NoSource"];
+                  var readystates=["Nothing","Metadata","CurrentData", "FutureData", "EnoughData"];
+                  var ret="["+readystates[video.readyState]+","+netstates[video.networkState];
+                  if (video.seeking) ret += ",Seeking";
+                  ret += ",bw="+video.bandwidth.toFixed(1)+"]";
+                  return ret;
+               };
+
+            var allStats = function()
+               {
+                  var ready = [];
+                  var not_ready = [];
+                  var inactive = [];
+                  for (var videoId in activeVideos)
+                     {
+                     var video = activeVideos[videoId];
+                     updateVideoBandwidth(video);
+                     (video.ready ? ready : not_ready).push("video("+video.id+")"+videoStats(video));
+                     }
+                  for (var videoId in inactiveVideos)
+                     {
+                     var video = inactiveVideos[videoId];
+                     updateVideoBandwidth(video);
+                     inactive.push("video("+video.id+")"+videoStats(video));
+                     }
+                  var msg = "NOTREADY("+not_ready.length+") " + not_ready.join(" ");
+                  msg += " | READY("+ready.length+") " + ready.join(" ");
+                  msg += " | DELETED("+inactive.length+") " + inactive.join(" ");
+                  UTIL.log(msg);
                };
 
             var videoStats = function(video)
@@ -738,8 +877,11 @@ if (!org.gigapan.Util)
                      return;
                      }
 
-                  //updateStallState();
-                  //if (stalled) return;
+                  updateStallState();
+                  if (stalled)
+                     {
+                     return;
+                     }
                   
                   var ready_stats=[[],[],[],[],[]];
                   var not_ready_stats=[[],[],[],[],[]];
@@ -790,17 +932,19 @@ if (!org.gigapan.Util)
                   //UTIL.log("video readyStates.  ready: " + ready_stats.join('|') + "; not ready: " + not_ready_stats.join('|') + "; inactive: " + inactive_stats.join('|'));
 
                   //allStats();
-                  
-                  for (var i = 0; i < syncListeners.length; i++)
+
+                  var listeners = eventListeners['sync'];
+                  if (listeners)
                      {
-                     try
-                        {
-                        syncListeners[i](t);
-                        }
-                     catch(e)
-                        {
-                        UTIL.error(e.name + " while executing videoset sync listener handler: " + e.message, e);
-                        }
+                     for (var i = 0; i < listeners.length; i++)
+                        try
+                           {
+                           listeners[i](t);
+                           }
+                        catch(e)
+                           {
+                           UTIL.error(e.name + " while publishing to videoset 'sync' event listener: " + e.message, e);
+                           }
                      }
                };
 
@@ -812,6 +956,5 @@ if (!org.gigapan.Util)
             //UTIL.log('Videoset() constructor');
 
             this.setStatusLoggingEnabled(true);
-               
          };
    })();

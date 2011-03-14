@@ -1,3 +1,7 @@
+var snaplapse = null;
+var saveSnaplapseWindow = null;
+var loadSnaplapseWindow = null;
+
 function handleSnaplapseFrameSelectionChange() {
    if (snaplapse.isPlaying()) {
       $("#deleteKeyframeButton").attr("disabled", "disabled");
@@ -44,13 +48,13 @@ function newSnaplapse(json) {
       $("#playStopSnaplapseButton").text("Stop Snaplapse");
       $("#deleteKeyframeButton").attr("disabled", "disabled");
 
-      $("#timelineSlider").slider("option", "disabled", true);
-      $("#slider-vertical").slider("option", "disabled", true);
+      $("#timelineSlider")['slider']("option", "disabled", true);
+      $("#slider-vertical")['slider']("option", "disabled", true);
       $('#playBackSpeedSlider').hide();
       $('#play_toggle').attr("class", "");
       $('.overlay1').hide();
       $('.overlay2').hide();
-      $("#snaplapse_keyframe_list").selectable("option", "disabled", true);
+      $("#snaplapse_keyframe_list")['selectable']("option", "disabled", true);
 
       var keyframes = $("#snaplapse_keyframe_list > div");
       for (var i = 0; i < keyframes.size(); i++) {
@@ -66,13 +70,13 @@ function newSnaplapse(json) {
       $("#saveSnaplapseButton").removeAttr("disabled");
       $("#playStopSnaplapseButton").text("Play Snaplapse");
 
-      $("#timelineSlider").slider("option", "disabled", false);
-      $("#slider-vertical").slider("option", "disabled", false);
+      $("#timelineSlider")['slider']("option", "disabled", false);
+      $("#slider-vertical")['slider']("option", "disabled", false);
       $('#playBackSpeedSlider').show();
       $('#play_toggle').attr("class", "play_mouseout");
       $('.overlay1').show();
       $('.overlay2').show();
-      $("#snaplapse_keyframe_list").selectable("option", "disabled", false);
+      $("#snaplapse_keyframe_list")['selectable']("option", "disabled", false);
 
       var keyframes = $("#snaplapse_keyframe_list > div");
       for (var i = 0; i < keyframes.size(); i++) {
@@ -323,23 +327,4 @@ function popup(url, windowName) {
       newWindow.focus()
    }
    return newWindow;
-}
-
-function changeViewerSize(newWidth) {
-   var newHeight = newWidth * 0.5625;  // 0.5625 is the aspect ratio of the default 800x450 viewer
-   var bounds = timelapse.getBoundingBoxForCurrentView();
-   $("#timelapse_container").width(newWidth);
-   $("#timelapse_container").height(newHeight);
-   $("#timelapse").width(newWidth);
-   $("#timelapse").height(newHeight);
-   $("#time_slider_container").width(newWidth);
-   $("#misc_controls_container").width(newWidth);
-   $("#misc_controls_container_table").width(newWidth);
-   $("#timelineSlider").width(newWidth - 173);
-   if ($('.spinnerOverlay').length != 0) {
-      $('.spinnerOverlay').css("top", newHeight / 2 - $("#spinner").height() / 2 + "px");
-      $('.spinnerOverlay').css("left", newWidth / 2 - $("#spinner").width() / 2 + "px");
-   }
-   timelapse.updateDimensions();
-   timelapse.warpToBoundingBox(bounds);
 }
