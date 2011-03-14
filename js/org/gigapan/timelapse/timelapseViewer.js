@@ -216,9 +216,9 @@ function changeViewerSize(newWidth) {
    $("#misc_controls_container").width(newWidth);
    $("#misc_controls_container_table").width(newWidth);
    $("#timelineSlider").width(newWidth - 173);
-   if ($('.spinnerOverlay').length != 0) {
-      $('.spinnerOverlay').css("top", newHeight / 2 - $("#spinner").height() / 2 + "px");
-      $('.spinnerOverlay').css("left", newWidth / 2 - $("#spinner").width() / 2 + "px");
+   if ($('#spinnerOverlay').length != 0) {
+      $('#spinnerOverlay').css("top", newHeight / 2 - $("#spinner").height() / 2 + "px");
+      $('#spinnerOverlay').css("left", newWidth / 2 - $("#spinner").width() / 2 + "px");
    }
    timelapse.updateDimensions();
    timelapse.warpToBoundingBox(bounds);

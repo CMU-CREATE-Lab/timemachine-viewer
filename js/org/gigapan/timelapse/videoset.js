@@ -118,6 +118,8 @@ if (!org.gigapan.Util)
             var leader = 0;
             var eventListeners = {};
 
+            $('#spinner').bind('dragstart', function(event) { event.preventDefault(); });
+
             ////////////////////////////////////////////////////////////////////////////////////////////////////////////
             //
             // Public methods
@@ -218,28 +220,16 @@ if (!org.gigapan.Util)
                
             var showSpinner = function()
                {
-                  UTIL.log("showSpinner");
-                  $('<div/>', {
-                     id: "overlay3",
-                     "class": "spinnerOverlay"
-							    }).prependTo('#timelapse_container');
-							    
-                  $('<img/>', {
-                     id: "spinner",
-                     src: "images/spinner.gif",
-                     alt: "spinner",
-                     title: "Buffering..."
-                  }).appendTo('#overlay3');
-                  
-                  $('.spinnerOverlay').css("top", $("#timelapse_container").height()/2 - $("#spinner").height()/2 + "px");
-                  $('.spinnerOverlay').css("left", $("#timelapse_container").width()/2 - $("#spinner").width()/2 + "px");
-                  $('#spinner').bind('dragstart', function(event) { event.preventDefault(); });
+               UTIL.log("showSpinner");
+               $('#spinnerOverlay').css("top", $("#timelapse_container").height()/2 - $("#spinner").height()/2 + "px");
+               $('#spinnerOverlay').css("left", $("#timelapse_container").width()/2 - $("#spinner").width()/2 + "px");
+               $('#spinnerOverlay').show();
                };
                
             var hideSpinner = function()
                {
-                  UTIL.log("hideSpinner");
-                  $('.spinnerOverlay').remove();
+               UTIL.log("hideSpinner");
+               $('#spinnerOverlay').hide();
                };
                
             ///////////////////////////

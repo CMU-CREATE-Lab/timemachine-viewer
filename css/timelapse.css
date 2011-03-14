@@ -90,15 +90,14 @@ body, p, table, tr, td, img{
   left: 10px;
 }
 
-.spinnerOverlay {
-  border:0px solid; 
-  width:140px; 
-  height:140px; 
-  overflow:auto;
-  position:absolute; 
+#spinnerOverlay {
+  border:0 solid;
+  width:120px;
+  height:120px;
+  position:absolute;
   z-index:3;
-  top: 165px;
-  left: 340px;
+  display:none;
+  overflow:hidden;
 }
 
 table.align-left tr, td, th{ 
