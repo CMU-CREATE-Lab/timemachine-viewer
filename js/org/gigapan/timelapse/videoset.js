@@ -1,6 +1,17 @@
 //======================================================================================================================
 // Class for managing timelapse videosets.
 //
+// Supports the following events to which listeners can subscribe.  Event handlers are called with the arguments listed
+// in parentheses:
+// * video-added (videoId, time)
+// * video-loaded-metadata (videoId, time)
+// * video-made-visible (videoId, time)
+// * video-deleted (video.id, currentTime, videoWhichCausedTheDelete)
+//   NOTE: the videoWhichCausedTheDelete parameter may be null
+// * video-garbage-collected (videoId, time)
+// * stall-status-change (isStalled)
+// * sync (currentTime)
+//
 // Dependencies:
 // * org.gigapan.Util
 //
@@ -77,6 +88,7 @@ if (!org.gigapan.Util)
 (function()
    {
       var UTIL = org.gigapan.Util;
+      var MAX_QUEUED_VIDEO_LENGTH = 2;   // max number of videos allowed to be queued without stalling
 
       org.gigapan.timelapse.Videoset = function(videoDivName)
          {
@@ -282,6 +294,8 @@ if (!org.gigapan.Util)
 
                   publishVideoEvent(video.id, 'video-added', currentTime);
 
+                  updateStallState();
+                  
                   return video;
                };
 
@@ -365,6 +379,8 @@ if (!org.gigapan.Util)
                   //UTIL.log(getVideoSummaryAsString(video));
                   delete activeVideos[video.id];
                   inactiveVideos[video.id] = video;
+
+                  updateStallState();
 
                   var currentTime = new Date();
                   var listeners = eventListeners['video-deleted'];
@@ -554,11 +570,6 @@ if (!org.gigapan.Util)
                }
             };
 
-         this.getLatencyStats = function()
-            {
-            return latencyStats;
-            };
-
          ////////////////////////////////////////////////////////////////////////////////////////////////////////////
             //
             // Private methods
@@ -699,40 +710,75 @@ if (!org.gigapan.Util)
                   return ret;
                };
 
-            var updateStallState = function()
+         var updateStallState = function()
+            {
+            // We stall if there are more than MAX_QUEUED_VIDEO_LENGTH videos queued, so count the number of active videos
+            var numQueued = 0;
+            for (var v in activeVideos)
                {
-                 var nstalled = 0;
-                  for (var videoId in activeVideos)
+               numQueued++;
+               }
+
+            if (stalled && numQueued <= MAX_QUEUED_VIDEO_LENGTH)
+               {
+               unstall();
+               }
+            else if (!stalled && numQueued > MAX_QUEUED_VIDEO_LENGTH)
+               {
+               stall();
+               }
+            else if (stalled)
+               {
+               UTIL.log("Still stalled...");
+               }
+            };
+
+         var stall = function ()
+            {
+            if (stalled)
+               {
+               return;
+               }
+            UTIL.log("Video stalling...");
+            stalled = true;
+            showSpinner();
+            notifyStallEventListeners();
+            _updateVideoAdvance();
+            };
+
+         var unstall = function ()
+            {
+            if (!stalled)
+               {
+               return;
+               }
+            UTIL.log("Video unstalled...");
+            stalled = false;
+            hideSpinner();
+            notifyStallEventListeners();
+            _updateVideoAdvance();
+            };
+
+         var notifyStallEventListeners = function()
+            {
+            var listeners = eventListeners['stall-status-change'];
+            if (listeners)
+               {
+               for (var i = 0; i < listeners.length; i++)
+                  {
+                  try
                      {
-                     var video = activeVideos[videoId];
-                     if (video.ready && video.readyState <= 2) nstalled++;
+                     listeners[i](stalled);
                      }
-                 if (stalled && nstalled == 0) {
-                   unstall();
-                 } else if (!stalled && nstalled > 0) {
-                   stall();
-                 } else if (stalled) {
-                   UTIL.log("Still stalled...");
-                 }
-               };
-
-            var stall = function () {
-               if (stalled) return;
-               UTIL.log("Video stalling...");
-               stalled = true;
-               showSpinner();
-               _updateVideoAdvance();
+                  catch(e)
+                     {
+                     UTIL.error(e.name + " while publishing to videoset 'stall-status-change' event listener: " + e.message, e);
+                     }
+                  }
+               }
             };
 
-            var unstall = function () {
-               if (!stalled) return;
-               UTIL.log("Video unstalled...");
-               stalled = false;
-               hideSpinner();
-               _updateVideoAdvance();
-            };
-
-            var updateVideoBandwidth = function(video)
+         var updateVideoBandwidth = function(video)
                {
                   var newTime = UTIL.getCurrentTimeInSecs();
                   var b = video.buffered;
@@ -755,7 +801,7 @@ if (!org.gigapan.Util)
                   if (video.seeking) ret += ",Seeking";
                   ret += ",bw="+video.bandwidth.toFixed(1)+"]";
                   return ret;
-               }
+               };
 
             var allStats = function()
                {
@@ -774,11 +820,11 @@ if (!org.gigapan.Util)
                      updateVideoBandwidth(video);
                      inactive.push("video("+video.id+")"+videoStats(video));
                      }
-                  msg = "NOTREADY("+not_ready.length+") " + not_ready.join(" ");
+                  var msg = "NOTREADY("+not_ready.length+") " + not_ready.join(" ");
                   msg += " | READY("+ready.length+") " + ready.join(" ");
                   msg += " | DELETED("+inactive.length+") " + inactive.join(" ");
                   UTIL.log(msg);
-               }
+               };
 
             var sync = function(errorThreshold)
                {
@@ -802,8 +848,11 @@ if (!org.gigapan.Util)
                      return;
                      }
 
-                  //updateStallState();
-                  //if (stalled) return;
+                  updateStallState();
+                  if (stalled)
+                     {
+                     return;
+                     }
                   
                   var ready_stats=[[],[],[],[],[]];
                   var not_ready_stats=[[],[],[],[],[]];
