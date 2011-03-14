@@ -114,7 +114,7 @@ if (!org.gigapan.Util)
             this.setStatusLoggingEnabled = function(enable)
                {
                   enable = !!enable;  // make true or false
-                  UTIL.log("videoset logging status: " + enable);
+                  //UTIL.log("videoset logging status: " + enable);
                   if (isStatusLoggingEnabled == enable)
                      {
                      return;
@@ -122,7 +122,8 @@ if (!org.gigapan.Util)
                   isStatusLoggingEnabled = enable;
                   if (enable)
                      {
-                     logInterval = setInterval(this.writeStatusToLog, 500);
+                     //logInterval = setInterval(this.writeStatusToLog, 500);
+                     logInterval = setInterval(allStats, 200);
                      }
                   else
                      {
@@ -264,7 +265,9 @@ if (!org.gigapan.Util)
                      {
                      src += "?nocache=" + UTIL.getCurrentTimeInSecs() + "." + id;
                      }
-                  UTIL.log("video(" + id + ") added from " + src + " at left=" + geometry.left + ",top=" + geometry.top + ", w=" + geometry.width + ",h=" + geometry.height + "; replace=" + videoBeingReplaced);
+                  var msg = "video(" + id + ") added from " + src + " at left=" + geometry.left + ",top=" + geometry.top + ", w=" + geometry.width + ",h=" + geometry.height;
+                  if (videoBeingReplaced != null) msg += "; replace=video(" + videoBeingReplaced.id + ")";
+                  UTIL.log(msg);
 
                   var video = document.createElement('video');
                   video.id = id;
@@ -331,14 +334,14 @@ if (!org.gigapan.Util)
                   // shutdown the garbage collection timeout if there are no more inactive videos
                   clearInterval(garbageCollectionInterval);
                   garbageCollectionInterval = null;
-                  UTIL.log("Stopped garbage collection");
+                  //UTIL.log("Stopped garbage collection");
                   }
                else
                   {
                   for (var i = 0; i < idsOfVideosToDelete.length; i++)
                      {
                      var id = idsOfVideosToDelete[i];
-                     UTIL.log("garbage collecting video [" + id + "]");
+                     UTIL.log("video(" + id + ") garbage collected");
                      var videoElement = document.getElementById(id);
                      if (videoElement)
                         {
@@ -351,7 +354,7 @@ if (!org.gigapan.Util)
 
             var _deleteVideo = function(video)
                {
-                  UTIL.log("video(" + video.id + ") delete");
+                  UTIL.log("video(" + video.id + ") deleted");
                   video.active = false;
                   video.pause();
 
@@ -383,7 +386,7 @@ if (!org.gigapan.Util)
                   if (garbageCollectionInterval == null)
                      {
                      garbageCollectionInterval = window.setInterval(garbageCollect, 100);
-                     UTIL.log("Started garbage collection");
+                     //UTIL.log("Started garbage collection");
                      }
                };
             this.deleteVideo = _deleteVideo;
@@ -537,7 +540,7 @@ if (!org.gigapan.Util)
                video.style.left = parseFloat(video.style.left) + 100000 + "px";
 
                var error = video.currentTime - leader - _getCurrentTime();
-               UTIL.log("_makeVideoVisible("+callingFunction+"): id=["+video.id+"] ready=["+video.ready+"] readyState=["+video.readyState+"] networkState=["+video.networkState+"] error=["+error+"]");
+               UTIL.log("video("+video.id+") _makeVideoVisible("+callingFunction+"): ready=["+video.ready+"] error=["+error+"] " + videoStats(video));
 
                // delete video which is being replaced, following the chain until we get to a null
                var videoToDelete = video.videoBeingReplaced;
@@ -670,15 +673,48 @@ if (!org.gigapan.Util)
                   var newTime = UTIL.getCurrentTimeInSecs();
                   var b = video.buffered;
                   var newBufferPosition = (b && b.length) ? b.end(b.length-1) : 0;
-                  UTIL.log("newTime " + newTime + " video.bwLastTime " + video.bwLastTime);
+                  //UTIL.log("newTime " + newTime + " video.bwLastTime " + video.bwLastTime);
                   var deltaTime = newTime - video.bwLastTime;
-                  UTIL.log("newBufferPosition " + newBufferPosition + " video.bwLastBuf " + video.bwLastBuf);
+                  //UTIL.log("newBufferPosition " + newBufferPosition + " video.bwLastBuf " + video.bwLastBuf);
                   var deltaBuffer = newBufferPosition - video.bwLastBuf;
                   video.bwLastTime = newTime;
                   video.bwLastBuf = newBufferPosition;
                   video.bandwidth = (deltaTime==0) ? 0 : deltaBuffer / deltaTime;
-                  UTIL.log("bandwidth is " + video.bandwidth);
+                  //UTIL.log("bandwidth is " + video.bandwidth);
                };
+
+            var videoStats = function(video)
+               {
+                  var netstates=["Empty","Idle","Loading","NoSource"];
+                  var readystates=["Nothing","Metadata","CurrentData", "FutureData", "EnoughData"];
+                  var ret="["+readystates[video.readyState]+","+netstates[video.networkState];
+                  if (video.seeking) ret += ",Seeking";
+                  ret += ",bw="+video.bandwidth.toFixed(1)+"]";
+                  return ret;
+               }
+
+            var allStats = function()
+               {
+                  var ready = [];
+                  var not_ready = [];
+                  var inactive = [];
+                  for (var videoId in activeVideos)
+                     {
+                     var video = activeVideos[videoId];
+                     updateVideoBandwidth(video);
+                     (video.ready ? ready : not_ready).push("video("+video.id+")"+videoStats(video));
+                     }
+                  for (var videoId in inactiveVideos)
+                     {
+                     var video = inactiveVideos[videoId];
+                     updateVideoBandwidth(video);
+                     inactive.push("video("+video.id+")"+videoStats(video));
+                     }
+                  msg = "NOTREADY("+not_ready.length+") " + not_ready.join(" ");
+                  msg += " | READY("+ready.length+") " + ready.join(" ");
+                  msg += " | DELETED("+inactive.length+") " + inactive.join(" ");
+                  UTIL.log(msg);
+               }
 
             var sync = function(errorThreshold)
                {
@@ -710,9 +746,9 @@ if (!org.gigapan.Util)
                   for (var videoId in activeVideos)
                      {
                      var video = activeVideos[videoId];
-                     updateVideoBandwidth(video);
+                     //updateVideoBandwidth(video);
                      var error = video.currentTime - leader - t;
-                     (video.ready ? ready_stats : not_ready_stats)[video.readyState].push(video.bandwidth.toFixed(0));
+                     (video.ready ? ready_stats : not_ready_stats)[video.readyState].push(video.bandwidth.toFixed(1));
                      if (video.readyState >= 1 && Math.abs(error) > errorThreshold)
                         {  // HAVE_METADATA=1
                         perfTimeCorrections.push(error);
@@ -722,13 +758,13 @@ if (!org.gigapan.Util)
                            perfTimeSeeks++;
                            //UTIL.log("current time " + video.currentTime);
                            //UTIL.log("leader " + leader);
-                           UTIL.log("Time correction: seeking video(" + videoId + ") from " + (video.currentTime-leader) + " to " + t + " (error=" + error + ", state=" + video.readyState + ")");
+                           UTIL.log("video("+videoId+") time correction: seeking from " + (video.currentTime-leader) + " to " + t + " (error=" + error + ", state=" + video.readyState + ")");
                            video.currentTime = leader + t + errorThreshold * .5; // seek ahead slightly
                            }
                         else
                            {
                            perfTimeTweaks++;
-                           UTIL.log("Time correction: tweaking video(" + videoId + ") from " + (video.currentTime-leader) + " to " + t + " (error=" + error + ", rate=" + rateTweak + ", state=" + video.readyState + ")");
+                           UTIL.log("video("+videoId+") time correction: tweaking from " + (video.currentTime-leader) + " to " + t + " (error=" + error + ", rate=" + rateTweak + ", state=" + video.readyState + ")");
                            // Speed or slow video so that we'll be even by the next sync interval
                            video.playbackRate = playbackRate * rateTweak;
                            }
@@ -744,14 +780,17 @@ if (!org.gigapan.Util)
                         }
                      }
                   var inactive_stats=[[],[],[],[],[]];
-                  for (var videoId in inactiveVideos)
-                     {
-                     var video = inactiveVideos[videoId];
-                     updateVideoBandwidth(video);
-                     inactive_stats[video.readyState].push(video.bandwidth.toFixed(0));
-                     }
+                  //for (var videoId in inactiveVideos)
+                  //   {
+                  //   var video = inactiveVideos[videoId];
+                  //   updateVideoBandwidth(video);
+                  //   inactive_stats[video.readyState].push(video.bandwidth.toFixed(1));
+                  //   }
 
-                  UTIL.log("video readyStates.  ready: " + ready_stats.join('|') + "; not ready: " + not_ready_stats.join('|') + "; inactive: " + inactive_stats.join('|'));
+                  //UTIL.log("video readyStates.  ready: " + ready_stats.join('|') + "; not ready: " + not_ready_stats.join('|') + "; inactive: " + inactive_stats.join('|'));
+
+                  //allStats();
+                  
                   for (var i = 0; i < syncListeners.length; i++)
                      {
                      try
@@ -770,9 +809,9 @@ if (!org.gigapan.Util)
             // Constructor code
             //
 
-            UTIL.log('Videoset() constructor');
+            //UTIL.log('Videoset() constructor');
 
-            this.setStatusLoggingEnabled(false);
+            this.setStatusLoggingEnabled(true);
                
          };
    })();
