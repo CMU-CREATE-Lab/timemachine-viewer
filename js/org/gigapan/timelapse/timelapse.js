@@ -460,7 +460,7 @@ if (!org.gigapan.timelapse.VideosetStats)
                   targetView.scale = tempView.scale;
 
                   if (animateInterval == null) {
-                      animateInterval = setInterval(animate, 40); // 25 hz
+                      animateInterval = setInterval(animate, 80); // 12.5 hz
                       lastAnimationTime = UTIL.getCurrentTimeInSecs();
                   }
 
