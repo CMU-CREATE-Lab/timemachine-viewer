@@ -112,6 +112,12 @@ if (!org.gigapan.timelapse.VideosetStats)
             var targetView = null;
             var currentIdx = null;
             var currentVideo = null;
+            var animateInterval = null;
+            var lastAnimationTime;
+            var minTranslateSpeedPixelsPerSecond = 25.;
+            var translateFractionPerSecond = 3.;
+            var minZoomSpeedPerSecond = .25; // in log2
+            var zoomFractionPerSecond = 3.; // in log2
 
             // levelThreshold sets the quality of display by deciding what level of tile to show for a given level of zoom:
             //
@@ -210,7 +216,8 @@ if (!org.gigapan.timelapse.VideosetStats)
 
             var _homeView = function()
                {
-                  return computeViewFit({xmin:0, ymin:0, xmax:panoWidth, ymax:panoHeight});
+                  var ret = computeViewFit({xmin:0, ymin:0, xmax:panoWidth, ymax:panoHeight});
+                  return ret;
                };
             this.homeView = _homeView;
 
@@ -325,10 +332,10 @@ if (!org.gigapan.timelapse.VideosetStats)
                   var translationSpeedConstant = 20;
                   var translation = translationSpeedConstant / view.scale;
 
-                  if (dir == "left") targetView.x -= translation;
+                  if      (dir == "left")  targetView.x -= translation;
                   else if (dir == "right") targetView.x += translation;
-                  else if (dir == "up") targetView.y -= translation;
-                  else if (dir == "down") targetView.y += translation;
+                  else if (dir == "up")    targetView.y -= translation;
+                  else if (dir == "down")  targetView.y += translation;
 
                   setTargetView(targetView);
                };
@@ -436,8 +443,14 @@ if (!org.gigapan.timelapse.VideosetStats)
                   return Math.max(_getMinScale(), Math.min(_getMaxScale(), scale));
                };
                   
+            var view2string = function(view)
+            {
+                return "[view x:"+view.x+" y:"+view.y+" scale:"+view.scale+"]";
+            }
+            
             var setTargetView = function(newView)
                {
+                   UTIL.log("setTargetView: newView=" + view2string(newView)+", view="+view2string(view)+", targetView="+view2string(targetView));
                   var tempView = {};
                   tempView.scale = limitScale(newView.scale);
                   tempView.x = Math.max(0, Math.min(panoWidth, newView.x));
@@ -445,15 +458,103 @@ if (!org.gigapan.timelapse.VideosetStats)
                   targetView.x = tempView.x;
                   targetView.y = tempView.y;
                   targetView.scale = tempView.scale;
-                  //  if (!g_videoset.animate_interval) g_videoset.animate_interval = setInterval(timelapse__animate, 100);
-                  // TEMPORARY
-                  view.x = targetView.x;
-                  view.y = targetView.y;
-                  view.scale = targetView.scale;
+
+                  if (animateInterval == null) {
+                      animateInterval = setInterval(animate, 40); // 25 hz
+                      lastAnimationTime = UTIL.getCurrentTimeInSecs();
+                  }
 
                   refresh();
                };
 
+            var point2mag = function(point)
+            {
+                return Math.sqrt(point.x*point.x + point.y*point.y);
+            }
+
+            var point2sub = function(a,b)
+            {
+                return {x: a.x-b.x, y: a.y-b.y};
+            }
+
+            var point2scale = function(point, scale)
+            {
+                return {x: point.x*scale, y: point.y*scale};
+            }
+
+            var log2 = function(x)
+            {
+                return Math.log(x) / Math.log(2);
+            }
+
+            var exp2 = function(x)
+            {
+                return Math.pow(2,x);
+            }
+
+            var animate = function()
+            {
+                //UTIL.log("animate");
+                // Compute deltaT between this animation frame and last
+                var now = UTIL.getCurrentTimeInSecs();
+                var deltaT = now - lastAnimationTime;
+                if (deltaT < .001) deltaT = .001;
+                if (deltaT > .5) deltaT = .5;
+                lastAnimationTime = now;
+                  
+                var viewChanged = false;
+                  
+                // Animate translation
+                var minTranslateSpeed = minTranslateSpeedPixelsPerSecond / view.scale;
+                var minTranslateDelta = minTranslateSpeed * deltaT;
+                var translateFraction = translateFractionPerSecond * deltaT;
+                        
+                var toGoal = point2sub(targetView, view);
+                var toGoalMag = point2mag(toGoal);
+                if (toGoalMag > 0) {
+                    var translateDelta;
+                    if (toGoalMag * translateFraction > minTranslateDelta) {
+                        translateDelta = point2scale(toGoal, translateFraction);
+                        //UTIL.log("translating by fraction " + translateFraction + ", mag " + point2mag(translateDelta));
+                    } else if (toGoalMag > minTranslateDelta) {
+                        translateDelta = point2scale(toGoal, minTranslateDelta / toGoalMag);
+                        //UTIL.log("translating by min delta " + minTranslateDelta + ", mag " + point2mag(translateDelta));
+                    } else {
+                        translateDelta = toGoal;
+                        //UTIL.log("translating full amount " + point2mag(translateDelta));
+                    }
+                    view.x += translateDelta.x;
+                    view.y += translateDelta.y;
+                    viewChanged = true;
+                }
+                
+                // Animate scale
+                var minZoomSpeed = minZoomSpeedPerSecond;
+                var minZoomDelta = minZoomSpeed * deltaT;
+                var zoomFraction = zoomFractionPerSecond * deltaT;
+
+                if (targetView.scale != view.scale) {
+                    var zoomDelta;
+                    var toGoal = log2(targetView.scale)-log2(view.scale);
+                    if (Math.abs(toGoal) * zoomFraction > minZoomDelta) {
+                        view.scale = exp2(log2(view.scale) + toGoal * translateFraction);
+                    } else if (Math.abs(toGoal) > minZoomDelta) {
+                        view.scale = exp2(log2(view.scale) + toGoal * minZoomDelta / Math.abs(toGoal));
+                    } else {
+                        view.scale = targetView.scale;
+                    }
+                    viewChanged = true;
+                }
+
+                if (!viewChanged) {
+                    //UTIL.log("animation finished, clearing interval");
+                    clearInterval(animateInterval);
+                    animateInterval = null;
+                } else {
+                    refresh();
+                }
+            }
+            
             var computeViewFit = function(bbox)
                {
                   var scale = Math.min(viewportWidth / (bbox.xmax - bbox.xmin),
@@ -495,12 +596,13 @@ if (!org.gigapan.timelapse.VideosetStats)
 
             var refresh = function()
                {
-                   //UTIL.log('vvvvvvvvvvvvvvvvvvvvvvvv start refresh');
+                  if (!isFinite(view.scale)) return;
+                  //UTIL.log('vvvvvvvvvvvvvvvvvvvvvvvv start refresh');
                   logReadyVideos();
                   
                   //for (var tileidx in tiles) tiles[tileidx].needed = false;
 
-                  var bestIdx = computeBestVideo(view);
+                  var bestIdx = computeBestVideo(targetView);
                   if (bestIdx != currentIdx) {
                      currentVideo = addTileidx(bestIdx, currentVideo);
                      currentIdx = bestIdx;
@@ -657,6 +759,7 @@ if (!org.gigapan.timelapse.VideosetStats)
 
             var computeBestVideo = function(theView)
                {
+                   //UTIL.log("computeBestVideo " + view2string(theView));
                   var level = scale2level(view.scale);
                   var levelScale = Math.pow(2, maxLevel - level);
                   var col = Math.round((theView.x - (videoWidth * levelScale * .5)) / (tileWidth * levelScale));
@@ -775,7 +878,7 @@ if (!org.gigapan.timelapse.VideosetStats)
             //
 
             view = _homeView();
-            targetView = view;
+            targetView = _homeView();
             UTIL.log('Timelapse("' + url + '")');
             videoDiv['onmousedown'] = handleMousedownEvent;
             videoDiv['ondblclick'] = handleDoubleClickEvent;
