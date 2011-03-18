@@ -107,6 +107,8 @@ function setupUIHandlers() {
       movePos("left");
    }).mouseup(function() {
       clearInterval(intervalId);
+   }).mouseout(function() {
+      clearInterval(intervalId);      
    }).mousemove(function() {
       $(this).attr("title", "Move Left");
       this.style.cursor = 'pointer';
@@ -118,6 +120,8 @@ function setupUIHandlers() {
       movePos("right");
    }).mouseup(function() {
       clearInterval(intervalId);
+   }).mouseout(function() {
+      clearInterval(intervalId);      
    }).mousemove(function() {
       $(this).attr("title", "Move Right");
       this.style.cursor = 'pointer';
@@ -129,6 +133,8 @@ function setupUIHandlers() {
       movePos("up");
    }).mouseup(function() {
       clearInterval(intervalId);
+   }).mouseout(function() {
+      clearInterval(intervalId);      
    }).mousemove(function() {
       $(this).attr("title", "Move Up");
       this.style.cursor = 'pointer';
@@ -140,6 +146,8 @@ function setupUIHandlers() {
       movePos("down");
    }).mouseup(function() {
       clearInterval(intervalId);
+   }).mouseout(function() {
+      clearInterval(intervalId);      
    }).mousemove(function() {
       $(this).attr("title", "Move Down");
       this.style.cursor = 'pointer';
@@ -151,6 +159,8 @@ function setupUIHandlers() {
       zoomIn();
    }).mouseup(function() {
       clearInterval(intervalId);
+   }).mouseout(function() {
+      clearInterval(intervalId);
    }).mousemove(function() {
       $(this).attr("title", "Zoom In");
       this.style.cursor = 'pointer';
@@ -161,6 +171,8 @@ function setupUIHandlers() {
    }).click(function() {
       zoomOut();
    }).mouseup(function() {
+      clearInterval(intervalId);
+   }).mouseout(function() {
       clearInterval(intervalId);
    }).mousemove(function() {
       $(this).attr("title", "Zoom Out");
