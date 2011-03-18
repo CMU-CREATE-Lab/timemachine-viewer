@@ -234,6 +234,8 @@ function loadTimelapse(gigapanJSON) {
 	// Create the timelapse
 	timelapse = new org.gigapan.timelapse.Timelapse(gigapanUrl, 'timelapse', gigapanJSON, 'videoset_stats_container');
 
+   changeViewerSize(.75 * gigapanJSON['video_width']);   // viewport should be no larger than 3/4 video size
+
 	timelapse.addTimeChangeListener(function(t) {
 		 timelapseCurrentTimeInSeconds = t;
 		 if (timelapseCurrentTimeInSeconds < 0) {
