@@ -866,7 +866,6 @@ if (!org.gigapan.Util)
                   var t = _getCurrentTime();
                   if (t < 0)
                      {
-                     UTIL.log("hit begin; pause; seek to 0");
                      _pause();
                      _seek(0);
                      return;
@@ -875,9 +874,6 @@ if (!org.gigapan.Util)
                      {
                      _pause();
                      var end = duration-(1.0/fps);
-                     UTIL.log("t is " + t);
-                     UTIL.log("duration is " + duration);
-                     UTIL.log("hit end; pause; seek to " + end);
                      _seek(end);
                      return;
                      }
