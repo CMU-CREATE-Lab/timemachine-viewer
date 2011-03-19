@@ -584,7 +584,7 @@ if (!org.gigapan.Util)
                      }
                   if (!duration)
                      {
-                     duration = video.duration;
+                     duration = video.duration - leader;
                      }
                   UTIL.log("video(" + video.id + ") videoLoadedMetadata; seek to " + _getCurrentTime());
                   perfInitialSeeks++;
@@ -866,14 +866,19 @@ if (!org.gigapan.Util)
                   var t = _getCurrentTime();
                   if (t < 0)
                      {
+                     UTIL.log("hit begin; pause; seek to 0");
                      _pause();
                      _seek(0);
                      return;
                      }
-                  else if (t > duration)
+                  else if (duration > 0 && t >= duration)
                      {
                      _pause();
-                     _seek(duration);
+                     var end = duration-(1.0/fps);
+                     UTIL.log("t is " + t);
+                     UTIL.log("duration is " + duration);
+                     UTIL.log("hit end; pause; seek to " + end);
+                     _seek(end);
                      return;
                      }
 
@@ -901,7 +906,7 @@ if (!org.gigapan.Util)
                            //UTIL.log("current time " + video.currentTime);
                            //UTIL.log("leader " + leader);
                            UTIL.log("video("+videoId+") time correction: seeking from " + (video.currentTime-leader) + " to " + t + " (error=" + error + ", state=" + video.readyState + ")");
-                           video.currentTime = leader + t + errorThreshold * .5; // seek ahead slightly
+                           video.currentTime = leader + t + (advancing ? playbackRate * errorThreshold * .5 : 0); // seek ahead slightly if advancing
                            }
                         else
                            {
