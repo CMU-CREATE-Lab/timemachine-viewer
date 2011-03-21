@@ -88,6 +88,9 @@
                         </div>
                      </td>
                      <td class="align-right">
+                        <!--
+                        TODO: use AJAX to fetch JSON document which describes all available video resolutions
+                              for a particlar dataset and use that to populate this menu.
                         <label for="viewer_size">Viewer Size:</label>
                         <select name="viewer_size" id="viewer_size" onchange="changeViewerSize($('#viewer_size').val());">
                            <option value="512" selected="selected">Small</option>
@@ -96,6 +99,7 @@
                         </select>
                         <br>
                         <br>
+                        -->
                         Debug:
                         <input id="logVideoStatus" type="checkbox" onclick="timelapse.setStatusLoggingEnabled(this.value)"/><label for="logVideoStatus">Log video status</label>
                         <input id="showNativeVideoControls" type="checkbox" onclick="timelapse.setNativeVideoControlsEnabled(this.value)"/><label for="showNativeVideoControls">Show Native Video Controls</label>

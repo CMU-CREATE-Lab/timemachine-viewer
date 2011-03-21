@@ -217,8 +217,8 @@ function setupMouseHandlers() {
    $("#timelapse").mousewheel(timelapse.handleMousescrollEvent);
 }
 
-function changeViewerSize(newWidth) {
-   var newHeight = newWidth * 0.5625;  // 0.5625 is the aspect ratio of the default 800x450 viewer
+function changeViewerSize(newWidth, newHeight) {
+   //var newHeight = newWidth * 0.5625;  // 0.5625 is the aspect ratio of the default 800x450 viewer
    var bounds = timelapse.getBoundingBoxForCurrentView();
    $("#timelapse_container").width(newWidth);
    $("#timelapse_container").height(newHeight);
@@ -246,7 +246,7 @@ function loadTimelapse(gigapanJSON) {
 	// Create the timelapse
 	timelapse = new org.gigapan.timelapse.Timelapse(gigapanUrl, 'timelapse', gigapanJSON, 'videoset_stats_container');
 
-   changeViewerSize(.75 * gigapanJSON['video_width']);   // viewport should be no larger than 3/4 video size
+   changeViewerSize(gigapanJSON['video_width'] - gigapanJSON['tile_width'], gigapanJSON['video_height'] - gigapanJSON['tile_height']);   // viewport should be no larger than 3/4 video size
 
 	timelapse.addTimeChangeListener(function(t) {
 		 timelapseCurrentTimeInSeconds = t;
