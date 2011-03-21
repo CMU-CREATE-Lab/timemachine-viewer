@@ -68,6 +68,12 @@ else
       return isChromeUserAgent;
       };
 
+   org.gigapan.Util.isNumber = function(n)
+      {
+      // code taken from http://stackoverflow.com/questions/18082/validate-numbers-in-javascript-isnumeric
+      return !isNaN(parseFloat(n)) && isFinite(n);
+      };
+
    org.gigapan.Util.log = function(str)
       {
       if (areLogging && typeof(console) !== 'undefined' && console != null)

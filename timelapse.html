@@ -24,8 +24,6 @@
 
       <script type="text/javascript">
          org.gigapan.timelapse.VideosetStats.isEnabled = true;
-         var gigapanId = $.query.get('id') || "brassica1-15m-halfsize";
-         var willAddConnectionDropParam = $.query.get('drop') == 1 || $.query.get('drop') == "true";
       </script>
    </head>
 
@@ -74,7 +72,7 @@
             <div id="misc_controls_container" style="width:512px; border: 2px solid black; border-top:0">
                <table id="misc_controls_container_table" style="width:512px;">
                   <tr>
-                     <td style="padding:10px 20px 20px 20px;">
+                     <td style="padding:10px 20px 20px 20px; text-align:left">
                         <label for="speed">Playback Speed:</label>
                         <div id="playBackSpeedSlider">
                            <select name="speed" id="speed">
@@ -87,22 +85,27 @@
                            </select>
                         </div>
                      </td>
-                     <td class="align-right">
-                        <!--
-                        TODO: use AJAX to fetch JSON document which describes all available video resolutions
-                              for a particlar dataset and use that to populate this menu.
-                        <label for="viewer_size">Viewer Size:</label>
-                        <select name="viewer_size" id="viewer_size" onchange="changeViewerSize($('#viewer_size').val());">
-                           <option value="512" selected="selected">Small</option>
-                           <option value="768">Normal</option>
-                           <option value="1200">Large</option>
-                        </select>
-                        <br>
-                        <br>
-                        -->
-                        Debug:
-                        <input id="logVideoStatus" type="checkbox" onclick="timelapse.setStatusLoggingEnabled(this.value)"/><label for="logVideoStatus">Log video status</label>
-                        <input id="showNativeVideoControls" type="checkbox" onclick="timelapse.setNativeVideoControlsEnabled(this.value)"/><label for="showNativeVideoControls">Show Native Video Controls</label>
+                     <td>
+                        <table border="0" cellpadding="2" cellspacing="0" align="right" style="padding-right:10px">
+                           <tr>
+                              <td style="text-align:right"><label for="viewer_size">Size:</label></td>
+                              <td style="text-align:left">
+                                 <select name="viewer_size" id="viewer_size" onchange="switchDataset($('#viewer_size').val());"></select>
+                              </td>
+                           </tr>
+                           <tr>
+                              <td style="text-align:right">Debug:</td>
+                              <td style="text-align:left">
+                                 <input id="logVideoStatus" type="checkbox" onclick="timelapse.setStatusLoggingEnabled(this.value)" checked="checked"/><label for="logVideoStatus">Log video status</label>
+                              </td>
+                           </tr>
+                           <tr>
+                              <td>&nbsp;</td>
+                              <td style="text-align:left">
+                                 <input id="showNativeVideoControls" type="checkbox" onclick="timelapse.setNativeVideoControlsEnabled(this.value)"/><label for="showNativeVideoControls">Show Native Video Controls</label>
+                              </td>
+                           </tr>
+                        </table>
                      </td>
                   </tr>
                </table>
@@ -114,9 +117,6 @@
          </td>
       </tr>
    </table>
-
-   <button onclick="timelapse.setStatusLoggingEnabled(true)">start log</button>
-   <button onclick="timelapse.setStatusLoggingEnabled(false)">stop log</button>
 
    <table class="no-padding">
       <tr class="valign-top">

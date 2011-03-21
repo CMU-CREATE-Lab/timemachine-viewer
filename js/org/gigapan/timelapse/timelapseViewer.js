@@ -1,3 +1,13 @@
+var gigapanId = $.query.get('id') || "brassica-15m-halfsize-g10-bf0-l15";
+var datasetIndex = $.query.get('dataset') || "0";
+var gigapanDatasetsJSON = null;
+
+// Test whether this is being served from timelapse.gigapan.org.  If so, then fetch the JSON from there too.
+// If not, then assume it's being served from localhost and fetch the JSON from the local machine (since we're
+// not using JSONP on timelapse.gigapan.org (but we probably should!)).
+var urlMatchPattern = /^http:\/\/timelapse.gigapan.org\//;
+var isRemoteUrl = window.location.href.match(urlMatchPattern) != null;
+
 var timelapseDurationInSeconds = 0.0;
 var timeStepInSecs = 0.04; // 25 frames per second
 var timelapse = null;
@@ -217,7 +227,13 @@ function setupMouseHandlers() {
    $("#timelapse").mousewheel(timelapse.handleMousescrollEvent);
 }
 
-function changeViewerSize(newWidth, newHeight) {
+function switchDataset(index)
+   {
+   window.location = 'timelapse.html?id=' + gigapanId + '&dataset=' + index;
+   }
+
+function setViewportSize(newWidth, newHeight)
+   {
    //var newHeight = newWidth * 0.5625;  // 0.5625 is the aspect ratio of the default 800x450 viewer
    var bounds = timelapse.getBoundingBoxForCurrentView();
    $("#timelapse_container").width(newWidth);
@@ -228,80 +244,133 @@ function changeViewerSize(newWidth, newHeight) {
    $("#misc_controls_container").width(newWidth);
    $("#misc_controls_container_table").width(newWidth);
    $("#timelineSlider").width(newWidth - 173);
-   if ($('#spinnerOverlay').length != 0) {
+   if ($('#spinnerOverlay').length != 0)
+      {
       $('#spinnerOverlay').css("top", newHeight / 2 - $("#spinner").height() / 2 + "px");
       $('#spinnerOverlay').css("left", newWidth / 2 - $("#spinner").width() / 2 + "px");
-   }
+      }
    timelapse.updateDimensions();
    timelapse.warpToBoundingBox(bounds);
-}
-
-function loadTimelapse(gigapanJSON) {
-	// Build the gigapan URL.  We use the CGI for Chrome, but plain ol' MP4s for Safari.
-	var isChrome = org.gigapan.Util.isChrome();
-	isChrome = false;
-	var dropConnectionParam = willAddConnectionDropParam ? "drop=1&" : "";
-	var gigapanUrl = "http://timelapse.gigapan.org/alpha/" + (isChrome ? "cgi-bin/video_streamer.cgi?"+dropConnectionParam+"id="+gigapanId+"&t=" : "timelapses/" + gigapanId + '/');
-
-	// Create the timelapse
-	timelapse = new org.gigapan.timelapse.Timelapse(gigapanUrl, 'timelapse', gigapanJSON, 'videoset_stats_container');
-
-   changeViewerSize(gigapanJSON['video_width'] - gigapanJSON['tile_width'], gigapanJSON['video_height'] - gigapanJSON['tile_height']);   // viewport should be no larger than 3/4 video size
-
-	timelapse.addTimeChangeListener(function(t) {
-		 timelapseCurrentTimeInSeconds = t;
-		 if (timelapseCurrentTimeInSeconds < 0) {
-				timelapseCurrentTimeInSeconds = 0;
-				$('#play_toggle').attr("class", "play_mouseout");
-				$('#play_toggle').attr("title", "Play");
-		 }
-		 $("#currentTime").text(org.gigapan.Util.formatTime(timelapseCurrentTimeInSeconds));
-		 $("#timelineSlider")['slider']("option", "value", timelapseCurrentTimeInSeconds);
-		 if (timelapseCurrentTimeInSeconds >= timelapseDurationInSeconds) {
-				$('#play_toggle').attr("class", "play_mouseout");
-				$('#play_toggle').attr("title", "Play");
-		 }
-	});
-
-	setupKeyboardHandlers();
-	setupMouseHandlers();
-	createTimelineSlider();
-	createZoomSlider();
-	createPlaybackSpeedSlider();
-	setupTimelineSliderHandlers();
-	setupZoomSliderHandlers();
-	setupUIHandlers();
-	setupSnaplapseHandlers();
-}
-
-$(document).ready(function() {
-   var browserSupported = org.gigapan.Util.browserSupported();
-   if (!browserSupported) {
-      window.location = "browsernotsupported.html";
    }
 
-   // Test whether this is being served from timelapse.gigapan.org.  If so, then fetch the JSON from there too.
-   // If not, then assume it's being served from localhost and fetch the JSON from the local machine (since we're
-   // not using JSONP on timelapse.gigapan.org (but we probably should!)).
-   var urlMatchPattern = /^http:\/\/timelapse.gigapan.org\//;
-   var isRemoteUrl = window.location.href.match(urlMatchPattern) != null;
-   var jsonUrl = (isRemoteUrl ? "../alpha/timelapses/" : "../timelapses/") + gigapanId + '/r.json';
+function loadTimelapse(gigapanUrl, gigapanJSON)
+   {
+   // Create the timelapse
+   timelapse = new org.gigapan.timelapse.Timelapse(gigapanUrl, 'timelapse', gigapanJSON, 'videoset_stats_container');
 
-   org.gigapan.Util.log("Attempting to fetch JSON from URL ["+jsonUrl+"]...");
-   $.ajax({
-      dataType:'json',
-      url: jsonUrl,
-      success: function(gigapanJSON) {
-         if (gigapanJSON && gigapanJSON['tile_height']) {
-            org.gigapan.Util.log("Loaded this JSON: ["+JSON.stringify(gigapanJSON)+"]");
-            loadTimelapse(gigapanJSON);
-         } else {
-            org.gigapan.Util.error("Failed to load json from URL [" + jsonUrl + "]");
-         }
-      },
-      error: function() {
-         org.gigapan.Util.error("Error loading json from URL [" + jsonUrl + "]");
+   setViewportSize(gigapanJSON['video_width'] - gigapanJSON['tile_width'], gigapanJSON['video_height'] - gigapanJSON['tile_height']);
+
+   timelapse.addTimeChangeListener(function(t)
+                                      {
+                                      timelapseCurrentTimeInSeconds = t;
+                                      if (timelapseCurrentTimeInSeconds < 0)
+                                         {
+                                         timelapseCurrentTimeInSeconds = 0;
+                                         $('#play_toggle').attr("class", "play_mouseout");
+                                         $('#play_toggle').attr("title", "Play");
+                                         }
+                                      $("#currentTime").text(org.gigapan.Util.formatTime(timelapseCurrentTimeInSeconds));
+                                      $("#timelineSlider")['slider']("option", "value", timelapseCurrentTimeInSeconds);
+                                      if (timelapseCurrentTimeInSeconds >= timelapseDurationInSeconds)
+                                         {
+                                         $('#play_toggle').attr("class", "play_mouseout");
+                                         $('#play_toggle').attr("title", "Play");
+                                         }
+                                      });
+
+   setupKeyboardHandlers();
+   setupMouseHandlers();
+   createTimelineSlider();
+   createZoomSlider();
+   createPlaybackSpeedSlider();
+   setupTimelineSliderHandlers();
+   setupZoomSliderHandlers();
+   setupUIHandlers();
+   setupSnaplapseHandlers();
+   }
+
+function loadGigapanJSON()
+   {
+   // Build the gigapan URL.  We use the CGI for Chrome, but plain ol' MP4s for Safari.
+   var isChrome = org.gigapan.Util.isChrome();
+   isChrome = false;
+
+   // make sure the datasetIndex is a valid number, and within the range of datasets for this gigapan.
+   if (!org.gigapan.Util.isNumber(datasetIndex))
+      {
+      datasetIndex = 0;
       }
-   });
-});
+   datasetIndex = Math.max(0, Math.min(datasetIndex, gigapanDatasetsJSON['datasets'].length - 1));
+
+   // fetch the datasetId and then construct the URL used to get the JSON for the desired dataset
+   var datasetId = gigapanDatasetsJSON['datasets'][datasetIndex]['id'];
+   var jsonUrl = (isRemoteUrl ? "../alpha/timelapses/" : "../timelapses/") + datasetId + '/r.json';
+
+   org.gigapan.Util.log("Attempting to fetch gigapan JSON from URL [" + jsonUrl + "]...");
+   $.ajax({
+             dataType:'json',
+             url: jsonUrl,
+             success: function(gigapanJSON)
+                {
+                if (gigapanJSON && gigapanJSON['tile_height'])
+                   {
+                   org.gigapan.Util.log("Loaded this JSON: [" + JSON.stringify(gigapanJSON) + "]");
+                   var gigapanUrl = "http://timelapse.gigapan.org/alpha/timelapses/" + datasetId + "/";
+                   loadTimelapse(gigapanUrl, gigapanJSON);
+                   }
+                else
+                   {
+                   org.gigapan.Util.error("Failed to load gigapan json from URL [" + jsonUrl + "]");
+                   }
+                },
+             error: function()
+                {
+                org.gigapan.Util.error("Error loading gigapan json from URL [" + jsonUrl + "]");
+                }
+          });
+   }
+
+$(document).ready(function()
+                     {
+                     var browserSupported = org.gigapan.Util.browserSupported();
+                     if (!browserSupported)
+                        {
+                        window.location = "browsernotsupported.html";
+                        }
+
+                     var jsonUrl = (isRemoteUrl ? "../alpha/timelapses/" : "../timelapses/") + gigapanId + '.json';
+
+                     org.gigapan.Util.log("Attempting to fetch gigapan datasets JSON from URL [" + jsonUrl + "]...");
+                     $.ajax({
+                               dataType:'json',
+                               url: jsonUrl,
+                               success: function(json)
+                                  {
+                                  gigapanDatasetsJSON = json;
+                                  if (gigapanDatasetsJSON && gigapanDatasetsJSON['base-id'] == gigapanId && gigapanDatasetsJSON['datasets'] && gigapanDatasetsJSON['datasets'].length > 0)
+                                     {
+                                     org.gigapan.Util.log("Loaded this JSON: [" + JSON.stringify(gigapanDatasetsJSON) + "]");
+                                     loadGigapanJSON();
+
+                                     // set document title
+                                     document.title = "GigaPan Timelapse Explorer: " + gigapanDatasetsJSON['name'];
+                                        
+                                     // now populate the Viewer Size popup menu with the various datasets
+                                     for (var i = 0; i < gigapanDatasetsJSON['datasets'].length; i++)
+                                        {
+                                        var selected = (i == datasetIndex) ? 'selected="selected"' : '';
+                                        $("#viewer_size").append('<option value="' + i + '" ' + selected + '>' + gigapanDatasetsJSON['datasets'][i]['name'] + '</option>');
+                                        }
+                                     }
+                                  else
+                                     {
+                                     org.gigapan.Util.error("Failed to load gigapan datasets json from URL [" + jsonUrl + "]");
+                                     }
+                                  },
+                               error: function()
+                                  {
+                                  org.gigapan.Util.error("Error loading gigapan datasets json from URL [" + jsonUrl + "]");
+                                  }
+                            });
+                     });
 
