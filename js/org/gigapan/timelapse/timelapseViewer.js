@@ -4,7 +4,7 @@ var timelapse = null;
 var timelapseCurrentTimeInSeconds = 0.0;
 
 function createTimelineSlider() {
-  timelapseDurationInSeconds = timelapse.getNumFrames() / timelapse.getFps();
+  timelapseDurationInSeconds = Math.floor(timelapse.getNumFrames() / timelapse.getFps());
   $("#totalTime").text(org.gigapan.Util.formatTime(timelapseDurationInSeconds));
 
 	$("#timelineSlider")['slider']({

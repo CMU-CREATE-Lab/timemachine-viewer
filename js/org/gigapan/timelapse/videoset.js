@@ -822,39 +822,6 @@ if (!org.gigapan.Util)
                   UTIL.log(msg);
                };
 
-            var videoStats = function(video)
-               {
-                  var netstates=["Empty","Idle","Loading","NoSource"];
-                  var readystates=["Nothing","Metadata","CurrentData", "FutureData", "EnoughData"];
-                  var ret="["+readystates[video.readyState]+","+netstates[video.networkState];
-                  if (video.seeking) ret += ",Seeking";
-                  ret += ",bw="+video.bandwidth.toFixed(1)+"]";
-                  return ret;
-               }
-
-            var allStats = function()
-               {
-                  var ready = [];
-                  var not_ready = [];
-                  var inactive = [];
-                  for (var videoId in activeVideos)
-                     {
-                     var video = activeVideos[videoId];
-                     updateVideoBandwidth(video);
-                     (video.ready ? ready : not_ready).push("video("+video.id+")"+videoStats(video));
-                     }
-                  for (var videoId in inactiveVideos)
-                     {
-                     var video = inactiveVideos[videoId];
-                     updateVideoBandwidth(video);
-                     inactive.push("video("+video.id+")"+videoStats(video));
-                     }
-                  msg = "NOTREADY("+not_ready.length+") " + not_ready.join(" ");
-                  msg += " | READY("+ready.length+") " + ready.join(" ");
-                  msg += " | DELETED("+inactive.length+") " + inactive.join(" ");
-                  UTIL.log(msg);
-               }
-
             var sync = function(errorThreshold)
                {
                   //UTIL.log("sync");
