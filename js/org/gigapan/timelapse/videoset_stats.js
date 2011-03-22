@@ -99,6 +99,9 @@ if (!window['$'])
 
          var containerDivNameWithHash = "#" + containerDivName;
 
+         // make sure it's empty first
+         jQuery(containerDivNameWithHash).empty();
+
          jQuery(containerDivNameWithHash).append(
                '<div id="videoset_stats">' +
                '   <table border="0" cellpadding="3" cellspacing="0">' +
