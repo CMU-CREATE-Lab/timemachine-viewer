@@ -255,6 +255,8 @@ function setViewportSize(newWidth, newHeight)
 
 function loadTimelapse(gigapanUrl, gigapanJSON)
    {
+   $("#timelapse").empty();
+      
    // Create the timelapse
    timelapse = new org.gigapan.timelapse.Timelapse(gigapanUrl, 'timelapse', gigapanJSON, 'videoset_stats_container');
 
@@ -289,19 +291,21 @@ function loadTimelapse(gigapanUrl, gigapanJSON)
    setupSnaplapseHandlers();
    }
 
-function loadGigapanJSON()
+function validateAndSetDatasetIndex(newDatasetIndex)
    {
-   // Build the gigapan URL.  We use the CGI for Chrome, but plain ol' MP4s for Safari.
-   var isChrome = org.gigapan.Util.isChrome();
-   isChrome = false;
-
    // make sure the datasetIndex is a valid number, and within the range of datasets for this gigapan.
-   if (!org.gigapan.Util.isNumber(datasetIndex))
+   if (!org.gigapan.Util.isNumber(newDatasetIndex))
       {
       datasetIndex = 0;
       }
-   datasetIndex = Math.max(0, Math.min(datasetIndex, gigapanDatasetsJSON['datasets'].length - 1));
+   else
+      {
+      datasetIndex = Math.max(0, Math.min(newDatasetIndex, gigapanDatasetsJSON['datasets'].length - 1));
+      }
+   }
 
+function loadGigapanJSON()
+   {
    // fetch the datasetId and then construct the URL used to get the JSON for the desired dataset
    var datasetId = gigapanDatasetsJSON['datasets'][datasetIndex]['id'];
    var jsonUrl = (isRemoteUrl ? "../alpha/timelapses/" : "../timelapses/") + datasetId + '/r.json';
@@ -350,7 +354,9 @@ $(document).ready(function()
                                   if (gigapanDatasetsJSON && gigapanDatasetsJSON['base-id'] == gigapanId && gigapanDatasetsJSON['datasets'] && gigapanDatasetsJSON['datasets'].length > 0)
                                      {
                                      org.gigapan.Util.log("Loaded this JSON: [" + JSON.stringify(gigapanDatasetsJSON) + "]");
-                                     loadGigapanJSON();
+
+                                     // make sure the datasetIndex is a valid number, and within the range of datasets for this gigapan.
+                                     validateAndSetDatasetIndex(datasetIndex);
 
                                      // set document title
                                      document.title = "GigaPan Timelapse Explorer: " + gigapanDatasetsJSON['name'];
@@ -361,6 +367,9 @@ $(document).ready(function()
                                         var selected = (i == datasetIndex) ? 'selected="selected"' : '';
                                         $("#viewer_size").append('<option value="' + i + '" ' + selected + '>' + gigapanDatasetsJSON['datasets'][i]['name'] + '</option>');
                                         }
+
+                                     // finally, load the gigapan
+                                     loadGigapanJSON();
                                      }
                                   else
                                      {
