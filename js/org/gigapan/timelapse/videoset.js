@@ -700,14 +700,14 @@ if (!org.gigapan.Util)
             var video = event.target;
 
             var error = video.currentTime - leader - _getCurrentTime();
-            if (Math.abs(error) > DEFAULT_ERROR_THRESHOLD)
+            if (_isPaused() && Math.abs(error) > DEFAULT_ERROR_THRESHOLD)
                {
                UTIL.log("video(" + video.id + ") videoSeeked():  readyState=[" + video.readyState + "] currentTime=[" + video.currentTime + "] error=[" + error + "] is too high, must re-seek");
                _setVideoToCurrentTime(video);
                }
             else
                {
-               UTIL.log("video(" + video.id + ") videoSeeked():  readyState=[" + video.readyState + "] currentTime=[" + video.currentTime + "] error=[" + error + "] is OK");
+               UTIL.log("video(" + video.id + ") videoSeeked():  readyState=[" + video.readyState + "] currentTime=[" + video.currentTime + "] error=[" + error + "] is acceptable");
 
                if (!video.ready)
                   {
