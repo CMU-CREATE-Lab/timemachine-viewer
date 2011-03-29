@@ -89,6 +89,7 @@ if (!org.gigapan.Util)
    {
       var UTIL = org.gigapan.Util;
       var MAX_QUEUED_VIDEO_LENGTH = 2;   // max number of videos allowed to be queued without stalling
+      var DEFAULT_ERROR_THRESHOLD = UTIL.isChrome() ? 0.005 : 0.04;
 
       org.gigapan.timelapse.Videoset = function(videoDivName)
          {
@@ -175,7 +176,7 @@ if (!org.gigapan.Util)
             this.setLeader = function(newLeader)
                {
                   var currentTime = _getCurrentTime();
-                  leader = newLeader;
+                  leader = newLeader - 0;  // subtract 0 to force this to be a number
                   _seek(currentTime);
                };
 
@@ -406,7 +407,6 @@ if (!org.gigapan.Util)
                {
                   return paused;
                };
-
             this.isPaused = _isPaused;
 
             var _updateVideoAdvance = function()
@@ -571,75 +571,143 @@ if (!org.gigapan.Util)
             // Private methods
             //
 
-            // This seems to get called pretty late in the game
-            var videoLoadedMetadata = function(event)
+         // This seems to get called pretty late in the game
+         var videoLoadedMetadata = function(event)
+            {
+            var video = event.target;
+            publishVideoEvent(video.id, 'video-loaded-metadata', new Date());
+
+            if (!video.active)
                {
-                  var video = event.target;
-                  publishVideoEvent(video.id, 'video-loaded-metadata', new Date());
-
-                  if (!video.active)
-                     {
-                     //UTIL.log("video(" + video.id + ") videoLoadedMetadata after deactivation!");
-                     return;
-                     }
-                  if (!duration)
-                     {
-                     duration = video.duration - leader;
-                     }
-                  UTIL.log("video(" + video.id + ") videoLoadedMetadata; seek to " + _getCurrentTime());
-                  perfInitialSeeks++;
-                  video.currentTime = leader+_getCurrentTime();
-                  if (advancing)
-                     {
-                     video.play();
-                     }
-               };
-
-            var _makeVideoVisible = function(video, callingFunction)
+               //UTIL.log("video(" + video.id + ") videoLoadedMetadata after deactivation!");
+               return;
+               }
+            if (!duration)
                {
-               if (!video.active)
-                  {
-                  UTIL.log("video("+video.id+") _makeVideoVisible, but it has already been deleted, so do nothing");
-                  return;
-                  }
-                  
-               video.ready = true;
-               video.style.left = parseFloat(video.style.left) + 100000 + "px";
-
-               var error = video.currentTime - leader - _getCurrentTime();
-               publishVideoEvent(video.id, 'video-made-visible', new Date());
-               UTIL.log("video("+video.id+") _makeVideoVisible("+callingFunction+"): ready=["+video.ready+"] error=["+error+"] " + videoStats(video));
-
-               // delete video which is being replaced, following the chain until we get to a null
-               var videoToDelete = activeVideos[video.idOfVideoBeingReplaced];
-               var chainOfDeletes = "";
-               while (videoToDelete)
-                  {
-                  var nextVideoToDelete = activeVideos[videoToDelete.idOfVideoBeingReplaced];
-                  delete videoToDelete.idOfVideoBeingReplaced;  // delete this to prevent multiple deletes
-                  chainOfDeletes += videoToDelete.id + ",";
-                  _deleteVideo(videoToDelete, video);
-                  videoToDelete = nextVideoToDelete;
-                  }
-               UTIL.log("video("+video.id+") _makeVideoVisible("+callingFunction+"): chain of deletes: " + chainOfDeletes);
-
-               // notify onload listener by calling the callback, if any
-               if (video.onloadCallback)
-                  {
-                  try
-                     {
-                     video.onloadCallback();
-                     }
-                  catch(e)
-                     {
-                     UTIL.error(e.name + " while calling callback function for onload of video ["+video.src+"]: " + e.message, e);
-                     }
-                  }
-               };
-
-            var videoSeeked = function(event)
+               duration = video.duration - leader;
+               }
+            _setVideoToCurrentTime(video);
+            if (advancing)
                {
-               var video = event.target;
+               video.play();
+               }
+            };
+
+         var _setVideoToCurrentTime = function(video)
+            {
+            if (video.active)
+               {
+               if (video.readyState > 0)
+                  {
+                  var theCurrentTime = _getCurrentTime();
+                  var desiredTime = leader + theCurrentTime;
+                  UTIL.log("video(" + video.id + ") _setVideoToCurrentTime; readyState=[" + video.readyState + "], seek to [" + theCurrentTime + "] which is [" + desiredTime + "]");
+
+                  // check the time ranges to see if we've loaded enough to perform a seek without causing a INDEX_SIZE_ERR: DOM Exception 1...
+                  var canSeek = false;
+                  var timeRanges = "";
+                  for (var i = 0; i < video.seekable.length; i++)
+                     {
+                     timeRanges += "(id=" + i + "|start=" + video.seekable.start(i) + "|end=" + video.seekable.end(i) + ")";
+                     if (video.seekable.start(i) <= desiredTime && desiredTime <= video.seekable.end(i))
+                        {
+                        canSeek = true;
+                        break;
+                        }
+                     }
+
+                  if (canSeek)
+                     {
+                     perfInitialSeeks++;
+                     try
+                        {
+                        video.currentTime = desiredTime;
+                        }
+                     catch(e)
+                        {
+                        UTIL.error("video(" + video.id + ") _setVideoToCurrentTime(): caught " + e.toString() + " setting currentTime to [" + desiredTime + "].  Will retry in 10 ms...");
+                        setTimeout(function()
+                                      {
+                                      _setVideoToCurrentTime(video);
+                                      }, 10);
+                        }
+                     }
+                  else
+                     {
+                     // try again in 10 ms
+                     UTIL.log("video(" + video.id + ") _setVideoToCurrentTime(): can't seek to [" + desiredTime + "] since no valid time range found [" + timeRanges + "].  Will retry in 10 ms...");
+                     setTimeout(function()
+                                   {
+                                   _setVideoToCurrentTime(video);
+                                   }, 10);
+                     }
+                  }
+               else
+                  {
+                  //UTIL.log("video("+video.id+") _setVideoToCurrentTime: doing nothing since video.readyState is 0");
+                  }
+               }
+            else
+               {
+               //UTIL.log("video("+video.id+") _setVideoToCurrentTime: doing nothing since video.active is false");
+               }
+            };
+
+         var _makeVideoVisible = function(video, callingFunction)
+            {
+            if (!video.active)
+               {
+               UTIL.log("video(" + video.id + ") _makeVideoVisible, but it has already been deleted, so do nothing");
+               return;
+               }
+
+            video.ready = true;
+            video.style.left = parseFloat(video.style.left) + 100000 + "px";
+
+            var error = video.currentTime - leader - _getCurrentTime();
+            publishVideoEvent(video.id, 'video-made-visible', new Date());
+            UTIL.log("video(" + video.id + ") _makeVideoVisible(" + callingFunction + "): ready=[" + video.ready + "] error=[" + error + "] " + videoStats(video));
+
+            // delete video which is being replaced, following the chain until we get to a null
+            var videoToDelete = activeVideos[video.idOfVideoBeingReplaced];
+            var chainOfDeletes = "";
+            while (videoToDelete)
+               {
+               var nextVideoToDelete = activeVideos[videoToDelete.idOfVideoBeingReplaced];
+               delete videoToDelete.idOfVideoBeingReplaced;  // delete this to prevent multiple deletes
+               chainOfDeletes += videoToDelete.id + ",";
+               _deleteVideo(videoToDelete, video);
+               videoToDelete = nextVideoToDelete;
+               }
+            UTIL.log("video(" + video.id + ") _makeVideoVisible(" + callingFunction + "): chain of deletes: " + chainOfDeletes);
+
+            // notify onload listener by calling the callback, if any
+            if (video.onloadCallback)
+               {
+               try
+                  {
+                  video.onloadCallback();
+                  }
+               catch(e)
+                  {
+                  UTIL.error(e.name + " while calling callback function for onload of video [" + video.src + "]: " + e.message, e);
+                  }
+               }
+            };
+
+         var videoSeeked = function(event)
+            {
+            var video = event.target;
+
+            var error = video.currentTime - leader - _getCurrentTime();
+            if (Math.abs(error) > DEFAULT_ERROR_THRESHOLD)
+               {
+               UTIL.log("video(" + video.id + ") videoSeeked():  readyState=[" + video.readyState + "] currentTime=[" + video.currentTime + "] error=[" + error + "] is too high, must re-seek");
+               _setVideoToCurrentTime(video);
+               }
+            else
+               {
+               UTIL.log("video(" + video.id + ") videoSeeked():  readyState=[" + video.readyState + "] currentTime=[" + video.currentTime + "] error=[" + error + "] is OK");
 
                if (!video.ready)
                   {
@@ -663,9 +731,10 @@ if (!org.gigapan.Util)
                      checkVideoReadyState();
                      }
                   }
-               };
+               }
+            };
 
-            // Call periodically, when video is running
+         // Call periodically, when video is running
             this.writeStatusToLog = function()
                {
                   var msg = "video status:";
@@ -804,17 +873,17 @@ if (!org.gigapan.Util)
                   var ready = [];
                   var not_ready = [];
                   var inactive = [];
-                  for (var videoId in activeVideos)
+                  for (var activeVideoId in activeVideos)
                      {
-                     var video = activeVideos[videoId];
-                     updateVideoBandwidth(video);
-                     (video.ready ? ready : not_ready).push("video("+video.id+")"+videoStats(video));
+                     var activeVideo = activeVideos[activeVideoId];
+                     updateVideoBandwidth(activeVideo);
+                     (activeVideo.ready ? ready : not_ready).push("video("+activeVideo.id+")"+videoStats(activeVideo));
                      }
-                  for (var videoId in inactiveVideos)
+                  for (var inactiveVideoId in inactiveVideos)
                      {
-                     var video = inactiveVideos[videoId];
-                     updateVideoBandwidth(video);
-                     inactive.push("video("+video.id+")"+videoStats(video));
+                     var inactiveVideo = inactiveVideos[inactiveVideoId];
+                     updateVideoBandwidth(inactiveVideo);
+                     inactive.push("video("+inactiveVideo.id+")"+videoStats(inactiveVideo));
                      }
                   var msg = "NOTREADY("+not_ready.length+") " + not_ready.join(" ");
                   msg += " | READY("+ready.length+") " + ready.join(" ");
@@ -827,7 +896,7 @@ if (!org.gigapan.Util)
                   //UTIL.log("sync");
                   if (errorThreshold == undefined)
                      {
-                     errorThreshold = UTIL.isChrome() ? 0.005 : 0.04;
+                     errorThreshold = DEFAULT_ERROR_THRESHOLD;
                      }
 
                   var t = _getCurrentTime();
@@ -869,7 +938,16 @@ if (!org.gigapan.Util)
                            //UTIL.log("current time " + video.currentTime);
                            //UTIL.log("leader " + leader);
                            UTIL.log("video("+videoId+") time correction: seeking from " + (video.currentTime-leader) + " to " + t + " (error=" + error + ", state=" + video.readyState + ")");
-                           video.currentTime = leader + t + (advancing ? playbackRate * errorThreshold * .5 : 0); // seek ahead slightly if advancing
+                           var desiredTime = leader + t + (advancing ? playbackRate * errorThreshold * .5 : 0);  // seek ahead slightly if advancing
+                           try
+                              {
+                              video.currentTime = desiredTime;
+                              }
+                           catch(e)
+                              {
+                              // log this, but otherwise don't worry about it since sync will try again later and take care of it
+                              UTIL.log("video(" + video.id + ") sync(): caught " + e.toString() + " setting currentTime to [" + desiredTime + "]");
+                              }
                            }
                         else
                            {
@@ -889,7 +967,7 @@ if (!org.gigapan.Util)
                            }
                         }
                      }
-                  var inactive_stats=[[],[],[],[],[]];
+                  //var inactive_stats=[[],[],[],[],[]];
                   //for (var videoId in inactiveVideos)
                   //   {
                   //   var video = inactiveVideos[videoId];
