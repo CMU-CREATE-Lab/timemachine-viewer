@@ -260,6 +260,10 @@ function loadTimelapse(gigapanUrl, gigapanJSON)
    // Create the timelapse
    timelapse = new org.gigapan.timelapse.Timelapse(gigapanUrl, 'timelapse', gigapanJSON, 'videoset_stats_container');
 
+   // Update the status depending on the state of the checkbox.  For some reason, IE9 remembers the previous state of the
+   // checkbox upon reloading the page. Setting the state here ensures that the logging state matches the state of the checkbox.
+   timelapse.setStatusLoggingEnabled($('#logVideoStatus').get(0).checked);
+
    setViewportSize(gigapanJSON['video_width'] - gigapanJSON['tile_width'], gigapanJSON['video_height'] - gigapanJSON['tile_height']);
 
    timelapse.addTimeChangeListener(function(t)
