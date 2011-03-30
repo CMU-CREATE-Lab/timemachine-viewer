@@ -133,6 +133,20 @@ if (!org.gigapan.timelapse.VideosetStats)
             // Public methods
             //
 
+            this.changeDataset = function(gigapanUrl, gigapanJSON)
+               {
+               url = gigapanUrl;
+               UTIL.log("changeDataset("+gigapanUrl+"): view is " + JSON.stringify(view));
+
+               // Reset currentIdx so that we'll load in the new tile with the different resolution.  We don't null the
+               // currentVideo here because 1) it will be assigned in the refresh() method when it compares the bestIdx
+               // and the currentIdx; and 2) we want currentVideo to be non-null so that the VideosetStats can keep
+               // track of what video replaced it.
+               currentIdx = null;
+
+               onPanoLoadSuccessCallback(gigapanJSON, "", "", view);
+               };
+
             // TODO: fix this
             this.handleWindowClose = function()
                {
@@ -453,11 +467,11 @@ if (!org.gigapan.timelapse.VideosetStats)
             var view2string = function(view)
             {
                 return "[view x:"+view.x+" y:"+view.y+" scale:"+view.scale+"]";
-            }
+            };
             
             var setTargetView = function(newView)
                {
-                   UTIL.log("setTargetView: newView=" + view2string(newView)+", view="+view2string(view)+", targetView="+view2string(targetView));
+                  UTIL.log("setTargetView: newView=" + view2string(newView)+", view="+view2string(view)+", targetView="+view2string(targetView));
                   var tempView = {};
                   tempView.scale = limitScale(newView.scale);
                   tempView.x = Math.max(0, Math.min(panoWidth, newView.x));
@@ -477,27 +491,27 @@ if (!org.gigapan.timelapse.VideosetStats)
             var point2mag = function(point)
             {
                 return Math.sqrt(point.x*point.x + point.y*point.y);
-            }
+            };
 
             var point2sub = function(a,b)
             {
                 return {x: a.x-b.x, y: a.y-b.y};
-            }
+            };
 
             var point2scale = function(point, scale)
             {
                 return {x: point.x*scale, y: point.y*scale};
-            }
+            };
 
             var log2 = function(x)
             {
                 return Math.log(x) / Math.log(2);
-            }
+            };
 
             var exp2 = function(x)
             {
                 return Math.pow(2,x);
-            }
+            };
 
             var animate = function()
             {
@@ -560,7 +574,7 @@ if (!org.gigapan.timelapse.VideosetStats)
                 } else {
                     refresh();
                 }
-            }
+            };
             
             var computeViewFit = function(bbox)
                {
@@ -576,7 +590,7 @@ if (!org.gigapan.timelapse.VideosetStats)
                   return {xmin:theView.x - halfWidth, xmax:theView.x + halfWidth, ymin:theView.y - halfHeight, ymax:theView.y + halfHeight};
                };
 
-            var onPanoLoadSuccessCallback = function(data, status, xhr)
+            var onPanoLoadSuccessCallback = function(data, status, xhr, desiredView)
                {
                   UTIL.log('onPanoLoadSuccessCallback(' + UTIL.dumpObject(data) + ', ' + status + ', ' + xhr + ')');
                   panoWidth = data['width'];
@@ -592,7 +606,7 @@ if (!org.gigapan.timelapse.VideosetStats)
                   levelInfo = data['level_info'];
 
                   readVideoDivSize();
-                  _warpTo(_homeView());
+                  _warpTo(typeof desiredView != 'undefined' && desiredView ? desiredView : _homeView());
                };
 
             var readVideoDivSize = function()
@@ -766,7 +780,7 @@ if (!org.gigapan.timelapse.VideosetStats)
 
             var computeBestVideo = function(theView)
                {
-                   //UTIL.log("computeBestVideo " + view2string(theView));
+                  //UTIL.log("computeBestVideo " + view2string(theView));
                   var level = scale2level(view.scale);
                   var levelScale = Math.pow(2, maxLevel - level);
                   var col = Math.round((theView.x - (videoWidth * levelScale * .5)) / (tileWidth * levelScale));
@@ -839,7 +853,7 @@ if (!org.gigapan.timelapse.VideosetStats)
                {
                   videoset.writeStatusToLog();
                };
-            this.getTiles = function() { return tiles; }
+            this.getTiles = function() { return tiles; };
 
             ///////////////////////////
             // Tile index

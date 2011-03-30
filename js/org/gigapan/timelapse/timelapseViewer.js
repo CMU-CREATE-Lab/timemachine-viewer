@@ -229,7 +229,9 @@ function setupMouseHandlers() {
 
 function switchDataset(index)
    {
-   window.location = 'timelapse.html?id=' + gigapanId + '&dataset=' + index;
+   org.gigapan.Util.log("switchDataset("+index+")");
+   validateAndSetDatasetIndex(index);
+   loadGigapanJSON();
    }
 
 function setViewportSize(newWidth, newHeight)
@@ -258,41 +260,49 @@ function loadTimelapse(gigapanUrl, gigapanJSON)
    $("#timelapse").empty();
       
    // Create the timelapse
-   timelapse = new org.gigapan.timelapse.Timelapse(gigapanUrl, 'timelapse', gigapanJSON, 'videoset_stats_container');
+   if (timelapse == null)
+      {
+      timelapse = new org.gigapan.timelapse.Timelapse(gigapanUrl, 'timelapse', gigapanJSON, 'videoset_stats_container');
 
-   // Update the status depending on the state of the checkbox.  For some reason, IE9 remembers the previous state of the
-   // checkbox upon reloading the page. Setting the state here ensures that the logging state matches the state of the checkbox.
-   timelapse.setStatusLoggingEnabled($('#logVideoStatus').get(0).checked);
+      // Update the status depending on the state of the checkbox.  For some reason, IE9 remembers the previous state of the
+      // checkbox upon reloading the page. Setting the state here ensures that the logging state matches the state of the checkbox.
+      timelapse.setStatusLoggingEnabled($('#logVideoStatus').get(0).checked);
+
+      timelapse.addTimeChangeListener(function(t)
+                                         {
+                                         timelapseCurrentTimeInSeconds = t;
+                                         if (timelapseCurrentTimeInSeconds < 0)
+                                            {
+                                            timelapseCurrentTimeInSeconds = 0;
+                                            $('#play_toggle').attr("class", "play_mouseout");
+                                            $('#play_toggle').attr("title", "Play");
+                                            }
+                                         $("#currentTime").text(org.gigapan.Util.formatTime(timelapseCurrentTimeInSeconds));
+                                         $("#timelineSlider")['slider']("option", "value", timelapseCurrentTimeInSeconds);
+                                         if (timelapseCurrentTimeInSeconds >= timelapseDurationInSeconds)
+                                            {
+                                            $('#play_toggle').attr("class", "play_mouseout");
+                                            $('#play_toggle').attr("title", "Play");
+                                            }
+                                         });
+
+      setupKeyboardHandlers();
+      setupMouseHandlers();
+      createTimelineSlider();
+      createZoomSlider();
+      createPlaybackSpeedSlider();
+      setupTimelineSliderHandlers();
+      setupZoomSliderHandlers();
+      setupUIHandlers();
+      setupSnaplapseHandlers();
+      }
+   else
+      {
+      org.gigapan.Util.log("Timelapse already loaded, so update it with new JSON.  gigapanUrl = ["+gigapanUrl+"] and JSON = ["+JSON.stringify(gigapanJSON)+"]");
+      timelapse.changeDataset(gigapanUrl, gigapanJSON);
+      }
 
    setViewportSize(gigapanJSON['video_width'] - gigapanJSON['tile_width'], gigapanJSON['video_height'] - gigapanJSON['tile_height']);
-
-   timelapse.addTimeChangeListener(function(t)
-                                      {
-                                      timelapseCurrentTimeInSeconds = t;
-                                      if (timelapseCurrentTimeInSeconds < 0)
-                                         {
-                                         timelapseCurrentTimeInSeconds = 0;
-                                         $('#play_toggle').attr("class", "play_mouseout");
-                                         $('#play_toggle').attr("title", "Play");
-                                         }
-                                      $("#currentTime").text(org.gigapan.Util.formatTime(timelapseCurrentTimeInSeconds));
-                                      $("#timelineSlider")['slider']("option", "value", timelapseCurrentTimeInSeconds);
-                                      if (timelapseCurrentTimeInSeconds >= timelapseDurationInSeconds)
-                                         {
-                                         $('#play_toggle').attr("class", "play_mouseout");
-                                         $('#play_toggle').attr("title", "Play");
-                                         }
-                                      });
-
-   setupKeyboardHandlers();
-   setupMouseHandlers();
-   createTimelineSlider();
-   createZoomSlider();
-   createPlaybackSpeedSlider();
-   setupTimelineSliderHandlers();
-   setupZoomSliderHandlers();
-   setupUIHandlers();
-   setupSnaplapseHandlers();
    }
 
 function validateAndSetDatasetIndex(newDatasetIndex)
