@@ -109,6 +109,7 @@ function setupUIHandlers() {
       this.style.cursor = 'pointer';
    }).click(function() {
       timelapse.warpTo(timelapse.homeView());
+      $("#slider-vertical")['slider']("option", "value", timelapse.viewScaleToZoomSlider(timelapse.getDefaultScale()));
    });
 
    $("#left").mousedown(function() {
