@@ -364,6 +364,10 @@ $(document).ready(function()
 
                      var jsonUrl = (isRemoteUrl ? "../alpha/timelapses/" : "../timelapses/") + gigapanId + '.json';
 
+                     $("#logVideoStatus").click(function(){
+                        timelapse.setStatusLoggingEnabled($('#logVideoStatus').get(0).checked);
+                     });
+
                      org.gigapan.Util.log("Attempting to fetch gigapan datasets JSON from URL [" + jsonUrl + "]...");
                      $.ajax({
                                dataType:'json',
