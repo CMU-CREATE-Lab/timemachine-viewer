@@ -68,7 +68,7 @@ body, p, table, tr, td, img{
 
 .overlay1 {
   border:0px solid; 
-  width:52px;
+  width:60px;
   border-color:silver;
   height:212px; 
   overflow:auto;
@@ -80,9 +80,9 @@ body, p, table, tr, td, img{
 
 .overlay2 {
   border:0px solid; 
-  width:52px; 
+  width:60px; 
   border-color:silver;
-  height:40px; 
+  height:45px; 
   overflow:auto;
   position:absolute; 
   z-index:3;

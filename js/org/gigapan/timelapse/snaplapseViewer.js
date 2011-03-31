@@ -233,7 +233,7 @@ function saveSnaplapse() {
       // the stringified JSON to itself.  We can't simply have this window write to the new one immediately after
       // opening because we need to wait for the DOM to load.  So, rather than have some timeout lameness, it's easier
       // for the new window to just request the JSON when it's ready for it.
-      saveSnaplapseWindow = popup('save_snaplapse.html', 'saveSnaplapseWindow');
+      saveSnaplapseWindow = popup('../timelapse/save_snaplapse.html', 'saveSnaplapseWindow');
    } else {
       alert("ERROR: No snaplapse to save--please create a snaplapse and add at least two keyframes to it.")
    }
@@ -244,7 +244,7 @@ function getSnaplapseJSON() {
 }
 
 function showLoadSnaplapseWindow() {
-   loadSnaplapseWindow = popup('load_snaplapse.html', 'loadSnaplapseWindow');
+   loadSnaplapseWindow = popup('../timelapse/load_snaplapse.html', 'loadSnaplapseWindow');
 }
 
 function loadSnaplapse(json) {
