@@ -414,7 +414,7 @@ if (!org.gigapan.timelapse.VideosetStats)
                   var saveMouseMove = document.onmousemove;
                   var saveMouseUp = document.onmouseup;
                   //UTIL.log("mousedown");
-                  videoDiv.style.cursor = 'url("css/cursors/closedhand.png"),move';
+                  videoDiv.style.cursor = 'url("../timelapse/css/cursors/closedhand.png"),move';
                   document.onmousemove = function(event)
                      {
                         //UTIL.log("mousemove");
@@ -427,14 +427,14 @@ if (!org.gigapan.timelapse.VideosetStats)
                   document.onmouseup = function()
                      {
                         //UTIL.log("mouseup");
-                        videoDiv.style.cursor = 'url("css/cursors/openhand.png"),move';
+                        videoDiv.style.cursor = 'url("../timelapse/css/cursors/openhand.png"),move';
                         document.onmousemove = saveMouseMove;
                         document.onmouseup = saveMouseUp;
                      };
                   $('body').mouseleave(function() 
                      {
                         //UTIL.log("mouseleave");
-                        videoDiv.style.cursor = 'url("css/cursors/openhand.png"),move';
+                        videoDiv.style.cursor = 'url("../timelapse/css/cursors/openhand.png"),move';
                         document.onmousemove = saveMouseMove;
                         document.onmouseup = saveMouseUp;
                      });

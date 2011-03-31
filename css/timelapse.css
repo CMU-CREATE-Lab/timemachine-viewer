@@ -24,7 +24,7 @@ body, p, table, tr, td, img{
 }
 
 #timelapse {
- cursor: url("cursors/openhand.png"),move
+ cursor: url("../css/cursors/openhand.png"),move
 }
 
 #mouse_debug_info {

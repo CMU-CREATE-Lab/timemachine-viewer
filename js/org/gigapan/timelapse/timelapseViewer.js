@@ -1,5 +1,10 @@
-var gigapanId = $.query.get('id') || "brassica-15m-halfsize-g10-bf0-l15";
-var datasetIndex = $.query.get('dataset') || "0";
+var timelapseMetadata = $("#timelapse_metadata").text();
+org.gigapan.Util.log("timelapseMetadata=["+timelapseMetadata+"]");
+var timelapseMetadataJSON = JSON.parse($("#timelapse_metadata").text());
+var gigapanId = timelapseMetadataJSON['id'] || "brassica-15m-halfsize-g10-bf0-l15";
+var datasetIndex = timelapseMetadataJSON['dataset'] || "0";
+org.gigapan.Util.log("id=["+gigapanId+"]");
+org.gigapan.Util.log("datasetIndex=["+datasetIndex+"]");
 var gigapanDatasetsJSON = null;
 
 // Test whether this is being served from timelapse.gigapan.org.  If so, then fetch the JSON from there too.
@@ -52,21 +57,21 @@ function createPlaybackSpeedSlider() {
 
 function setupTimelineSliderHandlers() {
    $('.ui-slider-handle').bind("mouseover", function() {
-      this.style.cursor = 'url("css/cursors/openhand.png"),move';
+      this.style.cursor = 'url("../timelapse/css/cursors/openhand.png"),move';
       $('.ui-slider-handle').bind("mouseup", function() {
-         this.style.cursor = 'url("css/cursors/openhand.png"),move';
+         this.style.cursor = 'url("../timelapse/css/cursors/openhand.png"),move';
       });
    });
 
    $('.ui-slider').bind("slide", function() {
       $('.ui-slider-handle').bind("mousemove", function() {
-         this.style.cursor = 'url("css/cursors/closedhand.png"),move';
+         this.style.cursor = 'url("../timelapse/css/cursors/closedhand.png"),move';
       });
    });
 
    $('.ui-slider').bind("slidestop", function() {
       $('.ui-slider-handle').bind("mousemove", function() {
-         this.style.cursor = 'url("css/cursors/openhand.png"),move';
+         this.style.cursor = 'url("../timelapse/css/cursors/openhand.png"),move';
       });
    });
 
@@ -191,7 +196,7 @@ function setupUIHandlers() {
    });
 	
    $('#timelapse').bind("mouseover", function() {
-      this.style.cursor = 'url("css/cursors/openhand.png"),move';
+      this.style.cursor = 'url("../timelapse/css/cursors/openhand.png"),move';
    });
 }
 
