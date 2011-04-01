@@ -202,13 +202,17 @@ function setupUIHandlers() {
 
 function zoomIn() {
    var val = $("#slider-vertical")['slider']("option", "value") + .01;
+   //alert($("#slider-vertical")['slider']("option", "value"));
    $("#slider-vertical")['slider']("option", "value", val);
+   //alert($("#slider-vertical")['slider']("option", "value"));
    timelapse.setScaleFromSlider(val);
 }
 
 function zoomOut() {
    var val = $("#slider-vertical")['slider']("option", "value") - .01;
+   //alert($("#slider-vertical")['slider']("option", "value"));
    $("#slider-vertical")['slider']("option", "value", val);
+   //alert($("#slider-vertical")['slider']("option", "value"));
    timelapse.setScaleFromSlider(val);
 }
 

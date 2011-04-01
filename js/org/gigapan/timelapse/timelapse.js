@@ -362,8 +362,10 @@ if (!org.gigapan.timelapse.VideosetStats)
                
             this.setScaleFromSlider = function(val)
                {
+                  //alert(targetView.scale);
                   targetView.scale = _zoomSliderToViewScale(val);
                   setTargetView(targetView);
+                  //alert(targetView.scale);
                };
                
             var _getMinScale = function()
@@ -399,7 +401,8 @@ if (!org.gigapan.timelapse.VideosetStats)
 
             var _zoomSliderToViewScale = function(value)
                {
-               return 2*_getMinScale() - _getMaxScale() - _getMinScale()*Math.exp(value*Math.log(2)) + _getMaxScale()*Math.exp(value*Math.log(2));
+	       return _getMaxScale()*(Math.pow((Math.pow(2,value)-1),2)) - Math.pow(4,value)*_getMinScale() + 2*Math.pow(2,value)*_getMinScale();
+               //return 2*_getMinScale() - _getMaxScale() - _getMinScale()*Math.exp(value*Math.log(2)) + _getMaxScale()*Math.exp(value*Math.log(2));
                };
             this.zoomSliderToViewScale = _zoomSliderToViewScale;
 
