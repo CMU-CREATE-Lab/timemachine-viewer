@@ -360,10 +360,14 @@ function loadGigapanJSON()
 
 $(document).ready(function()
                      {
+                     $("#browser_not_supported").hide();
                      var browserSupported = org.gigapan.Util.browserSupported();
                      if (!browserSupported)
                         {
-                        window.location = "browsernotsupported.html";
+			$("#timelapse_viewer").hide();
+			$("#snaplapse").hide();
+			$("#browser_not_supported").show();
+                        //window.location = "../timelapse/browsernotsupported.html";
                         }
 
                      var jsonUrl = (isRemoteUrl ? "../alpha/timelapses/" : "../timelapses/") + gigapanId + '.json';

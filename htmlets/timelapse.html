@@ -21,7 +21,7 @@
    org.gigapan.timelapse.VideosetStats.isEnabled = false;
 </script>
 
-<table class="no-padding" cellpadding="0" cellspacing="0">
+<table id="timelapse_viewer" class="no-padding" cellpadding="0" cellspacing="0">
    <tr class="valign-top">
       <td>
          <div id="timelapse_container" style="width:512px; height:288px; position:relative;">
@@ -101,7 +101,7 @@
    </tr>
 </table>
 
-<table class="no-padding">
+<table id="snaplapse" class="no-padding">
    <tr class="valign-top">
       <td>
          <table class="no-padding" style="margin-left:-2px; margin-top:10px; padding: 10px; width:516px; border: 2px solid black;">
@@ -145,3 +145,11 @@
       </td>
    </tr>
 </table>
+
+<div id="browser_not_supported">
+  <div class="warning">We're sorry, but it looks like your browser isn't currently supported by our viewer. 
+     At this time, only Safari 5.0+, Chrome 7.0+, and Internet Explorer 9 are known to be compatible. <br/><br/>
+ 
+     Until the other browsers catch up, please enjoy a few videos of what GigaPan Timelapse has to offer.
+  </div>
+</div>
