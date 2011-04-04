@@ -93,6 +93,11 @@ function newSnaplapse(json) {
    
    snaplapse.addEventListener('keyframe-interval-change', function(index, frame) {
       org.gigapan.Util.log("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ keyframe-interval-change: [" + index + "|" + frame['title'] + "|" + frame['description'] + "]");
+
+      // render the keyframe as selected to show that it's being played
+      var keyframeElements = $("#snaplapse_keyframe_list > div");
+      $(keyframeElements[index]).addClass("snaplapse_keyframe_list_item ui-selected");
+
       displaySnaplapseFrameAnnotation(frame);
    });
 

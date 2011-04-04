@@ -478,11 +478,6 @@ if (!org.gigapan.timelapse.Timelapse)
                      {
                      try
                         {
-                        // TODO: move this UI code to client (which will also eliminate the dependency on jQuery)
-                        var keyframes = $("#snaplapse_keyframe_list > div");
-                        frame = keyframes[currentKeyframeIntervalIndex];
-                        $(frame).addClass("snaplapse_keyframe_list_item ui-selected");
-
                         listeners[i](currentKeyframeIntervalIndex, cloneFrame(keyframeInterval ? keyframeInterval.getStartingFrame() : keyframes[keyframes.length - 1]));
                         }
                      catch(e)
