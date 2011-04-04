@@ -286,7 +286,7 @@ function cacheSnaplapse(snaplapseJsonUrl, callback)
 //
 // This code will take the above HTML and modify it to be simply:
 //
-//    <a href="#" onclick="playCachedSnaplapse('http://lauwers.ece.cmu.edu/images/8/8d/Brassica_1.warp');">cotyledon development</a>
+//    <a href="#timelapse_viewer_anchor" onclick="playCachedSnaplapse('http://lauwers.ece.cmu.edu/images/8/8d/Brassica_1.warp');">cotyledon development</a>
 //
 function setupSnaplapseLinks()
    {
@@ -302,7 +302,7 @@ function setupSnaplapseLinks()
                                  org.gigapan.Util.log("setupSnaplapseLinks(): [" + index + "]" + labelSpan.text() + "|" + snaplapseJsonUrl + "|" + originalContent);
                                  cacheSnaplapse(snaplapseJsonUrl, function()
                                     {
-                                    linkSpan.replaceWith('<a href="#" onclick="playCachedSnaplapse(\'' + snaplapseJsonUrl + '\');">' + originalContent + '</a>');
+                                    linkSpan.replaceWith('<a href="#timelapse_viewer_anchor" onclick="playCachedSnaplapse(\'' + snaplapseJsonUrl + '\');">' + originalContent + '</a>');
                                     });
 
                                  });
