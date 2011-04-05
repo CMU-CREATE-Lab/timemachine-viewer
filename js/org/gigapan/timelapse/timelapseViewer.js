@@ -368,6 +368,7 @@ $(document).ready(function()
                      {
                      $("#browser_not_supported").hide();
                      var browserSupported = org.gigapan.Util.browserSupported();
+                     
                      if (!browserSupported)
                         {
                         $("#timelapse_viewer").hide();
