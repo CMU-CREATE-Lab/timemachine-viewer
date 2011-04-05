@@ -210,11 +210,11 @@ if (!org.gigapan.timelapse.VideosetStats)
                   //UTIL.log('mousescroll delta  ' + event.wheelDelta);
                   if (event.wheelDelta > 0)
                      {
-                     zoomAbout(1/.9, event.x, event.y);
+                     zoomAbout(1/.9, event.pageX, event.pageY);
                      }
                   else if (event.wheelDelta < 0)
                      {
-                     zoomAbout(.9, event.x, event.y);
+                     zoomAbout(.9, event.pageX, event.pageY);
                      }
                };
 
@@ -446,20 +446,20 @@ if (!org.gigapan.timelapse.VideosetStats)
 
             var zoomAbout = function(zoom, x, y)
                {
-                  var newScale = limitScale(targetView.scale * zoom);
-                  var actualZoom = newScale / targetView.scale;
-                  targetView.x += 1 * (1-1/actualZoom) * (event.x - viewportWidth*.5) / targetView.scale;
-                  targetView.y += 1 * (1-1/actualZoom) * (event.y - viewportHeight*.5) / targetView.scale;
-                  targetView.scale = newScale;
-                  setTargetView(targetView);
-                  //make the scale map to the zoom slider range
-                  $("#slider-vertical")['slider']("option", "value", _viewScaleToZoomSlider(targetView.scale));
+               var newScale = limitScale(targetView.scale * zoom);
+               var actualZoom = newScale / targetView.scale;
+               targetView.x += 1 * (1 - 1 / actualZoom) * (x - $(videoDiv).offset().left - viewportWidth * .5) / targetView.scale;
+               targetView.y += 1 * (1 - 1 / actualZoom) * (y - $(videoDiv).offset().top - viewportHeight * .5) / targetView.scale;
+               targetView.scale = newScale;
+               setTargetView(targetView);
+               //make the scale map to the zoom slider range
+               $("#slider-vertical")['slider']("option", "value", _viewScaleToZoomSlider(targetView.scale));
                };
 
             var handleDoubleClickEvent = function(event)
                {
                    //UTIL.log('double click');
-                  zoomAbout(2., event.x, event.y);
+                  zoomAbout(2., event.pageX, event.pageY);
                };
 
             var limitScale = function(scale)
