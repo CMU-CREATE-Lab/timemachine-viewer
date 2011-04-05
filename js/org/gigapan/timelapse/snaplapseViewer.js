@@ -25,8 +25,14 @@ function handleSnaplapseFrameSelectionChange()
       displaySnaplapseFrameAnnotation(frame);
       }
    else
-      { // either 0 or more than 1
+      {
+      // either 0 or more than 1
       displaySnaplapseFrameAnnotation(null);
+
+      if (numSelected == 0)
+         {
+         $("#deleteKeyframeButton").attr("disabled", "disabled");
+         }
       }
    }
 
