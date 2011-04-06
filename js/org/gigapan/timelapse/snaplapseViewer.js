@@ -353,7 +353,7 @@ function setupSnaplapseLinks()
                                 org.gigapan.Util.log("setupSnaplapseLinks(): [" + index + "]" + labelSpan.text() + "|" + snaplapseJsonUrl + "|" + originalContent);
                                 cacheSnaplapse(snaplapseJsonUrl, function()
                                    {
-                                   linkSpan.replaceWith('<a href="#timelapse_viewer_anchor" onclick="playCachedSnaplapse(\'' + snaplapseJsonUrl + '\');">' + originalContent + '</a>');
+                                   linkSpan.replaceWith('<a class="time_warp_link" href="#timelapse_viewer_anchor" onclick="playCachedSnaplapse(\'' + snaplapseJsonUrl + '\');">' + originalContent + '</a>');
                                    });
 
                                 });
