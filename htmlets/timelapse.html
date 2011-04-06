@@ -16,102 +16,208 @@
 <link href="../timelapse/css/snaplapse.css" rel="stylesheet" type="text/css"/>
 <link href="../timelapse/css/jquery-ui/smoothness/jquery-ui.custom.css" rel="stylesheet" type="text/css"/>
 <link href="../timelapse/css/ui.slider.extras.css" rel="stylesheet" type="text/css"/>
+<link href="../timelapse/css/player.css" rel="stylesheet" type="text/css"/>
 
 <script type="text/javascript">
    org.gigapan.timelapse.VideosetStats.isEnabled = false;
+   function preload(images)
+      {
+      if (document.images)
+         {
+         var i = 0;
+         var imageArray = new Array();
+         imageArray = images.split(',');
+         var imageObj = new Image();
+         for (i = 0; i <= imageArray.length - 1; i++)
+            {
+            imageObj.src = images[i];
+            }
+         }
+      }
+
+   $(document).ready(function()
+                        {
+                        $("li#sizeoptions").hide();
+                        $("span#indicator").hide();
+
+                        $("#subbutton").hide();
+                        $("#status").hide();
+
+                        $("a#size").click(function()
+                                             {
+                                             $("li#sizeoptions").fadeIn(100);
+                                             });
+
+                        $("li#sizeoptions a").click(function()
+                                                       {
+                                                       $("li#sizeoptions").hide();
+                                                       $("li#sizeoptions a").removeClass('current');
+                                                       $(this).addClass('current');
+                                                       });
+
+                        $(document).click(function(event)
+                                             {
+                                             if ($(event.target).closest('a#size').get(0) == null)
+                                                {
+                                                $('li#sizeoptions').hide();
+                                                }
+                                             });
+
+                        $("#help").toggle(
+                              function ()
+                                 {
+                                 $('li#sizeoptions').hide(); //might be already opened
+                                 $("#instructions").fadeIn(100);
+                                 $(this).addClass('on');
+                                 if ($('#mainbutton').attr("class") == "pause")
+                                    {
+                                    timelapse.pause();
+                                    }
+                                 $("#timelineSlider")['slider']("option", "disabled", true);
+                                 $('#mainbutton').addClass('disabled');
+                                 },
+                              function ()
+                                 {
+                                 $("#instructions").fadeOut(50);
+                                 $(this).removeClass('on');
+                                 if ($('#mainbutton').attr("class") == "pause disabled")
+                                    {
+                                    timelapse.play();
+                                    $('#mainbutton').removeClass('play disabled');
+                                    $('#mainbutton').addClass('pause');
+                                    }
+                                 else
+                                    {
+                                    $('#mainbutton').removeClass('play disabled');
+                                    $('#mainbutton').addClass('play');
+                                    }
+                                 $("#timelineSlider")['slider']("option", "disabled", false);
+                                 }
+                        );
+
+                        $("a#speedhandle").hover(
+                              function ()
+                                 {
+                                 $("span.currentspeed").delay(400).fadeIn(100);
+                                 },
+                              function ()
+                                 {
+                                 $("span.currentspeed").hide();
+                                 }
+                        );
+
+                        $("a#timehandle").hover(
+                              function ()
+                                 {
+                                 $("span.currenttime").delay(400).fadeIn(100);
+                                 },
+                              function ()
+                                 {
+                                 $("span.currenttime").hide();
+                                 }
+                        );
+
+                        $("#timeline").hover(
+                              function ()
+                                 {
+                                 $("span.skiptime").delay(400).fadeIn(100);
+                                 },
+                              function ()
+                                 {
+                                 $("span.skiptime").hide();
+                                 }
+                        );
+
+                        $("#player").hover(
+                              function ()
+                                 {
+                                 $("a#timehandle").fadeIn(100);
+                                 },
+                              function ()
+                                 {
+                                 $("a#timehandle").hide();
+                                 }
+                        );
+
+                        //preload('help_down.png, help_hover, pause_down.png, pause_hover.png, play_hover.png, size_down.png, size_hover.png, pause_snaplapse_down.png, pause_snaplapse_hover.png, stop_snaplapse_down.png, stop_snaplapse_hover.png, help_down.png, help_hover.png, zoom_handle_down.png, zoom_handle_hover.png, zoom_in_down.png, zoom_in_hover.png, zoom_out_down.png, zoom_out_hover.png, zoom_viewall_down.png, zoom_viewall_hover.png, handle_down.png, handle_hover.png');
+                        });
+
 </script>
 
 <a name="timelapse_viewer_anchor"></a>
-<table id="timelapse_viewer" class="no-padding" cellpadding="0" cellspacing="0">
-   <tr class="valign-top">
-      <td>
-         <div id="timelapse_container" style="width:512px; height:288px; position:relative;">
-            <div class="overlay1">
-               <div id="joystick" style="margin:0px 0px 0px 4px;width:38px;"><img src="../timelapse/images/joystick.png" alt="zoom_in"/></div>
-               <div id="zoom_in" style="margin:2px 0px 0px 14px;width:19px;"><img src="../timelapse/images/plus.png" alt="zoom_in"/></div>
-               <div id="slider-vertical" style="margin:-2px 0 0 22px;"></div>
-               <div id="zoom_out" style="margin:0px 0px 0px 14px;width:19px;"><img src="../timelapse/images/minus.png" alt="zoom_in"/></div>
-               <div id="home" style="margin:5px 0px 0px 2px;width:48px;"><img src="../timelapse/images/viewall.png" alt="home"/></div>
-            </div>
+<div id="player">
 
-            <div class="overlay2">
-               <div id="up" style="margin:-1px 0 0 0;padding:0 0 0 18px;width:10px;"><img src="../timelapse/images/joystick_up.png" alt="move up"/></div>
-               <div id="down" style="margin:-1px 0 0 0;padding:0 0 0 18px;width:10px;"><img src="../timelapse/images/joystick_down.png" alt="move down"/></div>
-               <div id="right" style="margin:-27px 0 0 0;padding:0 0 10px 29px;width:5px;"><img src="../timelapse/images/joystick_right.png" alt="move right"/></div>
-               <div id="left" style="margin:-29px 0 0 0;padding:0 0 0 11px;width:5px;"><img src="../timelapse/images/joystick_left.png" alt="move left"/></div>
-            </div>
-            <div id="spinnerOverlay"><img id="spinner" src="../timelapse/images/spinner.gif" width="120" height="120"></div>
-            <div id="timelapse" style="position: absolute; width:512px; height:288px; background:black; overflow:hidden; border: 2px solid black;"></div>
-         </div>
-         <div id="time_slider_container" style="width:512px; border: 2px solid black; margin-top:4px">
-            <table>
-               <tr>
-                  <td>
-                     <div id="play_toggle" class="play_mouseout" title="Play"></div>
-                  </td>
-                  <td>
-                     <div id="timelineSlider" style="width:339px"></div>
-                  </td>
-                  <td>
-                     <span id="currentTime">00:00:00</span>/<span id="totalTime">00:00:00</span><br/>
-                  </td>
-               </tr>
-            </table>
-         </div>
+   <div id="zoom">
+      <a href="#" title="Zoom in" id="zoom_in" class="zoomin"></a>
+      <a href="#" id="zoom_out" title="Zoom out" class="zoomout"></a>
+      <div id="slider-vertical" title="Click to zoom"></div>
+      <a href="#" id="home" title="View All" class="zoomall"></a>
+   </div>
 
-         <div id="misc_controls_container" style="width:512px; border: 2px solid black; border-top:0">
-            <table id="misc_controls_container_table" style="width:512px;">
-               <tr>
-                  <td style="padding:10px 20px 20px 20px; text-align:left">
-                     <label for="speed">Playback Speed:</label>
-                     <div id="playBackSpeedSlider">
-                        <select name="speed" id="speed">
-                           <option value="-1">-1x</option>
-                           <option value="-.5">-1/2x</option>
-                           <option value="-.25">-1/4x</option>
-                           <option value=".25">1/4x</option>
-                           <option value=".5">1/2x</option>
-                           <option value="1" selected="selected">1x</option>
-                        </select>
-                     </div>
-                  </td>
-                  <td>
-                     <table border="0" cellpadding="2" cellspacing="0" align="right" style="padding-right:10px">
-                        <tr>
-                           <td style="text-align:right"><label for="viewer_size">Size:</label></td>
-                           <td style="text-align:left">
-                              <select name="viewer_size" id="viewer_size" onchange="switchDataset($('#viewer_size').val());"></select>
-                           </td>
-                        </tr>
-                     </table>
-                  </td>
-               </tr>
-            </table>
-         </div>
+   <div id="filler">
+      <div id="timelineSlider"></div>
+   </div>
 
-         <div style="width:512px; border: 2px solid black; border-top:0">
-            <table style="width:512px;">
-               <tr>
-                  <th id="snaplapse-annotation-title" class="align-left" style="display:none;text-align:left"></th>
-               </tr>
-               <tr>
-                  <td id="snaplapse-annotation-description" class="align-left" style="display:none;text-align:left"></td>
-               </tr>
-            </table>
-         </div>
-      </td>
-      <td>&nbsp;</td>
-      <td>
-         <div id="videoset_stats_container"></div>
-      </td>
-   </tr>
-</table>
+   <div id="instructions">
+      <span class="zoomhelp"><p>Zoom in &amp; out to explore parts of the GigaPan in greater detail. Click or use Scroll Wheel.</p></span>
+      <span class="speedhelp"><p>Drag around to change playback speed</p></span>
+      <span class="movehelp"><p>Click and drag to explore GigaPan</p></span>
+   </div>
 
+   <div id="timelapse" style="position: absolute; width:512px; height:288px; background:black; overflow:hidden; border: 1px solid black;"></div>
+
+   <div id="controls">
+
+      <a href="#" title="Play" class="play" id="mainbutton"></a>
+
+      <!-- Only shows during snaplapse -->
+      <a href="#" class="pausesnap" id="subbutton"></a>
+      <div id="status"><span class="action"><strong>Playing:</strong></span><br/>
+         <span class="snapname">Snaplapse Clip</span></div>
+
+      <!-- Only shows during snaplapse -->
+
+      <ul id="sidebuttons">
+         <li id="sizeoptions">
+            <ul>
+               <li>Player Size</li>
+               <li><a id="small" class="current" href="#" onclick="return switchDataset(0);">Small</a></li>
+               <li><a id="large" href="#" onclick="switchDataset(1);">Large</a></li>
+
+            </ul>
+         </li>
+         <li><a href="#" title="Player Size" id="size">
+            <div id="playerSizeText">Small</div>
+         </a></li>
+         <li><a href="#" title="Instructions" id="help">
+            <div id="helpText">Help</div>
+         </a></li>
+      </ul>
+
+      <div id="time"><b><span id="currentTime">00:00:00</span>/<span id="totalTime">00:00:00</span></b></div>
+
+      <!-- Hides during snaplapse -->
+
+      <div id="playBackSpeedSlider">
+         <select name="speed" id="speed">
+            <option value="-1">Backward, Full Speed</option>
+            <option value="-.5">Backward, Half Speed</option>
+            <option value=".5">Forward, Half Speed</option>
+            <option value="1" selected="selected">Forward, Full Speed</option>
+         </select>
+      </div>
+      <!-- Hides during snaplapse -->
+
+   </div>
+</div>
+
+<input id="logVideoStatus" type="checkbox" onclick="timelapse.setStatusLoggingEnabled($('#logVideoStatus').get(0).checked)" checked="checked"/>
+<label for="logVideoStatus">Log video status</label>
 
 <div id="browser_not_supported">
-  <div class="warning">We're sorry, but it looks like your browser isn't currently supported by our viewer. 
-     At this time, only Safari 5.0+ and Chrome 7.0+ are known to be compatible. <br/><br/>
- 
-     Until the other browsers catch up, please enjoy a few videos of what GigaPan Timelapse has to offer.
-  </div>
+   <div class="warning">We're sorry, but it looks like your browser isn't currently supported by our viewer.
+      At this time, only Safari 5.0+ and Chrome 7.0+ are known to be compatible. <br/><br/>
+
+      Until the other browsers catch up, please enjoy a few videos of what GigaPan Timelapse has to offer.
+   </div>
 </div>

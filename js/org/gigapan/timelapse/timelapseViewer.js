@@ -35,9 +35,10 @@ function createTimelineSlider()
                                         timelapseCurrentTimeInSeconds = ui.value;
                                         var timeInSecs = ui.value;
                                         timelapse.seek(timeInSecs);
-                                        }
+					}
                                   });
    }
+
 
 function createZoomSlider()
    {
@@ -51,12 +52,13 @@ function createZoomSlider()
                                       timelapse.setScaleFromSlider(ui.value);
                                       }
                                 });
-   }
+   
+  }
 
 function createPlaybackSpeedSlider()
    {
    $('#speed').selectToUISlider({
-                                   labels: 12
+                                   labels: 4
                                 }).hide();
    }
 
@@ -66,6 +68,10 @@ function setupTimelineSliderHandlers() {
       $('.ui-slider-handle').bind("mouseup", function() {
          this.style.cursor = 'url("../timelapse/css/cursors/openhand.png"),move';
       });
+   });
+
+   $('#timelineSlider .ui-slider-handle').bind("mouseover", function() {
+      $(this).attr("title", "Drag to go to a different point in time");            
    });
 
    $('.ui-slider').bind("slide", function() {
@@ -83,35 +89,41 @@ function setupTimelineSliderHandlers() {
    $('.ui-slider').bind("mouseover", function() {
       this.style.cursor = 'pointer';
    });
+
+   $('#filler .ui-slider').bind("mouseover", function() {
+      $(this).attr("title", "Click to go to a different point in time");
+   });
+
 }
 
 function setupZoomSliderHandlers() {
    $("#slider-vertical")['slider']("option", "value", timelapse.viewScaleToZoomSlider(timelapse.getDefaultScale()));
+   $("#slider-vertical .ui-slider-handle").attr("title", "Drag to zoom");
 }
 
 function setupUIHandlers() {
    var intervalId;
 
-   $('#play_toggle').bind("click", function() {
-      if ($(this).attr("class") == "play_mouseover") {
-         $(this).attr("class", "pause_mouseout");
+   $('#mainbutton').bind("click", function() {
+      if ($(this).attr("class") == "play") {
          $(this).attr("title", "Pause");
+         $(this).attr("class", "pause");
          if (timelapseCurrentTimeInSeconds >= timelapseDurationInSeconds) {
             $("#timelineSlider")['slider']("option", "value", 0);
             timelapse.seek(0);
          }
          timelapse.play();
-      } else {
-         $(this).attr("class", "play_mouseout");
+      } else if ($(this).attr("class") == "pause") {
+         $(this).attr("class", "play");
          $(this).attr("title", "Play");
          timelapse.pause();
       }
-   }).mousemove(function() {
-      if ($(this).attr("class") == "play_mouseout") $(this).attr("class", "play_mouseover");
-      else if ($(this).attr("class") == "pause_mouseout") $(this).attr("class", "pause_mouseover");
-   }).mouseout(function() {
-      if ($(this).attr("class") == "play_mouseover") $(this).attr("class", "play_mouseout");
-      else if ($(this).attr("class") == "pause_mouseover") $(this).attr("class", "pause_mouseout");
+  // }).mousemove(function() {
+  //    if ($(this).attr("class") == "play_mouseout") $(this).attr("class", "play_mouseover");
+  //    else if ($(this).attr("class") == "pause_mouseout") $(this).attr("class", "pause_mouseover");
+ //  }).mouseout(function() {
+ //     if ($(this).attr("class") == "play_mouseover") $(this).attr("class", "play_mouseout");
+ //     else if ($(this).attr("class") == "pause_mouseover") $(this).attr("class", "pause_mouseout");
    });
 
    $("#home").mousemove(function() {
@@ -183,7 +195,7 @@ function setupUIHandlers() {
    }).mouseout(function() {
       clearInterval(intervalId);
    }).mousemove(function() {
-      $(this).attr("title", "Zoom In");
+      //$(this).attr("title", "Zoom In");
       this.style.cursor = 'pointer';
    });
 
@@ -196,7 +208,7 @@ function setupUIHandlers() {
    }).mouseout(function() {
       clearInterval(intervalId);
    }).mousemove(function() {
-      $(this).attr("title", "Zoom Out");
+      //$(this).attr("title", "Zoom Out");
       this.style.cursor = 'pointer';
    });
 
@@ -247,7 +259,13 @@ function switchDataset(index)
    org.gigapan.Util.log("switchDataset("+index+")");
    validateAndSetDatasetIndex(index);
    loadGigapanJSON();
+
+   if (index == 0) {
+      $("#playerSizeText").text('Small');
+   } else if (index == 1) {
+      $("#playerSizeText").text('Large');     
    }
+}
 
 function setViewportSize(newWidth, newHeight)
    {
@@ -257,10 +275,37 @@ function setViewportSize(newWidth, newHeight)
    $("#timelapse_container").height(newHeight);
    $("#timelapse").width(newWidth);
    $("#timelapse").height(newHeight);
-   $("#time_slider_container").width(newWidth);
-   $("#misc_controls_container").width(newWidth);
-   $("#misc_controls_container_table").width(newWidth);
-   $("#timelineSlider").width(newWidth - 173);
+   //$("#time_slider_container").width(newWidth);
+   //$("#misc_controls_container").width(newWidth);
+   $("#controls").width(newWidth);
+   $("#timelineSlider").width(newWidth-8);
+  
+   var pos = $("#controls").offset();
+   var newPos = pos + 100;
+   var width = $("#controls").width();
+   $("#controls").css( { "top":newPos + "px" } );
+   var extraHeight = 0;
+   var extraWidth = 0;
+   if (newWidth == 816) {
+      $("#content").css( {"padding": "0px 0px 0px 305px"} );
+      //$("#timelineSlider").css( {"top": "441px"} );
+      $("#filler").css( {"top": "442px"} ); 
+      $("#controls").css( {"top": "450px"} );
+      extraHeight = 18;
+      extraWidth = 3;
+   } else {
+      $("#timelineSlider").css( {"top": "auto"} );
+      $("#filler").css( {"top": "auto"} );
+      $("#controls").css( {"top": "auto"} );
+      $("#content").css( {"padding": "0px 0px 0px 0px"} );
+      extraHeight = -2;
+      extraWidth = 2;
+   }
+
+   $("#filler").css( {"width": (newWidth + 4) + "px"} );
+   $("#instructions").css( {"width": (newWidth+extraWidth) + "px"} );
+   $("#instructions").css( {"height": (newHeight-extraHeight) + "px"} );
+
    if ($('#spinnerOverlay').length != 0)
       {
       $('#spinnerOverlay').css("top", newHeight / 2 - $("#spinner").height() / 2 + "px");
@@ -285,15 +330,15 @@ function loadTimelapse(gigapanUrl, gigapanJSON)
                                          if (timelapseCurrentTimeInSeconds < 0)
                                             {
                                             timelapseCurrentTimeInSeconds = 0;
-                                            $('#play_toggle').attr("class", "play_mouseout");
-                                            $('#play_toggle').attr("title", "Play");
+                                            $('#mainbutton').attr("class", "play");
+                                            $('#mainbutton').attr("title", "Play");
                                             }
                                          $("#currentTime").text(org.gigapan.Util.formatTime(timelapseCurrentTimeInSeconds));
                                          $("#timelineSlider")['slider']("option", "value", timelapseCurrentTimeInSeconds);
                                          if (timelapseCurrentTimeInSeconds >= timelapseDurationInSeconds)
                                             {
-                                            $('#play_toggle').attr("class", "play_mouseout");
-                                            $('#play_toggle').attr("title", "Play");
+                                            $('#mainbutton').attr("class", "play");
+                                            $('#mainbutton').attr("title", "Play");
                                             }
                                          });
 

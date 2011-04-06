@@ -1,4 +1,7 @@
 body, p, table, tr, td, img{
+ font-family: Verdana, sans-serif;
+ font-size: 8pt;
+ 
  -moz-user-select: -moz-none;
  -khtml-user-select: none;
  -webkit-user-select: none;
@@ -6,22 +9,55 @@ body, p, table, tr, td, img{
  user-select: none;
 }
 
+
 #timelineSlider {
- margin: 10px;
- width: 627px;
+        cursor:pointer;
+	display:block;
+	width:508px;
+	height:8px;
+	border:0px #838383 solid;
+	border-bottom:0px !important;
+	position:absolute;
+	bottom:0px;
+	margin: 0px 0px 0px 0px;
+	background:#FFF;
+        z-index:5;
+}
+
+#filler {
+   height:8px;
+   width:516px;
+   z-index:5;
+   background:#FFF;
+   position:absolute;
+   bottom:58px;
 }
 
 #slider-vertical {
- height: 100px;
+	width:8px;
+	height:110px;
+	background:#969DA1;
+	border:1px solid #555555;
+	position:absolute;
+	top:27px;
+	left:9px;
+}
+
+#slider-vertical .ui-slider-handle {
+        left:-11px;
 }
 
 #playBackSpeedSlider {
- margin: 5px;
- width: 180px;
+	display:block;
+	position:relative;
+	left:77px;
+	bottom:40px;
+	width:126px;
+	height:30px;
 }
 
 #timelapse {
- cursor: url("../css/cursors/openhand.png"),move
+ cursor: url("cursors/openhand.png"),move
 }
 
 #mouse_debug_info {
@@ -65,7 +101,7 @@ body, p, table, tr, td, img{
 
 .overlay1 {
   border:0px solid; 
-  width:60px;
+  width:52px;
   border-color:silver;
   height:212px; 
   overflow:auto;
@@ -77,9 +113,9 @@ body, p, table, tr, td, img{
 
 .overlay2 {
   border:0px solid; 
-  width:60px; 
+  width:52px; 
   border-color:silver;
-  height:45px; 
+  height:40px; 
   overflow:auto;
   position:absolute; 
   z-index:3;
@@ -117,25 +153,6 @@ table.no-padding td {
    padding: 0px
 }
 
-.warning, .error {
- border: 1px solid;			 
- width: 700px ;
- margin-left: auto ;
- margin-right: auto ; 
- margin-top: 50px ;
- padding:15px 10px 15px 60px;
- background-repeat: no-repeat;
- background-position: 10px center;
-}
+h1#firstHeading{
+        top:450px;}
 
-.warning {
- color: #9F6000;
- background-color: #FEEFB3;
- background-image: url('../images/alert.png');
-}
-
-.error {
- color: #D8000C;
- background-color: #FFBABA;
- background-image: url('../images/error.png');
-}
