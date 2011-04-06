@@ -261,9 +261,9 @@ function switchDataset(index)
    loadGigapanJSON();
 
    if (index == 0) {
-      $("#playerSize").text('Small');
+      $("#playerSizeText").text('Small');
    } else if (index == 1) {
-      $("#playerSize").text('Large');     
+      $("#playerSizeText").text('Large');     
    }
 }
 
