@@ -535,7 +535,7 @@ if (!org.gigapan.timelapse.VideosetStats)
                 var now = UTIL.getCurrentTimeInSecs();
                 var deltaT = now - lastAnimationTime;
                 if (deltaT < .001) deltaT = .001;
-                if (deltaT > .5) deltaT = .5;
+                if (deltaT > .2) deltaT = .2;
                 lastAnimationTime = now;
                   
                 var viewChanged = false;
@@ -543,7 +543,7 @@ if (!org.gigapan.timelapse.VideosetStats)
                 // Animate translation
                 var minTranslateSpeed = minTranslateSpeedPixelsPerSecond / view.scale;
                 var minTranslateDelta = minTranslateSpeed * deltaT;
-                var translateFraction = translateFractionPerSecond * deltaT;
+                var translateFraction = Math.min(.5, translateFractionPerSecond * deltaT);
                         
                 var toGoal = point2sub(targetView, view);
                 var toGoalMag = point2mag(toGoal);
