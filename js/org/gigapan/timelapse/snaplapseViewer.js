@@ -302,7 +302,7 @@ function cacheSnaplapse(snaplapseJsonUrl, callback)
                 {
                 if (snaplapseJSON)
                    {
-                   org.gigapan.Util.log("Loaded this snaplapse JSON: [" + JSON.stringify(snaplapseJSON) + "]");
+                   //org.gigapan.Util.log("Loaded this snaplapse JSON: [" + JSON.stringify(snaplapseJSON) + "]");
                    cachedSnaplapses[snaplapseJsonUrl] = snaplapseJSON;
                    if (callback && typeof callback == 'function')
                       {

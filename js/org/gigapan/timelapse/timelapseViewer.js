@@ -279,10 +279,6 @@ function loadTimelapse(gigapanUrl, gigapanJSON)
       {
       timelapse = new org.gigapan.timelapse.Timelapse(gigapanUrl, 'timelapse', gigapanJSON, 'videoset_stats_container');
 
-      // Update the status depending on the state of the checkbox.  For some reason, IE9 remembers the previous state of the
-      // checkbox upon reloading the page. Setting the state here ensures that the logging state matches the state of the checkbox.
-      timelapse.setStatusLoggingEnabled($('#logVideoStatus').get(0).checked);
-
       timelapse.addTimeChangeListener(function(t)
                                          {
                                          timelapseCurrentTimeInSeconds = t;
@@ -381,11 +377,6 @@ $(document).ready(function()
                         }
 
                      var jsonUrl = (isRemoteUrl ? "../alpha/timelapses/" : "../timelapses/") + gigapanId + '.json';
-
-                     $("#logVideoStatus").click(function()
-                                                   {
-                                                   timelapse.setStatusLoggingEnabled($('#logVideoStatus').get(0).checked);
-                                                   });
 
                      org.gigapan.Util.log("Attempting to fetch gigapan datasets JSON from URL [" + jsonUrl + "]...");
                      $.ajax({

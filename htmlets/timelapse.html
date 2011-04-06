@@ -83,12 +83,6 @@
                               <select name="viewer_size" id="viewer_size" onchange="switchDataset($('#viewer_size').val());"></select>
                            </td>
                         </tr>
-                        <tr>
-                           <td style="text-align:right">Debug:</td>
-                           <td style="text-align:left">
-                              <input id="logVideoStatus" type="checkbox"/><label for="logVideoStatus">Log video status</label>
-                           </td>
-                        </tr>
                      </table>
                   </td>
                </tr>
@@ -113,46 +107,6 @@
    </tr>
 </table>
 
-<table id="snaplapse" class="no-padding">
-   <tr class="valign-top">
-      <td>
-         <table class="no-padding" style="margin-left:-2px; margin-top:10px; padding: 10px; width:516px; border: 2px solid black;">
-            <tr>
-               <th class="align-center" style="padding-bottom:5px">Time Warp Composer</th>
-            </tr>
-            <tr>
-               <td class="align-center" style="padding-bottom:5px">
-                  <button type="button" id="newSnaplapseButton" onclick="newSnaplapse(null)">New Time Warp</button>
-                  <button type="button" disabled="disabled" id="playStopSnaplapseButton" onclick="playStopSnaplapse()">Play Time Warp</button>
-                  <button type="button" disabled="disabled" id="saveSnaplapseButton" onclick="saveSnaplapse()">Save Time Warp</button>
-                  <button type="button" id="loadSnaplapseButton" onclick="showLoadSnaplapseWindow()">Load Time Warp</button>
-                  <form id="save_snaplapse_form" method="post" action="../timelapse/save_time_warp.php" style="display:none" onsubmit="return false;">
-                     <textarea id="save_snaplapse_form_json" name="json" rows="10" cols="40"></textarea>
-                     <input id="save_snaplapse_form_filename" name="filename"/>
-                  </form>
-               </td>
-            </tr>
-            <tr>
-               <td class="align-center">
-                  <table style="width:485px; padding-bottom:5px">
-                     <tr class="align-center">
-                        <td>
-                           <button type="button" disabled="disabled" id="recordKeyframeButton" onclick="recordKeyframe()">Record Keyframe</button>
-                        </td>
-                        <td>
-                           <button type="button" disabled="disabled" id="deleteKeyframeButton" onclick="deleteSelectedKeyframes()">Delete Keyframe(s)</button>
-                        </td>
-                     </tr>
-                  </table>
-                  <div id="snaplapse_keyframe_container" style="width:485px; height:300px; display:block; padding:0; margin:0; overflow:auto; border:solid 1px black; background-color:#eeeeee;">
-                     <div id="snaplapse_keyframe_list"></div>
-                  </div>
-               </td>
-            </tr>
-         </table>
-      </td>
-   </tr>
-</table>
 
 <div id="browser_not_supported">
   <div class="warning">We're sorry, but it looks like your browser isn't currently supported by our viewer. 
