@@ -187,7 +187,7 @@ function setupUIHandlers() {
    });
 
    $("#zoom_in").mousedown(function() {
-      intervalId = setInterval(zoomIn, 500);
+      intervalId = setInterval(zoomIn, 50);
    }).click(function() {
       zoomIn();
    }).mouseup(function() {
@@ -200,7 +200,7 @@ function setupUIHandlers() {
    });
 
    $("#zoom_out").mousedown(function() {
-      intervalId = setInterval(zoomOut, 500);
+      intervalId = setInterval(zoomOut, 50);
    }).click(function() {
       zoomOut();
    }).mouseup(function() {
@@ -218,7 +218,7 @@ function setupUIHandlers() {
 }
 
 function zoomIn() {
-   var val = $("#slider-vertical")['slider']("option", "value") + .01;
+   var val = Math.min($("#slider-vertical")['slider']("option", "value") + .01, 1);
    //alert($("#slider-vertical")['slider']("option", "value"));
    $("#slider-vertical")['slider']("option", "value", val);
    //alert($("#slider-vertical")['slider']("option", "value"));
@@ -226,7 +226,7 @@ function zoomIn() {
 }
 
 function zoomOut() {
-   var val = $("#slider-vertical")['slider']("option", "value") - .01;
+   var val = Math.max($("#slider-vertical")['slider']("option", "value") - .01, 0);
    //alert($("#slider-vertical")['slider']("option", "value"));
    $("#slider-vertical")['slider']("option", "value", val);
    //alert($("#slider-vertical")['slider']("option", "value"));
@@ -345,6 +345,9 @@ function loadTimelapse(gigapanUrl, gigapanJSON)
                                             $('#mainbutton').attr("title", "Play");
                                             }
                                          });
+
+      timelapse.addTargetViewChangeListener(function(view)
+                                            { $("#slider-vertical")['slider']("option", "value", timelapse.viewScaleToZoomSlider(view.scale)); });
 
       setupKeyboardHandlers();
       setupMouseHandlers();

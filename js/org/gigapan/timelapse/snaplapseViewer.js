@@ -353,7 +353,7 @@ function setupSnaplapseLinks()
                                 org.gigapan.Util.log("setupSnaplapseLinks(): [" + index + "]" + labelSpan.text() + "|" + snaplapseJsonUrl + "|" + originalContent);
                                 cacheSnaplapse(snaplapseJsonUrl, function()
                                    {
-                                   linkSpan.replaceWith('<a href="#timelapse_viewer_anchor" onclick="playCachedSnaplapse(\'' + snaplapseJsonUrl + '\');">' + originalContent + '</a>');
+                                   linkSpan.replaceWith('<a class="time_warp_link" href="#timelapse_viewer_anchor" onclick="playCachedSnaplapse(\'' + snaplapseJsonUrl + '\');">' + originalContent + '</a>');
                                    });
 
                                 });
@@ -375,11 +375,33 @@ function saveSnaplapse()
    {
    if (snaplapse && (snaplapse.getNumKeyframes() > 1))
       {
-      // open a new window--that new window will call this window's getSnaplapseJSON() function to dynamically write
-      // the stringified JSON to itself.  We can't simply have this window write to the new one immediately after
-      // opening because we need to wait for the DOM to load.  So, rather than have some timeout lameness, it's easier
-      // for the new window to just request the JSON when it's ready for it.
-      saveSnaplapseWindow = popup('../timelapse/save_snaplapse.html', 'saveSnaplapseWindow');
+      // prompt the user for a filename for their snaplapse
+      var filename = prompt("Filename for your time warp:", "untitled.warp");
+
+      // filename is null if the user hit Cancel
+      if (filename != null)
+         {
+         // trim it
+         filename = $.trim(filename);
+
+         // if it's empty, give it a default name
+         if (filename.length == 0)
+            {
+            filename = "untitled";
+            }
+
+         // add a .warp extension if necessary
+         var lowerCaseFilename = filename.toLowerCase();
+         if (!/.warp$/.test(lowerCaseFilename))
+            {
+            filename += ".warp";
+            }
+
+         // submit the hidden form so that we can bounce it back to the user with an attachment content-disposition
+         $("#save_snaplapse_form_json").val(snaplapse.getAsJSON());
+         $("#save_snaplapse_form_filename").val(filename);
+         $("#save_snaplapse_form").get(0).submit();
+         }
       }
    else
       {

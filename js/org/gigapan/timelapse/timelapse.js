@@ -6,7 +6,7 @@
 // * org.gigapan.timelapse.Videoset
 //
 // Authors:
-// * Randy Sarget (randy.sargent@gmail.com)
+// * Randy Sargent (randy.sargent@gmail.com)
 // * Paul Dille (pdille@andrew.cmu.edu)
 // * Chris Bartley (bartley@cmu.edu)
 //======================================================================================================================
@@ -118,6 +118,8 @@ if (!org.gigapan.timelapse.VideosetStats)
             var translateFractionPerSecond = 3.;
             var minZoomSpeedPerSecond = .25; // in log2
             var zoomFractionPerSecond = 3.; // in log2
+            var keyIntervals = [];
+            var targetViewChangeListeners = [];
 
             // levelThreshold sets the quality of display by deciding what level of tile to show for a given level of zoom:
             //
@@ -176,17 +178,16 @@ if (!org.gigapan.timelapse.VideosetStats)
 
             this.handleKeydownEvent = function(event)
                {
-                   //UTIL.log('keydown ' + event.which);
-                  var translationSpeedConstant = 20;
-                  var translation = translationSpeedConstant / view.scale;
-                  switch (event.which)
-                  {
-                     case 37:  targetView.x -= translation;  break;  // left arrow
-                     case 39:  targetView.x += translation;  break;  // right arrow
-                     case 38:  targetView.y -= translation;  break;  // up arrow
-                     case 40:  targetView.y += translation;  break;  // down arrow
-                     case 189: targetView.scale *= .9;       break;  // minus
-                     case 187: targetView.scale /= .9;       break;  // plus
+                   var translationSpeedConstant = 20;
+                   var moveFn;
+		   switch (event.which)
+                   {
+                     case 37:  moveFn = function() {targetView.x -= translationSpeedConstant / view.scale; setTargetView(targetView);};  break;  // left arrow
+                     case 39:  moveFn = function() {targetView.x += translationSpeedConstant / view.scale; setTargetView(targetView);};  break;  // right arrow
+                     case 38:  moveFn = function() {targetView.y -= translationSpeedConstant / view.scale; setTargetView(targetView);};  break;  // up arrow
+                     case 40:  moveFn = function() {targetView.y += translationSpeedConstant / view.scale; setTargetView(targetView);};  break;  // down arrow
+                     case 189: moveFn = function() {targetView.scale *= .94;                               setTargetView(targetView);};  break;  // minus
+                     case 187: moveFn = function() {targetView.scale /= .94;                               setTargetView(targetView);};  break;  // plus
                      case 80:  // P
                         if (_isPaused())
                            {
@@ -197,12 +198,24 @@ if (!org.gigapan.timelapse.VideosetStats)
                            _pause();
                            }
                         return;
-                  }
-                  setTargetView(targetView);
-               };
+                   default:
+                       return;
+		   }
+                   // Install interval to run every 50 msec while key is down
+                   // Each arrow key and +/- has its own interval, so multiple can be down at once
+                   if (keyIntervals[event.which] == undefined) keyIntervals[event.which] = setInterval(moveFn, 50);
+                   // Don't propagate arrow events -- prevent scrolling of the document
+                   if (event.which <= 40) {
+                       event.preventDefault(); // depends on jQuery
+                   }
+	       }
 
             this.handleKeyupEvent = function()
                {
+                   if (keyIntervals[event.which] != undefined) {
+                       clearInterval(keyIntervals[event.which]);
+                       keyIntervals[event.which] = undefined;
+                   }
                };
 
             this.handleMousescrollEvent = function(event)
@@ -262,6 +275,11 @@ if (!org.gigapan.timelapse.VideosetStats)
             this.getVideoset = function()
                {
                return videoset;
+               };
+
+            this.addTargetViewChangeListener = function(listener)
+               {
+               targetViewChangeListeners.push(listener);
                };
               
             ///////////////////////////
@@ -489,6 +507,8 @@ if (!org.gigapan.timelapse.VideosetStats)
                   }
 
                   refresh();
+
+                  for (var i = 0; i < targetViewChangeListeners.length; i++) targetViewChangeListeners[i](targetView);
                };
 
             var point2mag = function(point)
@@ -523,7 +543,7 @@ if (!org.gigapan.timelapse.VideosetStats)
                 var now = UTIL.getCurrentTimeInSecs();
                 var deltaT = now - lastAnimationTime;
                 if (deltaT < .001) deltaT = .001;
-                if (deltaT > .5) deltaT = .5;
+                if (deltaT > .2) deltaT = .2;
                 lastAnimationTime = now;
                   
                 var viewChanged = false;
@@ -531,7 +551,7 @@ if (!org.gigapan.timelapse.VideosetStats)
                 // Animate translation
                 var minTranslateSpeed = minTranslateSpeedPixelsPerSecond / view.scale;
                 var minTranslateDelta = minTranslateSpeed * deltaT;
-                var translateFraction = translateFractionPerSecond * deltaT;
+                var translateFraction = Math.min(.5, translateFractionPerSecond * deltaT);
                         
                 var toGoal = point2sub(targetView, view);
                 var toGoalMag = point2mag(toGoal);
