@@ -18,237 +18,203 @@
 <link href="../timelapse/css/ui.slider.extras.css" rel="stylesheet" type="text/css"/>
 <link href="../timelapse/css/player.css" rel="stylesheet" type="text/css"/>
 
-
-
 <script type="text/javascript">
    org.gigapan.timelapse.VideosetStats.isEnabled = false;
-   function preload(images) {
-     if (document.images) {
-        var i = 0;
-        var imageArray = new Array();
-        imageArray = images.split(',');
-        var imageObj = new Image();
-        for(i=0; i<=imageArray.length-1; i++) {
-            imageObj.src=images[i];
-        }
-     }
-   }
+   function preload(images)
+      {
+      if (document.images)
+         {
+         var i = 0;
+         var imageArray = new Array();
+         imageArray = images.split(',');
+         var imageObj = new Image();
+         for (i = 0; i <= imageArray.length - 1; i++)
+            {
+            imageObj.src = images[i];
+            }
+         }
+      }
 
+   $(document).ready(function()
+                        {
+                        $("li#sizeoptions").hide();
+                        $("span#indicator").hide();
 
-      $(document).ready(function() {
-						$("li#sizeoptions").hide();
-						$("span#indicator").hide();
+                        $("#subbutton").hide();
+                        $("#status").hide();
 
+                        $("a#size").click(function()
+                                             {
+                                             $("li#sizeoptions").fadeIn(100);
+                                             });
 
+                        $("li#sizeoptions a").click(function()
+                                                       {
+                                                       $("li#sizeoptions").hide();
+                                                       $("li#sizeoptions a").removeClass('current');
+                                                       $(this).addClass('current');
+                                                       });
 
-						$("#subbutton").hide();
-						$("#status").hide();
+                        $(document).click(function(event)
+                                             {
+                                             if ($(event.target).closest('a#size').get(0) == null)
+                                                {
+                                                $('li#sizeoptions').hide();
+                                                }
+                                             });
 
+                        $("#help").toggle(
+                              function ()
+                                 {
+                                 $('li#sizeoptions').hide(); //might be already opened
+                                 $("#instructions").fadeIn(100);
+                                 $(this).addClass('on');
+                                 if ($('#mainbutton').attr("class") == "pause")
+                                    {
+                                    timelapse.pause();
+                                    }
+                                 $("#timelineSlider")['slider']("option", "disabled", true);
+                                 $('#mainbutton').addClass('disabled');
+                                 },
+                              function ()
+                                 {
+                                 $("#instructions").fadeOut(50);
+                                 $(this).removeClass('on');
+                                 if ($('#mainbutton').attr("class") == "pause disabled")
+                                    {
+                                    timelapse.play();
+                                    $('#mainbutton').removeClass('play disabled');
+                                    $('#mainbutton').addClass('pause');
+                                    }
+                                 else
+                                    {
+                                    $('#mainbutton').removeClass('play disabled');
+                                    $('#mainbutton').addClass('play');
+                                    }
+                                 $("#timelineSlider")['slider']("option", "disabled", false);
+                                 }
+                        );
 
+                        $("a#speedhandle").hover(
+                              function ()
+                                 {
+                                 $("span.currentspeed").delay(400).fadeIn(100);
+                                 },
+                              function ()
+                                 {
+                                 $("span.currentspeed").hide();
+                                 }
+                        );
 
-						$("a#size").click(function() {
-			                        $("li#sizeoptions").fadeIn(100);});
+                        $("a#timehandle").hover(
+                              function ()
+                                 {
+                                 $("span.currenttime").delay(400).fadeIn(100);
+                                 },
+                              function ()
+                                 {
+                                 $("span.currenttime").hide();
+                                 }
+                        );
 
-						$("li#sizeoptions a").click(function() {
-			                        $("li#sizeoptions").hide();
-									 $("li#sizeoptions a").removeClass('current');
-									  $(this).addClass('current');
-									  });
+                        $("#timeline").hover(
+                              function ()
+                                 {
+                                 $("span.skiptime").delay(400).fadeIn(100);
+                                 },
+                              function ()
+                                 {
+                                 $("span.skiptime").hide();
+                                 }
+                        );
 
-						$(document).click(function(event) {
-  						  if ( $(event.target).closest('a#size').get(0) == null ) { 
-    							$('li#sizeoptions').hide(); 
-  						  }
-						});
+                        $("#player").hover(
+                              function ()
+                                 {
+                                 $("a#timehandle").fadeIn(100);
+                                 },
+                              function ()
+                                 {
+                                 $("a#timehandle").hide();
+                                 }
+                        );
 
-						$("#help").toggle(
-								  function () {
-                                                                         $('li#sizeoptions').hide(); //might be already opened
-									 $("#instructions").fadeIn(100);
-									 $(this).addClass('on');
-									 if ($('#mainbutton').attr("class") == "pause") {
-									   timelapse.pause();
-								  	 }
-									 $("#timelineSlider")['slider']("option", "disabled", true);
-									 $('#mainbutton').addClass('disabled');
-								  },
-								  function () {
-									$("#instructions").fadeOut(50);
-									$(this).removeClass('on');
-                                                                        if ($('#mainbutton').attr("class") == "pause disabled") {
-								           timelapse.play();
-								           $('#mainbutton').removeClass('play disabled');
-                                                                           $('#mainbutton').addClass('pause');
-                                                                        }else{
-									   $('#mainbutton').removeClass('play disabled');       
-                                                                           $('#mainbutton').addClass('play');        
-									}
-									$("#timelineSlider")['slider']("option", "disabled", false);		
-								  }
-								);
-
-
-						 $("a#speedhandle").hover(
-								  function () {
-									 $("span.currentspeed").delay(400).fadeIn(100);
-								  },
-								  function () {
-									$("span.currentspeed").hide();
-								  }
-								);
-
-						 $("a#timehandle").hover(
-								  function () {
-									 $("span.currenttime").delay(400).fadeIn(100);
-								  },
-								  function () {
-									$("span.currenttime").hide();
-								  }
-								);
-
-						$("#timeline").hover(
-								  function () {
-									 $("span.skiptime").delay(400).fadeIn(100);
-								  },
-								  function () {
-									$("span.skiptime").hide();
-								  }
-								);
-
-						 $("#player").hover(
-								  function () {
-									 $("a#timehandle").fadeIn(100);
-								  },
-								  function () {
-									$("a#timehandle").hide();
-								  }
-								);
-
-
-
-						//preload('help_down.png, help_hover, pause_down.png, pause_hover.png, play_hover.png, size_down.png, size_hover.png, pause_snaplapse_down.png, pause_snaplapse_hover.png, stop_snaplapse_down.png, stop_snaplapse_hover.png, help_down.png, help_hover.png, zoom_handle_down.png, zoom_handle_hover.png, zoom_in_down.png, zoom_in_hover.png, zoom_out_down.png, zoom_out_hover.png, zoom_viewall_down.png, zoom_viewall_hover.png, handle_down.png, handle_hover.png');
-			  });
+                        //preload('help_down.png, help_hover, pause_down.png, pause_hover.png, play_hover.png, size_down.png, size_hover.png, pause_snaplapse_down.png, pause_snaplapse_hover.png, stop_snaplapse_down.png, stop_snaplapse_hover.png, help_down.png, help_hover.png, zoom_handle_down.png, zoom_handle_hover.png, zoom_in_down.png, zoom_in_hover.png, zoom_out_down.png, zoom_out_hover.png, zoom_viewall_down.png, zoom_viewall_hover.png, handle_down.png, handle_hover.png');
+                        });
 
 </script>
 
 <a name="timelapse_viewer_anchor"></a>
 <div id="player">
 
+   <div id="zoom">
+      <a href="#" title="Zoom in" id="zoom_in" class="zoomin"></a>
+      <a href="#" id="zoom_out" title="Zoom out" class="zoomout"></a>
+      <div id="slider-vertical" title="Click to zoom"></div>
+      <a href="#" id="home" title="View All" class="zoomall"></a>
+   </div>
 
-				 	<div id="zoom">
-				    <a href="#" title="Zoom in" id="zoom_in" class="zoomin"></a>
-				    <a href="#" id="zoom_out" title="Zoom out" class="zoomout"></a>
-				    <div id="slider-vertical" title="Click to zoom"></div>
-				    <a href="#" id="home" title="View All" class="zoomall"></a>
-				  </div>
+   <div id="filler">
+      <div id="timelineSlider"></div>
+   </div>
 
+   <div id="instructions">
+      <span class="zoomhelp"><p>Zoom in &amp; out to explore parts of the GigaPan in greater detail. Click or use Scroll Wheel.</p></span>
+      <span class="speedhelp"><p>Drag around to change playback speed</p></span>
+      <span class="movehelp"><p>Click and drag to explore GigaPan</p></span>
+   </div>
 
-							<div id="filler"><div id="timelineSlider"></div></div> 
+   <div id="timelapse" style="position: absolute; width:512px; height:288px; background:black; overflow:hidden; border: 1px solid black;"></div>
 
+   <div id="controls">
 
+      <a href="#" title="Play" class="play" id="mainbutton"></a>
 
-				    	 	<div id="instructions">
-				         <span class="zoomhelp"><p>Zoom in &amp; out to explore parts of the GigaPan in greater detail. Click or use Scroll Wheel.</p></span>
-				         <span class="speedhelp"><p>Drag around to change playback speed</p></span>
-				         <span class="movehelp"><p>Click and drag to explore GigaPan</p></span>
-				         </div>
+      <!-- Only shows during snaplapse -->
+      <a href="#" class="pausesnap" id="subbutton"></a>
+      <div id="status"><span class="action"><strong>Playing:</strong></span><br/>
+         <span class="snapname">Snaplapse Clip</span></div>
 
-               <div id="timelapse" style="position: absolute; width:512px; height:288px; background:black; overflow:hidden; border: 1px solid black;"></div>
+      <!-- Only shows during snaplapse -->
 
+      <ul id="sidebuttons">
+         <li id="sizeoptions">
+            <ul>
+               <li>Player Size</li>
+               <li><a id="small" class="current" href="#" onclick="return switchDataset(0);">Small</a></li>
+               <li><a id="large" href="#" onclick="switchDataset(1);">Large</a></li>
 
-				     <div id="controls">
+            </ul>
+         </li>
+         <li><a href="#" title="Player Size" id="size">
+            <div id="playerSizeText">Small</div>
+         </a></li>
+         <li><a href="#" title="Instructions" id="help">
+            <div id="helpText">Help</div>
+         </a></li>
+      </ul>
 
-					 <a href="#" title="Play" class="play" id="mainbutton"></a>
+      <div id="time"><b><span id="currentTime">00:00:00</span>/<span id="totalTime">00:00:00</span></b></div>
 
-				         <!-- Only shows during snaplapse -->
-				         <a href="#" class="pausesnap" id="subbutton"></a>
-				         <div id="status"><span class="action"><strong>Playing:</strong></span><br />
-				         				<span class="snapname">Snaplapse Clip</span></div>
+      <!-- Hides during snaplapse -->
 
-				         <!-- Only shows during snaplapse -->
+      <div id="playBackSpeedSlider">
+         <select name="speed" id="speed">
+            <option value="-1">Backward, Full Speed</option>
+            <option value="-.5">Backward, Half Speed</option>
+            <option value=".5">Forward, Half Speed</option>
+            <option value="1" selected="selected">Forward, Full Speed</option>
+         </select>
+      </div>
+      <!-- Hides during snaplapse -->
 
-				             <ul id="sidebuttons">
-				             	<li id="sizeoptions">
-				                 	<ul>
-				                     <li>Player Size</li>
-				                     <li><a id="small" class="current" href="#" onclick="return switchDataset(0);">Small</a></li>
-				                     <li><a id="large" href="#" onclick="switchDataset(1);">Large</a></li>
-
-				                     </ul>
-				                 </li>
-				             	<li><a href="#" title="Player Size" id="size"><div id="playerSizeText">Small</div></a></li>
-				                 <li><a href="#" title="Instructions" id="help"><div id="helpText">Help</div></a></li>
-				             </ul>
-
-				         <div id="time"><b><span id="currentTime">00:00:00</span>/<span id="totalTime">00:00:00</span></b></div>
-
-
-
-				     	<!-- Hides during snaplapse -->
-
-                        <div id="playBackSpeedSlider">
-                           <select name="speed" id="speed">
-                              <option value="-1">Backward, Full Speed</option>
-                              <option value="-.5">Backward, Half Speed</option>
-                              <option value=".5">Forward, Half Speed</option>
-                              <option value="1" selected="selected">Forward, Full Speed</option>
-                           </select>
-                        </div>
-				         <!-- Hides during snaplapse -->
-
-				     </div>
+   </div>
 </div>
-      
- 
-
- 
-                                 <input id="logVideoStatus" type="checkbox" onclick="timelapse.setStatusLoggingEnabled($('#logVideoStatus').get(0).checked)" checked="checked"/><label for="logVideoStatus">Log video status</label>
-
-<table id="snaplapse" class="no-padding">
-   <tr class="valign-top">
-      <td>
-         <table class="no-padding" style="margin-left:-2px; margin-top:10px; padding: 10px; width:516px; border: 2px solid black;">
-            <tr>
-               <th class="align-center" style="padding-bottom:5px">Time Warp Composer</th>
-            </tr>
-            <tr>
-               <td class="align-center" style="padding-bottom:5px">
-                  <button type="button" id="newSnaplapseButton" onclick="newSnaplapse(null)">New Time Warp</button>
-                  <button type="button" disabled="disabled" id="playStopSnaplapseButton" onclick="playStopSnaplapse()">Play Time Warp</button>
-                  <button type="button" disabled="disabled" id="saveSnaplapseButton" onclick="saveSnaplapse()">Save Time Warp</button>
-                  <button type="button" id="loadSnaplapseButton" onclick="showLoadSnaplapseWindow()">Load Time Warp</button>
-                  <form id="save_snaplapse_form" method="post" action="../timelapse/save_time_warp.php" style="display:none" onsubmit="return false;">
-                     <textarea id="save_snaplapse_form_json" name="json" rows="10" cols="40"></textarea>
-                     <input id="save_snaplapse_form_filename" name="filename"/>
-                  </form>
-               </td>
-            </tr>
-            <tr>
-               <td class="align-center">
-                  <table style="width:485px; padding-bottom:5px">
-                     <tr class="align-center">
-                        <td>
-                           <button type="button" disabled="disabled" id="recordKeyframeButton" onclick="recordKeyframe()">Record Keyframe</button>
-                        </td>
-                        <td>
-                           <button type="button" disabled="disabled" id="deleteKeyframeButton" onclick="deleteSelectedKeyframes()">Delete Keyframe(s)</button>
-                        </td>
-                     </tr>
-                  </table>
-                  <div id="snaplapse_keyframe_container" style="width:485px; height:300px; display:block; padding:0; margin:0; overflow:auto; border:solid 1px black; background-color:#eeeeee;">
-                     <div id="snaplapse_keyframe_list"></div>
-                  </div>
-               </td>
-            </tr>
-         </table>
-      </td>
-   </tr>
-</table>
 
 <div id="browser_not_supported">
-  <div class="warning">We're sorry, but it looks like your browser isn't currently supported by our viewer. 
-     At this time, only Safari 5.0+ and Chrome 7.0+ are known to be compatible. <br/><br/>
- 
-     Until the other browsers catch up, please enjoy a few videos of what GigaPan Timelapse has to offer.
-  </div>
+   <div class="warning">We're sorry, but it looks like your browser isn't currently supported by our viewer.
+      At this time, only Safari 5.0+ and Chrome 7.0+ are known to be compatible. <br/><br/>
+
+      Until the other browsers catch up, please enjoy a few videos of what GigaPan Timelapse has to offer.
+   </div>
 </div>

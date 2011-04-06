@@ -1006,6 +1006,6 @@ if (!org.gigapan.Util)
 
             //UTIL.log('Videoset() constructor');
 
-            this.setStatusLoggingEnabled(true);
+            this.setStatusLoggingEnabled(false);
          };
    })();
