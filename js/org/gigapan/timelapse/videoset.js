@@ -668,18 +668,23 @@ if (!org.gigapan.Util)
             publishVideoEvent(video.id, 'video-made-visible', new Date());
             UTIL.log("video(" + video.id + ") _makeVideoVisible(" + callingFunction + "): ready=[" + video.ready + "] error=[" + error + "] " + videoStats(video));
 
-            // delete video which is being replaced, following the chain until we get to a null
-            var videoToDelete = activeVideos[video.idOfVideoBeingReplaced];
-            var chainOfDeletes = "";
-            while (videoToDelete)
-               {
-               var nextVideoToDelete = activeVideos[videoToDelete.idOfVideoBeingReplaced];
-               delete videoToDelete.idOfVideoBeingReplaced;  // delete this to prevent multiple deletes
-               chainOfDeletes += videoToDelete.id + ",";
-               _deleteVideo(videoToDelete, video);
-               videoToDelete = nextVideoToDelete;
-               }
-            UTIL.log("video(" + video.id + ") _makeVideoVisible(" + callingFunction + "): chain of deletes: " + chainOfDeletes);
+            // Delete video which is being replaced, following the chain until we get to a null.  We do this in a timeout
+            // to give the browser a chance to update the GUI so that it can render the new video positioned above.  This
+            // (mostly) fixes the blanking problem we saw in Safari.
+            window.setTimeout(function()
+                                 {
+                                 var videoToDelete = activeVideos[video.idOfVideoBeingReplaced];
+                                 var chainOfDeletes = "";
+                                 while (videoToDelete)
+                                    {
+                                    var nextVideoToDelete = activeVideos[videoToDelete.idOfVideoBeingReplaced];
+                                    delete videoToDelete.idOfVideoBeingReplaced;  // delete this to prevent multiple deletes
+                                    chainOfDeletes += videoToDelete.id + ",";
+                                    _deleteVideo(videoToDelete, video);
+                                    videoToDelete = nextVideoToDelete;
+                                    }
+                                 UTIL.log("video(" + video.id + ") _makeVideoVisible(" + callingFunction + "): chain of deletes: " + chainOfDeletes);
+                                 }, 1);
 
             // notify onload listener by calling the callback, if any
             if (video.onloadCallback)
