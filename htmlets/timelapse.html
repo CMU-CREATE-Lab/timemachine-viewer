@@ -126,6 +126,10 @@
                   <button type="button" disabled="disabled" id="playStopSnaplapseButton" onclick="playStopSnaplapse()">Play Time Warp</button>
                   <button type="button" disabled="disabled" id="saveSnaplapseButton" onclick="saveSnaplapse()">Save Time Warp</button>
                   <button type="button" id="loadSnaplapseButton" onclick="showLoadSnaplapseWindow()">Load Time Warp</button>
+                  <form id="save_snaplapse_form" method="post" action="../timelapse/save_time_warp.php" style="display:none" onsubmit="return false;">
+                     <textarea id="save_snaplapse_form_json" name="json" rows="10" cols="40"></textarea>
+                     <input id="save_snaplapse_form_filename" name="filename"/>
+                  </form>
                </td>
             </tr>
             <tr>
