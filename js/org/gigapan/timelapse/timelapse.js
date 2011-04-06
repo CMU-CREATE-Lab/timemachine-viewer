@@ -119,6 +119,7 @@ if (!org.gigapan.timelapse.VideosetStats)
             var minZoomSpeedPerSecond = .25; // in log2
             var zoomFractionPerSecond = 3.; // in log2
             var keyIntervals = [];
+            var targetViewChangeListeners = [];
 
             // levelThreshold sets the quality of display by deciding what level of tile to show for a given level of zoom:
             //
@@ -274,6 +275,11 @@ if (!org.gigapan.timelapse.VideosetStats)
             this.getVideoset = function()
                {
                return videoset;
+               };
+
+            this.addTargetViewChangeListener = function(listener)
+               {
+               targetViewChangeListeners.push(listener);
                };
               
             ///////////////////////////
@@ -501,6 +507,8 @@ if (!org.gigapan.timelapse.VideosetStats)
                   }
 
                   refresh();
+
+                  for (var i = 0; i < targetViewChangeListeners.length; i++) targetViewChangeListeners[i](targetView);
                };
 
             var point2mag = function(point)
