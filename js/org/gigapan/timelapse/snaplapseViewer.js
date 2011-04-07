@@ -69,9 +69,14 @@ function newSnaplapse(json)
       $("#timelineSlider")['slider']("option", "disabled", true);
       $("#slider-vertical")['slider']("option", "disabled", true);
       $('#playBackSpeedSlider').hide();
-      $('#play_toggle').attr("class", "");
-      $('.overlay1').hide();
-      $('.overlay2').hide();
+      $('#mainbutton.play').hide();
+      $('#mainbutton.pause').hide();
+      $('#mainbutton.stop').show();
+
+      $("#zoom_in").css("opacity",".35");
+      $("#zoom_out").css("opacity",".35");
+      $("#home").css("opacity",".35");
+
       $("#snaplapse_keyframe_list")['selectable']("option", "disabled", true);
 
       var keyframes = $("#snaplapse_keyframe_list > div");
@@ -93,11 +98,18 @@ function newSnaplapse(json)
       $("#timelineSlider")['slider']("option", "disabled", false);
       $("#slider-vertical")['slider']("option", "disabled", false);
       $('#playBackSpeedSlider').show();
-      $('#play_toggle').attr("class", "play_mouseout");
-      $('.overlay1').show();
-      $('.overlay2').show();
-      $("#snaplapse_keyframe_list")['selectable']("option", "disabled", false);
+      $('#mainbutton.stop').hide();
+      $('#mainbutton.pause').attr("class", "play");
+      $('#mainbutton.play').attr("title", "Play");
+      $('#mainbutton.play').show();
 
+      $("#zoom_in").css("opacity","1");
+      $("#zoom_out").css("opacity","1");
+      $("#home").css("opacity","1");
+
+      $("#snaplapse_keyframe_list")['selectable']("option", "disabled", false);
+      timelapse.seek(0);
+      timelapse.warpTo(timelapse.homeView());
       var keyframes = $("#snaplapse_keyframe_list > div");
       for (var i = 0; i < keyframes.size(); i++)
          {
