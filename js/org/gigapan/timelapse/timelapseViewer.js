@@ -104,7 +104,7 @@ function setupZoomSliderHandlers() {
 function setupUIHandlers() {
    var intervalId;
 
-   $('#mainbutton').bind("click", function() {
+   $('#mainbutton.play, #mainbutton.pause').bind("click", function() {
      if ($("#slider-vertical")['slider']("option", "disabled") == true) return; 
      if ($(this).attr("class") == "play") {
          $(this).attr("title", "Pause");
@@ -121,12 +121,10 @@ function setupUIHandlers() {
          timelapse.pause();
 	 return false;
       }
-  // }).mousemove(function() {
-  //    if ($(this).attr("class") == "play_mouseout") $(this).attr("class", "play_mouseover");
-  //    else if ($(this).attr("class") == "pause_mouseout") $(this).attr("class", "pause_mouseover");
-  //  }).mouseout(function() {
-  //    if ($(this).attr("class") == "play_mouseover") $(this).attr("class", "play_mouseout");
-  //    else if ($(this).attr("class") == "pause_mouseover") $(this).attr("class", "pause_mouseout");
+   });
+
+   $('#mainbutton.stop').bind("click", function() {
+      playStopSnaplapse();
    });
 
    $("#home").mousemove(function() {
@@ -369,6 +367,8 @@ function loadTimelapse(gigapanUrl, gigapanJSON)
       setupUIHandlers();
       setupSnaplapseHandlers();
       setupSnaplapseLinks();
+      $('#mainbutton.stop').hide()
+
       }
    else
       {

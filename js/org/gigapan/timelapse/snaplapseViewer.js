@@ -69,9 +69,8 @@ function newSnaplapse(json)
       $("#timelineSlider")['slider']("option", "disabled", true);
       $("#slider-vertical")['slider']("option", "disabled", true);
       $('#playBackSpeedSlider').hide();
-      //$('#mainbutton').attr("class", "");
-      $('.overlay1').hide();
-      $('.overlay2').hide();
+      $('#mainbutton.play').hide();
+      $('#mainbutton.stop').show();
 
       $("#zoom_in").css("opacity",".35");
       $("#zoom_out").css("opacity",".35");
@@ -98,9 +97,8 @@ function newSnaplapse(json)
       $("#timelineSlider")['slider']("option", "disabled", false);
       $("#slider-vertical")['slider']("option", "disabled", false);
       $('#playBackSpeedSlider').show();
-      //$('#mainbutton').attr("class", "play");
-      $('.overlay1').show();
-      $('.overlay2').show();
+      $('#mainbutton.stop').hide();
+      $('#mainbutton.play').show();
 
       $("#zoom_in").css("opacity","1");
       $("#zoom_out").css("opacity","1");
