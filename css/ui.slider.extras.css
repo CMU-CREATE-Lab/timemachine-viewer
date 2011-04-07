@@ -19,7 +19,7 @@
 .ui-slider .ui-state-active .ui-slider-tooltip, .ui-slider .ui-state-focus .ui-slider-tooltip, .ui-slider .ui-state-hover .ui-slider-tooltip {
 	display: block;
 	position: absolute;
-	bottom: 2.5em;
+	bottom: 2.7em;
 	text-align: center;
 	padding: .3em .2em .4em;
 	font-size: .9em;

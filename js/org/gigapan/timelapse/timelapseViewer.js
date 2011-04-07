@@ -105,7 +105,8 @@ function setupUIHandlers() {
    var intervalId;
 
    $('#mainbutton').bind("click", function() {
-      if ($(this).attr("class") == "play") {
+     if ($("#slider-vertical")['slider']("option", "disabled") == true) return; 
+     if ($(this).attr("class") == "play") {
          $(this).attr("title", "Pause");
          $(this).attr("class", "pause");
          if (timelapseCurrentTimeInSeconds >= timelapseDurationInSeconds) {
@@ -113,23 +114,26 @@ function setupUIHandlers() {
             timelapse.seek(0);
          }
          timelapse.play();
+	 return false;
       } else if ($(this).attr("class") == "pause") {
          $(this).attr("class", "play");
          $(this).attr("title", "Play");
          timelapse.pause();
+	 return false;
       }
   // }).mousemove(function() {
   //    if ($(this).attr("class") == "play_mouseout") $(this).attr("class", "play_mouseover");
   //    else if ($(this).attr("class") == "pause_mouseout") $(this).attr("class", "pause_mouseover");
- //  }).mouseout(function() {
- //     if ($(this).attr("class") == "play_mouseover") $(this).attr("class", "play_mouseout");
- //     else if ($(this).attr("class") == "pause_mouseover") $(this).attr("class", "pause_mouseout");
+  //  }).mouseout(function() {
+  //    if ($(this).attr("class") == "play_mouseover") $(this).attr("class", "play_mouseout");
+  //    else if ($(this).attr("class") == "pause_mouseover") $(this).attr("class", "pause_mouseout");
    });
 
    $("#home").mousemove(function() {
       $(this).attr("title", "Home");
       this.style.cursor = 'pointer';
    }).click(function() {
+      if ($("#slider-vertical")['slider']("option", "disabled") == true) return;
       timelapse.warpTo(timelapse.homeView());
       $("#slider-vertical")['slider']("option", "value", timelapse.viewScaleToZoomSlider(timelapse.getDefaultScale()));
    });
@@ -187,8 +191,10 @@ function setupUIHandlers() {
    });
 
    $("#zoom_in").mousedown(function() {
+      if ($("#slider-vertical")['slider']("option", "disabled") == true) return;
       intervalId = setInterval(zoomIn, 50);
    }).click(function() {
+      if ($("#slider-vertical")['slider']("option", "disabled") == true) return;
       zoomIn();
    }).mouseup(function() {
       clearInterval(intervalId);
@@ -200,21 +206,29 @@ function setupUIHandlers() {
    });
 
    $("#zoom_out").mousedown(function() {
+      if ($("#slider-vertical")['slider']("option", "disabled") == true) return;
       intervalId = setInterval(zoomOut, 50);
    }).click(function() {
+      if ($("#slider-vertical")['slider']("option", "disabled") == true) return;
       zoomOut();
    }).mouseup(function() {
       clearInterval(intervalId);
    }).mouseout(function() {
       clearInterval(intervalId);
    }).mousemove(function() {
-      //$(this).attr("title", "Zoom Out");
       this.style.cursor = 'pointer';
    });
 
    $('#timelapse').bind("mouseover", function() {
       this.style.cursor = 'url("../timelapse/css/cursors/openhand.png"),move';
+   }).bind("click", function() {     
+      $('#handle_speed').removeClass("ui-state-focus");
+      $('#handle_speed').removeClass("ui-state-hover");
+   }).bind("mousedown", function() {   
+      $('#handle_speed').removeClass("ui-state-focus");  
+      $('#handle_speed').removeClass("ui-state-hover");
    });
+
 }
 
 function zoomIn() {

@@ -66,19 +66,19 @@ font-family:Arial, Helvetica, sans-serif;}
 	width:140px;
 	background-color:#262626;
 	border:1px solid #444;
-	bottom:-10px;
+	bottom:-1px;
 	left:172px;
 	height:36px;
-	overflow:visible;
-	}
+	overflow:visible;	
+}
 	
 #instructions span.speedhelp p{
-        margin:0;
+        margin:-6px 0px 0px 0px;
 	padding:0;
 	background-repeat:no-repeat;
 	background-position:bottom left;
 	background-image:url(../images/bubble_edge_horizontal.png);
-	height:67px;
+	height:73px;
 	}
 
 ul#sidebuttons{
@@ -523,6 +523,7 @@ a.zoomall:active{background-image:url(../images/zoom/zoom_viewall_down.png);}
     border-style:none;
     border:none;
     left:-10px;
+    z-index: 10;
 }
 
 #timelineSlider .ui-slider-handle:hover{background-image:url(../images/handle_hover.png);}

@@ -148,10 +148,10 @@
 <div id="player">
 
    <div id="zoom">
-      <a href="#" title="Zoom in" id="zoom_in" class="zoomin"></a>
-      <a href="#" id="zoom_out" title="Zoom out" class="zoomout"></a>
+      <a href="#" title="Zoom in" id="zoom_in" class="zoomin" onclick="return false;"></a>
+      <a href="#" id="zoom_out" title="Zoom out" class="zoomout" onclick="return false;"></a>
       <div id="slider-vertical" title="Click to zoom"></div>
-      <a href="#" id="home" title="View All" class="zoomall"></a>
+      <a href="#" id="home" title="View All" class="zoomall" onclick="return false;"></a>
    </div>
 
    <div id="filler">
@@ -159,9 +159,9 @@
    </div>
 
    <div id="instructions">
-      <span class="zoomhelp"><p>Zoom in &amp; out to explore parts of the GigaPan in greater detail. Click or use Scroll Wheel.</p></span>
-      <span class="speedhelp"><p>Drag around to change playback speed</p></span>
-      <span class="movehelp"><p>Click and drag to explore GigaPan</p></span>
+      <span class="zoomhelp"><p>Zoom in &amp; out to explore in greater detail. Click or use the scroll wheel.</p></span>
+      <span class="speedhelp"><p>Drag to change playback speed.</p></span>
+      <span class="movehelp"><p>Click and drag to explore.</p></span>
    </div>
 
    <div id="timelapse" style="position: absolute; width:512px; height:288px; background:black; overflow:hidden; border: 1px solid black;"></div>
@@ -181,15 +181,15 @@
          <li id="sizeoptions">
             <ul>
                <li>Player Size</li>
-               <li><a id="small" class="current" href="#" onclick="return switchDataset(0);">Small</a></li>
-               <li><a id="large" href="#" onclick="switchDataset(1);">Large</a></li>
+               <li><a id="small" class="current" href="#" onclick="switchDataset(0); return false;">Small</a></li>
+               <li><a id="large" href="#" onclick="switchDataset(1); return false;">Large</a></li>
 
             </ul>
          </li>
-         <li><a href="#" title="Player Size" id="size">
+         <li><a href="#" title="Player Size" id="size" onclick="return false;">
             <div id="playerSizeText">Small</div>
          </a></li>
-         <li><a href="#" title="Instructions" id="help">
+         <li><a href="#" title="Instructions" id="help" onclick="return false;">
             <div id="helpText">Help</div>
          </a></li>
       </ul>
