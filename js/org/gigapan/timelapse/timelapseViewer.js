@@ -104,27 +104,34 @@ function setupZoomSliderHandlers() {
 function setupUIHandlers() {
    var intervalId;
 
-   $('#mainbutton.play, #mainbutton.pause').bind("click", function() {
-     if ($("#slider-vertical")['slider']("option", "disabled") == true) return; 
-     if ($(this).attr("class") == "play") {
+$('#mainbutton.play, #mainbutton.pause').bind("click", function()
+   {
+   if (!$("#slider-vertical")['slider']("option", "disabled"))
+      {
+      if ($(this).attr("class") == "play")
+         {
          $(this).attr("title", "Pause");
          $(this).attr("class", "pause");
-         if (timelapseCurrentTimeInSeconds >= timelapseDurationInSeconds) {
+         if (timelapseCurrentTimeInSeconds >= timelapseDurationInSeconds)
+            {
             $("#timelineSlider")['slider']("option", "value", 0);
             timelapse.seek(0);
-         }
+            }
          timelapse.play();
-	 return false;
-      } else if ($(this).attr("class") == "pause") {
+         }
+      else if ($(this).attr("class") == "pause")
+         {
          $(this).attr("class", "play");
          $(this).attr("title", "Play");
          timelapse.pause();
-	 return false;
+         }
       }
+   return false;
    });
 
-   $('#mainbutton.stop').bind("click", function() {
+$('#mainbutton.stop').bind("click", function() {
       playStopSnaplapse();
+      return false;
    });
 
    $("#home").mousemove(function() {
