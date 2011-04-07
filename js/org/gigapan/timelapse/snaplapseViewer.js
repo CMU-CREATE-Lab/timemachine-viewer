@@ -70,6 +70,7 @@ function newSnaplapse(json)
       $("#slider-vertical")['slider']("option", "disabled", true);
       $('#playBackSpeedSlider').hide();
       $('#mainbutton.play').hide();
+      $('#mainbutton.pause').hide();
       $('#mainbutton.stop').show();
 
       $("#zoom_in").css("opacity",".35");
@@ -98,6 +99,8 @@ function newSnaplapse(json)
       $("#slider-vertical")['slider']("option", "disabled", false);
       $('#playBackSpeedSlider').show();
       $('#mainbutton.stop').hide();
+      $('#mainbutton.pause').attr("class", "play");
+      $('#mainbutton.play').attr("title", "Play");
       $('#mainbutton.play').show();
 
       $("#zoom_in").css("opacity","1");
