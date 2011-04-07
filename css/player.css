@@ -155,12 +155,12 @@ a#size:active{background-image:url(../images/buttons/size_down.png);}
 
 #playerSizeText {
   position: relative;
-  top: -3px;
+  top: -2px;
 }
 
 #helpText {
   position: relative;
-  top: -3px;
+  top: -2px;
 }
 
 a#help{
