@@ -1,11 +1,53 @@
-.snaplapse_keyframe_list_item {
-  display: block;
-  padding: 2px;
-  margin: 0;
-  cursor: pointer;
-  border:solid 1px black;
-  background-color:white;
+#snaplapse_keyframe_container {
+   min-width: 300px;
+   max-width: 500px;
+   min-height: 100px;
+   max-height: 500px;
+   display: block;
+   padding: 0;
+   margin: 0;
+   overflow: auto;
+   border: solid 1px black;
+   background-color: #eeeeee;
 }
 
-#snaplapse_keyframe_list .ui-selecting { background: #ddddff; }
-#snaplapse_keyframe_list .ui-selected { background: #a5a7ff; color: black; }
+.snaplapse_composer_controls {
+   min-width: 300px;
+   max-width: 500px;
+   display:none;
+}
+
+.snaplapse_keyframe_list_item {
+   display: block;
+   padding: 2px;
+   margin: 0;
+   cursor: pointer;
+   border: solid 1px black;
+   background-color: white;
+}
+
+#snaplapse_keyframe_list .ui-selecting {
+   background: #ddddff;
+}
+
+#snaplapse_keyframe_list .ui-selected {
+   background: #a5a7ff;
+   color: black;
+}
+
+
+button {
+   cursor: pointer;
+}
+
+span.ui-icon {
+   float: left;
+   margin: 0 2px;
+}
+
+.button-container div {
+   margin: 2px 0 2px 0;
+   padding: 1px 0 2px 0;
+   cursor: pointer;
+   float: left;
+}

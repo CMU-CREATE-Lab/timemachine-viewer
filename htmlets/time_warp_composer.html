@@ -1,40 +1,39 @@
-<table id="snaplapse" class="no-padding">
-   <tr class="valign-top">
-      <td>
-         <table class="no-padding" style="margin-left:-2px; margin-top:10px; padding: 10px; width:516px; border: 2px solid black;">
-            <tr>
-               <th class="align-center" style="padding-bottom:5px">Time Warp Composer</th>
-            </tr>
-            <tr>
-               <td class="align-center" style="padding-bottom:5px">
-                  <button type="button" id="newSnaplapseButton" onclick="newSnaplapse(null)">New Time Warp</button>
-                  <button type="button" disabled="disabled" id="playStopSnaplapseButton" onclick="playStopSnaplapse()">Play Time Warp</button>
-                  <button type="button" disabled="disabled" id="saveSnaplapseButton" onclick="saveSnaplapse()">Save Time Warp</button>
-                  <button type="button" id="loadSnaplapseButton" onclick="showLoadSnaplapseWindow()">Load Time Warp</button>
-                  <form id="save_snaplapse_form" method="post" action="../timelapse/save_time_warp.php" style="display:none" onsubmit="return false;">
-                     <textarea id="save_snaplapse_form_json" name="json" rows="10" cols="40"></textarea>
-                     <input id="save_snaplapse_form_filename" name="filename"/>
-                  </form>
-               </td>
-            </tr>
-            <tr>
-               <td class="align-center">
-                  <table style="width:485px; padding-bottom:5px">
-                     <tr class="align-center">
-                        <td>
-                           <button type="button" disabled="disabled" id="recordKeyframeButton" onclick="recordKeyframe()">Record Keyframe</button>
-                        </td>
-                        <td>
-                           <button type="button" disabled="disabled" id="deleteKeyframeButton" onclick="deleteSelectedKeyframes()">Delete Keyframe(s)</button>
-                        </td>
-                     </tr>
-                  </table>
-                  <div id="snaplapse_keyframe_container" style="width:485px; height:300px; display:block; padding:0; margin:0; overflow:auto; border:solid 1px black; background-color:#eeeeee;">
-                     <div id="snaplapse_keyframe_list"></div>
-                  </div>
-               </td>
-            </tr>
-         </table>
-      </td>
-   </tr>
-</table>
+<div id="time_warp_composer">
+   <table style="border-spacing:0;">
+      <tr>
+         <td>
+            <div class="button-container">
+               <button id="newSnaplapseButton" type="button" style="float:left;margin-left:0;" class="ui-state-default ui-corner-all button text-button" title="Create a new time warp">New</button>
+               <button id="loadSnaplapseButton" type="button" style="float:right;margin-right:0;" class="ui-state-default ui-corner-all button text-button" title="Load a time warp">Load</button>
+            </div>
+         </td>
+      </tr>
+      <tr class="snaplapse_composer_controls">
+         <td>
+            <div id="snaplapse_keyframe_container">
+               <div id="snaplapse_keyframe_list"></div>
+            </div>
+         </td>
+      </tr>
+      <tr class="snaplapse_composer_controls">
+         <td>
+            <div class="button-container">
+               <div id="recordKeyframeButton" class="ui-state-default ui-corner-all button" title="Record keyframe">
+                  <span class="ui-icon ui-icon-plus"></span>
+               </div>
+               <div id="deleteKeyframeButton" style="margin-left:2px;" class="ui-state-active ui-state-disabled ui-corner-all button" title="Delete selected keyframe(s)">
+                  <span class="ui-icon ui-icon-minus"></span>
+               </div>
+               <div id="playStopSnaplapseButton" style="margin-left:40px;" class="ui-state-active ui-state-disabled ui-corner-all button" title="Play time warp">
+                  <span class="ui-icon ui-icon-play"></span>
+               </div>
+               <button type="button" style="float:right;margin-right:0;" id="saveSnaplapseButton" class="ui-state-disabled ui-state-active ui-corner-all button text-button">Save</button>
+            </div>
+         </td>
+      </tr>
+   </table>
+   <form id="save_snaplapse_form" method="post" action="../timelapse/save_time_warp.php" style="display:none" onsubmit="return false;">
+      <textarea id="save_snaplapse_form_json" name="json" rows="10" cols="40"></textarea>
+      <input id="save_snaplapse_form_filename" name="filename"/>
+   </form>
+</div>

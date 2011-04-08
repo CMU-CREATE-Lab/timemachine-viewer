@@ -623,6 +623,7 @@ if (!org.gigapan.timelapse.VideosetStats)
                   videoWidth = data['video_width'];
                   videoHeight = data['video_height'];
                   videoset.setFps(data['fps']);
+                  videoset.setDuration(1 / data['fps'] * data['frames']);
                   videoset.setLeader(data['leader']/data['fps']);
                   frames = data['frames'];
                   maxLevel = data['nlevels']-1;
@@ -936,5 +937,14 @@ if (!org.gigapan.timelapse.VideosetStats)
                $.ajax({url:url + 'r.json', dataType: 'json', success: onPanoLoadSuccessCallback});  // TODO: move this to index.html
                }
 
+            // Fixes Safari bug which causes the video to not be displayed if the video has no leader and the initial
+            // time is zero (the video seeked event is never fired, so videoset never gets the cue that the video
+            // should be displayed).  The fix is to simply seek half a frame in.  Yeah, the video won't be starting at
+            // *zero*, but the displayed frame will still be the right one, so...good enough.  :-)
+            if (videoset.getLeader() <= 0  && UTIL.isSafari())
+               {
+               var halfOfAFrame = 1 / this.getFps() / 2;
+               this.seek(halfOfAFrame);
+               }
          };
    })();

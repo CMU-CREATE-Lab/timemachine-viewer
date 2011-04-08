@@ -14,31 +14,32 @@ var urlMatchPattern = /^http:\/\/timelapse.gigapan.org\//;
 var isRemoteUrl = window.location.href.match(urlMatchPattern) != null;
 
 var timelapseDurationInSeconds = 0.0;
-var timeStepInSecs = 0.04; // 25 frames per second
-var timelapse = null;
+var timeStepInSecs = 0.0;
 var timelapseCurrentTimeInSeconds = 0.0;
+var timelapse = null;
 
 function createTimelineSlider()
    {
-   timelapseDurationInSeconds = Math.floor(timelapse.getNumFrames() / timelapse.getFps());
+   timelapseDurationInSeconds = timelapse.getNumFrames() / timelapse.getFps();
+   timeStepInSecs = 1 / timelapse.getFps();
+   $("#currentTime").text(org.gigapan.Util.formatTime(timelapseCurrentTimeInSeconds));
    $("#totalTime").text(org.gigapan.Util.formatTime(timelapseDurationInSeconds));
 
    $("#timelineSlider")['slider']({
                                      animate: true,
                                      value: 0,
-                                     min: 0,
+                                     min: 0.0,
                                      max: timelapseDurationInSeconds,
                                      range: "min",
                                      step: timeStepInSecs,
                                      slide: function(e, ui)
                                         {
                                         timelapseCurrentTimeInSeconds = ui.value;
-                                        var timeInSecs = ui.value;
-                                        timelapse.seek(timeInSecs);
-					}
+                                        $("#currentTime").text(org.gigapan.Util.formatTime(timelapseCurrentTimeInSeconds));
+                                        timelapse.seek(ui.value);
+                                        }
                                   });
    }
-
 
 function createZoomSlider()
    {
@@ -112,7 +113,7 @@ $('#mainbutton.play, #mainbutton.pause').bind("click", function()
          {
          $(this).attr("title", "Pause");
          $(this).attr("class", "pause");
-         if (timelapseCurrentTimeInSeconds >= timelapseDurationInSeconds)
+         if (timelapseCurrentTimeInSeconds.toFixed(3) >= timelapseDurationInSeconds.toFixed(3))
             {
             $("#timelineSlider")['slider']("option", "value", 0);
             timelapse.seek(0);
@@ -127,11 +128,6 @@ $('#mainbutton.play, #mainbutton.pause').bind("click", function()
          }
       }
    return false;
-   });
-
-$('#mainbutton.stop').bind("click", function() {
-      playStopSnaplapse();
-      return false;
    });
 
    $("#home").mousemove(function() {
@@ -256,14 +252,6 @@ function movePos(dir) {
    timelapse.movePos(dir);
 }
 
-function setupSnaplapseHandlers() {
-   $("#snaplapse_keyframe_list")['selectable']({
-      selected: handleSnaplapseFrameSelectionChange,
-      unselected: handleSnaplapseFrameSelectionChange,
-      cancel: ':input,option,span,textarea'
-   });
-}
-
 function setupKeyboardHandlers() {
    $(this)['keydown'](timelapse.handleKeydownEvent);
    $(this)['keyup'](timelapse.handleKeyupEvent);
@@ -346,24 +334,36 @@ function loadTimelapse(gigapanUrl, gigapanJSON)
       timelapse.addTimeChangeListener(function(t)
                                          {
                                          timelapseCurrentTimeInSeconds = t;
-                                         if (timelapseCurrentTimeInSeconds < 0)
+                                         if (timelapseCurrentTimeInSeconds.toFixed(3) < 0)
                                             {
                                             timelapseCurrentTimeInSeconds = 0;
                                             $('#mainbutton').attr("class", "play");
                                             $('#mainbutton').attr("title", "Play");
                                             }
-                                         $("#currentTime").text(org.gigapan.Util.formatTime(timelapseCurrentTimeInSeconds));
-                                         $("#timelineSlider")['slider']("option", "value", timelapseCurrentTimeInSeconds);
-                                         if (timelapseCurrentTimeInSeconds >= timelapseDurationInSeconds)
+                                         else if (timelapseCurrentTimeInSeconds.toFixed(3) >= timelapseDurationInSeconds.toFixed(3))
                                             {
+                                            timelapseCurrentTimeInSeconds = timelapseDurationInSeconds;
                                             $('#mainbutton').attr("class", "play");
                                             $('#mainbutton').attr("title", "Play");
                                             }
+                                         $("#currentTime").text(org.gigapan.Util.formatTime(timelapseCurrentTimeInSeconds));
+                                         $("#timelineSlider")['slider']("option", "value", timelapseCurrentTimeInSeconds);
                                          });
 
       timelapse.addTargetViewChangeListener(function(view)
-                                            { $("#slider-vertical")['slider']("option", "value", timelapse.viewScaleToZoomSlider(view.scale)); });
+                                               {
+                                               $("#slider-vertical")['slider']("option", "value", timelapse.viewScaleToZoomSlider(view.scale));
+                                               });
 
+      timelapse.getVideoset().addEventListener('videoset-pause',
+                                               function()
+                                                  {
+                                                  // the videoset might cause playback to pause, such as when it decides
+                                                  // it's hit the end (even though the current time might not be >= duration),
+                                                  // so we need to make sure the play button is updated
+                                                  $('#mainbutton').attr("class", "play");
+                                                  $('#mainbutton').attr("title", "Play");
+                                                  });
       setupKeyboardHandlers();
       setupMouseHandlers();
       createTimelineSlider();
@@ -372,10 +372,7 @@ function loadTimelapse(gigapanUrl, gigapanJSON)
       setupTimelineSliderHandlers();
       setupZoomSliderHandlers();
       setupUIHandlers();
-      setupSnaplapseHandlers();
-      setupSnaplapseLinks();
-      $('#mainbutton.stop').hide()
-
+      initializeSnaplapseUI();
       }
    else
       {
@@ -437,7 +434,7 @@ $(document).ready(function()
                      if (!browserSupported)
                         {
                         $("#timelapse_viewer").hide();
-                        $("#snaplapse").hide();
+                        $("#time_warp_composer").hide();
                         $("#browser_not_supported").show();
                         //window.location = "../timelapse/browsernotsupported.html";
                         }

@@ -168,6 +168,11 @@ if (!org.gigapan.Util)
                   fps = newFps;
                };
 
+            this.setDuration = function(newDuration)
+               {
+               duration = newDuration;
+               };
+
             this.getFps = function()
                {
                   return fps;
@@ -457,6 +462,24 @@ if (!org.gigapan.Util)
                      paused = true;
                      _updateVideoAdvance();
                      unstall();
+
+                     // notify pause listeners
+                     var listeners = eventListeners['videoset-pause'];
+                     if (listeners)
+                        {
+                        var adjustedTime = _getCurrentTime();
+                        for (var i = 0; i < listeners.length; i++)
+                           {
+                           try
+                              {
+                              listeners[i](adjustedTime);
+                              }
+                           catch(e)
+                              {
+                              UTIL.error(e.name + " while publishing to videoset 'videoset-pause' event listener: " + e.message, e);
+                              }
+                           }
+                        }
                      }
                };
 
@@ -469,7 +492,29 @@ if (!org.gigapan.Util)
                      UTIL.log("videoset play");
                      paused = false;
                      _updateVideoAdvance();
+                     if (syncInterval)
+                        {
+                        window.clearInterval(syncInterval);
+                        }
                      syncInterval = setInterval(sync, syncIntervalTime*1000);
+
+                     // notify play listeners
+                     var listeners = eventListeners['videoset-play'];
+                     if (listeners)
+                        {
+                        var adjustedTime = _getCurrentTime();
+                        for (var i = 0; i < listeners.length; i++)
+                           {
+                           try
+                              {
+                              listeners[i](adjustedTime);
+                              }
+                           catch(e)
+                              {
+                              UTIL.error(e.name + " while publishing to videoset 'videoset-play' event listener: " + e.message, e);
+                              }
+                           }
+                        }
                      }
                };
 
@@ -494,14 +539,16 @@ if (!org.gigapan.Util)
 
             var _seek = function(new_time)
                {
-                  // Chrome workaround: always seek 1/4 frame in from beginning of frame to ensure video displays correct frame #
-                  // Requires h.264 videos to be encoded with no B-frames
-                  new_time = (Math.round(new_time * fps) + .25) / fps;
+                  if (new_time > duration)
+                     {
+                     new_time = duration;
+                     }
+
                   if (new_time != _getCurrentTime())
                      {
                      //UTIL.log("_getCurrentTime() was " + _getCurrentTime());
                      timeOffset = new_time - UTIL.getCurrentTimeInSecs() * (advancing ? playbackRate : 0);
-                     //console.log("seek: timeOffset is " + timeOffset + ", frame " + timeOffset * 25);
+                     //UTIL.log("seek: timeOffset is " + timeOffset + ", frame " + timeOffset * fps);
                      //UTIL.log("_getCurrentTime() now " + _getCurrentTime());
                      sync(0.0);
                      }
@@ -510,7 +557,8 @@ if (!org.gigapan.Util)
 
             var _getCurrentTime = function()
                {
-                  return timeOffset + UTIL.getCurrentTimeInSecs() * (advancing ? playbackRate : 0);
+               var t = timeOffset + UTIL.getCurrentTimeInSecs() * (advancing ? playbackRate : 0);
+               return (t > duration) ? duration : t;
                };
             this.getCurrentTime = _getCurrentTime;
 
@@ -582,10 +630,12 @@ if (!org.gigapan.Util)
                //UTIL.log("video(" + video.id + ") videoLoadedMetadata after deactivation!");
                return;
                }
+
             if (!duration)
                {
                duration = video.duration - leader;
                }
+
             _setVideoToCurrentTime(video);
             if (advancing)
                {
@@ -909,13 +959,14 @@ if (!org.gigapan.Util)
                      {
                      _pause();
                      _seek(0);
+                     publishSyncEvent(0);
                      return;
                      }
                   else if (duration > 0 && t >= duration)
                      {
                      _pause();
-                     var end = duration-(1.0/fps);
-                     _seek(end);
+                     _seek(duration);
+                     publishSyncEvent(duration);
                      return;
                      }
 
@@ -984,22 +1035,27 @@ if (!org.gigapan.Util)
 
                   //allStats();
 
-                  var listeners = eventListeners['sync'];
-                  if (listeners)
-                     {
-                     for (var i = 0; i < listeners.length; i++)
-                        try
-                           {
-                           listeners[i](t);
-                           }
-                        catch(e)
-                           {
-                           UTIL.error(e.name + " while publishing to videoset 'sync' event listener: " + e.message, e);
-                           }
-                     }
+                  publishSyncEvent(t);
                };
 
-            ////////////////////////////////////////////////////////////////////////////////////////////////////////////
+            var publishSyncEvent = function(t)
+               {
+               var listeners = eventListeners['sync'];
+               if (listeners)
+                  {
+                  var adjustedTime = (t >= duration) ? duration : t;
+                  for (var i = 0; i < listeners.length; i++)
+                     try
+                        {
+                        listeners[i](adjustedTime);
+                        }
+                     catch(e)
+                        {
+                        UTIL.error(e.name + " while publishing to videoset 'sync' event listener: " + e.message, e);
+                        }
+                  }
+               };
+         ////////////////////////////////////////////////////////////////////////////////////////////////////////////
             //
             // Constructor code
             //
