@@ -210,7 +210,6 @@ function newSnaplapse(json)
       $("#home").css("opacity", ".35");
 
       $("#snaplapse_keyframe_list")['selectable']("option", "disabled", true);
-
       var keyframes = $("#snaplapse_keyframe_list > div");
       for (var i = 0; i < keyframes.size(); i++)
          {
@@ -241,8 +240,6 @@ function newSnaplapse(json)
       $("#home").css("opacity", "1");
 
       $("#snaplapse_keyframe_list")['selectable']("option", "disabled", false);
-      timelapse.seek(0);
-      timelapse.warpTo(timelapse.homeView());
       var keyframes = $("#snaplapse_keyframe_list > div");
       for (var i = 0; i < keyframes.size(); i++)
          {
