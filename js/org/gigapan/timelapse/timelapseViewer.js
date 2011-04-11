@@ -102,6 +102,14 @@ function setupZoomSliderHandlers() {
    $("#slider-vertical .ui-slider-handle").attr("title", "Drag to zoom");
 }
 
+function isCurrentTimeAtOrPastDuration()
+   {
+   // fix the numbers, but subtract 0 from each to convert back to float since toFixed gives a string
+   var num1Fixed = timelapseCurrentTimeInSeconds.toFixed(3) - 0;
+   var num2Fixed = timelapseDurationInSeconds.toFixed(3) - 0;
+   return num1Fixed >= num2Fixed;
+   }
+
 function setupUIHandlers() {
    var intervalId;
 
@@ -113,7 +121,7 @@ $('#mainbutton.play, #mainbutton.pause').bind("click", function()
          {
          $(this).attr("title", "Pause");
          $(this).attr("class", "pause");
-         if (timelapseCurrentTimeInSeconds.toFixed(3) >= timelapseDurationInSeconds.toFixed(3))
+         if (isCurrentTimeAtOrPastDuration())
             {
             $("#timelineSlider")['slider']("option", "value", 0);
             timelapse.seek(0);
@@ -340,7 +348,7 @@ function loadTimelapse(gigapanUrl, gigapanJSON)
                                             $('#mainbutton').attr("class", "play");
                                             $('#mainbutton').attr("title", "Play");
                                             }
-                                         else if (timelapseCurrentTimeInSeconds.toFixed(3) >= timelapseDurationInSeconds.toFixed(3))
+                                         if (isCurrentTimeAtOrPastDuration())
                                             {
                                             timelapseCurrentTimeInSeconds = timelapseDurationInSeconds;
                                             $('#mainbutton').attr("class", "play");
