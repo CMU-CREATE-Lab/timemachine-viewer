@@ -77,3 +77,28 @@ span.ui-icon {
    width:5px;
    height:5px;
 }
+
+span#comment {
+   margin:0px 30px 0px 578px;
+   padding:0px;
+   color:#fff;
+   background-color:#262626;
+   border:1px solid #444;   
+   display:block;
+   max-width:500px;
+   min-width:300px;
+   position:fixed;
+   top:130px;
+   left:0px;
+   z-index:6;
+   overflow:visible;
+}
+
+span#comment p {
+   padding:30px 34px 30px 44px;
+   background-position:top left;
+   background-image:url(bubble_edge_vertical.png);
+   background-repeat:no-repeat;
+   width:190px;
+   margin-left:-10px;
+}

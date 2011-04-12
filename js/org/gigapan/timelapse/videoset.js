@@ -227,8 +227,6 @@ if (!org.gigapan.Util)
             var showSpinner = function()
                {
                UTIL.log("showSpinner");
-               $('#spinnerOverlay').css("top", $("#timelapse_container").height()/2 - $("#spinner").height()/2 + "px");
-               $('#spinnerOverlay').css("left", $("#timelapse_container").width()/2 - $("#spinner").width()/2 + "px");
                $('#spinnerOverlay').show();
                };
                

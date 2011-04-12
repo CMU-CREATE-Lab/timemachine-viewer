@@ -224,6 +224,13 @@ function newSnaplapse(json)
                                  $("#timelineSlider")['slider']("option", "disabled", true);
                                  $("#slider-vertical")['slider']("option", "disabled", true);
                                  $('#playBackSpeedSlider').hide();
+                                 
+                                 $('#help').attr("class", "disabled");
+                                 $("#instructions").fadeOut(50);
+                                 $("#instructions").removeClass('on');                
+                                 if ($('#mainbutton').attr("class") == "pause_disabled") $('#mainbutton').attr("class", "pause");
+                                 else $('#mainbutton').attr("class", "play"); 
+                                 
                                  $('#mainbutton.play').hide();
                                  $('#mainbutton.pause').hide();
                                  $('#mainbutton.stop').show();
@@ -259,11 +266,16 @@ function newSnaplapse(json)
                                  $('#mainbutton.pause').attr("class", "play");
                                  $('#mainbutton.play').attr("title", "Play");
                                  $('#mainbutton.play').show();
+                                 $('#mainbutton').attr("style","display: block;");
 
                                  $("#zoom_in").css("opacity", "1");
                                  $("#zoom_out").css("opacity", "1");
                                  $("#home").css("opacity", "1");
+                                 $('#help').attr("class", "enabled");
 
+                                 timelapse.seek(0);
+                                 timelapse.warpTo(timelapse.homeView());
+      
                                  $("#snaplapse_keyframe_list")['selectable']("option", "disabled", false);
                                  var keyframes = $("#snaplapse_keyframe_list > div");
                                  for (var i = 0; i < keyframes.size(); i++)
