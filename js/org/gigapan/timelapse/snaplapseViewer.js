@@ -43,7 +43,7 @@ function initializeSnaplapseUI()
                                                      {
                                                      handleSnaplapseFrameSelectionChange(true);
                                                      },
-                                                  cancel: 'textarea'
+                                                  cancel: ':input,textarea'
                                                });
 
    // add mouse event handlers to the New Snaplapse button
@@ -339,19 +339,33 @@ function addSnaplapseKeyframeListItem(frame, insertionIndex)
    var thumbnailId = keyframeListItem.id + "_thumbnail";
    var timestampId = keyframeListItem.id + "_timestamp";
    var descriptionId = keyframeListItem.id + "_description";
-
+   var durationId = keyframeListItem.id + "_duration";
+   var duration = typeof frame['duration'] != 'undefined' && frame['duration'] != null ? frame['duration'] : '';
    var content = '<table border="0" cellspacing="0" cellpadding="0" class="snaplapse_keyframe_list_item_table">' +
                  '   <tr valign="top">' +
-                 '      <td>' +
+                 '      <td rowspan="2">' +
                  '         <div id="' + timestampId + '" class="snaplapse_keyframe_list_item_timestamp">' + org.gigapan.Util.formatTime(frame['time'], true) + '</div>' +
                  '         <canvas id="' + thumbnailId + '" width="100" height="56" class="snaplapse_keyframe_list_item_thumbnail"></canvas>' +
                  '      </td>' +
-                 '      <td class="snaplapse_keyframe_list_item_cell_padding">&nbsp;</td>' +
+                 '      <td rowspan="2" class="snaplapse_keyframe_list_item_cell_padding">&nbsp;</td>' +
                  '      <td style="text-align:left;">' +
                  '         <div class="snaplapse_keyframe_list_item_description_label" style="text-align:left;">Description:</div>' +
                  '         <div><textarea id="' + descriptionId + '" class="snaplapse_keyframe_list_item_description">' + frame['description'] + '</textarea></div>' +
                  '      </td>' +
-                 '      <td class="snaplapse_keyframe_list_item_cell_padding">&nbsp;</td>' +
+                 '      <td rowspan="2" class="snaplapse_keyframe_list_item_cell_padding">&nbsp;</td>' +
+                 '   </tr>' +
+                 '   <tr valign="top">' +
+                 '      <td style="text-align:left;">' +
+                 '         <table border="0" cellspacing="0" cellpadding="0">' +
+                 '            <tr>' +
+                 '               <td><span class="snaplapse_keyframe_list_item_duration_label">Duration:</span></td>' +
+                 '               <td class="snaplapse_keyframe_list_item_cell_padding">&nbsp;</td>' +
+                 '               <td><input type="text" id="' + durationId + '" class="snaplapse_keyframe_list_item_duration" value="' + duration + '"></td>' +
+                 '               <td class="snaplapse_keyframe_list_item_cell_padding">&nbsp;</td>' +
+                 '               <td><span class="snaplapse_keyframe_list_item_duration_label">seconds</span></td>' +
+                 '            </tr>' +
+                 '         </table>' +
+                 '      </td>' +
                  '   </tr>' +
                  '</table>';
 
@@ -365,7 +379,49 @@ function addSnaplapseKeyframeListItem(frame, insertionIndex)
                                       displaySnaplapseFrameAnnotation(snaplapse.getKeyframe(insertionIndex));
                                       });
 
+   // validate the duration on keyup, reformat it on change
+   $("#" + durationId)['keyup'](function()
+                                   {
+                                   validateAndSanitizeDuration(durationId);
+                                   });
+   $("#" + durationId)['change'](function()
+                                    {
+                                    // validate and sanitize, and get the cleaned duration.
+                                    var newDuration = validateAndSanitizeDuration(durationId);
+
+                                    // update both the view and the model with the new duration
+                                    var durationField = $("#" + durationId);
+                                    durationField.val(newDuration);
+                                    durationField.removeClass('validation-fault');
+
+                                    snaplapse.setDurationForKeyframe(insertionIndex, newDuration);
+                                    });
+
    // TODO: grab the current video frame and store it as the thumbnail in the canvas
+   }
+
+function validateAndSanitizeDuration(durationId)
+   {
+   var durationField = $("#" + durationId);
+   var durationStr = durationField.val().trim();
+
+   durationField.removeClass('validation-fault');
+   if (durationStr.length > 0)
+      {
+      var num = parseFloat(durationStr);
+
+      if (!isNaN(num) && (num >= 0))
+         {
+         durationField.removeClass('validation-fault');
+         return num.toFixed(3);
+         }
+      else
+         {
+         durationField.addClass('validation-fault');
+         }
+      }
+
+   return '';
    }
 
 function refreshKeyframesUI()
