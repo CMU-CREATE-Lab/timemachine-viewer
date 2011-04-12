@@ -126,7 +126,7 @@ if (!org.gigapan.timelapse.Timelapse)
                       typeof keyframe['bounds']['xmax'] != 'undefined' &&
                       typeof keyframe['bounds']['ymax'] != 'undefined')
                      {
-                     this.recordKeyframe(keyframe['time'], keyframe['bounds'], keyframe['title'], keyframe['description']);
+                     this.recordKeyframe(keyframe['time'], keyframe['bounds'], keyframe['description'], keyframe['duration']);
                      }
                   else
                      {
@@ -149,7 +149,7 @@ if (!org.gigapan.timelapse.Timelapse)
          return true;
          };
 
-      this.recordKeyframe = function(time, bounds, title, description)
+      this.recordKeyframe = function(time, bounds, description, duration)
          {
          if (typeof bounds == 'undefined')
             {
@@ -177,7 +177,7 @@ if (!org.gigapan.timelapse.Timelapse)
          var insertionIndex = keyframes.length;
          keyframes[insertionIndex] = keyframe;
 
-         keyframe['title'] = (typeof title == 'undefined') ? '' : title;
+         keyframe['duration'] = (typeof duration == 'undefined') ? null : duration;
          keyframe['description'] = (typeof description == 'undefined') ? '' : description;
 
          var listeners = eventListeners['keyframe-added'];
@@ -199,11 +199,10 @@ if (!org.gigapan.timelapse.Timelapse)
          return true;
          };
 
-      this.setTextAnnotationForKeyframe = function(index, title, description)
+      this.setTextAnnotationForKeyframe = function(index, description)
          {
          if (index >= 0 && index < keyframes.length)
             {
-            keyframes[index]['title'] = title;
             keyframes[index]['description'] = description;
             return true;
             }
@@ -400,7 +399,7 @@ if (!org.gigapan.timelapse.Timelapse)
             {
             frameCopy = {};
             frameCopy['time'] = frame['time'];
-            frameCopy['title'] = frame['title'];
+            frameCopy['duration'] = frame['duration'];
             frameCopy['description'] = frame['description'];
             frameCopy['bounds'] = {};
             frameCopy['bounds'].xmin = frame['bounds'].xmin;
