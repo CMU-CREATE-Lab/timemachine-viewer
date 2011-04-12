@@ -344,6 +344,16 @@ if (!org.gigapan.timelapse.VideosetStats)
                  return videoset.getFps();
                };
 
+            this.getVideoWidth = function()
+               {
+               return videoWidth;
+               };
+
+            this.getVideoHeight = function()
+               {
+               return videoHeight;
+               };
+
             this.addTimeChangeListener = function(listener)
                {
                   videoset.addEventListener('sync', listener);
