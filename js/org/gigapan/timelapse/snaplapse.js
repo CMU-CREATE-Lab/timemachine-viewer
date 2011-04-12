@@ -177,7 +177,7 @@ if (!org.gigapan.timelapse.Timelapse)
          var insertionIndex = keyframes.length;
          keyframes[insertionIndex] = keyframe;
 
-         keyframe['duration'] = (typeof duration == 'undefined') ? null : duration;
+         keyframe['duration'] = this.sanitizeDuration(duration);
          keyframe['description'] = (typeof description == 'undefined') ? '' : description;
 
          var listeners = eventListeners['keyframe-added'];
@@ -204,6 +204,34 @@ if (!org.gigapan.timelapse.Timelapse)
          if (index >= 0 && index < keyframes.length)
             {
             keyframes[index]['description'] = description;
+            return true;
+            }
+         return false;
+         };
+
+      this.sanitizeDuration = function(rawDuration)
+         {
+         if (typeof rawDuration != 'undefined' && rawDuration != null)
+            {
+            var rawDurationStr = rawDuration + '';
+            if (rawDurationStr.length > 0)
+               {
+               var num = parseFloat(rawDurationStr);
+
+               if (!isNaN(num) && (num >= 0))
+                  {
+                  return num.toFixed(3) - 0;
+                  }
+               }
+            }
+         return null;
+         };
+
+      this.setDurationForKeyframe = function(index, duration)
+         {
+         if (index >= 0 && index < keyframes.length)
+            {
+            keyframes[index]['duration'] = this.sanitizeDuration(duration);
             return true;
             }
          return false;
@@ -420,7 +448,7 @@ if (!org.gigapan.timelapse.Timelapse)
             time += timeStep;
             }
 
-         return parseFloat(time.toFixed(2));
+         return parseFloat(time.toFixed(3));
          };
 
       var timeChangeListener = function(t)
