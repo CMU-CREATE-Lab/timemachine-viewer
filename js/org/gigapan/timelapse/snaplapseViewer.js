@@ -295,6 +295,7 @@ function newSnaplapse(json)
    setButtonEnabled("#recordKeyframeButton", true);
    setButtonEnabled("#playStopSnaplapseButton", false);
    setButtonEnabled("#saveSnaplapseButton", false);
+   setButtonEnabled("#deleteKeyframeButton", false);
    $("#snaplapse_keyframe_list").empty();
    if (saveSnaplapseWindow)
       {
@@ -638,30 +639,10 @@ function deleteSelectedKeyframes()
          {
          refreshKeyframesUI();
          toggleSnaplapseButtons();
-         handleSnaplapseFrameSelectionChange();
+         handleSnaplapseFrameSelectionChange(false);
          }
       }
 
-   //check if we have any invalid time positions now
-   //and delete one of them.
-   for (var j = 1; j < snaplapse.getNumKeyframes(); j++)
-      {
-      if (snaplapse.getKeyframe(j)['time'] == snaplapse.getKeyframe(j - 1)['time'])
-         {
-         alert("ERROR: Invalid time position detected\n\n" +
-               "The time position of a keyframe cannot\n" +
-               "be the same as the previous keyframe.\n" +
-               "One of these invalid keyframes has been\n" +
-               "removed.");
-         if (snaplapse.deleteKeyframeAtIndex(j))
-            {
-            refreshKeyframesUI();
-            toggleSnaplapseButtons();
-            handleSnaplapseFrameSelectionChange();
-            j -= 1; //go back one since we removed an item
-            }
-         }
-      }
    $("#deleteKeyframeButton").attr("disabled", "disabled");
    }
 

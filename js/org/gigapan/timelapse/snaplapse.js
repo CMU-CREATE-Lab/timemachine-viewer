@@ -448,7 +448,7 @@ if (!org.gigapan.timelapse.Timelapse)
             time += timeStep;
             }
 
-         return parseFloat(time.toFixed(2));
+         return parseFloat(time.toFixed(3));
          };
 
       var timeChangeListener = function(t)
