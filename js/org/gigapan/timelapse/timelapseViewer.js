@@ -450,6 +450,7 @@ $(document).ready(function()
                         $("#player").hide();
                         $("#time_warp_composer").hide();
                         $("#browser_not_supported").show();
+			$("#firstHeading").css( {"top": "300px"} );
                         return;
                         }
                         
