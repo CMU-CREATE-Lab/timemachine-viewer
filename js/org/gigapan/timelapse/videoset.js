@@ -210,7 +210,7 @@ if (!org.gigapan.Util)
                   perfTimeTweaks = 0;
                   perfTimeSeeks = 0;
                };
-         
+
             var getPerf = function()
                {
                   var perf = "Videos added: " + perfAdded;
@@ -225,19 +225,19 @@ if (!org.gigapan.Util)
                      }
                   return perf;
                };
-         
+
             var showSpinner = function()
                {
                UTIL.log("showSpinner");
                $('#spinnerOverlay').show();
                };
-               
+
             var hideSpinner = function()
                {
                UTIL.log("hideSpinner");
                $('#spinnerOverlay').hide();
                };
-               
+
             ///////////////////////////
             // Add and remove videos
             //
@@ -291,7 +291,7 @@ if (!org.gigapan.Util)
                   publishVideoEvent(video.id, 'video-added', currentTime);
 
                   updateStallState();
-                  
+
                   return video;
                };
 
@@ -454,7 +454,7 @@ if (!org.gigapan.Util)
                        UTIL.log("advance = " + !(paused || stalled));
                     }
                };
-                    
+
             var _pause = function()
                {
                   if (!paused)
@@ -485,7 +485,7 @@ if (!org.gigapan.Util)
                };
 
             this.pause = _pause;
-            
+
             // Call this when advancing or emulatingSyncIntervalTime change
             var _updateSyncInterval = function()
             {
@@ -670,7 +670,22 @@ if (!org.gigapan.Util)
                if (video.readyState > 0)
                   {
                   var theCurrentTime = _getCurrentTime();
-                  var desiredTime = leader + theCurrentTime;
+                  var desiredTime = null;
+
+                  // clamp desired time to video.duration
+                  if (parseFloat(theCurrentTime.toFixed(3)) + leader >= video.duration)
+                     {
+                     desiredTime = video.duration;
+                     if (UTIL.isChrome())
+                        {
+                        desiredTime = desiredTime - DEFAULT_ERROR_THRESHOLD;
+                        }
+                     }
+                  else
+                     {
+                     desiredTime = leader + theCurrentTime;
+                     }
+
                   UTIL.log("video(" + video.id + ") _setVideoToCurrentTime; readyState=[" + video.readyState + "], seek to [" + theCurrentTime + "] which is [" + desiredTime + "]");
 
                   // check the time ranges to see if we've loaded enough to perform a seek without causing a INDEX_SIZE_ERR: DOM Exception 1...
@@ -995,7 +1010,7 @@ if (!org.gigapan.Util)
                      {
                      return;
                      }
-                  
+
                   var ready_stats=[[],[],[],[],[]];
                   var not_ready_stats=[[],[],[],[],[]];
                   for (var videoId in activeVideos)
