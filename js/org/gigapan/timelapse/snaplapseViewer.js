@@ -178,7 +178,7 @@ function displaySnaplapseFrameAnnotation(frame)
       {
       if (isTextNonEmpty(frame['description']))
          {
-         $("#snaplapse-annotation-description").html(frame['description']).show();
+         $("#snaplapse-annotation-description").text(frame['description']).show();
          }
       }
    }
@@ -391,6 +391,11 @@ function addSnaplapseKeyframeListItem(frame, insertionIndex)
 
    $("#" + keyframeListItem.id).html(content).addClass("snaplapse_keyframe_list_item");
 
+   // display the text annotation when you focus on the description field.
+   $("#" + descriptionId)['focus'](function()
+                                      {
+                                      displaySnaplapseFrameAnnotation(snaplapse.getKeyframeById(keyframeId));
+                                      });
    // save the text annotation on keyup, so that we don't need a save button
    $("#" + descriptionId)['keyup'](function()
                                       {
@@ -438,7 +443,7 @@ function validateAndSanitizeDuration(durationId)
       if (!isNaN(num) && (num >= 0))
          {
          durationField.removeClass('validation-fault');
-         return num.toFixed(3);
+         return num.toFixed(1);
          }
       else
          {
@@ -473,7 +478,9 @@ function recordKeyframe()
          {
          alert("ERROR: Invalid time position\n\n" +
                "The time position of a keyframe cannot\n" +
-               "be the same as the previous keyframe.");
+               "be the same as the previous keyframe if\n" +
+               "the duration set on the previous keyframe\n" +
+               "is zero or undefined.");
          }
       }
    }

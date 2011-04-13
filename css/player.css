@@ -540,3 +540,14 @@ a.zoomall:active{background-image:url(../images/zoom/zoom_viewall_down.png);}
 
 #slider-vertical .ui-slider-handle:hover{background-image:url(../images/zoom/zoom_handle_hover.png);}
 #slider-vertical .ui-slider-handle:active{background-image:url(../images/zoom/zoom_handle_down.png);}
+
+#snaplapse-annotation-description {
+   font-family: Arial, Helvetica, sans-serif;
+   display: none;
+   border: 1px solid black;
+   text-align: left;
+   background-color: #262626;
+   color: #ffffff;
+   padding: 5px;
+}
+
