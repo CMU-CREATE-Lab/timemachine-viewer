@@ -558,7 +558,7 @@ span#snaplapse-annotation-description {
 	background-color:#262626;
 	border:1px solid #444;
 
-	display:block;
+	display:none;
 	max-width:500px;
 	min-width:300px;
 	position:fixed;
