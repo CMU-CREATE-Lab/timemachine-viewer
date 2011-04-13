@@ -513,7 +513,7 @@ if (!Math.uuid)
             if (currentTime > endingTime)
                {
                UTIL.log("-------------- 15) " + currentTime);
-               clearInterval(warpDuringPlaybackFreezeIntervalHandle);
+               stopIntervalForPlaybackFreeze();
                currentKeyframeIntervalIndex++;
                isInIntervalTransitionMode = false;
 
