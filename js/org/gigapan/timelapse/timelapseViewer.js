@@ -137,11 +137,6 @@ function setupUIHandlers() {
    return false;
    });
 
-   $('#mainbutton.stop').bind("click", function() {
-      playStopSnaplapse();
-      return false;
-   });
-
    $("#home").mousemove(function() {
       $(this).attr("title", "Home");
       this.style.cursor = 'pointer';
@@ -387,7 +382,6 @@ function loadTimelapse(gigapanUrl, gigapanJSON)
       setupZoomSliderHandlers();
       setupUIHandlers();
       initializeSnaplapseUI();
-      $('#mainbutton.stop').hide()
       }
    else
       {
@@ -449,7 +443,7 @@ $(document).ready(function()
                      if (!browserSupported)
                         {
                         $("#player").hide();
-                        $("#snaplapse").hide();
+                        $("#time_warp_composer").hide();
                         $("#browser_not_supported").show();
                         return;
                         }
