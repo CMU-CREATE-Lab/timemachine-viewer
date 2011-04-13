@@ -526,9 +526,13 @@ if (!Math.uuid)
                   var normalizedTime = keyframeInterval.getStartingTime();
                   timelapse.seek(normalizedTime);
 
-                  notifyKeyframeIntervalChangeListeners(keyframeInterval);
                   startIntervalForTimeChangeListener();
                   }
+               else
+                  {
+                  _stop();
+                  }
+               notifyKeyframeIntervalChangeListeners(keyframeInterval);
                }
             else
                {
