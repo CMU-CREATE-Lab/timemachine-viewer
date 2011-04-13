@@ -178,6 +178,11 @@ if (!org.gigapan.timelapse.VideosetStats)
 
             this.handleKeydownEvent = function(event)
                {
+
+                   // if we are focused on a text field, do not run any player specific controls
+                   if (document.activeElement == "[object HTMLInputElement]" || document.activeElement == "[object HTMLTextAreaElement]")
+                      return;
+
                    var translationSpeedConstant = 20;
                    var moveFn;
 		   switch (event.which)

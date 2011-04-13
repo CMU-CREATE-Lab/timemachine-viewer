@@ -264,6 +264,21 @@ function movePos(dir) {
 function setupKeyboardHandlers() {
    $(this)['keydown'](timelapse.handleKeydownEvent);
    $(this)['keyup'](timelapse.handleKeyupEvent);
+ 
+   if (!document.activeElement) {
+      document.addEventListener("focus",_dom_trackActiveElement,true);
+      document.addEventListener("blur",_dom_trackActiveElementLost,true);
+   }
+}
+ 
+function _dom_trackActiveElement(evt) {
+    if (evt && evt.target) {
+        document.activeElement = evt.target == document ? null : evt.target;
+    }
+}
+ 
+function _dom_trackActiveElementLost(evt) {
+    document.activeElement = null;
 }
 
 function setupMouseHandlers() {
