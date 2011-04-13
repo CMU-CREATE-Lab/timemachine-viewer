@@ -302,11 +302,14 @@ function setViewportSize(newWidth, newHeight)
    $("#controls").css( { "top":newPos + "px" } );
    var extraHeight = 0;
    var extraWidth = 0;
+   //largee video
    if (newWidth == 816) {
       $("#content").css( {"padding": "0px 0px 0px 305px"} );
       //$("#timelineSlider").css( {"top": "441px"} );
       $("#filler").css( {"top": "442px"} ); 
       $("#controls").css( {"top": "450px"} );
+      $("#firstHeading").css( {"top": "600px"} );
+      $("#snaplapse-annotation-description").css( {"left": "283px"} );
       extraHeight = 18;
       extraWidth = 3;
    } else {
@@ -314,6 +317,8 @@ function setViewportSize(newWidth, newHeight)
       $("#filler").css( {"top": "auto"} );
       $("#controls").css( {"top": "auto"} );
       $("#content").css( {"padding": "0px 0px 0px 0px"} );
+      $("#firstHeading").css( {"top": "450px"} );
+      $("#snaplapse-annotation-description").css( {"left": "-22px"} );
       extraHeight = -2;
       extraWidth = 2;
    }
