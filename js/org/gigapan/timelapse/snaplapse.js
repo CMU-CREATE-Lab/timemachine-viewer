@@ -188,7 +188,7 @@ if (!Math.uuid)
          keyframe['bounds'].ymin = bounds.ymin;
          keyframe['bounds'].xmax = bounds.xmax;
          keyframe['bounds'].ymax = bounds.ymax;
-         var insertionIndex = keyframes.length;  // TODO: compute this based on whether we're inserting
+         var insertionIndex = keyframes.length;
          if (typeof idOfKeyframeToAppendAfter != 'undefined' && idOfKeyframeToAppendAfter != null)
             {
             for (var j = 0; j < keyframes.length; j++)
