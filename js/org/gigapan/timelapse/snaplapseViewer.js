@@ -147,8 +147,8 @@ function handleSnaplapseFrameSelectionChange(willWarp)
    if (numSelected == 1)
       {
       var id = selectedItems.get(0).id;
-      var index = id.substring("snaplapse_keyframe_".length);
-      var frame = snaplapse.getKeyframe(index);
+      var keyframeId = id.substring("snaplapse_keyframe_".length);
+      var frame = snaplapse.getKeyframeById(keyframeId);
 
       displaySnaplapseFrameAnnotation(frame);
 
@@ -333,9 +333,19 @@ function isTextNonEmpty(text)
 
 function addSnaplapseKeyframeListItem(frame, insertionIndex)
    {
+   var keyframeId = frame['id'];
    var keyframeListItem = document.createElement("div");
-   keyframeListItem.id = "snaplapse_keyframe_" + insertionIndex;
-   $("#snaplapse_keyframe_list").append(keyframeListItem);
+   keyframeListItem.id = "snaplapse_keyframe_" + keyframeId;
+
+   var keyframeListItems = $(".snaplapse_keyframe_list_item").get();
+   if (insertionIndex < keyframeListItems.length)
+      {
+      $("#" + keyframeListItems[insertionIndex - 1]['id']).after(keyframeListItem);
+      }
+   else
+      {
+      $("#snaplapse_keyframe_list").append(keyframeListItem);
+      }
 
    var thumbnailId = keyframeListItem.id + "_thumbnail";
    var timestampId = keyframeListItem.id + "_timestamp";
@@ -357,15 +367,9 @@ function addSnaplapseKeyframeListItem(frame, insertionIndex)
                  '   </tr>' +
                  '   <tr valign="top">' +
                  '      <td style="text-align:left;">' +
-                 '         <table border="0" cellspacing="0" cellpadding="0">' +
-                 '            <tr>' +
-                 '               <td><span class="snaplapse_keyframe_list_item_duration_label">Duration:</span></td>' +
-                 '               <td class="snaplapse_keyframe_list_item_cell_padding">&nbsp;</td>' +
-                 '               <td><input type="text" id="' + durationId + '" class="snaplapse_keyframe_list_item_duration" value="' + duration + '"></td>' +
-                 '               <td class="snaplapse_keyframe_list_item_cell_padding">&nbsp;</td>' +
-                 '               <td><span class="snaplapse_keyframe_list_item_duration_label">seconds</span></td>' +
-                 '            </tr>' +
-                 '         </table>' +
+                 '         <span class="snaplapse_keyframe_list_item_duration_label">Duration:</span>' +
+                 '         <input type="text" id="' + durationId + '" class="snaplapse_keyframe_list_item_duration" value="' + duration + '">' +
+                 '         <span class="snaplapse_keyframe_list_item_duration_label">seconds</span>' +
                  '      </td>' +
                  '   </tr>' +
                  '</table>';
@@ -376,8 +380,8 @@ function addSnaplapseKeyframeListItem(frame, insertionIndex)
    $("#" + descriptionId)['keyup'](function()
                                       {
                                       var description = $("#" + descriptionId).val();
-                                      snaplapse.setTextAnnotationForKeyframe(insertionIndex, description);
-                                      displaySnaplapseFrameAnnotation(snaplapse.getKeyframe(insertionIndex));
+                                      snaplapse.setTextAnnotationForKeyframe(keyframeId, description);
+                                      displaySnaplapseFrameAnnotation(snaplapse.getKeyframeById(keyframeId));
                                       });
 
    // validate the duration on keyup, reformat it on change
@@ -395,8 +399,13 @@ function addSnaplapseKeyframeListItem(frame, insertionIndex)
                                     durationField.val(newDuration);
                                     durationField.removeClass('validation-fault');
 
-                                    snaplapse.setDurationForKeyframe(insertionIndex, newDuration);
+                                    snaplapse.setDurationForKeyframe(keyframeId, newDuration);
                                     });
+
+   // remove selection from all other items, then select this item
+   $(".ui-selected").removeClass("ui-selected");
+   $("#" + keyframeListItem.id).addClass("ui-selected");
+   handleSnaplapseFrameSelectionChange(false);
 
    // TODO: grab the current video frame and store it as the thumbnail in the canvas
    }
@@ -425,24 +434,28 @@ function validateAndSanitizeDuration(durationId)
    return '';
    }
 
-function refreshKeyframesUI()
-   {
-   toggleSnaplapseButtons();
-
-   var keyframes = snaplapse.getKeyframes();
-
-   $("#snaplapse_keyframe_list").empty();
-   for (var i = 0; i < keyframes.length; i++)
-      {
-      addSnaplapseKeyframeListItem(keyframes[i], i);
-      }
-   }
-
 function recordKeyframe()
    {
    if (snaplapse)
       {
-      var success = snaplapse.recordKeyframe();
+      // If there's a keyframe already selected, then we'll append after that one.  Otherwise, just append to the end.
+      var selectedItems = $("#snaplapse_keyframe_list > .ui-selected");
+      var numSelected = selectedItems.size();
+
+      var success = false;
+      if (numSelected == 1)
+         {
+         var id = selectedItems.get(0).id;
+         var keyframeId = id.substring("snaplapse_keyframe_".length);
+         org.gigapan.Util.log("###################### Will be appending after id " + keyframeId);
+         success = snaplapse.recordKeyframe(keyframeId);
+         }
+      else
+         {
+         org.gigapan.Util.log("###################### Will be appending at the end");
+         success = snaplapse.recordKeyframe();
+         }
+
       if (!success)
          {
          alert("ERROR: Invalid time position\n\n" +
@@ -616,31 +629,26 @@ function loadSnaplapse(json)
       }
    }
 
-function sortDescendingById(a, b)
-   {
-   var valOne = parseInt(a.id.substring("snaplapse_keyframe_".length));
-   var valTwo = parseInt(b.id.substring("snaplapse_keyframe_".length));
-   return ((valOne > valTwo) ? -1 : ((valOne < valTwo) ? 1 : 0));
-   }
-
 function deleteSelectedKeyframes()
    {
    var selectedItems = $("#snaplapse_keyframe_list > .ui-selected");
    var numSelected = selectedItems.size();
 
-   var selectedItemsSortedDescending = selectedItems.sort(sortDescendingById);
-
-   for (var i = 0; i < numSelected; i++)
+   if (numSelected > 0)
       {
-      var id = selectedItemsSortedDescending.get(i).id;
-      var index = id.substring("snaplapse_keyframe_".length);
-
-      if (snaplapse.deleteKeyframeAtIndex(index))
+      var selectedKeyframeElements = selectedItems.get();
+      for (var i = 0; i < numSelected; i++)
          {
-         refreshKeyframesUI();
-         toggleSnaplapseButtons();
-         handleSnaplapseFrameSelectionChange(false);
+         var keyframeElement = selectedKeyframeElements[i];
+         var id = keyframeElement['id'];
+         var keyframeId = id.substring("snaplapse_keyframe_".length);
+
+         snaplapse.deleteKeyframeById(keyframeId);
+         $("#" + id).detach();
          }
+
+      toggleSnaplapseButtons();
+      handleSnaplapseFrameSelectionChange(false);
       }
 
    $("#deleteKeyframeButton").attr("disabled", "disabled");

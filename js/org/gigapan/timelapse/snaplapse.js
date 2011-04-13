@@ -4,6 +4,7 @@
 // Dependencies:
 // * org.gigapan.Util
 // * org.gigapan.timelapse.Timelapse
+// * Math.uuid (http://www.broofa.com/blog/?p=151)
 //
 // Authors:
 // * Randy Sarget (randy.sargent@gmail.com)
@@ -76,6 +77,12 @@ if (!org.gigapan.timelapse.Timelapse)
    alert(noVideosetMsg);
    throw new Error(noVideosetMsg);
    }
+if (!Math.uuid)
+   {
+   var noMathUUID = "The Math.uuid library is required by org.gigapan.timelapse.Snaplapse";
+   alert(noMathUUID);
+   throw new Error(noMathUUID);
+   }
 //======================================================================================================================
 
 //======================================================================================================================
@@ -89,6 +96,7 @@ if (!org.gigapan.timelapse.Timelapse)
    org.gigapan.timelapse.Snaplapse = function(timelapse)
       {
       var keyframes = [];
+      var keyframesById = {};
       var keyframeIntervals = [];
       var currentKeyframeIntervalIndex = -1;
       var isCurrentlyPlaying = false;
@@ -126,7 +134,11 @@ if (!org.gigapan.timelapse.Timelapse)
                       typeof keyframe['bounds']['xmax'] != 'undefined' &&
                       typeof keyframe['bounds']['ymax'] != 'undefined')
                      {
-                     this.recordKeyframe(keyframe['time'], keyframe['bounds'], keyframe['description'], keyframe['duration']);
+                     this.recordKeyframe(null,
+                                         keyframe['time'],
+                                         keyframe['bounds'],
+                                         keyframe['description'],
+                                         keyframe['duration']);
                      }
                   else
                      {
@@ -149,7 +161,7 @@ if (!org.gigapan.timelapse.Timelapse)
          return true;
          };
 
-      this.recordKeyframe = function(time, bounds, description, duration)
+      this.recordKeyframe = function(idOfKeyframeToAppendAfter, time, bounds, description, duration)
          {
          if (typeof bounds == 'undefined')
             {
@@ -169,13 +181,30 @@ if (!org.gigapan.timelapse.Timelapse)
                }
             }
 
+         var keyframeId = Math.uuid(20);
+         keyframe['id'] = keyframeId;
          keyframe['bounds'] = {};
          keyframe['bounds'].xmin = bounds.xmin;
          keyframe['bounds'].ymin = bounds.ymin;
          keyframe['bounds'].xmax = bounds.xmax;
          keyframe['bounds'].ymax = bounds.ymax;
-         var insertionIndex = keyframes.length;
+         var insertionIndex = keyframes.length;  // TODO: compute this based on whether we're inserting
+         if (typeof idOfKeyframeToAppendAfter != 'undefined' && idOfKeyframeToAppendAfter != null)
+            {
+            for (var j = 0; j < keyframes.length; j++)
+               {
+               if (idOfKeyframeToAppendAfter == keyframes[j]['id'])
+                  {
+                  insertionIndex = j + 1;
+                  UTIL.log("found matching id at j = " + j);
+                  break;
+                  }
+               }
+            }
+
+         keyframes.splice(insertionIndex, 0, null);
          keyframes[insertionIndex] = keyframe;
+         keyframesById[keyframeId] = keyframe;
 
          keyframe['duration'] = this.sanitizeDuration(duration);
          keyframe['description'] = (typeof description == 'undefined') ? '' : description;
@@ -199,11 +228,11 @@ if (!org.gigapan.timelapse.Timelapse)
          return true;
          };
 
-      this.setTextAnnotationForKeyframe = function(index, description)
+      this.setTextAnnotationForKeyframe = function(keyframeId, description)
          {
-         if (index >= 0 && index < keyframes.length)
+         if (keyframeId && keyframesById[keyframeId])
             {
-            keyframes[index]['description'] = description;
+            keyframesById[keyframeId]['description'] = description;
             return true;
             }
          return false;
@@ -227,39 +256,40 @@ if (!org.gigapan.timelapse.Timelapse)
          return null;
          };
 
-      this.setDurationForKeyframe = function(index, duration)
+      this.setDurationForKeyframe = function(keyframeId, duration)
          {
-         if (index >= 0 && index < keyframes.length)
+         if (keyframeId && keyframesById[keyframeId])
             {
-            keyframes[index]['duration'] = this.sanitizeDuration(duration);
+            keyframesById[keyframeId]['duration'] = this.sanitizeDuration(duration);
             return true;
             }
          return false;
          };
 
-      this.deleteKeyframeAtIndex = function(index)
+      this.deleteKeyframeById = function(keyframeId)
          {
-         if (index >= 0 && index < keyframes.length)
+         if (keyframeId && keyframesById[keyframeId])
             {
-            keyframes.splice(index, 1);
-            return true;
-            }
-         return false;
-         };
-
-      this.deleteKeyframeAtTime = function(time)
-         {
-         for (var i = 0; i < keyframes.length; i++)
-            {
-            if (keyframes[i]['time'] == time)
+            var indexToDelete = -1;
+            for (var i=0; i<keyframes.length; i++)
                {
-               keyframes.splice(i, 1);
-               return true;
+               if (keyframeId == keyframes[i]['id'])
+                  {
+                     indexToDelete = i;
+                  }
                }
+            keyframes.splice(indexToDelete, 1);
+            delete keyframesById[keyframeId];
+            return true;
             }
          return false;
          };
 
+      this.getKeyframes2 = function()
+         {
+         return keyframesById;
+         };
+         
       this.getKeyframes = function()
          {
          var keyframesClone = [];
@@ -369,11 +399,11 @@ if (!org.gigapan.timelapse.Timelapse)
          };
       this.stop = _stop;
 
-      this.getKeyframe = function(index)
+      this.getKeyframeById = function(keyframeId)
          {
-         if (index >= 0 && index < keyframes.length)
+         if (keyframeId)
             {
-            var keyframe = keyframes[index];
+            var keyframe = keyframesById[keyframeId];
             if (keyframe)
                {
                return cloneFrame(keyframe);
@@ -426,6 +456,7 @@ if (!org.gigapan.timelapse.Timelapse)
          if (frame)
             {
             frameCopy = {};
+            frameCopy['id'] = frame['id'];
             frameCopy['time'] = frame['time'];
             frameCopy['duration'] = frame['duration'];
             frameCopy['description'] = frame['description'];
