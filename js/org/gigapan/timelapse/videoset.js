@@ -116,6 +116,8 @@ if (!org.gigapan.Util)
             var perfTimeSeeks = 0;
             var perfAdded = 0;
             var syncIntervalTime = 0.2; // in seconds
+            var emulatingSyncIntervalTime = 1./12.; // in seconds
+            var emulatingPlaybackRate = false;
             var leader = 0;
             var eventListeners = {};
 
@@ -227,8 +229,6 @@ if (!org.gigapan.Util)
             var showSpinner = function()
                {
                UTIL.log("showSpinner");
-               $('#spinnerOverlay').css("top", $("#timelapse_container").height()/2 - $("#spinner").height()/2 + "px");
-               $('#spinnerOverlay').css("left", $("#timelapse_container").width()/2 - $("#spinner").width()/2 + "px");
                $('#spinnerOverlay').show();
                };
                
@@ -423,6 +423,7 @@ if (!org.gigapan.Util)
                        // Resume advancing
                        var time = _getCurrentTime();
                        advancing = true;
+                       _updateSyncInterval();
                        _seek(time);
 
                        for (var videoId in activeVideos)
@@ -438,6 +439,7 @@ if (!org.gigapan.Util)
                        // Stop advancing
                        var time = _getCurrentTime();
                        advancing = false;
+                       _updateSyncInterval();
 
                        for (var videoId in activeVideos)
                           {
@@ -458,7 +460,6 @@ if (!org.gigapan.Util)
                   if (!paused)
                      {
                      UTIL.log("videoset pause");
-                     clearInterval(syncInterval);
                      paused = true;
                      _updateVideoAdvance();
                      unstall();
@@ -484,6 +485,19 @@ if (!org.gigapan.Util)
                };
 
             this.pause = _pause;
+            
+            // Call this when advancing or emulatingSyncIntervalTime change
+            var _updateSyncInterval = function()
+            {
+                if (syncInterval) window.clearInterval(syncInterval);
+                if (advancing) {
+                    var intervalTime = 1000 * (emulatingSyncIntervalTime ? emulatingSyncIntervalTime : syncIntervalTime);
+                    UTIL.log("_updateSyncInterval: set for " + intervalTime);
+                    syncInterval = setInterval(sync, intervalTime);
+                } else {
+                    UTIL.log("_updateSyncInterval: cleared");
+                }
+            }
 
             this.play = function()
                {
@@ -492,11 +506,6 @@ if (!org.gigapan.Util)
                      UTIL.log("videoset play");
                      paused = false;
                      _updateVideoAdvance();
-                     if (syncInterval)
-                        {
-                        window.clearInterval(syncInterval);
-                        }
-                     syncInterval = setInterval(sync, syncIntervalTime*1000);
 
                      // notify play listeners
                      var listeners = eventListeners['videoset-play'];
@@ -523,6 +532,13 @@ if (!org.gigapan.Util)
                   return playbackRate;
                };
 
+            var _doesBrowserSupportPlaybackRate = function(rate)
+               {
+                  if (UTIL.isChrome()) return 0.0 <= rate;
+                  if (UTIL.isSafari()) return 0.0 == rate || (0.5 <= Math.abs(rate) && Math.abs(rate) <= 2.0);
+                  return true;
+               };
+
             this.setPlaybackRate = function(rate)
                {
                   if (rate != playbackRate)
@@ -530,10 +546,14 @@ if (!org.gigapan.Util)
                      var t = _getCurrentTime();
                      playbackRate = rate;
                      _seek(t);
+                     emulatingPlaybackRate = !_doesBrowserSupportPlaybackRate(rate);
+                     var videoRate = emulatingPlaybackRate ? 0 : rate;
+                     UTIL.log("*** SETTING VIDEO PLAYBACK RATE TO " + videoRate);
                      for (var videoId in activeVideos)
-                        {
-                        activeVideos[videoId].defaultPlaybackRate = activeVideos[videoId].playbackRate = rate;
-                        }
+                         {
+                         activeVideos[videoId].defaultPlaybackRate = activeVideos[videoId].playbackRate = videoRate;
+                         }
+                     _updateSyncInterval();
                      }
                };
 
@@ -984,11 +1004,11 @@ if (!org.gigapan.Util)
                      //updateVideoBandwidth(video);
                      var error = video.currentTime - leader - t;
                      (video.ready ? ready_stats : not_ready_stats)[video.readyState].push(video.bandwidth.toFixed(1));
-                     if (video.readyState >= 1 && Math.abs(error) > errorThreshold)
+                     if (video.readyState >= 1 && (Math.abs(error) > errorThreshold || emulatingPlaybackRate))
                         {  // HAVE_METADATA=1
                         perfTimeCorrections.push(error);
                         var rateTweak = 1 - error / syncIntervalTime;
-                        if (!advancing || rateTweak < .25 || rateTweak > 2)
+                        if (!advancing || emulatingPlaybackRate || rateTweak < .25 || rateTweak > 2)
                            {
                            perfTimeSeeks++;
                            //UTIL.log("current time " + video.currentTime);

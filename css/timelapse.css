@@ -1,9 +1,11 @@
-body, table, tr, td, img{
- -moz-user-select: -moz-none;
- -khtml-user-select: none;
- -webkit-user-select: none;
- -o-user-select: none;
- user-select: none;
+div#player, img, a{
+  -moz-user-select: none;
+  -moz-user-select: -moz-none;
+  -webkit-user-select: none;
+  -webkit-user-drag: none;
+  -khtml-user-select: none;
+  -o-user-select: none;
+  user-select: none;
 }
 
 #timelineSlider {
@@ -53,7 +55,7 @@ body, table, tr, td, img{
 }
 
 #timelapse {
- cursor: url("cursors/openhand.png"),move
+ cursor: url("cursors/openhand.cur") 10 10, move;
 }
 
 #mouse_debug_info {
@@ -119,7 +121,7 @@ body, table, tr, td, img{
   left: 10px;
 }
 
-#spinnerOverlay {
+/*#spinnerOverlay {
   border:0 solid;
   width:120px;
   height:120px;
@@ -127,6 +129,15 @@ body, table, tr, td, img{
   z-index:3;
   display:none;
   overflow:hidden;
+}*/
+
+#spinnerOverlay {  
+  width: 32px ;
+  position:absolute;
+  display:none;
+  margin-left: auto;
+  margin-right: auto;
+  z-index: 10;
 }
 
 table.align-left tr, td, th{ 
@@ -174,17 +185,50 @@ a.time_warp_link:hover{
     min-width:200px;
     position:relative;
     top:100px;
+    bottom:100px;
     left:0px;
-    overflow-x:hidden;
+    /*overflow-x:hidden;*/
 }
 
-p{ font-size:15px;               
+/*p{ font-size:15px;               
 line-height:23px;             
 max-width: 630px;          
 margin:10px 0px 20px 0px;}
+
 h2 .editsection { font-size: 67%; }
 h3, h4, h5, h6 {          
         border-bottom: none;     
         font-weight: bold;
-} 
+} */
 
+#browser_not_supported {
+    display: block;
+    height: 348px;
+    left: 34px;
+    position: fixed;
+    top: 100px;
+    width: 514px;
+}
+
+.warning, .error {
+   border: 1px solid;
+   width: 400px ;
+   margin-left: auto ;
+   margin-right: auto ;
+   margin-top: 50px ;
+   padding: 15px 10px 15px 60px; 
+   background-repeat: no-repeat;
+   background-position: 10px center;
+}
+
+.warning {
+   color: #9F6000;
+   background-color: #FEEFB3;
+   background-image: url('../images/alert.png');
+}
+
+.error {
+   color: #D8000C;
+   background-color: #FFBABA;
+   background-image: url('../images/error.png');
+}

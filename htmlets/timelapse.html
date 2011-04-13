@@ -68,30 +68,34 @@
                         $("#help").toggle(
                               function ()
                                  {
+                                 if ($("#slider-vertical")['slider']("option", "disabled")) return;
                                  $('li#sizeoptions').hide(); //might be already opened
                                  $("#instructions").fadeIn(100);
                                  $(this).addClass('on');
                                  if ($('#mainbutton').attr("class") == "pause")
                                     {
                                     timelapse.pause();
-                                    }
-                                 $("#timelineSlider")['slider']("option", "disabled", true);
-                                 $('#mainbutton').addClass('disabled');
-                                 },
-                              function ()
-                                 {
-                                 $("#instructions").fadeOut(50);
-                                 $(this).removeClass('on');
-                                 if ($('#mainbutton').attr("class") == "pause disabled")
-                                    {
-                                    timelapse.play();
-                                    $('#mainbutton').removeClass('play disabled');
-                                    $('#mainbutton').addClass('pause');
+                                    $('#mainbutton').attr("class", "pause_disabled");
                                     }
                                  else
                                     {
-                                    $('#mainbutton').removeClass('play disabled');
-                                    $('#mainbutton').addClass('play');
+                                    $('#mainbutton').attr("class", "play_disabled");
+                                    }
+                                 $("#timelineSlider")['slider']("option", "disabled", true);
+                                 },
+                              function ()
+                                 {
+                                 if ($("#slider-vertical")['slider']("option", "disabled")) return;
+                                 $("#instructions").fadeOut(50);
+                                 $(this).removeClass('on');
+                                 if ($('#mainbutton').attr("class") == "pause_disabled")
+                                    {
+                                    timelapse.play();
+                                    $('#mainbutton').attr("class", "pause");
+                                    }
+                                 else
+                                    {
+                                    $('#mainbutton').attr("class", "play");
                                     }
                                  $("#timelineSlider")['slider']("option", "disabled", false);
                                  }
@@ -146,7 +150,14 @@
 
 </script>
 
-<a name="timelapse_viewer_anchor"></a>
+<div id="browser_not_supported">
+   <div class="warning">We're sorry, but it looks like your browser isn't currently supported by our viewer.
+      At this time, only Safari 5.0+ and Chrome 7.0+ are known to be compatible. <br/><br/>
+
+      Until the other browsers catch up, please enjoy a few videos of what GigaPan Timelapse has to offer.
+   </div>
+</div>
+
 <div id="player">
 
    <div id="zoom">
@@ -162,10 +173,12 @@
 
    <div id="instructions">
       <span class="zoomhelp"><p>Zoom in &amp; out to explore in greater detail. Click or use the scroll wheel.</p></span>
+      <span class="zoomallhelp"><p>Click to view the whole gigapan.</p></span>
       <span class="speedhelp"><p>Drag to change playback speed.</p></span>
       <span class="movehelp"><p>Click and drag to explore.</p></span>
    </div>
 
+   <div id="spinnerOverlay"><img id="spinner" src="../timelapse/images/loading.gif" width="32" height="32"></div>
    <div id="timelapse" style="position: absolute; width:512px; height:288px; background:black; overflow:hidden; border: 1px solid black;"></div>
 
    <div id="controls">
@@ -191,7 +204,7 @@
          <li><a href="#" title="Player size" id="size" onclick="return false;">
             <div id="playerSizeText">Small</div>
          </a></li>
-         <li><a href="#" title="Instructions" id="help" onclick="return false;">
+         <li><a href="#" title="Instructions" id="help" class="enabled" onclick="return false;">
             <div id="helpText">Help</div>
          </a></li>
       </ul>
@@ -210,13 +223,5 @@
       </div>
       <!-- Hides during snaplapse -->
 
-   </div>
-</div>
-
-<div id="browser_not_supported">
-   <div class="warning">We're sorry, but it looks like your browser isn't currently supported by our viewer.
-      At this time, only Safari 5.0+ and Chrome 7.0+ are known to be compatible. <br/><br/>
-
-      Until the other browsers catch up, please enjoy a few videos of what GigaPan Timelapse has to offer.
    </div>
 </div>

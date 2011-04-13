@@ -1,11 +1,8 @@
-var timelapseMetadata = $("#timelapse_metadata").text();
-org.gigapan.Util.log("timelapseMetadata=["+timelapseMetadata+"]");
-var timelapseMetadataJSON = JSON.parse($("#timelapse_metadata").text());
-var gigapanId = timelapseMetadataJSON['id'] || "brassica-15m-halfsize-g10-bf0-l15";
-var datasetIndex = timelapseMetadataJSON['dataset'] || "0";
-org.gigapan.Util.log("id=["+gigapanId+"]");
-org.gigapan.Util.log("datasetIndex=["+datasetIndex+"]");
-var gigapanDatasetsJSON = null;
+var timelapseMetadata;
+var timelapseMetadataJSON;
+var gigapanId;
+var datasetIndex;
+var gigapanDatasetsJSON
 
 // Test whether this is being served from timelapse.gigapan.org.  If so, then fetch the JSON from there too.
 // If not, then assume it's being served from localhost and fetch the JSON from the local machine (since we're
@@ -65,9 +62,9 @@ function createPlaybackSpeedSlider()
 
 function setupTimelineSliderHandlers() {
    $('.ui-slider-handle').bind("mouseover", function() {
-      this.style.cursor = 'url("../timelapse/css/cursors/openhand.png"),move';
+      this.style.cursor = 'url("../timelapse/css/cursors/openhand.cur") 10 10, move';
       $('.ui-slider-handle').bind("mouseup", function() {
-         this.style.cursor = 'url("../timelapse/css/cursors/openhand.png"),move';
+         this.style.cursor = 'url("../timelapse/css/cursors/openhand.cur") 10 10, move';
       });
    });
 
@@ -76,14 +73,15 @@ function setupTimelineSliderHandlers() {
    });
 
    $('.ui-slider').bind("slide", function() {
+      this.style.cursor = 'url("../timelapse/css/cursors/closedhand.cur") 10 10, move';
       $('.ui-slider-handle').bind("mousemove", function() {
-         this.style.cursor = 'url("../timelapse/css/cursors/closedhand.png"),move';
+         this.style.cursor = 'url("../timelapse/css/cursors/closedhand.cur") 10 10, move';
       });
    });
 
    $('.ui-slider').bind("slidestop", function() {
       $('.ui-slider-handle').bind("mousemove", function() {
-         this.style.cursor = 'url("../timelapse/css/cursors/openhand.png"),move';
+         this.style.cursor = 'url("../timelapse/css/cursors/openhand.cur") 10 10, move';
       });
    });
 
@@ -96,6 +94,7 @@ function setupTimelineSliderHandlers() {
    });
 
 }
+
 
 function setupZoomSliderHandlers() {
    $("#slider-vertical")['slider']("option", "value", timelapse.viewScaleToZoomSlider(timelapse.getDefaultScale()));
@@ -113,7 +112,7 @@ function isCurrentTimeAtOrPastDuration()
 function setupUIHandlers() {
    var intervalId;
 
-$('#mainbutton.play, #mainbutton.pause').bind("click", function()
+   $('#mainbutton.play, #mainbutton.pause').bind("click", function()
    {
    if (!$("#slider-vertical")['slider']("option", "disabled"))
       {
@@ -136,6 +135,11 @@ $('#mainbutton.play, #mainbutton.pause').bind("click", function()
          }
       }
    return false;
+   });
+
+   $('#mainbutton.stop').bind("click", function() {
+      playStopSnaplapse();
+      return false;
    });
 
    $("#home").mousemove(function() {
@@ -228,15 +232,17 @@ $('#mainbutton.play, #mainbutton.pause').bind("click", function()
       this.style.cursor = 'pointer';
    });
 
-   $('#timelapse').bind("mouseover", function() {
-      this.style.cursor = 'url("../timelapse/css/cursors/openhand.png"),move';
-   }).bind("click", function() {     
-      $('#handle_speed').removeClass("ui-state-focus");
-      $('#handle_speed').removeClass("ui-state-hover");
-   }).bind("mousedown", function() {   
-      $('#handle_speed').removeClass("ui-state-focus");  
-      $('#handle_speed').removeClass("ui-state-hover");
-   });
+	$('#timelapse').bind("mouseover", function() {
+      this.style.cursor = 'url("../timelapse/css/cursors/openhand.cur") 10 10, move';
+	});
+
+  $('#handle_speed').bind("mouseup", function() {
+      $(this).removeClass("ui-state-focus");
+      $(this).removeClass("ui-state-hover");
+  }).bind("mouseleave", function() {
+      $(this).removeClass("ui-state-focus");
+      $(this).removeClass("ui-state-hover");
+  });
 
 }
 
@@ -381,6 +387,7 @@ function loadTimelapse(gigapanUrl, gigapanJSON)
       setupZoomSliderHandlers();
       setupUIHandlers();
       initializeSnaplapseUI();
+      $('#mainbutton.stop').hide()
       }
    else
       {
@@ -441,11 +448,20 @@ $(document).ready(function()
                      
                      if (!browserSupported)
                         {
-                        $("#timelapse_viewer").hide();
-                        $("#time_warp_composer").hide();
+                        $("#player").hide();
+                        $("#snaplapse").hide();
                         $("#browser_not_supported").show();
-                        //window.location = "../timelapse/browsernotsupported.html";
+                        return;
                         }
+                        
+                     timelapseMetadata = $("#timelapse_metadata").text();
+                     org.gigapan.Util.log("timelapseMetadata=["+timelapseMetadata+"]");
+                     timelapseMetadataJSON = JSON.parse($("#timelapse_metadata").text());
+                     gigapanId = timelapseMetadataJSON['id'] || "brassica-15m-halfsize-g10-bf0-l15";
+                     datasetIndex = timelapseMetadataJSON['dataset'] || "0";
+                     org.gigapan.Util.log("id=["+gigapanId+"]");
+                     org.gigapan.Util.log("datasetIndex=["+datasetIndex+"]");
+                     gigapanDatasetsJSON = null;
 
                      var jsonUrl = (isRemoteUrl ? "../alpha/timelapses/" : "../timelapses/") + gigapanId + '.json';
 
