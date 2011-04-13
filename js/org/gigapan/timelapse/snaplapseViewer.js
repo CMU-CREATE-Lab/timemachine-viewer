@@ -447,12 +447,10 @@ function recordKeyframe()
          {
          var id = selectedItems.get(0).id;
          var keyframeId = id.substring("snaplapse_keyframe_".length);
-         org.gigapan.Util.log("###################### Will be appending after id " + keyframeId);
          success = snaplapse.recordKeyframe(keyframeId);
          }
       else
          {
-         org.gigapan.Util.log("###################### Will be appending at the end");
          success = snaplapse.recordKeyframe();
          }
 
