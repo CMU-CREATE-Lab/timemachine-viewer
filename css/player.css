@@ -541,13 +541,28 @@ a.zoomall:active{background-image:url(../images/zoom/zoom_viewall_down.png);}
 #slider-vertical .ui-slider-handle:hover{background-image:url(../images/zoom/zoom_handle_hover.png);}
 #slider-vertical .ui-slider-handle:active{background-image:url(../images/zoom/zoom_handle_down.png);}
 
-#snaplapse-annotation-description {
-   font-family: Arial, Helvetica, sans-serif;
-   display: none;
-   border: 1px solid black;
-   text-align: left;
-   background-color: #262626;
-   color: #ffffff;
-   padding: 5px;
+span#snaplapse-annotation-description {
+        margin:0px 30px 0px 578px;
+	padding:0px;
+	color:#fff;
+	background-color:#262626;
+	border:1px solid #444;
+
+	display:block;
+	max-width:500px;
+	min-width:300px;
+	position:fixed;
+	top:130px;
+	left:0px;
+	z-index:6;
+	overflow:visible;
 }
 
+span#snaplapse-annotation-description p{
+	padding:30px 34px 30px 44px;
+	background-position:top left;
+	background-image:url("../images/bubble_edge_vertical.png");
+	background-repeat:no-repeat;
+	width:190px;
+	margin-left:-10px;
+	}

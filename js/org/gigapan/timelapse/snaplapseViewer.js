@@ -6,6 +6,9 @@ var currentlyDisplayedVideoId = 1;
 
 function initializeSnaplapseUI()
    {
+   // hide the annotation bubble
+   $("#snaplapse-annotation-description").hide();
+
    // add an event listener to the videoset so we can keep track of which video is currently visible, so that we can
    // create the keyframe thumbnails
    timelapse.getVideoset().addEventListener('video-made-visible',
@@ -178,7 +181,7 @@ function displaySnaplapseFrameAnnotation(frame)
       {
       if (isTextNonEmpty(frame['description']))
          {
-         $("#snaplapse-annotation-description").text(frame['description']).show();
+         $("#snaplapse-annotation-description").html("<p>" + frame['description'] + "</p>").show();
          }
       }
    }
@@ -278,6 +281,8 @@ function newSnaplapse(json)
                                  $("#zoom_out").css("opacity", "1");
                                  $("#home").css("opacity", "1");
                                  $('#help').attr("class", "enabled");
+					
+                      		 $("#snaplapse-annotation-description").hide();
 
                                  $("#snaplapse_keyframe_list")['selectable']("option", "disabled", false);
                                  var keyframes = $("#snaplapse_keyframe_list > div");
