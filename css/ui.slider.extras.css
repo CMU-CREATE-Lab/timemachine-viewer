@@ -8,6 +8,12 @@
 }
 .ui-slider .ui-slider-tooltip {
 	display: none;
+	padding: 20px;
+	width: 140px;
+	background-color: #262626;
+	border: 1px solid #444;
+	overflow: visible;
+	background: #262626;
 }
 .ui-slider .screenReaderContext {
 	position: absolute;
@@ -35,17 +41,20 @@
 	background: none;
 }
 .ui-slider .ui-slider-tooltip .ui-tooltip-pointer-down {	
-	border-left: 7px dashed transparent; 
-	border-right: 7px dashed transparent;
-	border-top-width: 8px;
-	bottom:	-8px;
+	border-left: 7px dashed transparent;
+	border-right: 27px dashed transparent;
+	/*border-top-width: 8px;*/
+	bottom: -10px;
 	right: auto;
-	left: 50%;
-	margin-left: -7px;
+	left: 32%;
+	margin: 0;
+	padding: 0;
+	background-repeat: no-repeat;
+	background-position: bottom left;
+	background-image: url(../images/bubble_edge_horizontal.png);
+	height: 67px;
 }
 .ui-slider .ui-slider-tooltip .ui-tooltip-pointer-down-inner {
-	border-left: 6px dashed transparent; 
-	border-right: 6px dashed transparent;
 	border-top: 7px solid #fff;
 	bottom:	auto;
 	top: -9px;
@@ -92,6 +101,7 @@
 }
 .ui-slider li span.ui-slider-label-show, .ui-slider dd span.ui-slider-label-show {
 	display: block;
+	margin-left: -7.5px !important;
 }
 .ui-slider span.ui-slider-tic {
 	position: absolute;
@@ -110,3 +120,18 @@
 	display: none;
 }
 
+.ui-widget-content {
+   font-family:Arial, Helvetica, sans-serif;
+   font-size: 13px;
+   border: 0px solid #AAA;
+}
+
+.ttContent {
+  font-family:Arial, Helvetica, sans-serif;
+  font-size: 13px;
+  color: #fff;
+}
+
+.ui-slider-horizontal {
+   border: 1px solid #AAA;
+}
