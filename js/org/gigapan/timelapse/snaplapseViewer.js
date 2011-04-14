@@ -7,7 +7,7 @@ var currentlyDisplayedVideoId = 1;
 function initializeSnaplapseUI()
    {
    // hide the annotation bubble
-   $("#snaplapse-annotation-description").hide();
+   hideAnnotationBubble();
 
    // add an event listener to the videoset so we can keep track of which video is currently visible, so that we can
    // create the keyframe thumbnails
@@ -175,7 +175,7 @@ function handleSnaplapseFrameSelectionChange(willWarp)
 
 function displaySnaplapseFrameAnnotation(frame)
    {
-   $("#snaplapse-annotation-description").hide();
+   hideAnnotationBubble();
 
    if (frame)
       {
@@ -282,7 +282,7 @@ function newSnaplapse(json)
                                  $("#home").css("opacity", "1");
                                  $('#help').attr("class", "enabled");
 					
-                      		 $("#snaplapse-annotation-description").hide();
+                                 hideAnnotationBubble();
 
                                  $("#snaplapse_keyframe_list")['selectable']("option", "disabled", false);
                                  var keyframes = $("#snaplapse_keyframe_list > div");
@@ -351,6 +351,11 @@ function isTextNonEmpty(text)
    return (typeof text != 'undefined' && text.length > 0);
    }
 
+
+function hideAnnotationBubble() {
+   $("#snaplapse-annotation-description").hide();
+}
+
 function addSnaplapseKeyframeListItem(frame, insertionIndex)
    {
    var keyframeId = frame['id'];
@@ -381,7 +386,7 @@ function addSnaplapseKeyframeListItem(frame, insertionIndex)
                  '      <td rowspan="2" class="snaplapse_keyframe_list_item_cell_padding">&nbsp;</td>' +
                  '      <td style="text-align:left;">' +
                  '         <div class="snaplapse_keyframe_list_item_description_label" style="text-align:left;">Description:</div>' +
-                 '         <div><textarea id="' + descriptionId + '" class="snaplapse_keyframe_list_item_description">' + frame['description'] + '</textarea></div>' +
+                 '         <div><textarea id="' + descriptionId + '" class="snaplapse_keyframe_list_item_description" onfocusout="hideAnnotationBubble();">' + frame['description'] + '</textarea></div>' +
                  '      </td>' +
                  '      <td rowspan="2" class="snaplapse_keyframe_list_item_cell_padding">&nbsp;</td>' +
                  '   </tr>' +
