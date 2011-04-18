@@ -130,13 +130,13 @@ else
       return .001 * (new Date()).getTime();
       };
 
-   org.gigapan.Util.formatTime = function(theTime, willShowMillis)
+   org.gigapan.Util.formatTime = function(theTime, willShowMillis, willShowHours)
       {
-      var t = theTime.toFixed(3);
+      var t = parseFloat(theTime.toFixed(3));
       var hours = Math.floor(t / 3600);
       var minutes = Math.floor(t / 60) - (hours * 60);
       var seconds = Math.floor(t - (hours * 3600) - (minutes * 60));
-      var millis = Math.floor((t - Math.floor(t)).toFixed(2) * 100);
+      var millis = Math.floor(parseFloat((t - Math.floor(t)).toFixed(2)) * 100);
 
       var hoursStr = '' + hours;
       var minutesStr = '' + minutes;
@@ -159,7 +159,10 @@ else
          millisStr = "0" + millisStr;
          }
 
-      return hoursStr + ":" + minutesStr + ":" + secondsStr + (willShowMillis ? "." + millisStr : '');
+      return (willShowHours ? hoursStr + ':' : '') +
+             minutesStr + ":" +
+             secondsStr +
+             (willShowMillis ? "." + millisStr : '');
       };
 
    org.gigapan.Util.isChrome = function()
