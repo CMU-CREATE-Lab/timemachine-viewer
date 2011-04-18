@@ -19,8 +19,8 @@ function createTimelineSlider()
    {
    timelapseDurationInSeconds = timelapse.getNumFrames() / timelapse.getFps();
    timeStepInSecs = 1 / timelapse.getFps();
-   $("#currentTime").text(org.gigapan.Util.formatTime(timelapseCurrentTimeInSeconds));
-   $("#totalTime").text(org.gigapan.Util.formatTime(timelapseDurationInSeconds));
+   $("#currentTime").text(org.gigapan.Util.formatTime(timelapseCurrentTimeInSeconds,true));
+   $("#totalTime").text(org.gigapan.Util.formatTime(timelapseDurationInSeconds,true));
 
    $("#timelineSlider")['slider']({
                                      animate: true,
@@ -32,7 +32,7 @@ function createTimelineSlider()
                                      slide: function(e, ui)
                                         {
                                         timelapseCurrentTimeInSeconds = ui.value;
-                                        $("#currentTime").text(org.gigapan.Util.formatTime(timelapseCurrentTimeInSeconds));
+                                        $("#currentTime").text(org.gigapan.Util.formatTime(timelapseCurrentTimeInSeconds,true));
                                         timelapse.seek(ui.value);
                                         }
                                   });
@@ -375,7 +375,7 @@ function loadTimelapse(gigapanUrl, gigapanJSON)
                                             $('#mainbutton').attr("class", "play");
                                             $('#mainbutton').attr("title", "Play");
                                             }
-                                         $("#currentTime").text(org.gigapan.Util.formatTime(timelapseCurrentTimeInSeconds));
+                                         $("#currentTime").text(org.gigapan.Util.formatTime(timelapseCurrentTimeInSeconds,true));
                                          $("#timelineSlider")['slider']("option", "value", timelapseCurrentTimeInSeconds);
                                          });
 
