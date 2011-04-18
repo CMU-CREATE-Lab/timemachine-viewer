@@ -2,7 +2,7 @@ var timelapseMetadata;
 var timelapseMetadataJSON;
 var gigapanId;
 var datasetIndex;
-var gigapanDatasetsJSON
+var gigapanDatasetsJSON;
 
 // Test whether this is being served from timelapse.gigapan.org.  If so, then fetch the JSON from there too.
 // If not, then assume it's being served from localhost and fetch the JSON from the local machine (since we're
