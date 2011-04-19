@@ -638,7 +638,7 @@ if (!org.gigapan.timelapse.VideosetStats)
                   videoWidth = data['video_width'];
                   videoHeight = data['video_height'];
                   videoset.setFps(data['fps']);
-                  videoset.setDuration(1 / data['fps'] * data['frames']);
+                  videoset.setDuration(1 / data['fps'] * (data['frames']-1));
                   videoset.setLeader(data['leader']/data['fps']);
                   frames = data['frames'];
                   maxLevel = data['nlevels']-1;
