@@ -92,19 +92,34 @@ if (!Math.uuid)
 (function()
    {
    var UTIL = org.gigapan.Util;
-
    org.gigapan.timelapse.Snaplapse = function(timelapse)
       {
+      var eventListeners = {};
       var keyframes = [];
       var keyframesById = {};
       var keyframeIntervals = [];
-      var currentKeyframeIntervalIndex = -1;
+      var currentKeyframeInterval = null;
       var isCurrentlyPlaying = false;
-      var eventListeners = {};
-      var timeChangeListenerIntervalHandle = null;
-      var warpDuringPlaybackFreezeIntervalHandle = null;
-      var isInIntervalTransitionMode = false;
+      var warpStartingTime = null;
+      var timeCounterIntervalHandle = null;
 
+      timelapse.getVideoset().addEventListener('stall-status-change',
+                                               function(isStalled)
+                                                  {
+                                                  if (isCurrentlyPlaying)
+                                                     {
+                                                     if (isStalled)
+                                                        {
+                                                        UTIL.log("videoset stall-status-change listener: pausing time warp time counter interval");
+                                                        pauseTimeCounterInterval();
+                                                        }
+                                                     else
+                                                        {
+                                                        UTIL.log("videoset stall-status-change listener: resuming time warp time counter interval");
+                                                        resumeTimeCounterInterval();
+                                                        }
+                                                     }
+                                                  });
       this.getAsJSON = function()
          {
          var snaplapseJSON = {};
@@ -171,13 +186,13 @@ if (!Math.uuid)
          var keyframeId = Math.uuid(20);
          var keyframe = {};
          keyframe['id'] = keyframeId;
-         keyframe['time'] = normalizeTime((typeof time == 'undefined') ? timelapse.getCurrentTime() : time);
+         keyframe['time'] = org.gigapan.timelapse.Snaplapse.normalizeTime((typeof time == 'undefined') ? timelapse.getCurrentTime() : time);
          keyframe['bounds'] = {};
          keyframe['bounds'].xmin = bounds.xmin;
          keyframe['bounds'].ymin = bounds.ymin;
          keyframe['bounds'].xmax = bounds.xmax;
          keyframe['bounds'].ymax = bounds.ymax;
-         keyframe['duration'] = this.sanitizeDuration(duration);
+         keyframe['duration'] = sanitizeDuration(duration);
          keyframe['description'] = (typeof description == 'undefined') ? '' : description;
 
          // determine where the new keyframe will be inserted
@@ -189,22 +204,7 @@ if (!Math.uuid)
                if (idOfKeyframeToAppendAfter == keyframes[j]['id'])
                   {
                   insertionIndex = j + 1;
-                  UTIL.log("found matching id at j = " + j);
                   break;
-                  }
-               }
-            }
-
-         // If there's already at least one keyframe defined, make sure that, if this new one has the same time as the
-         // one immediately before it, that the one before it doesn't have a duration of zero.
-         if (keyframes.length > 0)
-            {
-            var previousKeyframe = keyframes[insertionIndex - 1];
-            if (previousKeyframe['time'] == keyframe['time'])
-               {
-               if (previousKeyframe['duration'] == null || previousKeyframe['duration'] == 0)
-                  {
-                  return false;
                   }
                }
             }
@@ -228,8 +228,6 @@ if (!Math.uuid)
                   }
                }
             }
-
-         return true;
          };
 
       this.setTextAnnotationForKeyframe = function(keyframeId, description)
@@ -242,7 +240,7 @@ if (!Math.uuid)
          return false;
          };
 
-      this.sanitizeDuration = function(rawDuration)
+      var sanitizeDuration = function(rawDuration)
          {
          if (typeof rawDuration != 'undefined' && rawDuration != null)
             {
@@ -264,7 +262,7 @@ if (!Math.uuid)
          {
          if (keyframeId && keyframesById[keyframeId])
             {
-            keyframesById[keyframeId]['duration'] = this.sanitizeDuration(duration);
+            keyframesById[keyframeId]['duration'] = sanitizeDuration(duration);
             return true;
             }
          return false;
@@ -299,28 +297,9 @@ if (!Math.uuid)
          return keyframesClone;
          };
 
-      function startIntervalForTimeChangeListener()
-         {
-         timeChangeListenerIntervalHandle = setInterval(function()
-                                                           {
-                                                           timeChangeListener(timelapse.getCurrentTime());
-                                                           }, 20);
-         }
-
-      function stopIntervalForTimeChangeListener()
-         {
-         clearInterval(timeChangeListenerIntervalHandle);
-         }
-
-      function stopIntervalForPlaybackFreeze()
-         {
-         clearInterval(warpDuringPlaybackFreezeIntervalHandle);
-         }
-
       this.play = function()
          {
-         UTIL.log("################################################### Snaplapse play!");
-
+         UTIL.log("play(): playing time warp!");
          if (keyframes.length > 1)
             {
             if (!isCurrentlyPlaying)
@@ -331,17 +310,11 @@ if (!Math.uuid)
                keyframeIntervals = [];
                for (var k = 1; k < keyframes.length; k++)
                   {
-                  // TODO:  Add validation here of time and duration!
-                  var newFrameInterval = new org.gigapan.timelapse.FrameInterval(keyframes[k - 1], keyframes[k]);
-                  keyframeIntervals[keyframeIntervals.length] = newFrameInterval;
-                  UTIL.log("##### Created keyframe interval (" + (keyframeIntervals.length - 1) + "): between time [" + keyframes[k - 1]['time'] + "] and [" + keyframes[k]['time'] + "]: " + newFrameInterval);
+                  var previousKeyframeInterval = (keyframeIntervals.length > 0) ? keyframeIntervals[keyframeIntervals.length - 1] : null;
+                  var keyframeInterval = new org.gigapan.timelapse.KeyframeInterval(keyframes[k - 1], keyframes[k], previousKeyframeInterval);
+                  keyframeIntervals[keyframeIntervals.length] = keyframeInterval;
+                  UTIL.log("   play(): created keyframe interval (" + (keyframeIntervals.length - 1) + "): between time [" + keyframes[k - 1]['time'] + "] and [" + keyframes[k]['time'] + "]: " + keyframeInterval);
                   }
-
-               // set the current keyframe interval index
-               currentKeyframeIntervalIndex = -1;
-
-               // we're not in interval transition mode
-               isInIntervalTransitionMode = false;
 
                // make sure playback is stopped
                timelapse.pause();
@@ -349,17 +322,18 @@ if (!Math.uuid)
                // jump to the proper time
                timelapse.seek(keyframes[0]['time']);
 
-               // set playback rate
-               setTimelapsePlaybackRate(keyframeIntervals[0].getPlaybackRate());
-
-               // Set an interval which calls the timeChangeListener.  This is much more reliable than adding
-               // a listener to the timelapse because the video element doesn't actually fire time change events
-               // for every time change.
-               startIntervalForTimeChangeListener();
+               // initialize the current keyframe interval
+               warpStartingTime = new Date().getTime();
+               setCurrentKeyframeInterval(keyframeIntervals[0]);
 
                // start playback
-               UTIL.log("STARTING TIME WARP PLAYBACK!!!!!!!!!!!!!!!!!!!");
+               UTIL.log("play(): starting time warp playback");
                timelapse.play();
+
+               // Set an interval which calls the timeCounterHandler.  This is much more reliable than adding
+               // a listener to the timelapse because the video element doesn't actually fire time change events
+               // for every time change.
+               startTimeCounterInterval();
 
                var listeners = eventListeners['play'];
                if (listeners)
@@ -380,11 +354,6 @@ if (!Math.uuid)
             }
          };
 
-      var setTimelapsePlaybackRate = function(playbackRate)
-         {
-         timelapse.setPlaybackRate(playbackRate);
-         };
-
       var _stop = function()
          {
          if (isCurrentlyPlaying)
@@ -394,9 +363,8 @@ if (!Math.uuid)
             // stop playback
             timelapse.pause();
 
-            // clear the time change interval
-            stopIntervalForTimeChangeListener();
-            stopIntervalForPlaybackFreeze();
+            // clear the intervals
+            stopTimeCounterInterval();
 
             var listeners = eventListeners['stop'];
             if (listeners)
@@ -488,77 +456,21 @@ if (!Math.uuid)
          return frameCopy;
          };
 
-      var normalizeTime = function(t)
+      var setCurrentKeyframeInterval = function(newKeyframeInterval)
          {
-         return parseFloat(t.toFixed(3));
-         };
+         UTIL.log("setCurrentKeyframeInterval("+newKeyframeInterval+")");
 
-      var handlePlaybackFreeze = function()
-         {
-         UTIL.log("-------------- 13)");
-         stopIntervalForTimeChangeListener();
+         currentKeyframeInterval = newKeyframeInterval;
 
-         var keyframeInterval = (0 <= currentKeyframeIntervalIndex) ? keyframeIntervals[currentKeyframeIntervalIndex] : null;
-
-         var startingTime = new Date().getTime();
-         var desiredDurationInMillis = keyframeInterval.getDesiredDuration() * 1000;
-         var endingTime = startingTime + desiredDurationInMillis;
-
-         UTIL.log("-------------- 13b) startingTime=[" + startingTime + "]  endingTime=[" + endingTime + "]");
-
-         var warpDuringPlaybackFreeze = function()
+         if (currentKeyframeInterval != null)
             {
-            var currentTime = new Date().getTime();
-            UTIL.log("-------------- 14) " + currentTime);
-            if (currentTime > endingTime)
-               {
-               UTIL.log("-------------- 15) " + currentTime);
-               stopIntervalForPlaybackFreeze();
-               currentKeyframeIntervalIndex++;
-               isInIntervalTransitionMode = false;
+            timelapse.setPlaybackRate(currentKeyframeInterval.getPlaybackRate());
+            var keyframeStartingTime = currentKeyframeInterval.getStartingTime();
+            timelapse.seek(keyframeStartingTime);              // make sure we're on track
+            updateWarpStartingTime(keyframeStartingTime);      // update the warp starting time since we just corrected with a seek
+            }
 
-               keyframeInterval = (0 <= currentKeyframeIntervalIndex) ? keyframeIntervals[currentKeyframeIntervalIndex] : null;
-
-               if (keyframeInterval != null)
-                  {
-                  // set the proper playback rate and time position
-                  setTimelapsePlaybackRate(keyframeInterval.getPlaybackRate());
-                  var normalizedTime = keyframeInterval.getStartingTime();
-                  timelapse.seek(normalizedTime);
-
-                  notifyKeyframeIntervalChangeListeners(keyframeInterval);
-                  startIntervalForTimeChangeListener();
-                  }
-               else
-                  {
-                  notifyKeyframeIntervalChangeListeners(keyframeInterval);
-                  _stop();
-                  }
-               }
-            else
-               {
-               UTIL.log("-------------- 16) " + currentTime);
-               var timePercentage = (currentTime - startingTime) / desiredDurationInMillis;
-               var frameBounds = keyframeInterval.computeFrameBoundsAtTimePercentage(timePercentage);
-               if (frameBounds)
-                  {
-                  UTIL.log("-------------- 17)");
-                  // warp to the correct view
-                  timelapse.warpToBoundingBox(frameBounds);
-                  }
-               else
-                  {
-                  UTIL.error("Failed to compute frame bounds for time percentage [" + timePercentage + "]");
-                  _stop();
-                  }
-               }
-            };
-
-         warpDuringPlaybackFreezeIntervalHandle = setInterval(warpDuringPlaybackFreeze, 20);
-         };
-
-      var notifyKeyframeIntervalChangeListeners = function(keyframeInterval)
-         {
+         // notify listeners
          var listeners = eventListeners['keyframe-interval-change'];
          if (listeners)
             {
@@ -566,7 +478,7 @@ if (!Math.uuid)
                {
                try
                   {
-                  listeners[i](currentKeyframeIntervalIndex, cloneFrame(keyframeInterval ? keyframeInterval.getStartingFrame() : keyframes[keyframes.length - 1]));
+                  listeners[i](cloneFrame(currentKeyframeInterval ? currentKeyframeInterval.getStartingFrame() : keyframes[keyframes.length - 1]));
                   }
                catch(e)
                   {
@@ -576,135 +488,129 @@ if (!Math.uuid)
             }
          };
 
-      var timeChangeListener = function(t)
+      var startTimeCounterInterval = function()
          {
-         UTIL.log("-------------- 1) timeChangeListener(" + t + ")");
-         var normalizedTime = normalizeTime(t);
+         // record starting timestamp
+         warpStartingTime = new Date().getTime();
 
-         // get the current keyframe interval
-         var keyframeInterval = (0 <= currentKeyframeIntervalIndex) ? keyframeIntervals[currentKeyframeIntervalIndex] : null;
+         createTimeCounterInterval();
+         };
 
-         UTIL.log("-------------- 2) keyframeInterval: " + keyframeInterval);
+      var stopTimeCounterInterval = function()
+         {
+         clearInterval(timeCounterIntervalHandle);
+         };
 
-         // Make sure the time is in the interval.  If it isn't then just assume we've crossed to the next
-         // interval. In that case, update things accordingly
-         if (keyframeInterval != null && keyframeInterval.isTimeWithinInterval(normalizedTime))
+      var resumeTimeCounterInterval = function()
+         {
+         // update the starting timestamp since we're resuming from a stall
+         updateWarpStartingTime(timelapse.getCurrentTime());
+
+         createTimeCounterInterval();
+         };
+
+      var pauseTimeCounterInterval = function()
+         {
+         stopTimeCounterInterval();
+         };
+
+      var createTimeCounterInterval = function()
+         {
+         timeCounterIntervalHandle = setInterval(function()
+                                                    {
+                                                    timeCounterHandler();
+                                                    }, 20);
+         };
+
+      var updateWarpStartingTime = function(videoTime)
+         {
+         var elapsedVideoTimePercentage = currentKeyframeInterval.getActualDuration() == 0 ? 0 : Math.abs(videoTime - currentKeyframeInterval.getStartingTime()) / currentKeyframeInterval.getActualDuration();
+         var oldWarpStartingTime = warpStartingTime;
+         warpStartingTime = new Date().getTime() - (currentKeyframeInterval.getDesiredDurationInMillis() * elapsedVideoTimePercentage + currentKeyframeInterval.getStartingRunningDurationInMillis());
+         UTIL.log("updateWarpStartingTime(): adjusted warp starting time by ["+(warpStartingTime - oldWarpStartingTime)+"] millis");
+         };
+
+      var timeCounterHandler = function()
+         {
+         // compute how much time (in millis) has already elapsed
+         var elapsedTimeInMillis = new Date().getTime() - warpStartingTime;
+
+         //UTIL.log(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> timeCounterHandler(" + elapsedTimeInMillis + ")");
+
+         // update the current keyframe interval based on the elapsed time
+         var foundMatchingInterval = false;
+         do
             {
-            UTIL.log("-------------- 3) isTimeWithinInterval=[" + keyframeInterval.isTimeWithinInterval(normalizedTime) + "] keyframeInterval=[" + keyframeInterval + "]");
-            if (isInIntervalTransitionMode)
+            var containsElapsedTime = currentKeyframeInterval.containsElapsedTime(elapsedTimeInMillis);
+            if (containsElapsedTime)
                {
-               UTIL.log("-------------- 4)");
-               // break out of interval transition mode since the time is within the interval now
-               isInIntervalTransitionMode = false;
+               foundMatchingInterval = true;
+               }
+            else
+               {
+               setCurrentKeyframeInterval(currentKeyframeInterval.getNextKeyframeInterval());
+               }
+            }
+         while (!foundMatchingInterval && currentKeyframeInterval != null);
+
+         if (currentKeyframeInterval)
+            {
+            // compute the frame for the current time
+            var frameBounds = currentKeyframeInterval.computeFrameBoundsForElapsedTime(elapsedTimeInMillis);
+            if (frameBounds)
+               {
+               // warp to the correct view
+               timelapse.warpToBoundingBox(frameBounds);
+               }
+            else
+               {
+               UTIL.error("Failed to compute time warp frame for time [" + elapsedTimeInMillis + "]");
+               _stop();
                }
             }
          else
             {
-            UTIL.log("-------------- 5)");
-
-            if (isInIntervalTransitionMode)
-               {
-               UTIL.log("-------------- 6)");
-               // set the proper playback rate and time position
-               setTimelapsePlaybackRate(keyframeInterval.getPlaybackRate());
-               normalizedTime = keyframeInterval.getStartingTime();
-               timelapse.seek(normalizedTime);
-               }
-            else
-               {
-               UTIL.log("-------------- 7)");
-
-               currentKeyframeIntervalIndex++;
-               UTIL.log("#################################################### currentKeyframeIntervalIndex = " + currentKeyframeIntervalIndex);
-               if (currentKeyframeIntervalIndex < keyframeIntervals.length)
-                  {
-                  UTIL.log("-------------- 8)");
-                  isInIntervalTransitionMode = true;
-
-                  keyframeInterval = keyframeIntervals[currentKeyframeIntervalIndex];
-
-                  // set the proper playback rate and time position
-                  setTimelapsePlaybackRate(keyframeInterval.getPlaybackRate());
-                  normalizedTime = keyframeInterval.getStartingTime();
-                  timelapse.seek(normalizedTime);
-                  }
-               else
-                  {
-                  UTIL.log("-------------- 9)");
-                  keyframeInterval = null;
-                  }
-
-               // notify listeners of keyframe interval change
-               notifyKeyframeIntervalChangeListeners(keyframeInterval);
-               }
-            }
-
-         if (keyframeInterval)
-            {
-            // check whether we're supposed to pause at this interval for duration seconds
-            if (keyframeInterval.getTotalTime() == 0)
-               {
-               UTIL.log("-------------- 11)");
-               handlePlaybackFreeze();
-               }
-            else
-               {
-               // compute the frame for the current (normalized) time
-               var timePercentage = keyframeInterval.computeTimePercentage(normalizedTime);
-               if (timePercentage != null)
-                  {
-                  var frameBounds = keyframeInterval.computeFrameBoundsAtTimePercentage(timePercentage);
-                  if (frameBounds)
-                     {
-                     UTIL.log("-------------- 10)");
-                     // warp to the correct view
-                     timelapse.warpToBoundingBox(frameBounds);
-                     }
-                  else
-                     {
-                     UTIL.error("Failed to compute snaplapse frame for time [" + t + "|" + normalizedTime + "]");
-                     _stop();
-                     }
-                  }
-               else
-                  {
-                  UTIL.error("Failed to compute time percentage for time [" + t + "|" + normalizedTime + "]");
-                  _stop();
-                  }
-               }
-            }
-         else
-            {
-            UTIL.error("Failed to compute current keyframe interval for time [" + t + "|" + normalizedTime + "]");
+            UTIL.error("Failed to compute current keyframe interval for time [" + elapsedTimeInMillis + "]");
             _stop();
             }
          };
       };
 
-   org.gigapan.timelapse.FrameInterval = function(startingFrame, endingFrame)
+   org.gigapan.timelapse.Snaplapse.normalizeTime = function(t)
       {
-      var timeDirection = (endingFrame['time'] > startingFrame['time']) ? 1 : -1;
-      var totalTime = Math.abs(endingFrame['time'] - startingFrame['time']);
-      var desiredDuration = startingFrame['duration'] == null ? totalTime : startingFrame['duration'];
+      return parseFloat(t.toFixed(6));
+      };
+
+   org.gigapan.timelapse.KeyframeInterval = function(startingFrame, endingFrame, previousKeyframeInterval)
+      {
+      var nextKeyframeInterval = null;
+      var timeDirection = (startingFrame['time'] <= endingFrame['time']) ? 1 : -1;
+      var actualDuration = parseFloat(Math.abs(endingFrame['time'] - startingFrame['time']).toFixed(6));
+      var desiredDuration = startingFrame['duration'] == null ? actualDuration : startingFrame['duration'];
+      var desiredDurationInMillis = desiredDuration * 1000;
+      var startingRunningDurationInMillis = 0;
+      var endingRunningDurationInMillis = desiredDurationInMillis;
+      if (previousKeyframeInterval != null)
+         {
+         previousKeyframeInterval.setNextKeyframeInterval(this);
+         var previousRunningDurationInMillis = previousKeyframeInterval.getEndingRunningDurationInMillis();
+         endingRunningDurationInMillis += previousRunningDurationInMillis;
+         startingRunningDurationInMillis = previousRunningDurationInMillis
+         }
 
       var playbackRate = null;
-      if (desiredDuration == 0 || totalTime == 0)
+      if (desiredDuration == 0 || actualDuration == 0)
          {
          playbackRate = 0;
          }
       else
          {
-         playbackRate = timeDirection * totalTime / desiredDuration;
+         playbackRate = timeDirection * actualDuration / desiredDuration;
          }
 
       this.getStartingFrame = function()
          {
          return startingFrame;
-         };
-
-      this.getEndingFrame = function()
-         {
-         return endingFrame;
          };
 
       this.getStartingTime = function()
@@ -717,9 +623,24 @@ if (!Math.uuid)
          return endingFrame['time'];
          };
 
-      this.getTimeDirection = function()
+      this.getActualDuration = function()
          {
-         return timeDirection;
+         return actualDuration;
+         };
+
+      this.getDesiredDurationInMillis = function()
+         {
+         return desiredDurationInMillis;
+         };
+
+      this.getNextKeyframeInterval = function()
+         {
+         return nextKeyframeInterval;
+         };
+
+      this.setNextKeyframeInterval = function(theNextKeyframeInterval)
+         {
+         nextKeyframeInterval = theNextKeyframeInterval;
          };
 
       this.getPlaybackRate = function()
@@ -727,60 +648,54 @@ if (!Math.uuid)
          return playbackRate;
          };
 
-      this.getTotalTime = function()
+      this.getStartingRunningDurationInMillis = function()
          {
-         return totalTime;
+         return startingRunningDurationInMillis;
          };
 
-      this.getDesiredDuration = function()
+      this.getEndingRunningDurationInMillis = function()
          {
-         return desiredDuration;
+         return endingRunningDurationInMillis;
          };
 
-      this.isTimeWithinInterval = function(t)
+      this.containsElapsedTime = function(millis)
          {
-         if (timeDirection > 0)
+         return startingRunningDurationInMillis <= millis && millis <= endingRunningDurationInMillis;
+         };
+
+      this.computeFrameBoundsForElapsedTime = function(elapsedMillis)
+         {
+         if (this.containsElapsedTime(elapsedMillis))
             {
-            return this.getStartingTime() <= t && t <= this.getEndingTime();
-            }
-         return this.getEndingTime() <= t && t <= this.getStartingTime();
-         };
+            var timePercentage = (elapsedMillis - startingRunningDurationInMillis) / desiredDurationInMillis;
 
-      this.computeTimePercentage = function(t)
-         {
-         if (this.isTimeWithinInterval(t))
-            {
-            return Math.abs(t - this.getStartingTime()) / totalTime;
+            var boundsXminOffset = (endingFrame['bounds'].xmin - startingFrame['bounds'].xmin ) * timePercentage;
+            var boundsYminOffset = (endingFrame['bounds'].ymin - startingFrame['bounds'].ymin ) * timePercentage;
+            var boundsXmaxOffset = (endingFrame['bounds'].xmax - startingFrame['bounds'].xmax ) * timePercentage;
+            var boundsYmaxOffset = (endingFrame['bounds'].ymax - startingFrame['bounds'].ymax ) * timePercentage;
+
+            var bounds = {};
+            bounds.xmin = startingFrame['bounds'].xmin + boundsXminOffset;
+            bounds.ymin = startingFrame['bounds'].ymin + boundsYminOffset;
+            bounds.xmax = startingFrame['bounds'].xmax + boundsXmaxOffset;
+            bounds.ymax = startingFrame['bounds'].ymax + boundsYmaxOffset;
+
+            return bounds;
             }
 
          return null;
          };
 
-      this.computeFrameBoundsAtTimePercentage = function(timePercentage)
-         {
-         var boundsXminOffset = (endingFrame['bounds'].xmin - startingFrame['bounds'].xmin ) * timePercentage;
-         var boundsYminOffset = (endingFrame['bounds'].ymin - startingFrame['bounds'].ymin ) * timePercentage;
-         var boundsXmaxOffset = (endingFrame['bounds'].xmax - startingFrame['bounds'].xmax ) * timePercentage;
-         var boundsYmaxOffset = (endingFrame['bounds'].ymax - startingFrame['bounds'].ymax ) * timePercentage;
-
-         var bounds = {};
-         bounds.xmin = startingFrame['bounds'].xmin + boundsXminOffset;
-         bounds.ymin = startingFrame['bounds'].ymin + boundsYminOffset;
-         bounds.xmax = startingFrame['bounds'].xmax + boundsXmaxOffset;
-         bounds.ymax = startingFrame['bounds'].ymax + boundsYmaxOffset;
-
-         return bounds;
-         };
-
       this.toString = function()
          {
-         return 'FrameInterval' +
+         return 'KeyframeInterval' +
                 '[startTime=' + startingFrame['time'] +
                 ',endTime=' + endingFrame['time'] +
+                ',actualDuration=' + actualDuration +
                 ',desiredDuration=' + desiredDuration +
                 ',playbackRate=' + playbackRate +
                 ',timeDirection=' + timeDirection +
-                ',totalTime=' + totalTime +
+                ',endingRunningDurationInMillis=' + endingRunningDurationInMillis +
                 ']';
          };
       };

@@ -207,6 +207,15 @@ function setButtonEnabled(idOrClass, isEnabled)
       }
    }
 
+function clearKeyframeSelection()
+   {
+   var keyframes = $("#snaplapse_keyframe_list > div");
+   for (var i = 0; i < keyframes.size(); i++)
+      {
+      $(keyframes[i]).removeClass().addClass("snaplapse_keyframe_list_item");
+      }
+   }
+
 function newSnaplapse(json)
    {
    snaplapse = new org.gigapan.timelapse.Snaplapse(timelapse);
@@ -249,12 +258,9 @@ function newSnaplapse(json)
                                  $("#home").css("opacity", ".35");
 
                                  $("#snaplapse_keyframe_list")['selectable']("option", "disabled", true);
+                                 clearKeyframeSelection();
                                  var keyframes = $("#snaplapse_keyframe_list > div");
-                                 for (var i = 0; i < keyframes.size(); i++)
-                                    {
-                                    var frame = keyframes[i];
-                                    $(frame).removeClass().addClass("snaplapse_keyframe_list_item");
-                                    }
+                                 $(keyframes[0]).addClass("snaplapse_keyframe_list_item ui-selected");
                                  });
 
    snaplapse.addEventListener('stop',
@@ -301,15 +307,14 @@ function newSnaplapse(json)
                                  });
 
    snaplapse.addEventListener('keyframe-interval-change',
-                              function(index, frame)
+                              function(keyframe)
                                  {
-                                 org.gigapan.Util.log("snaplapse keyframe-interval-change index=[" + index + "]");
+                                 org.gigapan.Util.log("##################### snaplapse keyframe-interval-change: " + JSON.stringify(keyframe));
 
                                  // render the keyframe as selected to show that it's being played
-                                 var keyframeElements = $("#snaplapse_keyframe_list > div");
-                                 $(keyframeElements[index]).addClass("snaplapse_keyframe_list_item ui-selected");
+                                 $("#snaplapse_keyframe_" + keyframe['id']).addClass("snaplapse_keyframe_list_item ui-selected");
 
-                                 displaySnaplapseFrameAnnotation(frame);
+                                 displaySnaplapseFrameAnnotation(keyframe);
                                  });
 
    setButtonEnabled("#recordKeyframeButton", true);
@@ -472,25 +477,15 @@ function recordKeyframe()
       var selectedItems = $("#snaplapse_keyframe_list > .ui-selected");
       var numSelected = selectedItems.size();
 
-      var success = false;
       if (numSelected == 1)
          {
          var id = selectedItems.get(0).id;
          var keyframeId = id.substring("snaplapse_keyframe_".length);
-         success = snaplapse.recordKeyframe(keyframeId);
+         snaplapse.recordKeyframe(keyframeId);
          }
       else
          {
-         success = snaplapse.recordKeyframe();
-         }
-
-      if (!success)
-         {
-         alert("ERROR: Invalid time position\n\n" +
-               "The time position of a keyframe cannot\n" +
-               "be the same as the previous keyframe if\n" +
-               "the duration set on the previous keyframe\n" +
-               "is zero or undefined.");
+         snaplapse.recordKeyframe();
          }
       }
    }
@@ -651,6 +646,8 @@ function loadSnaplapse(json)
          {
          $(".snaplapse_composer_controls").show();
          loadSnaplapseWindow.close();
+         clearKeyframeSelection();
+         hideAnnotationBubble();
          }
       else
          {
