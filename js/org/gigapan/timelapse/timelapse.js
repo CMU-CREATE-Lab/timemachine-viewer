@@ -507,7 +507,7 @@ if (!org.gigapan.timelapse.VideosetStats)
             
             var setTargetView = function(newView)
                {
-                  UTIL.log("setTargetView: newView=" + view2string(newView)+", view="+view2string(view)+", targetView="+view2string(targetView));
+                  //UTIL.log("setTargetView: newView=" + view2string(newView)+", view="+view2string(view)+", targetView="+view2string(targetView));
                   var tempView = {};
                   tempView.scale = limitScale(newView.scale);
                   tempView.x = Math.max(0, Math.min(panoWidth, newView.x));
