@@ -1,6 +1,13 @@
-var playlistPath = "../flash/playlists/brassica/Brassica-512x288_playlist.xml";
+var playlistPath = "../flash/playlists/INSERTNAME/INSERTNAME-512x288_playlist.xml";
 
 function initFlashViewer() {
+   //Get the name of the dataset from the url
+   //Might be better to do this from json but we do not
+   //have direct access if we are loading the flash viewer
+   var tmpArray = document.location.href.split('/');
+   var datasetName = tmpArray[tmpArray.length-1]; 
+   playlistPath = playlistPath.replace(/INSERTNAME/g,datasetName);
+
    jwplayer("container").setup({
       flashplayer: "../flash/player.swf",
       height: 288,
@@ -13,6 +20,7 @@ function initFlashViewer() {
       dock: true,
       "playlistfile": playlistPath
    });
+
    //We need autostart set to true for when we change
    //the flash player size and switch playlists. This
    //allows for the same video to start playing again.
