@@ -354,7 +354,7 @@ if (!Math.uuid)
             }
          };
 
-      var _stop = function()
+      var _stop = function(willJumpToLastKeyframe)
          {
          if (isCurrentlyPlaying)
             {
@@ -363,8 +363,14 @@ if (!Math.uuid)
             // stop playback
             timelapse.pause();
 
-            // clear the intervals
+            // clear the time counter interval
             stopTimeCounterInterval();
+
+            if (typeof willJumpToLastKeyframe != 'undefined' && willJumpToLastKeyframe)
+               {
+               timelapse.seek(keyframes[keyframes.length-1]['time']);
+               timelapse.warpToBoundingBox(keyframes[keyframes.length-1]['bounds']);
+               }
 
             var listeners = eventListeners['stop'];
             if (listeners)
@@ -565,13 +571,13 @@ if (!Math.uuid)
             else
                {
                UTIL.error("Failed to compute time warp frame for time [" + elapsedTimeInMillis + "]");
-               _stop();
+               _stop(true);
                }
             }
          else
             {
             UTIL.error("Failed to compute current keyframe interval for time [" + elapsedTimeInMillis + "]");
-            _stop();
+            _stop(true);
             }
          };
       };
