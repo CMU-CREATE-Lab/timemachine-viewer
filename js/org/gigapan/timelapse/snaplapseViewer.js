@@ -640,10 +640,14 @@ function setupSnaplapseLinks()
                                 var originalContent = labelSpan.html();
 
                                 org.gigapan.Util.log("setupSnaplapseLinks(): [" + index + "]" + labelSpan.text() + "|" + snaplapseJsonUrl + "|" + originalContent);
-                                cacheSnaplapse(snaplapseJsonUrl, function()
-                                   {
-                                   linkSpan.replaceWith('<a class="time_warp_link" href="#" onclick="playCachedSnaplapse(\'' + snaplapseJsonUrl + '\');return false;">' + originalContent + '</a>');
+                                
+                                if (!browserSupported) {
+                                   linkSpan.replaceWith('<a class="time_warp_link" href="#" onclick="loadVideoSnaplapse(\'' + filenameSpan.text() + '\');return false;">' + originalContent + '</a>');
+                                } else {                        
+                                   cacheSnaplapse(snaplapseJsonUrl, function() {
+                                      linkSpan.replaceWith('<a class="time_warp_link" href="#" onclick="playCachedSnaplapse(\'' + snaplapseJsonUrl + '\');return false;">' + originalContent + '</a>');
                                    });
+                                }
 
                                 });
    }
