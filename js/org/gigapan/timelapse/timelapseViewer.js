@@ -495,7 +495,7 @@ $(document).ready(function()
                                      validateAndSetDatasetIndex(datasetIndex);
 
                                      // set document title
-                                     document.title = "GigaPan Timelapse Explorer: " + gigapanDatasetsJSON['name'];
+                                     document.title = "GigaPan Time Machine: " + gigapanDatasetsJSON['name'];
 
                                      // now populate the Viewer Size popup menu with the various datasets
                                      for (var i = 0; i < gigapanDatasetsJSON['datasets'].length; i++)
