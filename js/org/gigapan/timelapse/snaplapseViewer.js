@@ -46,7 +46,7 @@ function initializeSnaplapseUI()
                                                      {
                                                      handleSnaplapseFrameSelectionChange(true);
                                                      },
-                                                  cancel: ':input,textarea'
+                                                  cancel: ':input,textarea,.button'
                                                });
 
    // add mouse event handlers to the New Snaplapse button
@@ -181,7 +181,8 @@ function displaySnaplapseFrameAnnotation(frame)
       {
       if (isTextNonEmpty(frame['description']))
          {
-         $("#snaplapse-annotation-description").html("<p>" + frame['description'] + "</p>").show();
+         $("#snaplapse-annotation-description > p").text(frame['description']);  // this must use .text() and not .html() to prevent cross-site scripting
+         $("#snaplapse-annotation-description").show();
          }
       }
    }
@@ -287,7 +288,7 @@ function newSnaplapse(json)
                                  $("#zoom_out").css("opacity", "1");
                                  $("#home").css("opacity", "1");
                                  $('#help').attr("class", "enabled");
-					
+
                                  hideAnnotationBubble();
 
                                  $("#snaplapse_keyframe_list")['selectable']("option", "disabled", false);
@@ -302,8 +303,15 @@ function newSnaplapse(json)
    snaplapse.addEventListener('keyframe-added',
                               function(frame, insertionIndex)
                                  {
-                                 toggleSnaplapseButtons();
                                  addSnaplapseKeyframeListItem(frame, insertionIndex);
+                                 toggleSnaplapseButtons();
+                                 });
+
+   snaplapse.addEventListener('keyframe-modified',
+                              function(frame)
+                                 {
+                                 $("#snaplapse_keyframe_" + frame['id'] + "_timestamp").text(org.gigapan.Util.formatTime(frame['time'], true));
+                                 // TODO: update thumbnail
                                  });
 
    snaplapse.addEventListener('keyframe-interval-change',
@@ -349,6 +357,14 @@ function toggleSnaplapseButtons()
       setButtonEnabled("#saveSnaplapseButton", false);
       setButtonEnabled("#deleteKeyframeButton", false);
       }
+
+   setButtonEnabled(".snaplapse_keyframe_list_item_play_button", false);
+   var keyframes = $(".snaplapse_keyframe_list_item");
+   for (var i = 0; i < keyframes.length - 1; i++)
+      {
+      var buttonId = "#" + keyframes[i].id + " .snaplapse_keyframe_list_item_play_button";
+      setButtonEnabled(buttonId, true);
+      }
    }
 
 function isTextNonEmpty(text)
@@ -356,10 +372,10 @@ function isTextNonEmpty(text)
    return (typeof text != 'undefined' && text.length > 0);
    }
 
-
-function hideAnnotationBubble() {
+function hideAnnotationBubble()
+   {
    $("#snaplapse-annotation-description").hide();
-}
+   }
 
 function addSnaplapseKeyframeListItem(frame, insertionIndex)
    {
@@ -381,10 +397,14 @@ function addSnaplapseKeyframeListItem(frame, insertionIndex)
    var timestampId = keyframeListItem.id + "_timestamp";
    var descriptionId = keyframeListItem.id + "_description";
    var durationId = keyframeListItem.id + "_duration";
+   var buttonContainerId = keyframeListItem.id + "_buttons";
+   var updateButtonId = keyframeListItem.id + "_update";
+   var duplicateButtonId = keyframeListItem.id + "_duplicate";
+   var playFromHereButtonId = keyframeListItem.id + "_play";
    var duration = typeof frame['duration'] != 'undefined' && frame['duration'] != null ? frame['duration'] : '';
    var content = '<table border="0" cellspacing="0" cellpadding="0" class="snaplapse_keyframe_list_item_table">' +
                  '   <tr valign="top">' +
-                 '      <td rowspan="2">' +
+                 '      <td>' +
                  '         <div id="' + timestampId + '" class="snaplapse_keyframe_list_item_timestamp">' + org.gigapan.Util.formatTime(frame['time'], true) + '</div>' +
                  '         <canvas id="' + thumbnailId + '" width="100" height="56" class="snaplapse_keyframe_list_item_thumbnail"></canvas>' +
                  '      </td>' +
@@ -397,6 +417,19 @@ function addSnaplapseKeyframeListItem(frame, insertionIndex)
                  '   </tr>' +
                  '   <tr valign="top">' +
                  '      <td style="text-align:left;">' +
+                 '         <div id="' + buttonContainerId + '" class="button-container keyframe-button-container">' +
+                 '            <div id="' + updateButtonId + '" class="ui-state-default ui-corner-all button" title="Update this keyframe to current view">' +
+                 '               <span class="ui-icon ui-icon-refresh"></span>' +
+                 '            </div>' +
+                 '            <div id="' + duplicateButtonId + '" style="margin-left:2px;" class="ui-state-default ui-corner-all button" title="Duplicate this keyframe">' +
+                 '               <span class="ui-icon ui-icon-copy"></span>' +
+                 '            </div>' +
+                 '            <div id="' + playFromHereButtonId + '" style="margin-left:24px" class="snaplapse_keyframe_list_item_play_button ui-state-active ui-state-disabled ui-corner-all button" title="Play warp starting at this keyframe">' +
+                 '               <span class="ui-icon ui-icon-play"></span>' +
+                 '            </div>' +
+                 '         </div>' +
+                 '      </td>' +
+                 '      <td style="text-align:right;">' +
                  '         <span class="snaplapse_keyframe_list_item_duration_label">Duration:</span>' +
                  '         <input type="text" id="' + durationId + '" class="snaplapse_keyframe_list_item_duration" value="' + duration + '">' +
                  '         <span class="snaplapse_keyframe_list_item_duration_label">seconds</span>' +
@@ -405,6 +438,17 @@ function addSnaplapseKeyframeListItem(frame, insertionIndex)
                  '</table>';
 
    $("#" + keyframeListItem.id).html(content).addClass("snaplapse_keyframe_list_item");
+   $("#" + keyframeListItem.id).mouseover(function()
+                                         {
+                                         if (!snaplapse.isPlaying())
+                                            {
+                                            $("#" + buttonContainerId).show();
+                                            }
+                                         });
+   $("#" + keyframeListItem.id).mouseout(function()
+                                         {
+                                         $("#" + buttonContainerId).hide();
+                                         });
 
    // display the text annotation when you focus on the description field.
    $("#" + descriptionId)['focus'](function()
@@ -435,6 +479,32 @@ function addSnaplapseKeyframeListItem(frame, insertionIndex)
                                     durationField.removeClass('validation-fault');
 
                                     snaplapse.setDurationForKeyframe(keyframeId, newDuration);
+                                    });
+
+   // add mouse event handlers to the Record Keyframe button
+   addMouseEventHandlersToButton('#' + updateButtonId,
+                                 function()
+                                    {
+                                    snaplapse.updateTimeAndPositionForKeyframe(keyframeId);
+                                    });
+
+   // add mouse event handlers to the Record Keyframe button
+   addMouseEventHandlersToButton('#' + duplicateButtonId,
+                                 function()
+                                    {
+                                    snaplapse.duplicateKeyframe(keyframeId);
+                                    });
+
+   // add mouse event handlers to the Record Keyframe button
+   addMouseEventHandlersToButton('#' + playFromHereButtonId,
+                                 function()
+                                    {
+                                    if (snaplapse.isPlaying())
+                                       {
+                                       snaplapse.stop();
+                                       }
+                                    $(".keyframe-button-container").hide();
+                                    snaplapse.play(keyframeId);
                                     });
 
    // remove selection from all other items, then select this item
@@ -586,6 +656,7 @@ function playStopSnaplapse()
       }
    else
       {
+      $(".keyframe-button-container").hide();
       snaplapse.play();
       }
    }

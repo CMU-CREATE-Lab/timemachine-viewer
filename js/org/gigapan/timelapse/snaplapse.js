@@ -175,6 +175,16 @@ if (!Math.uuid)
          return true;
          };
 
+      this.duplicateKeyframe = function(idOfSourceKeyframe)
+         {
+         var keyframeCopy = this.getKeyframeById(idOfSourceKeyframe);
+         this.recordKeyframe(idOfSourceKeyframe,
+                             keyframeCopy['time'],
+                             keyframeCopy['bounds'],
+                             keyframeCopy['description'],
+                             keyframeCopy['duration']);
+         };
+
       this.recordKeyframe = function(idOfKeyframeToAppendAfter, time, bounds, description, duration)
          {
          if (typeof bounds == 'undefined')
@@ -263,9 +273,38 @@ if (!Math.uuid)
          if (keyframeId && keyframesById[keyframeId])
             {
             keyframesById[keyframeId]['duration'] = sanitizeDuration(duration);
-            return true;
             }
-         return false;
+         };
+
+      this.updateTimeAndPositionForKeyframe = function(keyframeId)
+         {
+         if (keyframeId && keyframesById[keyframeId])
+            {
+            var bounds = timelapse.getBoundingBoxForCurrentView();
+            var keyframe = keyframesById[keyframeId];
+            keyframe['time'] = org.gigapan.timelapse.Snaplapse.normalizeTime(timelapse.getCurrentTime());
+            keyframe['bounds'] = {};
+            keyframe['bounds'].xmin = bounds.xmin;
+            keyframe['bounds'].ymin = bounds.ymin;
+            keyframe['bounds'].xmax = bounds.xmax;
+            keyframe['bounds'].ymax = bounds.ymax;
+
+            var listeners = eventListeners['keyframe-modified'];
+            if (listeners)
+               {
+               for (var i = 0; i < listeners.length; i++)
+                  {
+                  try
+                     {
+                     listeners[i](cloneFrame(keyframe));
+                     }
+                  catch(e)
+                     {
+                     UTIL.error(e.name + " while calling snaplapse 'keyframe-modified' event listener: " + e.message, e);
+                     }
+                  }
+               }
+            }
          };
 
       this.deleteKeyframeById = function(keyframeId)
@@ -297,7 +336,7 @@ if (!Math.uuid)
          return keyframesClone;
          };
 
-      this.play = function()
+      this.play = function(startingKeyframeId)
          {
          UTIL.log("play(): playing time warp!");
          if (keyframes.length > 1)
@@ -306,9 +345,20 @@ if (!Math.uuid)
                {
                isCurrentlyPlaying = true;
 
+               // find the starting keyframe
+               var startingKeyframeIndex = 0;
+               for (var j=0; j<keyframes.length; j++)
+                  {
+                  if (keyframes[j]['id'] == startingKeyframeId)
+                     {
+                     startingKeyframeIndex = j;
+                     break;
+                     }
+                  }
+
                // compute the keyframe intervals
                keyframeIntervals = [];
-               for (var k = 1; k < keyframes.length; k++)
+               for (var k = startingKeyframeIndex+1; k < keyframes.length; k++)
                   {
                   var previousKeyframeInterval = (keyframeIntervals.length > 0) ? keyframeIntervals[keyframeIntervals.length - 1] : null;
                   var keyframeInterval = new org.gigapan.timelapse.KeyframeInterval(keyframes[k - 1], keyframes[k], previousKeyframeInterval);
@@ -320,7 +370,7 @@ if (!Math.uuid)
                timelapse.pause();
 
                // jump to the proper time
-               timelapse.seek(keyframes[0]['time']);
+               timelapse.seek(keyframeIntervals[0].getStartingTime());
 
                // initialize the current keyframe interval
                warpStartingTime = new Date().getTime();
@@ -368,8 +418,8 @@ if (!Math.uuid)
 
             if (typeof willJumpToLastKeyframe != 'undefined' && willJumpToLastKeyframe)
                {
-               timelapse.seek(keyframes[keyframes.length-1]['time']);
-               timelapse.warpToBoundingBox(keyframes[keyframes.length-1]['bounds']);
+               timelapse.seek(keyframes[keyframes.length - 1]['time']);
+               timelapse.warpToBoundingBox(keyframes[keyframes.length - 1]['bounds']);
                }
 
             var listeners = eventListeners['stop'];
@@ -464,7 +514,7 @@ if (!Math.uuid)
 
       var setCurrentKeyframeInterval = function(newKeyframeInterval)
          {
-         UTIL.log("setCurrentKeyframeInterval("+newKeyframeInterval+")");
+         UTIL.log("setCurrentKeyframeInterval(" + newKeyframeInterval + ")");
 
          currentKeyframeInterval = newKeyframeInterval;
 
@@ -533,7 +583,7 @@ if (!Math.uuid)
          var elapsedVideoTimePercentage = currentKeyframeInterval.getActualDuration() == 0 ? 0 : Math.abs(videoTime - currentKeyframeInterval.getStartingTime()) / currentKeyframeInterval.getActualDuration();
          var oldWarpStartingTime = warpStartingTime;
          warpStartingTime = new Date().getTime() - (currentKeyframeInterval.getDesiredDurationInMillis() * elapsedVideoTimePercentage + currentKeyframeInterval.getStartingRunningDurationInMillis());
-         UTIL.log("updateWarpStartingTime(): adjusted warp starting time by ["+(warpStartingTime - oldWarpStartingTime)+"] millis");
+         UTIL.log("updateWarpStartingTime(): adjusted warp starting time by [" + (warpStartingTime - oldWarpStartingTime) + "] millis");
          };
 
       var timeCounterHandler = function()
