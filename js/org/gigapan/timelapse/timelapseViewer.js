@@ -425,11 +425,27 @@ function validateAndSetDatasetIndex(newDatasetIndex)
       }
    }
 
+function getTileHostUrlPrefix()
+   {
+   // get the tile host URL prefixes from the JSON, or use a default if undefined
+   var prefixes = ["http://g7.gigapan.org/alpha/timelapses/"];
+   if (typeof gigapanDatasetsJSON['tile-host-url-prefixes'] != undefined &&
+       $.isArray(gigapanDatasetsJSON['tile-host-url-prefixes']) &&
+       gigapanDatasetsJSON['tile-host-url-prefixes'].length > 0)
+      {
+      prefixes = gigapanDatasetsJSON['tile-host-url-prefixes'];
+      }
+
+   // now pick one at random
+   return prefixes[Math.floor(Math.random() * prefixes.length)];
+   }
+
 function loadGigapanJSON()
    {
    // fetch the datasetId and then construct the URL used to get the JSON for the desired dataset
    var datasetId = gigapanDatasetsJSON['datasets'][datasetIndex]['id'];
-   var jsonUrl = (isRemoteUrl ? "../alpha/timelapses/" : "../timelapses/") + datasetId + '/r.json';
+   var tileHostUrlPrefix = getTileHostUrlPrefix() + datasetId + '/';
+   var jsonUrl = tileHostUrlPrefix + 'r.json';
 
    org.gigapan.Util.log("Attempting to fetch gigapan JSON from URL [" + jsonUrl + "]...");
    $.ajax({
@@ -440,8 +456,7 @@ function loadGigapanJSON()
                 if (gigapanJSON && gigapanJSON['tile_height'])
                    {
                    org.gigapan.Util.log("Loaded this JSON: [" + JSON.stringify(gigapanJSON) + "]");
-                   var gigapanUrl = "http://timelapse.gigapan.org/alpha/timelapses/" + datasetId + "/";
-                   loadTimelapse(gigapanUrl, gigapanJSON);
+                   loadTimelapse(tileHostUrlPrefix, gigapanJSON);
                    }
                 else
                    {
