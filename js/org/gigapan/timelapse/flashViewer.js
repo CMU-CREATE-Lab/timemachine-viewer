@@ -26,18 +26,8 @@ function initFlashViewer() {
    //allows for the same video to start playing again.
    //However, we do not want a video to be playing
    //in the hidden player when the page first loads, 
-   //so we need to stop it. The player is not instantly
-   //ready though, so we need to delay a bit before
-   //we can stop playback.
-   var t=setTimeout(delayInitAutoPlayStop,200);
-}
-
-function delayInitAutoPlayStop() {
-   if (jwplayer().getState() == "undefined") {
-      var t=setTimeout(delayInitAutoPlayStop,200);
-   } else {
-      jwplayer().stop();
-   }
+   //so we need to stop it.
+   jwplayer().stop();
 }
 
 function loadVideoSnaplapse(wikiSnaplapseFileName) {
