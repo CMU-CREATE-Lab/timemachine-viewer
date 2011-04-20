@@ -115,3 +115,8 @@ span.ui-icon {
    background-color: #ffeeee;
    color: #990000;
 }
+
+.textarea_disabled {
+   background-color: #cccccc;
+   color: #666666;
+}

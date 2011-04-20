@@ -148,10 +148,13 @@ if (!Math.uuid)
                       typeof keyframe['bounds']['xmax'] != 'undefined' &&
                       typeof keyframe['bounds']['ymax'] != 'undefined')
                      {
+                     // NOTE: if is-description-visible is undefined, then we define it as *true* in order to maintain
+                     // backward compatibility with older time warps which don't have this property.
                      this.recordKeyframe(null,
                                          keyframe['time'],
                                          keyframe['bounds'],
                                          keyframe['description'],
+                                         (typeof keyframe['is-description-visible'] == 'undefined') ? true : keyframe['is-description-visible'],
                                          keyframe['duration']);
                      }
                   else
@@ -182,10 +185,11 @@ if (!Math.uuid)
                              keyframeCopy['time'],
                              keyframeCopy['bounds'],
                              keyframeCopy['description'],
+                             keyframeCopy['is-description-visible'],
                              keyframeCopy['duration']);
          };
 
-      this.recordKeyframe = function(idOfKeyframeToAppendAfter, time, bounds, description, duration)
+      this.recordKeyframe = function(idOfKeyframeToAppendAfter, time, bounds, description, isDescriptionVisible, duration)
          {
          if (typeof bounds == 'undefined')
             {
@@ -204,6 +208,7 @@ if (!Math.uuid)
          keyframe['bounds'].ymax = bounds.ymax;
          keyframe['duration'] = sanitizeDuration(duration);
          keyframe['description'] = (typeof description == 'undefined') ? '' : description;
+         keyframe['is-description-visible'] = (typeof isDescriptionVisible == 'undefined') ? false : isDescriptionVisible;
 
          // determine where the new keyframe will be inserted
          var insertionIndex = keyframes.length;
@@ -240,11 +245,12 @@ if (!Math.uuid)
             }
          };
 
-      this.setTextAnnotationForKeyframe = function(keyframeId, description)
+      this.setTextAnnotationForKeyframe = function(keyframeId, description, isDescriptionVisible)
          {
          if (keyframeId && keyframesById[keyframeId])
             {
             keyframesById[keyframeId]['description'] = description;
+            keyframesById[keyframeId]['is-description-visible'] = isDescriptionVisible;
             return true;
             }
          return false;
@@ -502,6 +508,7 @@ if (!Math.uuid)
             frameCopy['time'] = frame['time'];
             frameCopy['duration'] = frame['duration'];
             frameCopy['description'] = frame['description'];
+            frameCopy['is-description-visible'] = frame['is-description-visible'];
             frameCopy['bounds'] = {};
             frameCopy['bounds'].xmin = frame['bounds'].xmin;
             frameCopy['bounds'].ymin = frame['bounds'].ymin;
