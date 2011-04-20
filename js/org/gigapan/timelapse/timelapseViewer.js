@@ -332,7 +332,9 @@ function setupMouseHandlers() {
 
 function handlePluginVideoTagOverride() {
    if ($("#1").is("EMBED")) {
-      $("#html5_overrided_message").show();
+      $("#player").hide();
+      $("#time_warp_composer").hide();
+      $("#html5_overridden_message").show();
    }
 }
 
