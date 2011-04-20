@@ -178,6 +178,11 @@ if (!org.gigapan.timelapse.VideosetStats)
 
             this.handleKeydownEvent = function(event)
                {
+
+                   // if we are focused on a text field, do not run any player specific controls
+                   if (document.activeElement == "[object HTMLInputElement]" || document.activeElement == "[object HTMLTextAreaElement]")
+                      return;
+
                    var translationSpeedConstant = 20;
                    var moveFn;
 		   switch (event.which)
@@ -502,7 +507,7 @@ if (!org.gigapan.timelapse.VideosetStats)
             
             var setTargetView = function(newView)
                {
-                  UTIL.log("setTargetView: newView=" + view2string(newView)+", view="+view2string(view)+", targetView="+view2string(targetView));
+                  //UTIL.log("setTargetView: newView=" + view2string(newView)+", view="+view2string(view)+", targetView="+view2string(targetView));
                   var tempView = {};
                   tempView.scale = limitScale(newView.scale);
                   tempView.x = Math.max(0, Math.min(panoWidth, newView.x));
@@ -633,7 +638,7 @@ if (!org.gigapan.timelapse.VideosetStats)
                   videoWidth = data['video_width'];
                   videoHeight = data['video_height'];
                   videoset.setFps(data['fps']);
-                  videoset.setDuration(1 / data['fps'] * data['frames']);
+                  videoset.setDuration(1 / data['fps'] * (data['frames']-1));
                   videoset.setLeader(data['leader']/data['fps']);
                   frames = data['frames'];
                   maxLevel = data['nlevels']-1;

@@ -7,7 +7,7 @@ var currentlyDisplayedVideoId = 1;
 function initializeSnaplapseUI()
    {
    // hide the annotation bubble
-   $("#snaplapse-annotation-description").hide();
+   hideAnnotationBubble();
 
    // add an event listener to the videoset so we can keep track of which video is currently visible, so that we can
    // create the keyframe thumbnails
@@ -46,7 +46,7 @@ function initializeSnaplapseUI()
                                                      {
                                                      handleSnaplapseFrameSelectionChange(true);
                                                      },
-                                                  cancel: ':input,textarea'
+                                                  cancel: ':input,textarea,.button,label'
                                                });
 
    // add mouse event handlers to the New Snaplapse button
@@ -175,14 +175,24 @@ function handleSnaplapseFrameSelectionChange(willWarp)
 
 function displaySnaplapseFrameAnnotation(frame)
    {
-   $("#snaplapse-annotation-description").hide();
-
    if (frame)
       {
-      if (isTextNonEmpty(frame['description']))
+      if (frame['is-description-visible'])
          {
-         $("#snaplapse-annotation-description").html("<p>" + frame['description'] + "</p>").show();
+         if (isTextNonEmpty(frame['description']))
+            {
+            $("#snaplapse-annotation-description > p").text(frame['description']);  // this must use .text() and not .html() to prevent cross-site scripting
+            $("#snaplapse-annotation-description").show();
+            }
+         else
+            {
+            hideAnnotationBubble();
+            }
          }
+      }
+   else
+      {
+      hideAnnotationBubble();
       }
    }
 
@@ -204,6 +214,15 @@ function setButtonEnabled(idOrClass, isEnabled)
       jQuery(idOrClass).removeClass("ui-state-default");
       jQuery(idOrClass).addClass("ui-state-active");
       jQuery(idOrClass).addClass("ui-state-disabled");
+      }
+   }
+
+function clearKeyframeSelection()
+   {
+   var keyframes = $("#snaplapse_keyframe_list > div");
+   for (var i = 0; i < keyframes.size(); i++)
+      {
+      $(keyframes[i]).removeClass().addClass("snaplapse_keyframe_list_item");
       }
    }
 
@@ -249,12 +268,9 @@ function newSnaplapse(json)
                                  $("#home").css("opacity", ".35");
 
                                  $("#snaplapse_keyframe_list")['selectable']("option", "disabled", true);
+                                 clearKeyframeSelection();
                                  var keyframes = $("#snaplapse_keyframe_list > div");
-                                 for (var i = 0; i < keyframes.size(); i++)
-                                    {
-                                    var frame = keyframes[i];
-                                    $(frame).removeClass().addClass("snaplapse_keyframe_list_item");
-                                    }
+                                 $(keyframes[0]).addClass("snaplapse_keyframe_list_item ui-selected");
                                  });
 
    snaplapse.addEventListener('stop',
@@ -281,8 +297,8 @@ function newSnaplapse(json)
                                  $("#zoom_out").css("opacity", "1");
                                  $("#home").css("opacity", "1");
                                  $('#help').attr("class", "enabled");
-					
-                      		 $("#snaplapse-annotation-description").hide();
+
+                                 hideAnnotationBubble();
 
                                  $("#snaplapse_keyframe_list")['selectable']("option", "disabled", false);
                                  var keyframes = $("#snaplapse_keyframe_list > div");
@@ -296,20 +312,26 @@ function newSnaplapse(json)
    snaplapse.addEventListener('keyframe-added',
                               function(frame, insertionIndex)
                                  {
-                                 toggleSnaplapseButtons();
                                  addSnaplapseKeyframeListItem(frame, insertionIndex);
+                                 toggleSnaplapseButtons();
+                                 });
+
+   snaplapse.addEventListener('keyframe-modified',
+                              function(frame)
+                                 {
+                                 $("#snaplapse_keyframe_" + frame['id'] + "_timestamp").text(org.gigapan.Util.formatTime(frame['time'], true));
+                                 // TODO: update thumbnail
                                  });
 
    snaplapse.addEventListener('keyframe-interval-change',
-                              function(index, frame)
+                              function(keyframe)
                                  {
-                                 org.gigapan.Util.log("snaplapse keyframe-interval-change index=[" + index + "]");
+                                 org.gigapan.Util.log("##################### snaplapse keyframe-interval-change: " + JSON.stringify(keyframe));
 
                                  // render the keyframe as selected to show that it's being played
-                                 var keyframeElements = $("#snaplapse_keyframe_list > div");
-                                 $(keyframeElements[index]).addClass("snaplapse_keyframe_list_item ui-selected");
+                                 $("#snaplapse_keyframe_" + keyframe['id']).addClass("snaplapse_keyframe_list_item ui-selected");
 
-                                 displaySnaplapseFrameAnnotation(frame);
+                                 displaySnaplapseFrameAnnotation(keyframe);
                                  });
 
    setButtonEnabled("#recordKeyframeButton", true);
@@ -344,11 +366,24 @@ function toggleSnaplapseButtons()
       setButtonEnabled("#saveSnaplapseButton", false);
       setButtonEnabled("#deleteKeyframeButton", false);
       }
+
+   setButtonEnabled(".snaplapse_keyframe_list_item_play_button", false);
+   var keyframes = $(".snaplapse_keyframe_list_item");
+   for (var i = 0; i < keyframes.length - 1; i++)
+      {
+      var buttonId = "#" + keyframes[i].id + " .snaplapse_keyframe_list_item_play_button";
+      setButtonEnabled(buttonId, true);
+      }
    }
 
 function isTextNonEmpty(text)
    {
    return (typeof text != 'undefined' && text.length > 0);
+   }
+
+function hideAnnotationBubble()
+   {
+   $("#snaplapse-annotation-description").hide();
    }
 
 function addSnaplapseKeyframeListItem(frame, insertionIndex)
@@ -369,24 +404,43 @@ function addSnaplapseKeyframeListItem(frame, insertionIndex)
 
    var thumbnailId = keyframeListItem.id + "_thumbnail";
    var timestampId = keyframeListItem.id + "_timestamp";
+   var descriptionVisibleCheckboxId = keyframeListItem.id + "_description_visible";
    var descriptionId = keyframeListItem.id + "_description";
    var durationId = keyframeListItem.id + "_duration";
+   var buttonContainerId = keyframeListItem.id + "_buttons";
+   var updateButtonId = keyframeListItem.id + "_update";
+   var duplicateButtonId = keyframeListItem.id + "_duplicate";
+   var playFromHereButtonId = keyframeListItem.id + "_play";
    var duration = typeof frame['duration'] != 'undefined' && frame['duration'] != null ? frame['duration'] : '';
+   var isDescriptionVisible = typeof frame['is-description-visible'] == 'undefined' ? true : frame['is-description-visible'];
    var content = '<table border="0" cellspacing="0" cellpadding="0" class="snaplapse_keyframe_list_item_table">' +
                  '   <tr valign="top">' +
-                 '      <td rowspan="2">' +
+                 '      <td>' +
                  '         <div id="' + timestampId + '" class="snaplapse_keyframe_list_item_timestamp">' + org.gigapan.Util.formatTime(frame['time'], true) + '</div>' +
                  '         <canvas id="' + thumbnailId + '" width="100" height="56" class="snaplapse_keyframe_list_item_thumbnail"></canvas>' +
                  '      </td>' +
                  '      <td rowspan="2" class="snaplapse_keyframe_list_item_cell_padding">&nbsp;</td>' +
                  '      <td style="text-align:left;">' +
-                 '         <div class="snaplapse_keyframe_list_item_description_label" style="text-align:left;">Description:</div>' +
-                 '         <div><textarea id="' + descriptionId + '" class="snaplapse_keyframe_list_item_description">' + frame['description'] + '</textarea></div>' +
+                 '         <div class="snaplapse_keyframe_list_item_description_label" style="text-align:left;"><input id="' + descriptionVisibleCheckboxId + '" type="checkbox" ' + (isDescriptionVisible ? 'checked="checked"' : '') + '><label for="' + descriptionVisibleCheckboxId + '">Description:</label></div>' +
+                 '         <div><textarea id="' + descriptionId + '" class="snaplapse_keyframe_list_item_description" onfocusout="hideAnnotationBubble();">' + frame['description'] + '</textarea></div>' +
                  '      </td>' +
                  '      <td rowspan="2" class="snaplapse_keyframe_list_item_cell_padding">&nbsp;</td>' +
                  '   </tr>' +
                  '   <tr valign="top">' +
                  '      <td style="text-align:left;">' +
+                 '         <div id="' + buttonContainerId + '" class="button-container keyframe-button-container">' +
+                 '            <div id="' + updateButtonId + '" class="ui-state-default ui-corner-all button" title="Update this keyframe to current view">' +
+                 '               <span class="ui-icon ui-icon-refresh"></span>' +
+                 '            </div>' +
+                 '            <div id="' + duplicateButtonId + '" style="margin-left:2px;" class="ui-state-default ui-corner-all button" title="Duplicate this keyframe">' +
+                 '               <span class="ui-icon ui-icon-copy"></span>' +
+                 '            </div>' +
+                 '            <div id="' + playFromHereButtonId + '" style="margin-left:24px" class="snaplapse_keyframe_list_item_play_button ui-state-active ui-state-disabled ui-corner-all button" title="Play warp starting at this keyframe">' +
+                 '               <span class="ui-icon ui-icon-play"></span>' +
+                 '            </div>' +
+                 '         </div>' +
+                 '      </td>' +
+                 '      <td style="text-align:right;">' +
                  '         <span class="snaplapse_keyframe_list_item_duration_label">Duration:</span>' +
                  '         <input type="text" id="' + durationId + '" class="snaplapse_keyframe_list_item_duration" value="' + duration + '">' +
                  '         <span class="snaplapse_keyframe_list_item_duration_label">seconds</span>' +
@@ -395,6 +449,34 @@ function addSnaplapseKeyframeListItem(frame, insertionIndex)
                  '</table>';
 
    $("#" + keyframeListItem.id).html(content).addClass("snaplapse_keyframe_list_item");
+   $("#" + keyframeListItem.id)['mouseover'](function()
+                                                {
+                                                if (!snaplapse.isPlaying())
+                                                   {
+                                                   $("#" + buttonContainerId).show();
+                                                   }
+                                                });
+   $("#" + keyframeListItem.id)['mouseout'](function()
+                                               {
+                                               $("#" + buttonContainerId).hide();
+                                               });
+
+   // toggle the description field enabled/disabled
+   $("#" + descriptionVisibleCheckboxId)['change'](function()
+                                                      {
+                                                      if (this.checked)
+                                                         {
+                                                         $("#" + descriptionId).removeAttr("disabled");
+                                                         $("#" + descriptionId).removeClass("textarea_disabled");
+                                                         }
+                                                      else
+                                                         {
+                                                         $("#" + descriptionId).attr("disabled", "disabled");
+                                                         $("#" + descriptionId).addClass("textarea_disabled");
+                                                         }
+                                                      var description = $("#" + descriptionId).val();
+                                                      snaplapse.setTextAnnotationForKeyframe(keyframeId, description, this.checked);
+                                                      });
 
    // display the text annotation when you focus on the description field.
    $("#" + descriptionId)['focus'](function()
@@ -405,9 +487,15 @@ function addSnaplapseKeyframeListItem(frame, insertionIndex)
    $("#" + descriptionId)['keyup'](function()
                                       {
                                       var description = $("#" + descriptionId).val();
-                                      snaplapse.setTextAnnotationForKeyframe(keyframeId, description);
+                                      snaplapse.setTextAnnotationForKeyframe(keyframeId, description, $("#" + descriptionVisibleCheckboxId).get(0)['checked']);
                                       displaySnaplapseFrameAnnotation(snaplapse.getKeyframeById(keyframeId));
                                       });
+   // save the text annotation on keyup, so that we don't need a save button
+   if (!isDescriptionVisible)
+      {
+      $("#" + descriptionId).addClass("textarea_disabled");
+      $("#" + descriptionId).attr("disabled", "disabled");
+      }
 
    // validate the duration on keyup, reformat it on change
    $("#" + durationId)['keyup'](function()
@@ -425,6 +513,32 @@ function addSnaplapseKeyframeListItem(frame, insertionIndex)
                                     durationField.removeClass('validation-fault');
 
                                     snaplapse.setDurationForKeyframe(keyframeId, newDuration);
+                                    });
+
+   // add mouse event handlers to the Record Keyframe button
+   addMouseEventHandlersToButton('#' + updateButtonId,
+                                 function()
+                                    {
+                                    snaplapse.updateTimeAndPositionForKeyframe(keyframeId);
+                                    });
+
+   // add mouse event handlers to the Record Keyframe button
+   addMouseEventHandlersToButton('#' + duplicateButtonId,
+                                 function()
+                                    {
+                                    snaplapse.duplicateKeyframe(keyframeId);
+                                    });
+
+   // add mouse event handlers to the Record Keyframe button
+   addMouseEventHandlersToButton('#' + playFromHereButtonId,
+                                 function()
+                                    {
+                                    if (snaplapse.isPlaying())
+                                       {
+                                       snaplapse.stop();
+                                       }
+                                    $(".keyframe-button-container").hide();
+                                    snaplapse.play(keyframeId);
                                     });
 
    // remove selection from all other items, then select this item
@@ -467,25 +581,15 @@ function recordKeyframe()
       var selectedItems = $("#snaplapse_keyframe_list > .ui-selected");
       var numSelected = selectedItems.size();
 
-      var success = false;
       if (numSelected == 1)
          {
          var id = selectedItems.get(0).id;
          var keyframeId = id.substring("snaplapse_keyframe_".length);
-         success = snaplapse.recordKeyframe(keyframeId);
+         snaplapse.recordKeyframe(keyframeId);
          }
       else
          {
-         success = snaplapse.recordKeyframe();
-         }
-
-      if (!success)
-         {
-         alert("ERROR: Invalid time position\n\n" +
-               "The time position of a keyframe cannot\n" +
-               "be the same as the previous keyframe if\n" +
-               "the duration set on the previous keyframe\n" +
-               "is zero or undefined.");
+         snaplapse.recordKeyframe();
          }
       }
    }
@@ -570,10 +674,18 @@ function setupSnaplapseLinks()
                                 var originalContent = labelSpan.html();
 
                                 org.gigapan.Util.log("setupSnaplapseLinks(): [" + index + "]" + labelSpan.text() + "|" + snaplapseJsonUrl + "|" + originalContent);
-                                cacheSnaplapse(snaplapseJsonUrl, function()
+
+                                if (!browserSupported)
                                    {
-                                   linkSpan.replaceWith('<a class="time_warp_link" href="#" onclick="playCachedSnaplapse(\'' + snaplapseJsonUrl + '\');return false;">' + originalContent + '</a>');
-                                   });
+                                   linkSpan.replaceWith('<a class="time_warp_link" href="#" onclick="loadVideoSnaplapse(\'' + filenameSpan.text() + '\');return false;">' + originalContent + '</a>');
+                                   }
+                                else
+                                   {
+                                   cacheSnaplapse(snaplapseJsonUrl, function()
+                                      {
+                                      linkSpan.replaceWith('<a class="time_warp_link" href="#" onclick="playCachedSnaplapse(\'' + snaplapseJsonUrl + '\');return false;">' + originalContent + '</a>');
+                                      });
+                                   }
 
                                 });
    }
@@ -586,6 +698,7 @@ function playStopSnaplapse()
       }
    else
       {
+      $(".keyframe-button-container").hide();
       snaplapse.play();
       }
    }
@@ -646,6 +759,8 @@ function loadSnaplapse(json)
          {
          $(".snaplapse_composer_controls").show();
          loadSnaplapseWindow.close();
+         clearKeyframeSelection();
+         hideAnnotationBubble();
          }
       else
          {

@@ -651,11 +651,6 @@ if (!org.gigapan.Util)
                return;
                }
 
-            if (!duration)
-               {
-               duration = video.duration - leader;
-               }
-
             _setVideoToCurrentTime(video);
             if (advancing)
                {

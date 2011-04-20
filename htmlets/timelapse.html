@@ -12,6 +12,8 @@
 <script src="../timelapse/js/org/gigapan/timelapse/snaplapse.js" type="text/javascript"></script>
 <script src="../timelapse/js/org/gigapan/timelapse/snaplapseViewer.js" type="text/javascript"></script>
 <script src="../timelapse/js/org/gigapan/timelapse/timelapseViewer.js" type="text/javascript"></script>
+<script src="../timelapse/js/jwplayer/jwplayer.js" type="text/javascript"></script>
+<script src="../timelapse/js/org/gigapan/timelapse/flashViewer.js" type="text/javascript"></script>
 
 <link href="../timelapse/css/timelapse.css" rel="stylesheet" type="text/css"/>
 <link href="../timelapse/css/videoset_stats.css" rel="stylesheet" type="text/css"/>
@@ -20,141 +22,12 @@
 <link href="../timelapse/css/ui.slider.extras.css" rel="stylesheet" type="text/css"/>
 <link href="../timelapse/css/player.css" rel="stylesheet" type="text/css"/>
 
-<script type="text/javascript">
-   org.gigapan.timelapse.VideosetStats.isEnabled = false;
-   function preload(images)
-      {
-      if (document.images)
-         {
-         var i = 0;
-         var imageArray = new Array();
-         imageArray = images.split(',');
-         var imageObj = new Image();
-         for (i = 0; i <= imageArray.length - 1; i++)
-            {
-            imageObj.src = images[i];
-            }
-         }
-      }
-
-   $(document).ready(function()
-                        {
-                        $("li#sizeoptions").hide();
-                        $("span#indicator").hide();
-
-                        $("#subbutton").hide();
-                        $("#status").hide();
-
-                        $("a#size").click(function()
-                                             {
-                                             $("li#sizeoptions").fadeIn(100);
-                                             });
-
-                        $("li#sizeoptions a").click(function()
-                                                       {
-                                                       $("li#sizeoptions").hide();
-                                                       $("li#sizeoptions a").removeClass('current');
-                                                       $(this).addClass('current');
-                                                       });
-
-                        $(document).click(function(event)
-                                             {
-                                             if ($(event.target).closest('a#size').get(0) == null)
-                                                {
-                                                $('li#sizeoptions').hide();
-                                                }
-                                             });
-
-                        $("#help").toggle(
-                              function ()
-                                 {
-                                 if ($("#slider-vertical")['slider']("option", "disabled")) return;
-                                 $('li#sizeoptions').hide(); //might be already opened
-                                 $("#instructions").fadeIn(100);
-                                 $(this).addClass('on');
-                                 if ($('#mainbutton').attr("class") == "pause")
-                                    {
-                                    timelapse.pause();
-                                    $('#mainbutton').attr("class", "pause_disabled");
-                                    }
-                                 else
-                                    {
-                                    $('#mainbutton').attr("class", "play_disabled");
-                                    }
-                                 $("#timelineSlider")['slider']("option", "disabled", true);
-                                 },
-                              function ()
-                                 {
-                                 if ($("#slider-vertical")['slider']("option", "disabled")) return;
-                                 $("#instructions").fadeOut(50);
-                                 $(this).removeClass('on');
-                                 if ($('#mainbutton').attr("class") == "pause_disabled")
-                                    {
-                                    timelapse.play();
-                                    $('#mainbutton').attr("class", "pause");
-                                    }
-                                 else
-                                    {
-                                    $('#mainbutton').attr("class", "play");
-                                    }
-                                 $("#timelineSlider")['slider']("option", "disabled", false);
-                                 }
-                        );
-
-                        $("a#speedhandle").hover(
-                              function ()
-                                 {
-                                 $("span.currentspeed").delay(400).fadeIn(100);
-                                 },
-                              function ()
-                                 {
-                                 $("span.currentspeed").hide();
-                                 }
-                        );
-
-                        $("a#timehandle").hover(
-                              function ()
-                                 {
-                                 $("span.currenttime").delay(400).fadeIn(100);
-                                 },
-                              function ()
-                                 {
-                                 $("span.currenttime").hide();
-                                 }
-                        );
-
-                        $("#timeline").hover(
-                              function ()
-                                 {
-                                 $("span.skiptime").delay(400).fadeIn(100);
-                                 },
-                              function ()
-                                 {
-                                 $("span.skiptime").hide();
-                                 }
-                        );
-
-                        $("#player").hover(
-                              function ()
-                                 {
-                                 $("a#timehandle").fadeIn(100);
-                                 },
-                              function ()
-                                 {
-                                 $("a#timehandle").hide();
-                                 }
-                        );
-
-                        //preload('help_down.png, help_hover, pause_down.png, pause_hover.png, play_hover.png, size_down.png, size_hover.png, pause_snaplapse_down.png, pause_snaplapse_hover.png, stop_snaplapse_down.png, stop_snaplapse_hover.png, help_down.png, help_hover.png, zoom_handle_down.png, zoom_handle_hover.png, zoom_in_down.png, zoom_in_hover.png, zoom_out_down.png, zoom_out_hover.png, zoom_viewall_down.png, zoom_viewall_hover.png, handle_down.png, handle_hover.png');
-                        });
-
-</script>
-
 <div id="browser_not_supported">
    <div class="warning">We're sorry, but it looks like your browser isn't currently supported by our viewer.
       At this time, only Safari 5.0+ and Chrome 7.0+ are known to be compatible. <br/><br/>
 
-      Until the other browsers catch up, please enjoy a few videos of what GigaPan Timelapse has to offer.
+      Until the other browsers catch up, please enjoy a few videos of what GigaPan Time Machine has to offer.
+      Click one of the timewarp links on the right to watch one of these video tours.
    </div>
 </div>
 
@@ -209,7 +82,7 @@
          </a></li>
       </ul>
 
-      <div id="time"><b><span id="currentTime">00:00:00</span>/<span id="totalTime">00:00:00</span></b></div>
+      <div id="time"><b><span id="currentTime">00:00:00.00</span>/<span id="totalTime">00:00:00.00</span></b></div>
 
       <!-- Hides during snaplapse -->
 
@@ -225,5 +98,16 @@
 
    </div>
 </div>
-<span id="snaplapse-annotation-description"></div>
+<span id="snaplapse-annotation-description"><p></p></span>
+
+<div id="flash_video_player">
+   <div id="container">Loading the player ...</div>
+   <div id="flash_video_controls">
+      <label for="flash_video_sizes">Player Size: </label>
+      <select id="flash_video_sizes" name="video_sizes" onchange="resizeFlashPlayer(this.value);">
+         <option value="small">Small</option>
+         <option value="large">Large</option>
+      </select>
+   </div>
+</div>
 

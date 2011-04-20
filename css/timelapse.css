@@ -22,6 +22,14 @@ div#player, img, a{
         z-index:5;
 }
 
+#flash_video_controls {
+   display: block !important;
+   position: fixed;
+   left: 400px;
+   top: 395px;
+   color:#ffffff;
+}
+
 #filler {
    height:8px;
    width:516px;
