@@ -222,8 +222,9 @@ h3, h4, h5, h6 {
     height: 348px;   
     left: 34px;
     position: fixed;      
-    top: 500px;
+    top: 55px;
     width: 514px;
+    z-index:1000;
 }
 
 .warning, .error {
