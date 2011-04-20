@@ -330,6 +330,12 @@ function setupMouseHandlers() {
    $("#timelapse").mousewheel(timelapse.handleMousescrollEvent);
 }
 
+function handlePluginVideoTagOverride() {
+   if ($("#1").is("EMBED")) {
+      $("#html5_overrided_message").show();
+   }
+}
+
 function switchDataset(index)
    {
    org.gigapan.Util.log("switchDataset("+index+")");
@@ -443,6 +449,7 @@ function loadTimelapse(gigapanUrl, gigapanJSON)
       setupZoomSliderHandlers();
       setupUIHandlers();
       initializeSnaplapseUI();
+      handlePluginVideoTagOverride();
       }
    else
       {
@@ -514,7 +521,8 @@ function loadGigapanJSON()
 $(document).ready(function()
                      {
                      $("#browser_not_supported").hide();
-                     $("#flash_video_player").hide();
+                     $("#html5_overrided_message").hide();
+		     $("#flash_video_player").hide();
                      browserSupported = org.gigapan.Util.browserSupported();
 
                      if (!browserSupported) {
