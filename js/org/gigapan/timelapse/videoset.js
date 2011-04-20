@@ -992,7 +992,7 @@ if (!org.gigapan.Util)
                      publishSyncEvent(0);
                      return;
                      }
-                  else if (duration > 0 && t >= duration)
+                  else if (duration > 0 && t > duration)
                      {
                      _pause();
                      _seek(duration);
