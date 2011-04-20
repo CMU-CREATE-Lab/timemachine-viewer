@@ -587,10 +587,13 @@ if (!Math.uuid)
 
       var updateWarpStartingTime = function(videoTime)
          {
-         var elapsedVideoTimePercentage = currentKeyframeInterval.getActualDuration() == 0 ? 0 : Math.abs(videoTime - currentKeyframeInterval.getStartingTime()) / currentKeyframeInterval.getActualDuration();
-         var oldWarpStartingTime = warpStartingTime;
-         warpStartingTime = new Date().getTime() - (currentKeyframeInterval.getDesiredDurationInMillis() * elapsedVideoTimePercentage + currentKeyframeInterval.getStartingRunningDurationInMillis());
-         UTIL.log("updateWarpStartingTime(): adjusted warp starting time by [" + (warpStartingTime - oldWarpStartingTime) + "] millis");
+         if (currentKeyframeInterval.getActualDuration() > 0)
+            {
+            var elapsedVideoTimePercentage = Math.abs(videoTime - currentKeyframeInterval.getStartingTime()) / currentKeyframeInterval.getActualDuration();
+            var oldWarpStartingTime = warpStartingTime;
+            warpStartingTime = new Date().getTime() - (currentKeyframeInterval.getDesiredDurationInMillis() * elapsedVideoTimePercentage + currentKeyframeInterval.getStartingRunningDurationInMillis());
+            UTIL.log("updateWarpStartingTime(): adjusted warp starting time by [" + (warpStartingTime - oldWarpStartingTime) + "] millis (videoTime="+videoTime+")");
+            }
          };
 
       var timeCounterHandler = function()
@@ -758,6 +761,7 @@ if (!Math.uuid)
                 ',desiredDuration=' + desiredDuration +
                 ',playbackRate=' + playbackRate +
                 ',timeDirection=' + timeDirection +
+                ',startingRunningDurationInMillis=' + startingRunningDurationInMillis +
                 ',endingRunningDurationInMillis=' + endingRunningDurationInMillis +
                 ']';
          };
