@@ -68,14 +68,19 @@ body, html{
 }
 
 #instructions span.speedhelp{
-	padding:12px 16px;
+	/*padding:12px 16px;*/
 	width:190px;
 	background-color:#262626;
 	border:1px solid #444;
-	bottom:-10px;
-	left:172px;
+	/*bottom:-10px;
+	left:172px;*/
+
 	height:19px;
 	overflow:visible;
+       
+        bottom: -1px;
+        left:177px;
+        padding:12px 16px 16px;
 }
 
 #instructions span.speedhelp p{
@@ -84,7 +89,8 @@ body, html{
 	background-repeat:no-repeat;
 	background-position:bottom left;
 	background-image:url(../images/bubble_edge_horizontal.png);
-	height:42px;
+	/*height:42px;*/
+	height:46px;
 }
 
 ul#sidebuttons{
@@ -161,12 +167,12 @@ a#size:active{background-image:url(../images/buttons/size_down.png);}
 
 #playerSizeText {
   position: relative;
-  top: -2px;
+  top: -3px;
 }
 
 #helpText {
   position: relative;
-  top: -2px;
+  top: -3px;
 }
 
 a#help.enabled, #help.disabled{
