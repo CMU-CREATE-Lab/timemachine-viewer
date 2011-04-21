@@ -532,6 +532,8 @@ $(document).ready(function()
                         $("#time_warp_composer").hide();
                         $("#browser_not_supported").show();
                         $("#firstHeading").css( {"top": "450px"} );
+			$("#flash_video_player").show();
+                        $("#flash_video_player").css( {"visibility": "hidden"} );
                         setupSnaplapseLinks();
                         initFlashViewer();
                         return;

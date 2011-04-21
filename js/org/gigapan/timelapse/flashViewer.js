@@ -32,7 +32,10 @@ function initFlashViewer() {
 
 function loadVideoSnaplapse(wikiSnaplapseFileName) {
    //make the flash play visible
-   $("#flash_video_player").show();
+   //$("#flash_video_player").show();
+   $("#flash_video_player").css( {"visibility": "visible"} );
+
+   //make sure any warnings are hidden
    $("#browser_not_supported").hide();
    $("#html5_overridden_message").hide();
 
