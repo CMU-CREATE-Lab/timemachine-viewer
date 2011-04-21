@@ -330,6 +330,14 @@ function setupMouseHandlers() {
    $("#timelapse").mousewheel(timelapse.handleMousescrollEvent);
 }
 
+function handlePluginVideoTagOverride() {
+   if (browserSupported && $("#1").is("EMBED")) {
+      $("#player").hide();
+      $("#time_warp_composer").hide();
+      $("#html5_overridden_message").show();
+   }
+}
+
 function switchDataset(index)
    {
    org.gigapan.Util.log("switchDataset("+index+")");
@@ -443,6 +451,7 @@ function loadTimelapse(gigapanUrl, gigapanJSON)
       setupZoomSliderHandlers();
       setupUIHandlers();
       initializeSnaplapseUI();
+      handlePluginVideoTagOverride();
       }
    else
       {
@@ -514,7 +523,8 @@ function loadGigapanJSON()
 $(document).ready(function()
                      {
                      $("#browser_not_supported").hide();
-                     $("#flash_video_player").hide();
+                     $("#html5_overridden_message").hide();
+		     $("#flash_video_player").hide();
                      browserSupported = org.gigapan.Util.browserSupported();
 
                      if (!browserSupported) {
@@ -522,6 +532,8 @@ $(document).ready(function()
                         $("#time_warp_composer").hide();
                         $("#browser_not_supported").show();
                         $("#firstHeading").css( {"top": "450px"} );
+			$("#flash_video_player").show();
+                        $("#flash_video_player").css( {"visibility": "hidden"} );
                         setupSnaplapseLinks();
                         initFlashViewer();
                         return;

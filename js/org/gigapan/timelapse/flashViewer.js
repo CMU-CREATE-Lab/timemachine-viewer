@@ -32,7 +32,12 @@ function initFlashViewer() {
 
 function loadVideoSnaplapse(wikiSnaplapseFileName) {
    //make the flash play visible
-   $("#flash_video_player").show();
+   //$("#flash_video_player").show();
+   $("#flash_video_player").css( {"visibility": "visible"} );
+
+   //make sure any warnings are hidden
+   $("#browser_not_supported").hide();
+   $("#html5_overridden_message").hide();
 
    //reload the playlist
    //this fixes an issue with IE where the video does not display (but subtiles/audio do)

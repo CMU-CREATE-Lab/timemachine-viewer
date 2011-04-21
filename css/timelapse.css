@@ -218,6 +218,15 @@ h3, h4, h5, h6 {
     width: 514px;
 }
 
+#html5_overridden_message {
+    height: 348px;   
+    left: 34px;
+    position: fixed;      
+    top: 65px;
+    width: 514px;
+    z-index:1000;
+}
+
 .warning, .error {
    border: 1px solid;
    width: 400px ;
