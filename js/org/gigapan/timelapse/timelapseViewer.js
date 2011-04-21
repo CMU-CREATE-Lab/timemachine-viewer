@@ -523,7 +523,7 @@ function loadGigapanJSON()
 $(document).ready(function()
                      {
                      $("#browser_not_supported").hide();
-                     $("#html5_overriden_message").hide();
+                     $("#html5_overridden_message").hide();
 		     $("#flash_video_player").hide();
                      browserSupported = org.gigapan.Util.browserSupported();
 
