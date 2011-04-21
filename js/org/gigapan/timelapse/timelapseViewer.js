@@ -331,7 +331,7 @@ function setupMouseHandlers() {
 }
 
 function handlePluginVideoTagOverride() {
-   if ($("#1").is("EMBED")) {
+   if (browserSupported && $("#1").is("EMBED")) {
       $("#player").hide();
       $("#time_warp_composer").hide();
       $("#html5_overridden_message").show();
@@ -523,7 +523,7 @@ function loadGigapanJSON()
 $(document).ready(function()
                      {
                      $("#browser_not_supported").hide();
-                     $("#html5_overrided_message").hide();
+                     $("#html5_overriden_message").hide();
 		     $("#flash_video_player").hide();
                      browserSupported = org.gigapan.Util.browserSupported();
 
