@@ -3,6 +3,8 @@ var saveSnaplapseWindow = null;
 var loadSnaplapseWindow = null;
 var cachedSnaplapses = {};
 var currentlyDisplayedVideoId = 1;
+var KEYFRAME_THUMBNAIL_WIDTH = 100;
+var KEYFRAME_THUMBNAIL_HEIGHT = 56; // should really be 56.25
 
 function initializeSnaplapseUI()
    {
@@ -310,17 +312,24 @@ function newSnaplapse(json)
                                  });
 
    snaplapse.addEventListener('keyframe-added',
-                              function(frame, insertionIndex)
+                              function(keyframe, insertionIndex)
                                  {
-                                 addSnaplapseKeyframeListItem(frame, insertionIndex);
+                                 addSnaplapseKeyframeListItem(keyframe, insertionIndex, true);
+                                 toggleSnaplapseButtons();
+                                 });
+
+   snaplapse.addEventListener('keyframe-loaded',
+                              function(keyframe, insertionIndex)
+                                 {
+                                 addSnaplapseKeyframeListItem(keyframe, insertionIndex, false);
                                  toggleSnaplapseButtons();
                                  });
 
    snaplapse.addEventListener('keyframe-modified',
-                              function(frame)
+                              function(keyframe)
                                  {
-                                 $("#snaplapse_keyframe_" + frame['id'] + "_timestamp").text(org.gigapan.Util.formatTime(frame['time'], true));
-                                 // TODO: update thumbnail
+                                 $("#snaplapse_keyframe_" + keyframe['id'] + "_timestamp").text(org.gigapan.Util.formatTime(keyframe['time'], true));
+                                 setKeyframeThumbail(keyframe);
                                  });
 
    snaplapse.addEventListener('keyframe-interval-change',
@@ -333,6 +342,8 @@ function newSnaplapse(json)
 
                                  displaySnaplapseFrameAnnotation(keyframe);
                                  });
+
+   // TODO: add videoset listener which listens for the stall event so we can disable the recordKeyframeButton (if not already disabled due to playback)
 
    setButtonEnabled("#recordKeyframeButton", true);
    setButtonEnabled("#playStopSnaplapseButton", false);
@@ -350,6 +361,52 @@ function newSnaplapse(json)
       }
 
    return true;
+   }
+
+function setKeyframeThumbail(keyframe)
+   {
+   try
+      {
+      // find max video id
+      var activeVideosMap = timelapse.getVideoset().getActiveVideos();
+      var maxVideoId = -1;
+      for (var id in activeVideosMap)
+         {
+         maxVideoId = Math.max(maxVideoId, parseInt(id));
+         }
+
+      // now that we know the max video id, count backwards until we find a ready video, or we run out of videos to check
+      var videoElement = null;
+      var videoId = maxVideoId;
+      do
+         {
+         videoElement = activeVideosMap[videoId];
+         videoId = videoId - 1;
+         }
+      while (videoElement != null && (typeof videoElement.ready == 'undefined' || !videoElement.ready));
+
+      if (videoElement != null)
+         {
+         var vid = $(videoElement);
+         var scale = KEYFRAME_THUMBNAIL_WIDTH / $("#timelapse").width();
+         var vWidth = vid.width();
+         var vHeight = vid.height();
+         var vTopLeftX = vid.position()['left'];
+         var vTopLeftY = vid.position()['top'];
+         var theCanvas = $("#snaplapse_keyframe_" + keyframe['id'] + "_thumbnail").get(0);
+         var ctx = theCanvas.getContext("2d");
+         ctx.clearRect(0, 0, KEYFRAME_THUMBNAIL_WIDTH, KEYFRAME_THUMBNAIL_HEIGHT);
+         ctx.drawImage(vid.get(0), 0, 0, timelapse.getVideoWidth(), timelapse.getVideoHeight(), vTopLeftX * scale, vTopLeftY * scale, vWidth * scale, vHeight * scale);
+         }
+      else
+         {
+         org.gigapan.Util.log("setKeyframeThumbail(): failed to find a good video");
+         }
+      }
+   catch(e)
+      {
+      org.gigapan.Util.log("Exception while trying to create thumbnail: " + e + "  Video: " + theCanvas);
+      }
    }
 
 function toggleSnaplapseButtons()
@@ -386,7 +443,7 @@ function hideAnnotationBubble()
    $("#snaplapse-annotation-description").hide();
    }
 
-function addSnaplapseKeyframeListItem(frame, insertionIndex)
+function addSnaplapseKeyframeListItem(frame, insertionIndex, shouldDrawThumbnail)
    {
    var keyframeId = frame['id'];
    var keyframeListItem = document.createElement("div");
@@ -417,7 +474,7 @@ function addSnaplapseKeyframeListItem(frame, insertionIndex)
                  '   <tr valign="top">' +
                  '      <td>' +
                  '         <div id="' + timestampId + '" class="snaplapse_keyframe_list_item_timestamp">' + org.gigapan.Util.formatTime(frame['time'], true) + '</div>' +
-                 '         <canvas id="' + thumbnailId + '" width="100" height="56" class="snaplapse_keyframe_list_item_thumbnail"></canvas>' +
+                 '         <canvas id="' + thumbnailId + '" width="' + KEYFRAME_THUMBNAIL_WIDTH + '" height="' + KEYFRAME_THUMBNAIL_HEIGHT + '" class="snaplapse_keyframe_list_item_thumbnail"></canvas>' +
                  '      </td>' +
                  '      <td rowspan="2" class="snaplapse_keyframe_list_item_cell_padding">&nbsp;</td>' +
                  '      <td style="text-align:left;">' +
@@ -546,7 +603,11 @@ function addSnaplapseKeyframeListItem(frame, insertionIndex)
    $("#" + keyframeListItem.id).addClass("ui-selected");
    handleSnaplapseFrameSelectionChange(false);
 
-   // TODO: grab the current video frame and store it as the thumbnail in the canvas
+   // grab the current video frame and store it as the thumbnail in the canvas
+   if (shouldDrawThumbnail)
+      {
+      setKeyframeThumbail(frame);
+      }
    }
 
 function validateAndSanitizeDuration(durationId)

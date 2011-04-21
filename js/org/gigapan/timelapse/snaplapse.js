@@ -155,7 +155,8 @@ if (!Math.uuid)
                                          keyframe['bounds'],
                                          keyframe['description'],
                                          (typeof keyframe['is-description-visible'] == 'undefined') ? true : keyframe['is-description-visible'],
-                                         keyframe['duration']);
+                                         keyframe['duration'],
+                                         true);
                      }
                   else
                      {
@@ -186,15 +187,18 @@ if (!Math.uuid)
                              keyframeCopy['bounds'],
                              keyframeCopy['description'],
                              keyframeCopy['is-description-visible'],
-                             keyframeCopy['duration']);
+                             keyframeCopy['duration'],
+                             false);
          };
 
-      this.recordKeyframe = function(idOfKeyframeToAppendAfter, time, bounds, description, isDescriptionVisible, duration)
+      this.recordKeyframe = function(idOfKeyframeToAppendAfter, time, bounds, description, isDescriptionVisible, duration, isFromLoad)
          {
          if (typeof bounds == 'undefined')
             {
             bounds = timelapse.getBoundingBoxForCurrentView();
             }
+
+         var isKeyframeFromLoad = (typeof isFromLoad == 'undefined') ? false : isFromLoad;
 
          // create the new keyframe
          var keyframeId = Math.uuid(20);
@@ -228,7 +232,8 @@ if (!Math.uuid)
          keyframes[insertionIndex] = keyframe;
          keyframesById[keyframeId] = keyframe;
 
-         var listeners = eventListeners['keyframe-added'];
+         var eventType = isKeyframeFromLoad ? 'keyframe-loaded' : 'keyframe-added';
+         var listeners = eventListeners[eventType];
          if (listeners)
             {
             for (var i = 0; i < listeners.length; i++)
@@ -239,7 +244,7 @@ if (!Math.uuid)
                   }
                catch(e)
                   {
-                  UTIL.error(e.name + " while calling snaplapse 'keyframe-added' event listener: " + e.message, e);
+                  UTIL.error(e.name + " while calling snaplapse '"+eventType+"' event listener: " + e.message, e);
                   }
                }
             }
