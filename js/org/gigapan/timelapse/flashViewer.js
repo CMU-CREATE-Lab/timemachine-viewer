@@ -51,20 +51,31 @@ function loadVideoSnaplapse(wikiSnaplapseFileName) {
    //grab the snaplapse #
    //this number - 1 corresponds to its index in the playlist
    var tmpArray = snaplapseFileName.split("_");
-   var playlistIndex = tmpArray[tmpArray.length - 1];
+   var playlistIndex = parseInt(tmpArray[tmpArray.length - 1]);
+   
+   //if we could not grab the proper index, just default to the first video in the playlist
+   if (isNaN(playlistIndex)) {
+      org.gigapan.Util.error("Error reading in playlist index number from .warp file." );
+      playlistIndex = 0;
+   } 
+
+   //org.gigapan.Util.log("FILE_NAME: " + snaplapseFileName);
+   //org.gigapan.Util.log("INDEX: " + (playlistIndex-1));
 
    //jump to this point in the playlist and start playing
+   //playlist starts at 0, so subtract 1 first
    //org.gigapan.Util.log("STATE BEFORE LOAD: " + jwplayer().getState());
-   jwplayer().playlistItem(playlistIndex-1);
+   jwplayer().playlistItem((playlistIndex-1));
    //org.gigapan.Util.log("STATE BEFORE LOAD: " + jwplayer().getState());
+   //org.gigapan.Util.log("fileName: " + jwplayer().getPlaylistItem()['file']);
 }
 
 function resizeFlashPlayer(size) {
    if (size == "small") {
 	$("#container").css( {"width": "512px"} );
 	$("#container").css( {"height": "288px"} );
-	$("#flash_video_controls").css( {"left": "400px"} );
-	$("#flash_video_controls").css( {"top": "395px"} );
+	$("#flash_video_controls").css( {"left": "395px"} );
+	$("#flash_video_controls").css( {"top": "400px"} );
 	$("#content").css( {"padding": "0px 0px 0px 0px"} );
 	$("#firstHeading").css( {"top": "450px"} );
 	$("#snaplapse-annotation-description").css( {"left": "-22px"} );
@@ -72,8 +83,8 @@ function resizeFlashPlayer(size) {
    } else if (size == "large") {
 	$("#container").css( {"width": "816px"} );
 	$("#container").css( {"height": "468px"} );
-	$("#flash_video_controls").css( {"left": "706px"} );
-	$("#flash_video_controls").css( {"top": "575px"} );
+	$("#flash_video_controls").css( {"left": "701px"} );
+	$("#flash_video_controls").css( {"top": "580px"} );
 	$("#content").css( {"padding": "0px 0px 0px 305px"} );
 	$("#firstHeading").css( {"top": "600px"} );
 	$("#snaplapse-annotation-description").css( {"left": "283px"} );

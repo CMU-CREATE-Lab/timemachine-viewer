@@ -25,8 +25,8 @@ div#player, img, a{
 #flash_video_controls {
    display: block !important;
    position: fixed;
-   left: 400px;
-   top: 395px;
+   left: 395px;
+   top: 400px;
    color:#ffffff;
 }
 
