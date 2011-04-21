@@ -128,6 +128,42 @@ if (!Math.uuid)
          return JSON.stringify(snaplapseJSON, null, 3);
          };
 
+      this.getAsCaptionXML = function()
+         {
+         var intervals = buildKeyframeIntervals(0);
+
+         var xmlPrefix = '<tt xmlns="http://www.w3.org/2006/10/ttaf1" xmlns:tts="http://www.w3.org/2006/04/ttaf1#styling">' + "\n" +
+                         '  <head>' + "\n" +
+                         '   <styling>' + "\n" +
+                         '      <style id="normal" tts:fontSize="13" />' + "\n" +
+                         '   </styling>' + "\n" +
+                         '  </head>' + "\n" +
+                         '  <body>' + "\n" +
+                         '    <div>' + "\n";
+         var xmlSuffix = '    </div>' + "\n" +
+                         '  </body>' + "\n" +
+                         '</tt>';
+
+         var xml = xmlPrefix;
+         var currentCaption = '';
+         for (var i = 0; i < intervals.length; i++)
+            {
+            var startTime = UTIL.formatTime(intervals[i].getStartingRunningDurationInMillis() / 1000, true, true);
+            var endTime = UTIL.formatTime(intervals[i].getEndingRunningDurationInMillis() / 1000, true, true);
+            var startingFrame = intervals[i].getStartingFrame();
+
+            if (startingFrame['is-description-visible'])
+               {
+               currentCaption = startingFrame['description'];
+               }
+
+            xml += '      <p begin="' + startTime + '" end="' + endTime + '" style="normal">' + currentCaption + '</p>' + "\n";
+            }
+
+         xml += xmlSuffix;
+         UTIL.log("\n" + xml);
+         };
+
       this.loadFromJSON = function(json)
          {
          try
@@ -244,7 +280,7 @@ if (!Math.uuid)
                   }
                catch(e)
                   {
-                  UTIL.error(e.name + " while calling snaplapse '"+eventType+"' event listener: " + e.message, e);
+                  UTIL.error(e.name + " while calling snaplapse '" + eventType + "' event listener: " + e.message, e);
                   }
                }
             }
@@ -347,6 +383,20 @@ if (!Math.uuid)
          return keyframesClone;
          };
 
+      var buildKeyframeIntervals = function(startingKeyframeIndex)
+         {
+         UTIL.log("buildKeyframeIntervals()");
+         var intervals = [];
+         for (var k = startingKeyframeIndex + 1; k < keyframes.length; k++)
+            {
+            var previousKeyframeInterval = (intervals.length > 0) ? intervals[intervals.length - 1] : null;
+            var keyframeInterval = new org.gigapan.timelapse.KeyframeInterval(keyframes[k - 1], keyframes[k], previousKeyframeInterval);
+            intervals[intervals.length] = keyframeInterval;
+            UTIL.log("   buildKeyframeIntervals(): created keyframe interval (" + (intervals.length - 1) + "): between time [" + keyframes[k - 1]['time'] + "] and [" + keyframes[k]['time'] + "]: " + keyframeInterval);
+            }
+         return intervals;
+         };
+
       this.play = function(startingKeyframeId)
          {
          UTIL.log("play(): playing time warp!");
@@ -358,7 +408,7 @@ if (!Math.uuid)
 
                // find the starting keyframe
                var startingKeyframeIndex = 0;
-               for (var j=0; j<keyframes.length; j++)
+               for (var j = 0; j < keyframes.length; j++)
                   {
                   if (keyframes[j]['id'] == startingKeyframeId)
                      {
@@ -368,14 +418,7 @@ if (!Math.uuid)
                   }
 
                // compute the keyframe intervals
-               keyframeIntervals = [];
-               for (var k = startingKeyframeIndex+1; k < keyframes.length; k++)
-                  {
-                  var previousKeyframeInterval = (keyframeIntervals.length > 0) ? keyframeIntervals[keyframeIntervals.length - 1] : null;
-                  var keyframeInterval = new org.gigapan.timelapse.KeyframeInterval(keyframes[k - 1], keyframes[k], previousKeyframeInterval);
-                  keyframeIntervals[keyframeIntervals.length] = keyframeInterval;
-                  UTIL.log("   play(): created keyframe interval (" + (keyframeIntervals.length - 1) + "): between time [" + keyframes[k - 1]['time'] + "] and [" + keyframes[k]['time'] + "]: " + keyframeInterval);
-                  }
+               keyframeIntervals = buildKeyframeIntervals(startingKeyframeIndex);
 
                // make sure playback is stopped
                timelapse.pause();
@@ -597,7 +640,7 @@ if (!Math.uuid)
             var elapsedVideoTimePercentage = Math.abs(videoTime - currentKeyframeInterval.getStartingTime()) / currentKeyframeInterval.getActualDuration();
             var oldWarpStartingTime = warpStartingTime;
             warpStartingTime = new Date().getTime() - (currentKeyframeInterval.getDesiredDurationInMillis() * elapsedVideoTimePercentage + currentKeyframeInterval.getStartingRunningDurationInMillis());
-            UTIL.log("updateWarpStartingTime(): adjusted warp starting time by [" + (warpStartingTime - oldWarpStartingTime) + "] millis (videoTime="+videoTime+")");
+            UTIL.log("updateWarpStartingTime(): adjusted warp starting time by [" + (warpStartingTime - oldWarpStartingTime) + "] millis (videoTime=" + videoTime + ")");
             }
          };
 
