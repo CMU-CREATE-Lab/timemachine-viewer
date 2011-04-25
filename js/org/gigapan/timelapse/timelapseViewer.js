@@ -498,7 +498,7 @@ function loadGigapanJSON()
    var gigapanJSONHostUrlPrefix = (typeof gigapanDatasetsJSON['dataset-json-host-url-prefix'] != 'undefined') ? gigapanDatasetsJSON['dataset-json-host-url-prefix'] + datasetId + '/' : tileHostUrlPrefix;
    var jsonUrl = gigapanJSONHostUrlPrefix + 'r.json';
 
-   org.gigapan.Util.log("****************** Attempting to fetch gigapan JSON from URL [" + jsonUrl + "]...");
+   org.gigapan.Util.log("Attempting to fetch gigapan JSON from URL [" + jsonUrl + "]...");
    $.ajax({
              dataType:'json',
              url: jsonUrl,
