@@ -479,7 +479,7 @@ function getTileHostUrlPrefix()
    {
    // get the tile host URL prefixes from the JSON, or use a default if undefined
    var prefixes = ["http://g7.gigapan.org/alpha/timelapses/"];
-   if (typeof gigapanDatasetsJSON['tile-host-url-prefixes'] != undefined &&
+   if (typeof gigapanDatasetsJSON['tile-host-url-prefixes'] != 'undefined' &&
        $.isArray(gigapanDatasetsJSON['tile-host-url-prefixes']) &&
        gigapanDatasetsJSON['tile-host-url-prefixes'].length > 0)
       {
@@ -495,9 +495,10 @@ function loadGigapanJSON()
    // fetch the datasetId and then construct the URL used to get the JSON for the desired dataset
    var datasetId = gigapanDatasetsJSON['datasets'][datasetIndex]['id'];
    var tileHostUrlPrefix = getTileHostUrlPrefix() + datasetId + '/';
-   var jsonUrl = tileHostUrlPrefix + 'r.json';
+   var gigapanJSONHostUrlPrefix = (typeof gigapanDatasetsJSON['dataset-json-host-url-prefix'] != 'undefined') ? gigapanDatasetsJSON['dataset-json-host-url-prefix'] + datasetId + '/' : tileHostUrlPrefix;
+   var jsonUrl = gigapanJSONHostUrlPrefix + 'r.json';
 
-   org.gigapan.Util.log("Attempting to fetch gigapan JSON from URL [" + jsonUrl + "]...");
+   org.gigapan.Util.log("****************** Attempting to fetch gigapan JSON from URL [" + jsonUrl + "]...");
    $.ajax({
              dataType:'json',
              url: jsonUrl,
