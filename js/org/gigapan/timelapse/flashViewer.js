@@ -10,8 +10,8 @@ function initFlashViewer() {
 
    jwplayer("container").setup({
       flashplayer: "../flash/player.swf",
-      height: 288,
-      width: 512,
+      height: 512,
+      width: 288,
       skin: '../flash/beelden.zip',
       allowscriptaccess: "always",
       autostart: "true",

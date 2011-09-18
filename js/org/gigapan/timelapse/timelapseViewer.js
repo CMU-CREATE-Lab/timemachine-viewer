@@ -4,17 +4,13 @@ var gigapanId;
 var datasetIndex;
 var gigapanDatasetsJSON;
 var browserSupported;
-
-// Test whether this is being served from timelapse.gigapan.org.  If so, then fetch the JSON from there too.
-// If not, then assume it's being served from localhost and fetch the JSON from the local machine (since we're
-// not using JSONP on timelapse.gigapan.org (but we probably should!)).
-var urlMatchPattern = /^http:\/\/timelapse.gigapan.org\//;
-var isRemoteUrl = window.location.href.match(urlMatchPattern) != null;
-
 var timelapseDurationInSeconds = 0.0;
 var timeStepInSecs = 0.0;
 var timelapseCurrentTimeInSeconds = 0.0;
 var timelapse = null;
+var playerSize = 1;
+var playerLayer = 0;
+var hasLayers = false;
 
 org.gigapan.timelapse.VideosetStats.isEnabled = false;
 
@@ -116,6 +112,7 @@ function setupUIHandlers() {
    var intervalId;
 
    $("li#sizeoptions").hide();
+   $("li#layerOptions").hide();
    $("span#indicator").hide();
 
    $("#subbutton").hide();
@@ -125,16 +122,29 @@ function setupUIHandlers() {
       $("li#sizeoptions").fadeIn(100);
    });
 
+   $("a#layer").click(function() {
+      $("li#layerOptions").fadeIn(100);
+   });
+
    $("li#sizeoptions a").click(function() {
    	 $("li#sizeoptions").hide();
    	 $("li#sizeoptions a").removeClass('current');
    	 $(this).addClass('current');
    });
 
+   $("li#layerOptions a").click(function() {
+   	 $("li#layerOptions").hide();
+   	 $("li#layerOptions a").removeClass('current');
+   	 $(this).addClass('current');
+   });
+   
    $(document).click(function(event) {
       if ($(event.target).closest('a#size').get(0) == null) {
 			   $('li#sizeoptions').hide();
 	    }
+      if ($(event.target).closest('a#layer').get(0) == null) {
+			   $('li#layerOptions').hide();
+	    }	    
    });
 
    $("#help").toggle(function () {
@@ -338,16 +348,37 @@ function handlePluginVideoTagOverride() {
    }
 }
 
-function switchDataset(index)
+function switchSize(index)
    {
-   org.gigapan.Util.log("switchDataset("+index+")");
-   validateAndSetDatasetIndex(index);
+   org.gigapan.Util.log("switchSize("+index+")");
+   playerSize = index;
+   var newIndex = playerLayer * 2 + playerSize;
+   validateAndSetDatasetIndex(newIndex);
    loadGigapanJSON();
 
    if (index == 0) {
       $("#playerSizeText").text('Small');
    } else if (index == 1) {
       $("#playerSizeText").text('Large');     
+   }
+}
+
+function switchLayer(index)
+   {
+   org.gigapan.Util.log("switchLayer("+index+")");
+   playerLayer = index;
+   var newIndex = playerLayer * 2 + playerSize;
+   validateAndSetDatasetIndex(newIndex);
+   loadGigapanJSON();
+
+   if (index == 0) {
+      $("#playerLayerText").text('0304 (C)');
+   } else if (index == 1) {
+      $("#playerLayerText").text('0304 (G)');     
+   } else if (index == 2) {
+      $("#playerLayerText").text('0193 (C)');
+   } else if (index == 3) {
+      $("#playerLayerText").text('0171 (C)');                  
    }
 }
 
@@ -369,6 +400,7 @@ function setViewportSize(newWidth, newHeight)
    var extraWidth = 0;
    //large video
    if (newWidth == 816) {
+      $("#layerDiv").css( {"top": "620px", "left": "766px"} );
       $("#content").css( {"padding": "0px 0px 0px 305px"} );
       $("#filler").css( {"top": "442px"} ); 
       $("#controls").css( {"top": "450px"} );
@@ -377,6 +409,7 @@ function setViewportSize(newWidth, newHeight)
       extraHeight = 18;
       extraWidth = 3;
    } else {
+      $("#layerDiv").css( {"top": "460px", "left": "462px"} );
       $("#timelineSlider").css( {"top": "auto"} );
       $("#filler").css( {"top": "auto"} );
       $("#controls").css( {"top": "auto"} );
@@ -544,13 +577,15 @@ $(document).ready(function()
                      org.gigapan.Util.log("timelapseMetadata=["+timelapseMetadata+"]");
                      timelapseMetadataJSON = JSON.parse($("#timelapse_metadata").text());
                      gigapanId = timelapseMetadataJSON['id'] || "brassica-15m-halfsize-g10-bf0-l15";
-                     datasetIndex = timelapseMetadataJSON['dataset'] || "0";
-                     org.gigapan.Util.log("id=["+gigapanId+"]");
+                     datasetIndex = timelapseMetadataJSON['dataset'] || "1";
+                     hasLayers = timelapseMetadataJSON['has_layers'] || false;
+		     if (hasLayers) $("#layerDiv").show();
+		     org.gigapan.Util.log("id=["+gigapanId+"]");
                      org.gigapan.Util.log("datasetIndex=["+datasetIndex+"]");
                      gigapanDatasetsJSON = null;
 
-                     var jsonUrl = (isRemoteUrl ? "../alpha/timelapses/" : "../timelapses/") + gigapanId + '.json';
-
+                     var jsonUrl = "../timelapses/" + gigapanId + '.json'; 
+                     
                      org.gigapan.Util.log("Attempting to fetch gigapan datasets JSON from URL [" + jsonUrl + "]...");
                      $.ajax({
                                dataType:'json',

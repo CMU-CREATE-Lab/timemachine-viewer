@@ -24,10 +24,12 @@
 
 <div id="browser_not_supported">
    <div class="warning">We're sorry, but it looks like your browser isn't currently supported by our viewer.
-      At this time, only Safari 5.0+ and Chrome 7.0+ are known to be compatible. <br/><br/>
+      At this time, only <a href="http://www.apple.com/safari/">Safari 5.0+</a> and 
+      <a href="http://www.google.com/chrome/intl/en/make/download.html">Chrome 7.0+</a> are known to be fully
+      compatible.<br/><br/>
 
-      Until the other browsers catch up, please enjoy a few videos of what GigaPan Time Machine has to offer.
-      Click one of the time warp links on the right to watch one of these video tours.
+      While we work with other browser manufacturers to improve the situation, please enjoy a few videos of what
+      GigaPan Time Machine has to offer. Click one of the time warp links on the right to watch one of these video tours.
    </div>
 </div>
 
@@ -69,13 +71,12 @@
          <li id="sizeoptions">
             <ul>
                <li>Player Size</li>
-               <li><a id="small" class="current" href="#" onclick="switchDataset(0); return false;">Small</a></li>
-               <li><a id="large" href="#" onclick="switchDataset(1); return false;">Large</a></li>
-
+               <li><a id="large" class="current" href="#" onclick="switchSize(1); return false;">Large</a></li>
+               <li><a id="small" href="#" onclick="switchSize(0); return false;">Small</a></li>
             </ul>
          </li>
          <li><a href="#" title="Player size" id="size" onclick="return false;">
-            <div id="playerSizeText">Small</div>
+            <div id="playerSizeText">Large</div>
          </a></li>
          <li><a href="#" title="Instructions" id="help" class="enabled" onclick="return false;">
             <div id="helpText">Help</div>
@@ -97,6 +98,24 @@
       <!-- Hides during snaplapse -->
 
    </div>
+
+   <ul id="layerDiv" style="position: fixed; display: none;">
+     <li id="layerOptions">
+       <ul>
+         <li>Layer</li>
+         <li><a id="0304-color" class="current" href="#" onclick="switchLayer(0); return false;">0304 (C)</a></li>
+         <li><a id="0304-grayscale" href="#" onclick="switchLayer(1); return false;">0304 (G)</a></li>
+         <li><a id="0193-color" href="#" onclick="switchLayer(2); return false;">0193 (C)</a></li>
+         <li><a id="0171-color" href="#" onclick="switchLayer(3); return false;">0171 (C)</a></li>
+       </ul> 
+     </li>
+     <li>
+       <a href="#" title="Layer" id="layer" onclick="return false;">
+         <div id="playerLayerText">0304 (C)</div>
+       </a>
+     </li>
+   </ul>
+
 </div>
 <span id="snaplapse-annotation-description"><p></p></span>
 
