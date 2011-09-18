@@ -111,6 +111,25 @@ ul#sidebuttons li a{
 	text-decoration:none;
 	color:#111;
 	font-size:11px;}
+
+ul#layerDiv{
+	margin:0px;
+	padding:0px;
+	display:block;
+	position:absolute;
+	top:8px;
+	right:10px;}
+	
+ul#layerDiv li{
+	margin:0px 0px 0px 3px;
+	padding:0px;
+	display:inline;
+	}
+	
+ul#layerDiv li a{
+	text-decoration:none;
+	color:#111;
+	font-size:11px;}
 	
 li#sizeoptions{
 	display:block;
@@ -149,7 +168,7 @@ li#sizeoptions ul li a.current{
 li#sizeoptions ul li a:hover{
 	text-decoration:underline;}
 
-a#size{
+a#size {
 	display:inline-block;
 	padding:12px 0px 0px 0px;
 	margin:0px;
@@ -162,10 +181,66 @@ a#size{
 	}
 
 a#size:hover{background-image:url(../images/buttons/size_hover.png);}
-
 a#size:active{background-image:url(../images/buttons/size_down.png);}
 
+li#layerOptions{
+	display:block;
+	width:79px;
+	background:#fff;
+	border:1px solid #666;
+	position:absolute;
+	bottom:0px;
+	z-index:5;}
+	
+li#layerOptions ul{
+	display:block;
+	width:79px;
+	margin:0px !important;
+	padding:7px 0px 10px 7px !important;
+}
+	
+li#layerOptions ul li{
+	font-size:11px;
+	text-align:left;
+	display:block;
+	color:#999;}
+	
+li#layerOptions ul li a{
+	padding:7px;
+	display:block;
+	height:5px;
+	padding:6px 0px 7px 13px;
+}
+	
+li#layerOptions ul li a.current{
+	background-repeat:no-repeat;
+	background-position:bottom left;
+	background-image:url(../images/check.gif);}
+	
+li#layerOptions ul li a:hover{
+	text-decoration:underline;}
+
+a#layer {
+	display:inline-block;
+	padding:12px 0px 0px 0px;
+	margin:0px;
+	width:81px;
+	height:25px;
+	text-indent:7px;
+	background-repeat:no-repeat;
+	background-position:top left;
+	background-image:url(../images/buttons/size.png);
+	}
+
+a#layer:hover{background-image:url(../images/buttons/size_hover.png);}
+a#layer:active{background-image:url(../images/buttons/size_down.png);}
+
 #playerSizeText {
+  position: relative;
+  top: -3px;
+}
+
+#playerLayerText {
   position: relative;
   top: -3px;
 }
