@@ -1,35 +1,120 @@
+<!--[if IE]>
 <style type="text/css">
-   h1#firstHeading {display:none !important;}
-   #credits{display:block !important;}
+   li#sdo {top: 16px !important;}
 </style>
+<![endif]-->
+<style type="text/css">
+  @-moz-document url-prefix() { li#sdo { top: 16px !important; } }
+  h1#firstHeading {display:none !important;}
+  #credits{display:block !important;}
+ul#browsing{
+	display:block;
+	list-style:none;
+	margin:0px;
+	padding:0px;}
+ul#browsing li{
+	display:inline-block;
+	width:200px;
+	height:216px;
+	margin:0px 20px 20px 0px;
+	position:relative;
+	top:0px;
+	}
+ul#browsing li.text{
+	float:left;
+	margin: 0px 33px 0px -9px;
+	}
 
+ul#browsing li p{
+	margin:10px 0px 0px 10px;
+	padding:0px;}
+
+ul#browsing li a p{
+	margin:0px;
+	padding:0px;
+	left:0px;}
+
+ul#browsing li a{
+	margin:0px;
+	padding:0px;
+	text-decoration:none;
+	color:#222;
+	position:relative;}
+
+ul#browsing li a img{
+	/*margin:0px 0px 4px -8px;*/
+	padding:0px;
+
+	border:8px solid transparent;
+	}
+
+ul#browsing li a:hover{text-decoration:underline;}
+ul#browsing li a:hover img{
+	border:8px solid #CCC;}
+
+ul#browsing li a p{
+	margin:0px;
+	padding:6px 0px 0px 10px;
+	text-decoration:none;
+	color:#222;}
+ul#browsing p {
+  line-height:15px !important;
+}
+</style>
 <h2 style="max-width: none !important">Explore simultaneously in space and time with GigaPan Time Machine</h2>
+<p style="line-height: 21px; font-size: 14px; width: 1024px">Each Time Machine on this page captures a process in extreme detail over space and time, with billions of pixels of explorable resolution.  Choose a time machine and zoom into the image while traveling backwards or forwards through time.  Select a Time Warp and the time machine's authors will take you on a guided space-time tour with text annotations explaining what you are viewing.  You can even learn how to create your own Time Machines and Warps.</p>
 <ul id="browsing">
-
-
-    <li class="text"><div id="news-box"><div class="news-head"><p class="news-title">News</p></div><div class="news-content"><div class="news-entry"><p class="news-itemtitle">Plant Growth & Early Universe Updated</p><p class="news-itemdate">07/15/2011</p><p class="news-itemdesc">The Plant Growth dataset has been updated. In addition to 6 more days of footage, the time machine is also now rendered at full resolution, allowing for an increase in zoom detail. A few visual defects have also been corrected. <br/><br/> The Early Universe dataset has also been updated. It has been renamed to Evolution of the Universe and includes several hundred additional frames.</p><div class="news-clear"></div></div></div></div></li>
-
-    <li class="text"><p style="line-height: 21px; font-size: 14px;">Each Time Machine on this page captures a process in extreme detail over space and time, with billions of pixels of explorable resolution.  Choose a time machine and zoom into the image while traveling backwards or forwards through time.  Select a Time Warp and the time machine's authors will take you on a guided space-time tour with text annotations explaining what you are viewing.  You can even learn how to create your own Time Machines and Warps.</p></li>
-
+    <li id="sdo" style="top: 31px;">
+      <a href="SDO"><img src="../skins/monobook/sdo_tn.jpg" width="155" height="170" />
+      <p><img src="../skins/monobook/new_icon.gif" width="30" height="9" style="border:0px !important; padding: 0px 5px 0px 0px !important; margin: 0px 0px 4px 0px !important" />Solar Dynamics Observatory</p></a>
+    </li>
     <li>
-      <a href="Plant_Growth"><img src="../skins/monobook/plantgrowth.jpg" width="310" height="170" />
+      <a href="Blue_Marble"><img src="../skins/monobook/bluemarble_tn.jpg" width="155" height="170" />
+      <p><img src="../skins/monobook/new_icon.gif" width="30" height="9" style="border:0px !important; padding: 0px 5px 0px 0px !important; margin: 0px 0px 4px 0px !important" />Blue Marble</p></a>
+    </li>
+    <li>
+      <a href="Ocean_Chlorophyll"><img src="../skins/monobook/oceanchlorophyll_tn.jpg" width="155" height="170" />
+      <p><img src="../skins/monobook/new_icon.gif" width="30" height="9" style="border:0px !important; padding: 0px 5px 0px 0px !important; margin: 0px 0px 4px 0px !important" />Ocean Chlorophyll</p></a>
+    </li>
+    <li>
+      <a href="Plant_Growth"><img src="../skins/monobook/plantgrowth_tn.jpg" width="155" height="170" />
       <p>Plant Growth</p></a>
     </li>
     <li>
-      <a href="CMU_Carnival_2010"><img src="../skins/monobook/cmucarnival.jpg" width="310" height="170" />
-      <p>CMU 2010 Carnival</p></a>
+      <a href="Bees"><img src="../skins/monobook/bees_tn.jpg" width="155" height="170" />
+      <p><img src="../skins/monobook/new_icon.gif" width="30" height="9" style="border:0px !important; padding: 0px 5px 0px 0px !important; margin: 0px 0px 4px 0px !important" />Bees</p></a>
     </li>
     <li>
-      <a href="Evolution_of_the_Universe"><img src="../skins/monobook/earlyuniverse.jpg" width="310" height="170" />
-      <p>Evolution of the Universe</p></a>
+      <a href="Early_Universe"><img src="../skins/monobook/earlyuniverse_tn.jpg" width="155" height="170" />
+      <p>Early Universe</p></a>
     </li>
     <li>
-      <a href="Kraus_Winter_Garden"><img src="../skins/monobook/krausgarden.jpg" width="310" height="170" />
+      <a href="Paddle_At_The_Point"><img src="../skins/monobook/paddleatthepoint_tn.jpg" width="155" height="170" />
+      <p><img src="../skins/monobook/new_icon.gif" width="30" height="9" style="border:0px !important; padding: 0px 5px 0px 0px !important; margin: 0px 0px 4px 0px !important" />Paddle at the Point</p></a>
+    </li>
+    <li>
+      <a href="CMU_Carnival_2010"><img src="../skins/monobook/cmucarnival_tn.jpg" width="155" height="170" />
+      <p>CMU Carnival 2010</p></a>
+    </li>
+    <li>
+      <a href="Burning_Man_2011"><img src="../skins/monobook/burningman_tn.jpg" width="155" height="170" />
+      <p><img src="../skins/monobook/new_icon.gif" width="30" height="9" style="border:0px !important; padding: 0px 5px 0px 0px !important; margin: 0px 0px 4px 0px !important" />Burning Man 2011</p></a>
+    </li>
+    <li>
+      <a href="Arizona_Grasslands"><img src="../skins/monobook/arizonagrasslands_tn.jpg" width="155" height="170" />
+      <p><img src="../skins/monobook/new_icon.gif" width="30" height="9" style="border:0px !important; padding: 0px 5px 0px 0px !important; margin: 0px 0px 4px 0px !important" />Arizona Grasslands</p></a>
+    </li>
+    <li>
+      <a href="Visible_Human_Female"><img src="../skins/monobook/visiblehumanfemale_tn.jpg" width="155" height="170" />
+      <p><img src="../skins/monobook/updated_icon.gif" width="30" height="9" style="border:0px !important; padding: 0px 5px 0px 0px !important; margin: 0px 0px 4px 0px !important" />Visible Human Female</p></a>
+    </li>
+    <li>
+      <a href="Weather_Radar"><img src="../skins/monobook/weatherradar_tn.jpg" width="155" height="170" />
+      <p><img src="../skins/monobook/new_icon.gif" width="30" height="9" style="border:0px !important; padding: 0px 5px 0px 0px !important; margin: 0px 0px 4px 0px !important" />Weather Radar</p></a>
+    </li>
+    <li>
+      <a href="Kraus_Winter_Garden"><img src="../skins/monobook/krausgarden_tn.jpg" width="155" height="170" />
       <p>Kraus Winter Garden</p></a>
-    </li>
-    <li>
-      <a href="Visible_Human_Female"><img src="../skins/monobook/visiblehumanfemale.jpg" width="310" height="170" />
-      <p>Visible Human Female</p></a>
     </li>
 </ul>
 <br/>
