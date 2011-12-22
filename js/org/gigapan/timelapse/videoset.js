@@ -184,6 +184,8 @@ if (!org.gigapan.Util)
                {
                   var currentTime = _getCurrentTime();
                   leader = newLeader - 0;  // subtract 0 to force this to be a number
+                  // Yuck.  This adds one frame to the leader to prevent sometimes showing the leader at the beginning of the video.  Don't know why this is a problem.  Happens more with Safari
+                  //if (leader > 0) leader += 1.0/fps;
                   _seek(currentTime);
                };
 
@@ -277,7 +279,6 @@ if (!org.gigapan.Util)
                   video.setAttribute('preload', true);
                   this.repositionVideo(video, geometry);
                   video.defaultPlaybackRate = video.playbackRate = playbackRate;
-                  video.load();
                   video.style.display = 'inline';
                   video.style.position = 'absolute';
                   activeVideos[video.id] = video;
@@ -287,7 +288,23 @@ if (!org.gigapan.Util)
                   video.bwLastTime = UTIL.getCurrentTimeInSecs();
                   video.bwLastBuf = 0;
                   video.bandwidth = 0;
-
+		  video.load();
+                  var check;
+                  var timeout = 2000;
+                  check = function() {
+                          UTIL.log("check load for video("+video.id+")");
+                          if (video.readyState == 0 && activeVideos[video.id] == video) {
+                              // Ouch.  A brand new bug in Chrome 15 (apparently) causes videos to never load
+                              // if they've been loaded recently and are being loaded again now.
+                              // It's pretty weird, but this disgusting code seems to work around the problem.
+                              UTIL.log("we're still active but have ready state zero;  calling load again");
+                              video.setAttribute('src', src+"?time="+(new Date().getTime()));
+                              video.load();
+                              timeout *= 2;
+                              setTimeout(check, timeout);
+                          }
+                      }
+                  setTimeout(check, timeout);
                   publishVideoEvent(video.id, 'video-added', currentTime);
 
                   updateStallState();
@@ -647,7 +664,7 @@ if (!org.gigapan.Util)
 
             if (!video.active)
                {
-               //UTIL.log("video(" + video.id + ") videoLoadedMetadata after deactivation!");
+               UTIL.log("video(" + video.id + ") videoLoadedMetadata after deactivation!");
                return;
                }
 
@@ -927,6 +944,10 @@ if (!org.gigapan.Util)
                   }
                }
             };
+
+	 this.debug = function() {
+  	  debugger;
+	 };
 
          var updateVideoBandwidth = function(video)
                {

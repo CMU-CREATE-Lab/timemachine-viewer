@@ -83,6 +83,8 @@ jQuery.fn.selectToUISlider = function(settings){
 		max: selectOptions.length-1,
 		range: selects.length > 1,//multiple select elements = true
 		slide: function(e, ui) {//slide function
+				if (snaplapse && snaplapse.isPlaying()) return false;
+
 				var thisHandle = jQuery(ui.handle);
 				
 				//handle feedback 

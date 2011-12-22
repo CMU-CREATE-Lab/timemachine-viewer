@@ -575,9 +575,19 @@ if (!Math.uuid)
 
          if (currentKeyframeInterval != null)
             {
-            timelapse.setPlaybackRate(currentKeyframeInterval.getPlaybackRate());
+            var rate = currentKeyframeInterval.getPlaybackRate();
+            timelapse.setPlaybackRate(rate);                                     
+ 
+            if (rate < -0.55) rate = -1 
+            else if (rate < 0.0) rate = -.5 
+            else if (rate < 0.55) rate = .5 
+            else rate = 1          
+ 
+            $("#speed").val(rate.toString());                                      
+            $("#speed").trigger('click');
+ 
             var keyframeStartingTime = currentKeyframeInterval.getStartingTime();
-            timelapse.seek(keyframeStartingTime);              // make sure we're on track
+            timelapse.seek(keyframeStartingTime);              // make sure we're on track 
             updateWarpStartingTime(keyframeStartingTime);      // update the warp starting time since we just corrected with a seek
             }
 

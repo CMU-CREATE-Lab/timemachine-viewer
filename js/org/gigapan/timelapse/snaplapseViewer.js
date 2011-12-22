@@ -247,7 +247,8 @@ function newSnaplapse(json)
 
                                  $("#timelineSlider")['slider']("option", "disabled", true);
                                  $("#slider-vertical")['slider']("option", "disabled", true);
-                                 $('#playBackSpeedSlider').hide();
+                                 //$('#playBackSpeedSlider').hide();
+                                 $("#handle_speed").css("opacity", "0.35");
 
                                  $('#help').attr("class", "disabled");
                                  $("#instructions").fadeOut(50);
@@ -288,7 +289,8 @@ function newSnaplapse(json)
 
                                  $("#timelineSlider")['slider']("option", "disabled", false);
                                  $("#slider-vertical")['slider']("option", "disabled", false);
-                                 $('#playBackSpeedSlider').show();
+                                 //$('#playBackSpeedSlider').show();
+                                 $("#handle_speed").css("opacity", "1.0");
                                  $('#mainbutton.stop').hide();
                                  $('#mainbutton.pause').attr("class", "play");
                                  $('#mainbutton.play').attr("title", "Play");

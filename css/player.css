@@ -111,7 +111,7 @@ ul#sidebuttons li a{
 	text-decoration:none;
 	color:#111;
 	font-size:11px;}
-
+	
 ul#layerDiv{
 	margin:0px;
 	padding:0px;
@@ -181,6 +181,7 @@ a#size {
 	}
 
 a#size:hover{background-image:url(../images/buttons/size_hover.png);}
+
 a#size:active{background-image:url(../images/buttons/size_down.png);}
 
 li#layerOptions{
@@ -226,14 +227,19 @@ a#layer {
 	margin:0px;
 	width:81px;
 	height:25px;
-	text-indent:7px;
+	text-indent:13px;
 	background-repeat:no-repeat;
 	background-position:top left;
 	background-image:url(../images/buttons/size.png);
 	}
 
 a#layer:hover{background-image:url(../images/buttons/size_hover.png);}
+
 a#layer:active{background-image:url(../images/buttons/size_down.png);}
+
+
+
+
 
 #playerSizeText {
   position: relative;
@@ -270,17 +276,26 @@ a#help.on{
 	background:#333 !important;
 	color:#fff !important;}
 
-#time{
+#videoTime{
 	margin:0px;
 	padding:0px;
 	position:absolute;
 	right:162px;
-	bottom:21px;
+	bottom:25px;
 	font-size:13px;
-	color:#222;
-	
+	color:#222;	
 	}
-	
+
+#captureTime{
+        margin:0px;       
+        padding:0px;
+        position:absolute;
+        right:162px;
+        bottom:9px;  
+        font-size:13px;
+        color:#222;
+                       
+        }    
 #status{
 	margin:0px;
 	padding:0px;
@@ -657,3 +672,80 @@ span#snaplapse-annotation-description p{
 	width:190px;
 	margin-left:-10px;
 	}
+
+.carousel  {
+    padding: 10px 0 0 0;
+    margin: 0 0 20px 10px;
+    position: relative;     
+}
+    .layerSlider {
+        margin-left: 260px;
+	position: absolute;
+	top: 340px;
+    }
+
+    .carousel a.prev, .carousel a.next {
+        display: block;
+        float: left;
+        width: 30px;
+        height: 40px;
+        text-decoration: none;
+        background: url("../images/prev.jpg") left 15px no-repeat;
+    }
+      .carousel a.next {
+height: 50px;
+float: right;
+right: -25px !important;
+position: absolute;
+top: 2px;
+            background: url("../images/next.jpg") right 23px no-repeat;
+        }
+           .carousel a.next:hover {
+                background-image: url("../images/next.jpg");
+            }
+           .carousel a.prev:hover {
+                background-image: url("../images/prev.jpg");
+            }    
+           .carousel a:hover, .carousel a:active {
+                border: none;
+                outline: none;
+            }                 
+        .carousel ul {
+            margin: 0;
+        }
+       .carousel li img, 
+        .carousel li p {
+            background-color: #fff;
+            margin: 5px;
+	   width: 45px;
+	   width: 45px; 
+       }
+        
+        .jCarouselLite img {
+            cursor: pointer;
+        }
+
+#repeat {
+ width: 32px;
+ height: 32px;
+ display: block;
+ position: relative;
+ right: -53px;
+ bottom: 60px;
+}
+
+#repeat.active {
+  background-image: url("../images/repeat_active.png");
+  background-repeat:no-repeat;
+}
+
+#repeat.inactive {
+  background-image: url("../images/repeat_inactive.png");
+  background-repeat:no-repeat;
+}
+
+#repeat:hover{ 
+  background-image: url("../images/repeat_hover.png");
+  background-repeat:no-repeat;
+}
+

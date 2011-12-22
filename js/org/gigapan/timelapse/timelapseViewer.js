@@ -4,23 +4,38 @@ var gigapanId;
 var datasetIndex;
 var gigapanDatasetsJSON;
 var browserSupported;
+var playerLayer = 0;
+var playerSize = 1;
+var captureTimes = new Array();
+var hasLayers = false;
+
 var timelapseDurationInSeconds = 0.0;
 var timeStepInSecs = 0.0;
 var timelapseCurrentTimeInSeconds = 0.0;
 var timelapse = null;
-var playerSize = 1;
-var playerLayer = 0;
-var hasLayers = false;
+var timelapseCurrentCaptureTimeIndex = 0;
+var repeatVideo = false;
 
 org.gigapan.timelapse.VideosetStats.isEnabled = false;
 
 function createTimelineSlider()
    {
+
+	 if (hasLayers) load_layers();
+   
+	 if (gigapanDatasetsJSON['capture-times']) {
+	   captureTimes = gigapanDatasetsJSON['capture-times'];
+	 } else {
+	   for (i = 0; i < timelapse.getNumFrames(); i++)
+	   captureTimes.push("--")
+	 }
+
    timelapseDurationInSeconds = (timelapse.getNumFrames() -1 ) / timelapse.getFps();
    timeStepInSecs = 1 / timelapse.getFps();
    $("#currentTime").text(org.gigapan.Util.formatTime(timelapseCurrentTimeInSeconds,true));
    $("#totalTime").text(org.gigapan.Util.formatTime(timelapseDurationInSeconds,true));
-
+   $("#currentCaptureTime").text(captureTimes[timelapseCurrentCaptureTimeIndex]);
+	 
    $("#timelineSlider")['slider']({
                                      animate: true,
                                      value: 0,
@@ -30,8 +45,6 @@ function createTimelineSlider()
                                      step: timeStepInSecs,
                                      slide: function(e, ui)
                                         {
-                                        timelapseCurrentTimeInSeconds = ui.value;
-                                        $("#currentTime").text(org.gigapan.Util.formatTime(timelapseCurrentTimeInSeconds,true));
                                         timelapse.seek(ui.value);
                                         }
                                   });
@@ -61,9 +74,9 @@ function createPlaybackSpeedSlider()
 
 function setupTimelineSliderHandlers() {
    $('.ui-slider-handle').bind("mouseover", function() {
-      this.style.cursor = 'url("../timelapse/css/cursors/openhand.cur") 10 10, move';
+      this.style.cursor = 'url("../timelapse-20111213/css/cursors/openhand.cur") 10 10, move';
       $('.ui-slider-handle').bind("mouseup", function() {
-         this.style.cursor = 'url("../timelapse/css/cursors/openhand.cur") 10 10, move';
+         this.style.cursor = 'url("../timelapse-20111213/css/cursors/openhand.cur") 10 10, move';
       });
    });
 
@@ -72,15 +85,15 @@ function setupTimelineSliderHandlers() {
    });
 
    $('.ui-slider').bind("slide", function() {
-      this.style.cursor = 'url("../timelapse/css/cursors/closedhand.cur") 10 10, move';
+      this.style.cursor = 'url("../timelapse-20111213/css/cursors/closedhand.cur") 10 10, move';
       $('.ui-slider-handle').bind("mousemove", function() {
-         this.style.cursor = 'url("../timelapse/css/cursors/closedhand.cur") 10 10, move';
+         this.style.cursor = 'url("../timelapse-20111213/css/cursors/closedhand.cur") 10 10, move';
       });
    });
 
    $('.ui-slider').bind("slidestop", function() {
       $('.ui-slider-handle').bind("mousemove", function() {
-         this.style.cursor = 'url("../timelapse/css/cursors/openhand.cur") 10 10, move';
+         this.style.cursor = 'url("../timelapse-20111213/css/cursors/openhand.cur") 10 10, move';
       });
    });
 
@@ -111,8 +124,18 @@ function isCurrentTimeAtOrPastDuration()
 function setupUIHandlers() {
    var intervalId;
 
+	 if (hasLayers) {
+		 $(function() {
+			 $(".layerSlider .jCarouselLite").jCarouselLite({
+				 btnNext: ".layerSlider .next",
+				 btnPrev: ".layerSlider .prev",
+				 circular: true,
+				 visible: 3.5
+			 });
+		 });
+	 }
+	 
    $("li#sizeoptions").hide();
-   $("li#layerOptions").hide();
    $("span#indicator").hide();
 
    $("#subbutton").hide();
@@ -151,6 +174,7 @@ function setupUIHandlers() {
 		    if ($("#slider-vertical")['slider']("option", "disabled")) return;
 		    $('li#sizeoptions').hide(); //might be already opened
 		    $("#instructions").fadeIn(100);
+		    $("#repeat").addClass("disabled");
 		    $(this).addClass('on');
 		    if ($('#mainbutton').attr("class") == "pause") {
 				   timelapse.pause();
@@ -162,6 +186,7 @@ function setupUIHandlers() {
 	    },function (){
 			   if ($("#slider-vertical")['slider']("option", "disabled")) return;
 			   $("#instructions").fadeOut(50);
+			   $("#repeat").removeClass("disabled");
 			   $(this).removeClass('on');
 			   if ($('#mainbutton').attr("class") == "pause_disabled") {
 				    timelapse.play();
@@ -190,6 +215,13 @@ function setupUIHandlers() {
          }
       }
       return false;
+   });
+
+   $('#repeat').bind("click", function() {
+      if ($(this).hasClass("disabled") || $("#slider-vertical")['slider']("option", "disabled") == true) return;
+      repeatVideo = !repeatVideo
+      if (repeatVideo) $(this).attr("class", "repeat active");
+      else $(this).attr("class", "inactive");
    });
 
    $("#home").mousemove(function() {
@@ -264,7 +296,6 @@ function setupUIHandlers() {
    }).mouseout(function() {
       clearInterval(intervalId);
    }).mousemove(function() {
-      //$(this).attr("title", "Zoom In");
       this.style.cursor = 'pointer';
    });
 
@@ -283,7 +314,7 @@ function setupUIHandlers() {
    });
 
 	$('#timelapse').bind("mouseover", function() {
-      this.style.cursor = 'url("../timelapse/css/cursors/openhand.cur") 10 10, move';
+      this.style.cursor = 'url("../timelapse-20111213/css/cursors/openhand.cur") 10 10, move';
 	});
 
   $('#handle_speed').bind("mouseup", function() {
@@ -298,17 +329,13 @@ function setupUIHandlers() {
 
 function zoomIn() {
    var val = Math.min($("#slider-vertical")['slider']("option", "value") + .01, 1);
-   //alert($("#slider-vertical")['slider']("option", "value"));
    $("#slider-vertical")['slider']("option", "value", val);
-   //alert($("#slider-vertical")['slider']("option", "value"));
    timelapse.setScaleFromSlider(val);
 }
 
 function zoomOut() {
    var val = Math.max($("#slider-vertical")['slider']("option", "value") - .01, 0);
-   //alert($("#slider-vertical")['slider']("option", "value"));
    $("#slider-vertical")['slider']("option", "value", val);
-   //alert($("#slider-vertical")['slider']("option", "value"));
    timelapse.setScaleFromSlider(val);
 }
 
@@ -368,18 +395,9 @@ function switchLayer(index)
    org.gigapan.Util.log("switchLayer("+index+")");
    playerLayer = index;
    var newIndex = playerLayer * 2 + playerSize;
+   org.gigapan.Util.log("dataSetIndex: " + newIndex);
    validateAndSetDatasetIndex(newIndex);
    loadGigapanJSON();
-
-   if (index == 0) {
-      $("#playerLayerText").text('0304 (C)');
-   } else if (index == 1) {
-      $("#playerLayerText").text('0304 (G)');     
-   } else if (index == 2) {
-      $("#playerLayerText").text('0193 (C)');
-   } else if (index == 3) {
-      $("#playerLayerText").text('0171 (C)');                  
-   }
 }
 
 function setViewportSize(newWidth, newHeight)
@@ -400,7 +418,7 @@ function setViewportSize(newWidth, newHeight)
    var extraWidth = 0;
    //large video
    if (newWidth == 816) {
-      $("#layerDiv").css( {"top": "620px", "left": "766px"} );
+      $(".layerSlider").css( {"top": "500px", "right": "-275px"} );
       $("#content").css( {"padding": "0px 0px 0px 305px"} );
       $("#filler").css( {"top": "442px"} ); 
       $("#controls").css( {"top": "450px"} );
@@ -409,7 +427,7 @@ function setViewportSize(newWidth, newHeight)
       extraHeight = 18;
       extraWidth = 3;
    } else {
-      $("#layerDiv").css( {"top": "460px", "left": "462px"} );
+      $(".layerSlider").css( {"top": "340px", "right": "30px"} );
       $("#timelineSlider").css( {"top": "auto"} );
       $("#filler").css( {"top": "auto"} );
       $("#controls").css( {"top": "auto"} );
@@ -445,19 +463,32 @@ function loadTimelapse(gigapanUrl, gigapanJSON)
       timelapse.addTimeChangeListener(function(t)
                                          {
                                          timelapseCurrentTimeInSeconds = t;
+                                         timelapseCurrentCaptureTimeIndex = Math.floor(t * timelapse.getFps());
+
                                          if (timelapseCurrentTimeInSeconds.toFixed(3) < 0)
                                             {
                                             timelapseCurrentTimeInSeconds = 0;
+                                            timelapse.pause();
                                             $('#mainbutton').attr("class", "play");
                                             $('#mainbutton').attr("title", "Play");
                                             }
                                          if (isCurrentTimeAtOrPastDuration())
                                             {
                                             timelapseCurrentTimeInSeconds = timelapseDurationInSeconds;
-                                            $('#mainbutton').attr("class", "play");
-                                            $('#mainbutton').attr("title", "Play");
+
+				            if (snaplapse != null && snaplapse.isPlaying()) return;
+                                            
+					    if (repeatVideo) {
+						timelapse.seek(0);
+                                            } else {
+                                              timelapse.pause();
+                                              $('#mainbutton').attr("class", "play");
+                                              $('#mainbutton').attr("title", "Play");
+                                            }
+                                            
                                             }
                                          $("#currentTime").text(org.gigapan.Util.formatTime(timelapseCurrentTimeInSeconds,true));
+                                         $("#currentCaptureTime").text(captureTimes[timelapseCurrentCaptureTimeIndex]);
                                          $("#timelineSlider")['slider']("option", "value", timelapseCurrentTimeInSeconds);
                                          });
 
@@ -523,6 +554,13 @@ function getTileHostUrlPrefix()
    return prefixes[Math.floor(Math.random() * prefixes.length)];
    }
 
+function load_layers() {
+   var numLayers = gigapanDatasetsJSON['layers'].length
+   for (i = 0; i < numLayers; i++) {
+      $("#layerChoices").append("<li><img src=\""+gigapanDatasetsJSON['layers'][i]['tn-path'] +"\" "+"alt='layer' onclick='switchLayer("+i+"); return false;' width='45' height='45' ><br/><span style='font-size:small; text-align:center; display:block; margin: -5px 0px 0px 0px !important;'>"+gigapanDatasetsJSON['layers'][i]['description']+"</span></li>");
+   }
+}
+
 function loadGigapanJSON()
    {
    // fetch the datasetId and then construct the URL used to get the JSON for the desired dataset
@@ -558,7 +596,7 @@ $(document).ready(function()
                      {
                      $("#browser_not_supported").hide();
                      $("#html5_overridden_message").hide();
-		     $("#flash_video_player").hide();
+                     $("#flash_video_player").hide();
                      browserSupported = org.gigapan.Util.browserSupported();
 
                      if (!browserSupported) {
@@ -566,7 +604,7 @@ $(document).ready(function()
                         $("#time_warp_composer").hide();
                         $("#browser_not_supported").show();
                         $("#firstHeading").css( {"top": "450px"} );
-			$("#flash_video_player").show();
+                        $("#flash_video_player").show();
                         $("#flash_video_player").css( {"visibility": "hidden"} );
                         setupSnaplapseLinks();
                         initFlashViewer();
@@ -577,15 +615,20 @@ $(document).ready(function()
                      org.gigapan.Util.log("timelapseMetadata=["+timelapseMetadata+"]");
                      timelapseMetadataJSON = JSON.parse($("#timelapse_metadata").text());
                      gigapanId = timelapseMetadataJSON['id'] || "brassica-15m-halfsize-g10-bf0-l15";
+                     host = timelapseMetadataJSON['host'] || "000";
                      datasetIndex = timelapseMetadataJSON['dataset'] || "1";
                      hasLayers = timelapseMetadataJSON['has_layers'] || false;
-		     if (hasLayers) $("#layerDiv").show();
-		     org.gigapan.Util.log("id=["+gigapanId+"]");
+                     if (hasLayers) $(".layerSlider").show();
+                     repeatVideo = timelapseMetadataJSON['repeat']
+                     if (repeatVideo) $("#repeat").attr("class", "repeat active");
+                     org.gigapan.Util.log("id=["+gigapanId+"]");
                      org.gigapan.Util.log("datasetIndex=["+datasetIndex+"]");
                      gigapanDatasetsJSON = null;
 
-                     var jsonUrl = "../timelapses/" + gigapanId + '.json'; 
-                     
+                     var hostPrefix = "../timemachines/" + host + "/" + gigapanId + "/";
+
+                     var jsonUrl = hostPrefix + gigapanId + '.json'; 
+
                      org.gigapan.Util.log("Attempting to fetch gigapan datasets JSON from URL [" + jsonUrl + "]...");
                      $.ajax({
                                dataType:'json',
@@ -595,6 +638,9 @@ $(document).ready(function()
                                   gigapanDatasetsJSON = json;
                                   if (gigapanDatasetsJSON && gigapanDatasetsJSON['base-id'] == gigapanId && gigapanDatasetsJSON['datasets'] && gigapanDatasetsJSON['datasets'].length > 0)
                                      {
+                                     gigapanDatasetsJSON['dataset-json-host-url-prefix']=hostPrefix;
+                                     gigapanDatasetsJSON['tile-host-url-prefixes']=["http://tm"+host+".gigapan.org/timemachines/"+gigapanId+"/"];
+
                                      org.gigapan.Util.log("Loaded this JSON: [" + JSON.stringify(gigapanDatasetsJSON) + "]");
 
                                      // make sure the datasetIndex is a valid number, and within the range of datasets for this gigapan.
@@ -602,13 +648,6 @@ $(document).ready(function()
 
                                      // set document title
                                      document.title = "GigaPan Time Machine: " + gigapanDatasetsJSON['name'];
-
-                                     // now populate the Viewer Size popup menu with the various datasets
-                                     for (var i = 0; i < gigapanDatasetsJSON['datasets'].length; i++)
-                                        {
-                                        var selected = (i == datasetIndex) ? 'selected="selected"' : '';
-                                        $("#viewer_size").append('<option value="' + i + '" ' + selected + '>' + gigapanDatasetsJSON['datasets'][i]['name'] + '</option>');
-                                        }
 
                                      // finally, load the gigapan
                                      loadGigapanJSON();
