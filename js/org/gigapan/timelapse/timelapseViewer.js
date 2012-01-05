@@ -276,7 +276,7 @@ function switchSize(index) {
 }
 
 function setViewportSize(newWidth, newHeight) {
-	var bounds = timelapse.getBoundingBoxForCurrentView();
+  var bounds = timelapse.getBoundingBoxForCurrentView();
 
   $("#timelapse").css({"width": newWidth+"px", "height": newHeight+"px"});
   $("#controls").width(newWidth);
@@ -286,7 +286,7 @@ function setViewportSize(newWidth, newHeight) {
   $("#instructions").css({"height": newHeight+2+$("#filler").height()+"px"}); //not sure why there is a 2px offset...
   $(".layerSlider").css({"top": newHeight+2+$("#filler").height()+$("#controls").height()+"px", "right": "28px"}); //not sure why there is a 2px offset...
 
-	//wiki specific css
+  //wiki specific css
   if (newWidth == 816) { //large video
     $("#content").css({"padding": "0px 0px 0px 305px"}); 
     $("#firstHeading").css({"top": "628px"} );
@@ -294,7 +294,7 @@ function setViewportSize(newWidth, newHeight) {
     $("#content").css({"padding": "0px 0px 0px 0px"});
     $("#firstHeading").css({"top": "450px"});
   }
-	//end wiki specific css
+  //end wiki specific css
 
   timelapse.updateDimensions();
   timelapse.warpToBoundingBox(bounds);
@@ -380,9 +380,11 @@ function getTileHostUrlPrefix() {
 
 function load_layers() {
   var numLayers = gigapanDatasetsJSON["layers"].length
+  var html = "";
   for (i = 0; i < numLayers; i++) {
-    $("#layerChoices").append("<li><img src=\""+gigapanDatasetsJSON["layers"][i]["tn-path"] +"\" "+"alt='layer' onclick='switchLayer("+i+"); return false;' width='45' height='45' ><br/><span style='font-size:small; text-align:center; display:block; margin: -5px 0px 0px 0px !important;'>"+gigapanDatasetsJSON['layers'][i]['description']+"</span></li>");
+    html += "<li><img src=\""+gigapanDatasetsJSON["layers"][i]["tn-path"] +"\" "+"alt='layer' onclick='switchLayer("+i+"); return false;' width='45' height='45' ><br/><span style='font-size:small; text-align:center; display:block; margin: -5px 0px 0px 0px !important;'>"+gigapanDatasetsJSON['layers'][i]['description']+"</span></li>"
   }
+  $("#layerChoices").append(html);
 }
 
 function loadGigapanJSON() {
@@ -418,8 +420,8 @@ $(document).ready(function() {
     $("#time_warp_composer").hide();
     $("#browser_not_supported").show();
     $("#firstHeading").css( {"top": "450px"} );
-    $("#flash_video_player").show();
-    $("#flash_video_player").css({"visibility": "hidden"});
+    $("#flash_video_player").show(); //load  jwplayer
+    $("#flash_video_player").css({"visibility": "hidden"}); //hide the player until a warp is clicked. jwplayer won't need to reload again by doing this
     setupSnaplapseLinks();
     initFlashViewer();
     return;
@@ -455,19 +457,20 @@ $(document).ready(function() {
         // set document title
         document.title = "GigaPan Time Machine: " + gigapanDatasetsJSON["name"];
 
-				// populate the player size dropdown
-				var html = "";
-				for (var i = 0; i < gigapanDatasetsJSON["sizes"].length; i++) {
-					html += '<li><a id='+gigapanDatasetsJSON["sizes"][i]+' href="#" onclick="switchSize('+i+'); return false;"> '+gigapanDatasetsJSON["sizes"][i]+' </a></li>';
-				}
-				$("#sizechoices").append(html);
+        // populate the player size dropdown
+        var html = "";
+        var numSizes = gigapanDatasetsJSON["sizes"].length;
+        for (var i = 0; i < numSizes; i++) {
+          html += '<li><a id='+gigapanDatasetsJSON["sizes"][i]+' href="#" onclick="switchSize('+i+'); return false;"> '+gigapanDatasetsJSON["sizes"][i]+' </a></li>';
+        }
+        $("#sizechoices").append(html);
 				
-				//set the current view to the largest size
-				var largestSize = $("#sizechoices li a").last();
-				largestSize.addClass("current");
-				$("#playerSizeText").text(largestSize.text());
-				datasetIndex = timelapseMetadataJSON["dataset"] || gigapanDatasetsJSON["sizes"].length; //default to largest size (ie last in the list) if none is specified.
-				org.gigapan.Util.log("datasetIndex=["+datasetIndex+"]");
+        // set the current view to the largest size
+        var largestSize = $("#sizechoices li a").last();
+        largestSize.addClass("current");
+        $("#playerSizeText").text(largestSize.text());
+        datasetIndex = timelapseMetadataJSON["dataset"] || gigapanDatasetsJSON["sizes"].length; //default to largest size (ie last in the list) if none is specified.
+        org.gigapan.Util.log("datasetIndex=["+datasetIndex+"]");
         
         // make sure the datasetIndex is a valid number, and within the range of datasets for this gigapan.
         validateAndSetDatasetIndex(datasetIndex);
