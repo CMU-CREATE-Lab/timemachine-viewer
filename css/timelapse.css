@@ -1,3 +1,5 @@
+@charset "UTF-8";
+
 div#player, img, a{
   -moz-user-select: none;
   -moz-user-select: -moz-none;
@@ -8,138 +10,99 @@ div#player, img, a{
   user-select: none;
 }
 
+#player {
+  width: auto !important;
+  height: auto !important;
+}
+
 #timelineSlider {
-        cursor:pointer;
-	display:block;
-	width:508px;
-	height:8px;
-	border:0px #838383 solid;
-	border-bottom:0px !important;
-	position:absolute;
-	bottom:0px;
-	margin: 0px 0px 0px 0px;
-	background:#FFF;
-        z-index:5;
+  cursor:pointer;
+  display:block;
+  width:508px;
+  height:8px;
+  border:0px #838383 solid;
+  border-bottom:0px !important;
+  position:absolute;
+  bottom:0px;
+  margin: 0px 0px 0px 0px;
+  background:#FFF;
+  z-index:5;
 }
 
 #flash_video_controls {
-   display: block !important;
-   position: fixed;
-   left: 395px;
-   top: 400px;
-   color:#ffffff;
+  display: block !important;
+  position: fixed;
+  left: 395px;
+  top: 400px;
+  color:#ffffff;
 }
 
 #filler {
-   height:8px;
-   width:516px;
-   z-index:5;
-   background:#FFF;
-   position:absolute;
-   bottom:58px;
+  height:8px;
+  z-index:5;
+  background:#FFF;
+  position:relative;
 }
 
-#slider-vertical {
-	width:8px;
-	height:110px;
-	background:#969DA1;
-	border:1px solid #555555;
-	position:absolute;
-	top:27px;
-	left:9px;
+#zoomSlider {
+  width:8px;
+  height:110px;
+  background:#969DA1;
+  border:1px solid #555555;
+  position:absolute;
+  top:27px;
+  left:9px;
 }
 
-#slider-vertical .ui-slider-handle {
-        left:-11px;
-}
+#zoomSlider .ui-slider-handle {left:-11px;}
 
 #playBackSpeedSlider {
-	display:block;
-	position:relative;
-	//left:77px;
-	left: 89px;
-	bottom: 70px;
-	//width:126px;
-	width: 110px;
-	height:30px;
-}
-
-#timelapse {
- cursor: url("cursors/openhand.cur") 10 10, move;
+  display:block;
+  position:relative;
+  left: 89px;
+  bottom: 70px;
+  width: 110px;
+  height:30px;
 }
 
 #mouse_debug_info {
- border: 1px solid black;
- padding: 3px;
- margin: 3px 0 3px 0;
- width: 500px;
+  border: 1px solid black;
+    padding: 3px;
+  margin: 3px 0 3px 0;
+  width: 500px;
 }
 
 .play_mouseover {
- width: 20px;
- height: 23px;
- background-image: url("../images/play_mouseover.png");
- cursor: pointer;
- float: left;
+  width: 20px;
+  height: 23px;
+  background-image: url("../images/play_mouseover.png");
+  cursor: pointer;
+  float: left;
 }
 
 .play_mouseout {
- width: 20px;
- height: 23px;
- background-image: url("../images/play_mouseout.png");
- cursor: pointer;
- float: left;
+  width: 20px;
+  height: 23px;
+  background-image: url("../images/play_mouseout.png");
+  cursor: pointer;
+  float: left;
 }
 
 .pause_mouseover {
- width: 20px;
- height: 23px;
- background-image: url("../images/pause_mouseover.png");
- cursor: pointer;
- float: left;
+  width: 20px;
+  height: 23px;
+  background-image: url("../images/pause_mouseover.png");
+  cursor: pointer;
+  float: left;
 }
 
 .pause_mouseout {
- width: 20px;
- height: 23px;
- background-image: url("../images/pause_mouseout.png");
- cursor: pointer;
- float: left;
+  width: 20px;
+  height: 23px;
+  background-image: url("../images/pause_mouseout.png");
+  cursor: pointer;
+  float: left;
 }
-
-.overlay1 {
-  border:0px solid; 
-  width:52px;
-  border-color:silver;
-  height:212px; 
-  overflow:auto;
-  position:absolute; 
-  z-index:2;
-  top: 30px;
-  left: 10px;
-}
-
-.overlay2 {
-  border:0px solid; 
-  width:52px; 
-  border-color:silver;
-  height:40px; 
-  overflow:auto;
-  position:absolute; 
-  z-index:3;
-  top: 30px;
-  left: 10px;
-}
-
-/*#spinnerOverlay {
-  border:0 solid;
-  width:120px;
-  height:120px;
-  position:absolute;
-  z-index:3;
-  display:none;
-  overflow:hidden;
-}*/
 
 #spinnerOverlay {  
   width: 32px ;
@@ -150,34 +113,21 @@ div#player, img, a{
   z-index: 10;
 }
 
-table.align-left tr, td, th{ 
-   text-align: left;
-}
+table.align-left tr, td, th{text-align: left;}
 
-table.align-right tr, td, th{ 
-   text-align: right;
-}
+table.align-right tr, td, th{text-align: right;}
 
-table.align-center tr, td, th{ 
-   text-align: center;
-}
+table.align-center tr, td, th{text-align: center;}
 
-tr.valign-top {
-   vertical-align: top;
-}
+tr.valign-top {vertical-align: top;}
 
-table.no-padding td {
-   padding: 0px
-}
+table.no-padding td {padding: 0px}
 
-h1#firstHeading{
-   top:450px;
-}
+h1#firstHeading{top:450px;}
 
 a.time_warp_link {
   width:auto !important;
   padding:16px 19px 16px 0px !important;
-  /*display:table-cell;*/
   text-decoration:underline !important; 
   background:url('../images/snaplink.png') right center no-repeat !important; 
 }
@@ -187,57 +137,45 @@ a.time_warp_link:hover{
 }
 
 #bodyContent{
-    margin:10px 30px 0px 548px !important;
-    padding:10px 34px 50px ;
-    background:#fff;
-    min-height:400px;
-    max-width:100%;
-    min-width:200px;
-    position:relative;
-    top:100px;
-    bottom:100px;
-    left:0px;
-    /*overflow-x:hidden;*/
+  margin:10px 30px 0px 548px !important;
+  padding:10px 34px 50px ;
+  background:#fff;
+  min-height:400px;
+  max-width:100%;
+  min-width:200px;
+  position:relative;
+  top:100px;
+  bottom:100px;
+  left:0px;
 }
 
-/*p{ font-size:15px;               
-line-height:23px;             
-max-width: 630px;          
-margin:10px 0px 20px 0px;}
-
-h2 .editsection { font-size: 67%; }
-h3, h4, h5, h6 {          
-        border-bottom: none;     
-        font-weight: bold;
-} */
-
 #browser_not_supported {
-    display: block;
-    height: 348px;
-    left: 34px;
-    position: fixed;
-    top: 100px;
-    width: 514px;
+  display: block;
+  height: 348px;
+  left: 34px;
+  position: fixed;
+  top: 100px;
+  width: 514px;
 }
 
 #html5_overridden_message {
-    height: 348px;   
-    left: 34px;
-    position: fixed;      
-    top: 65px;
-    width: 514px;
-    z-index:1000;
+  height: 348px;   
+  left: 34px;
+  position: fixed;      
+  top: 65px;
+  width: 514px;
+  z-index:1000;
 }
 
 .warning, .error {
-   border: 1px solid;
-   width: 400px ;
-   margin-left: auto ;
-   margin-right: auto ;
-   margin-top: 50px ;
-   padding: 15px 10px 15px 60px; 
-   background-repeat: no-repeat;
-   background-position: 10px center;
+  border: 1px solid;
+  width: 400px ;
+  margin-left: auto ;
+  margin-right: auto ;
+  margin-top: 50px ;
+  padding: 15px 10px 15px 60px; 
+  background-repeat: no-repeat;
+  background-position: 10px center;
 }
 
 .warning {
