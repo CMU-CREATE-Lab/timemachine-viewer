@@ -64,66 +64,53 @@
  *
  */
 
-(function($)
-   {
+(function($) {
+  $.fn.mousecapture = function(params) {
+    var $doc = $(document);
 
-   $.fn.mousecapture = function(params)
-      {
-      var $doc = $(document);
+    this.each(function() {
+      var $this = $(this);
+      var sharedData = {};
 
-      this.each(function()
-         {
-         var $this = $(this);
-         var sharedData = {};
+      $this.mousedown(function(e) {
+      // mousemove
 
-         $this.mousedown(function(e)
-            {
-            // mousemove
+      var moveHandler;
 
-            var moveHandler;
+      if (params.move) {
+        moveHandler = function(e) {
+          params.move.call($this, e, sharedData);
+        };
 
-            if (params.move)
-               {
-               moveHandler = function(e)
-                  {
-                  params.move.call($this, e, sharedData);
-                  };
+        $doc.mousemove(moveHandler);
+      }
 
-               $doc.mousemove(moveHandler);
-               }
+      // mouseup
 
-            // mouseup
+      var upHandler;
 
-            var upHandler;
+      var unbind = function() {
+        if (params.move) $doc.unbind("mousemove", moveHandler);
+          $doc.unbind("mouseup", upHandler);
+        };
 
-            var unbind = function()
-               {
-               if (params.move) $doc.unbind("mousemove", moveHandler);
-               $doc.unbind("mouseup", upHandler);
-               };
+        if (params.up) {
+          upHandler = function(e) {
+            unbind();
+            return params.up.call($this, e, sharedData);
+          };
+        } else {
+          upHandler = unbind;
+        }
 
-            if (params.up)
-               {
-               upHandler = function(e)
-                  {
-                  unbind();
-                  return params.up.call($this, e, sharedData);
-                  };
-               }
-            else
-               {
-               upHandler = unbind;
-               }
+        $doc.mouseup(upHandler);
 
-            $doc.mouseup(upHandler);
+        // mousedown
 
-            // mousedown
+        return params.down.call($this, e, sharedData);
+      });
+    });
 
-            return params.down.call($this, e, sharedData);
-            });
-         });
-
-      return this;
-      };
-
-   })(jQuery);
+    return this;
+  };
+})(jQuery);

@@ -2,7 +2,7 @@ var timelapseMetadata;
 var timelapseMetadataJSON;
 var gigapanId;
 var datasetIndex;
-var gigapanDatasetsJSON;
+var gigapanDatasetsJSON = null;
 var browserSupported;
 var playerLayer = 0;
 var playerSize = 1;
@@ -375,7 +375,8 @@ function getTileHostUrlPrefix() {
     prefixes = gigapanDatasetsJSON["tile-host-url-prefixes"];
   }
   // now pick one at random
-  return prefixes[Math.floor(Math.random() * prefixes.length)];
+  //return prefixes[Math.floor(Math.random() * prefixes.length)];
+  return prefixes;
 }
 
 function load_layers() {
@@ -429,18 +430,18 @@ $(document).ready(function() {
 
   timelapseMetadata = $("#timelapse_metadata").text();
   org.gigapan.Util.log("timelapseMetadata=["+timelapseMetadata+"]");
-  timelapseMetadataJSON = JSON.parse($("#timelapse_metadata").text());
+  timelapseMetadataJSON = timelapseMetadata ? JSON.parse(timelapseMetadata) : {};
   gigapanId = timelapseMetadataJSON["id"] || "brassica-15m-halfsize-g10-bf0-l15";
-  var host = timelapseMetadataJSON["host"] || "000";
   hasLayers = timelapseMetadataJSON["has_layers"] || false;
   if (hasLayers) $(".layerSlider").show();
   repeatVideo = timelapseMetadataJSON["repeat"]
   if (repeatVideo) $("#repeat").attr("class", "repeat active");
   org.gigapan.Util.log("id=["+gigapanId+"]");
-  gigapanDatasetsJSON = null;
 
+  var host = timelapseMetadataJSON["host"] || "000";
   var hostPrefix = "../timemachines/" + host + "/" + gigapanId + "/";
   var jsonUrl = hostPrefix + gigapanId + ".json"; 
+  var tileHostUrlPrefixes = ["http://tm"+host+".gigapan.org/timemachines/"+gigapanId+"/"];
 
   org.gigapan.Util.log("Attempting to fetch gigapan datasets JSON from URL [" + jsonUrl + "]...");
   $.ajax({
@@ -450,7 +451,7 @@ $(document).ready(function() {
       gigapanDatasetsJSON = json;
       if (gigapanDatasetsJSON && gigapanDatasetsJSON["base-id"] == gigapanId && gigapanDatasetsJSON["datasets"] && gigapanDatasetsJSON["datasets"].length > 0 && gigapanDatasetsJSON["sizes"] && gigapanDatasetsJSON["sizes"].length > 0) {
         gigapanDatasetsJSON["dataset-json-host-url-prefix"]=hostPrefix;
-        gigapanDatasetsJSON["tile-host-url-prefixes"]=["http://tm"+host+".gigapan.org/timemachines/"+gigapanId+"/"];
+        gigapanDatasetsJSON["tile-host-url-prefixes"]=tileHostUrlPrefixes;
 
         org.gigapan.Util.log("Loaded this JSON: [" + JSON.stringify(gigapanDatasetsJSON) + "]");
 
