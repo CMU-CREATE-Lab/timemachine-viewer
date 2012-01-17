@@ -517,7 +517,11 @@
 						} else {
 							org.gigapan.Util.error("Failed to load gigapan json from URL [" + jsonUrl + "]");
 						}
-					},
+					
+                                                var videoDiv = document.getElementById("timelapse")
+                                                videoDiv['onmousedown'] = null;
+                                                videoDiv['ondblclick'] = null;
+                                        },
 					error: function() {
 						org.gigapan.Util.error("Error loading gigapan json from URL [" + jsonUrl + "]");
 					}
