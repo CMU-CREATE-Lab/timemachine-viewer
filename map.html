@@ -331,7 +331,10 @@
 					stop: function() {
 					  //showTimelapseLayer();
 					  changeEeLayer();
-					}
+					},
+                                        start: function() {
+                                          timelapseStayOn = true;
+                                        }
 				});
 
 				$("#timelineSlider .ui-slider-handle").attr("title", "Drag to go to a different point in time");
@@ -517,7 +520,11 @@
 						} else {
 							org.gigapan.Util.error("Failed to load gigapan json from URL [" + jsonUrl + "]");
 						}
-					},
+					
+                                                var videoDiv = document.getElementById("timelapse")
+                                                videoDiv['onmousedown'] = null;
+                                                videoDiv['ondblclick'] = null;
+                                        },
 					error: function() {
 						org.gigapan.Util.error("Error loading gigapan json from URL [" + jsonUrl + "]");
 					}
