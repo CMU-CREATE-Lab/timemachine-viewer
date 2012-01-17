@@ -547,7 +547,7 @@
 
 			function timelapseInitialize() {
 				timelapseMetadataJSON = {};
-				gigapanId = timelapseMetadataJSON["id"] || "MODIS_MCD43A4_L4_9800m";
+				gigapanId = timelapseMetadataJSON["id"] || "MODIS_MCD43A4_L7_1220m";
 				hasLayers = timelapseMetadataJSON["has_layers"] || false;
 				if (hasLayers) $(".layerSlider").show();
 				repeatVideo = timelapseMetadataJSON["repeat"]
@@ -560,10 +560,10 @@
 				var tileHostUrlPrefixes = ["http://tm"+host+".gigapan.org/timemachines/"+gigapanId+"/"];
 
 				//SPECIFIC CODE TO RUN LOCALLY
-				gigapanId = "MODIS_MCD43A4_L4_9800m"
-				hostPrefix = "timemachines/" + gigapanId + "/";
+				gigapanId = "MODIS_MCD43A4_L7_1220m"
+				hostPrefix = "/timemachines/" + gigapanId + "/";
 				jsonUrl = hostPrefix + gigapanId + ".json";
-				tileHostUrlPrefixes = ["timemachines/"+gigapanId+"/"];
+				tileHostUrlPrefixes = ["/timemachines/"+gigapanId+"/"];
 				//END
 
 				org.gigapan.Util.log("Attempting to fetch gigapan datasets JSON from URL [" + jsonUrl + "]...");
