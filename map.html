@@ -3,20 +3,20 @@
   <head>
     <meta http-equiv="content-type" content="text/html; charset=UTF-8"/>
     <title>Time Machine In Google Maps - V1</title>
-    <link href="timelapse/css/timelapse.css" rel="stylesheet" type="text/css"/>
-    <link href="timelapse/css/videoset_stats.css" rel="stylesheet" type="text/css"/>
-    <link href="timelapse/css/jquery-ui/smoothness/jquery-ui.custom.css" rel="stylesheet" type="text/css"/>
-    <link href="timelapse/css/ui.slider.extras.css" rel="stylesheet" type="text/css"/>
-    <link href="timelapse/css/player.css" rel="stylesheet" type="text/css"/>
+    <link href="css/timelapse.css" rel="stylesheet" type="text/css"/>
+    <link href="css/videoset_stats.css" rel="stylesheet" type="text/css"/>
+    <link href="css/jquery-ui/smoothness/jquery-ui.custom.css" rel="stylesheet" type="text/css"/>
+    <link href="css/ui.slider.extras.css" rel="stylesheet" type="text/css"/>
+    <link href="css/player.css" rel="stylesheet" type="text/css"/>
     <link href="http://code.google.com/apis/maps/documentation/javascript/examples/default.css" rel="stylesheet" type="text/css" />
     <script type="text/javascript" src="http://maps.googleapis.com/maps/api/js?sensor=false"></script>
-    <script type="text/javascript" src="timelapse/js/jquery/jquery.min.js"></script>
-    <script type="text/javascript" src="timelapse/js/jquery/jquery-ui.custom.min.js"></script>
-    <script type="text/javascript" src="timelapse/js/jquery/plugins/slider/selectToUISlider.jQuery.js"></script>
-    <script type="text/javascript" src="timelapse/js/org/gigapan/util.js"></script>
-    <script type="text/javascript" src="timelapse/js/org/gigapan/timelapse/videoset_stats.js"></script>
-    <script type="text/javascript" src="timelapse/js/org/gigapan/timelapse/videoset.js"></script>
-    <script type="text/javascript" src="timelapse/js/org/gigapan/timelapse/timelapse.js"></script>
+    <script type="text/javascript" src="js/jquery/jquery.min.js"></script>
+    <script type="text/javascript" src="js/jquery/jquery-ui.custom.min.js"></script>
+    <script type="text/javascript" src="js/jquery/plugins/slider/selectToUISlider.jQuery.js"></script>
+    <script type="text/javascript" src="js/org/gigapan/util.js"></script>
+    <script type="text/javascript" src="js/org/gigapan/timelapse/videoset_stats.js"></script>
+    <script type="text/javascript" src="js/org/gigapan/timelapse/videoset.js"></script>
+    <script type="text/javascript" src="js/org/gigapan/timelapse/timelapse.js"></script>
     <script type="text/javascript">
       var timelapseLayer;
       var eeMapType;
@@ -42,9 +42,14 @@
       var snaplapse = null;
       var timelapseStayOn = false;
       var timelapseControlUI;
-
+      var controlsHeight = 64; //in pixels
       TimelapseOverlay.prototype = new google.maps.OverlayView();
       google.maps.event.addDomListener(window, 'load', initialize);
+
+			$(window).resize(function() {
+        var newHeight = $(window).height()-controlsHeight;
+        $("#map_canvas").css({"height":newHeight});
+			});
 
       function TimelapseToggle(controlDiv, map) {
 
@@ -105,7 +110,7 @@
         map = new google.maps.Map(document.getElementById("map_canvas"), mapOptions);
 				eeMapType = new google.maps.ImageMapType(eeOptions);
 
-        var newHeight = ((parseInt(jQuery("#map_canvas").css("height"))-64));
+        var newHeight = ((parseInt(jQuery("#map_canvas").css("height"))-controlsHeight));
         $("#map_canvas").css({"height":newHeight});
 
 				timelapseInitialize();
@@ -416,19 +421,19 @@
 
 			function setupSliderHandlers() {
 			  $(".ui-slider-handle").bind("mouseover mouseup", function() {
-			    this.style.cursor = 'url("timelapse/css/cursors/openhand.cur") 10 10, move';
+			    this.style.cursor = 'url("css/cursors/openhand.cur") 10 10, move';
 			  });
 
 			  $(".ui-slider").bind({
 			    slide: function() {
-			      this.style.cursor = 'url("timelapse/css/cursors/closedhand.cur") 10 10, move';
+			      this.style.cursor = 'url("css/cursors/closedhand.cur") 10 10, move';
 			      $(".ui-slider-handle").bind("mousemove", function() {
-			        this.style.cursor = 'url("timelapse/css/cursors/closedhand.cur") 10 10, move';
+			        this.style.cursor = 'url("css/cursors/closedhand.cur") 10 10, move';
 			      });
 			    },
 			    slidestop: function() {
 			      $(".ui-slider-handle").bind("mousemove", function() {
-			        this.style.cursor = 'url("timelapse/css/cursors/openhand.cur") 10 10, move';
+			        this.style.cursor = 'url("css/cursors/openhand.cur") 10 10, move';
 			      });
 			    },
 			    mouseover: function() {
@@ -556,9 +561,9 @@
 
 				//SPECIFIC CODE TO RUN LOCALLY
 				gigapanId = "MODIS_MCD43A4_L4_9800m"
-				hostPrefix = "/timemachines/" + gigapanId + "/";
+				hostPrefix = "timemachines/" + gigapanId + "/";
 				jsonUrl = hostPrefix + gigapanId + ".json";
-				tileHostUrlPrefixes = ["/timemachines/"+gigapanId+"/"];
+				tileHostUrlPrefixes = ["timemachines/"+gigapanId+"/"];
 				//END
 
 				org.gigapan.Util.log("Attempting to fetch gigapan datasets JSON from URL [" + jsonUrl + "]...");
@@ -611,7 +616,7 @@
 
 	<body>
 		<div id="player" style="position: absolute; left:0px; top:0px; visibility: hidden">
-			<div id="spinnerOverlay"><img id="spinner" src="timelapse/images/loading.gif" width="32" height="32"></div>
+			<div id="spinnerOverlay"><img id="spinner" src="images/loading.gif" width="32" height="32"></div>
 			<div id="timelapse" style="position: relative; width:512px; height:288px; background:black; overflow:hidden; border: 1px solid black;"></div>
 		</div>
 	  <div id="map_canvas"></div>
