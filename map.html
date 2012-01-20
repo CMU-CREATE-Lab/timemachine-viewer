@@ -423,7 +423,8 @@
             hideEeLayer();
           },
           stop: function() {
-            showEeLayer();
+            // there is no way to poll whether we are currently playing, so just check the state of the play/pause button
+            if ($("#mainbutton").attr("class") == "play") showEeLayer();
           }
         });
 
