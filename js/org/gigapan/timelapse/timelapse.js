@@ -210,7 +210,6 @@ if (!window['$']) {
     };
 
     var _warpTo = function(newView) {
-    	UTIL.log("in _warpTo");
       setTargetView(newView);
       view.x = targetView.x;
       view.y = targetView.y;
@@ -387,7 +386,7 @@ if (!window['$']) {
       var lastEvent = event;
       var saveMouseMove = document.onmousemove;
       var saveMouseUp = document.onmouseup;
-      videoDiv.style.cursor = 'url("../timelapse/css/cursors/closedhand.cur") 10 10, move';
+      videoDiv.style.cursor = 'url("../timelapse-20120105/css/cursors/closedhand.cur") 10 10, move';
       document.onmousemove = function(event) {
         targetView.x += (lastEvent.pageX - event.pageX) / view.scale;
         targetView.y += (lastEvent.pageY - event.pageY) / view.scale;
@@ -396,7 +395,7 @@ if (!window['$']) {
         return false;
       };
       document.onmouseup = function() {
-        videoDiv.style.cursor = 'url("../timelapse/css/cursors/openhand.cur") 10 10, move';
+        videoDiv.style.cursor = 'url("../timelapse-20120105/css/cursors/openhand.cur") 10 10, move';
         document.onmousemove = saveMouseMove;
         document.onmouseup = saveMouseUp;
       };
@@ -415,7 +414,7 @@ if (!window['$']) {
     };
 
     var handleDoubleClickEvent = function(event) {
-      zoomAbout(2., event.pageX, event.pageY);
+      zoomAbout(2.0, event.pageX, event.pageY);
     };
 
     var limitScale = function(scale) {
@@ -439,7 +438,6 @@ if (!window['$']) {
         animateInterval = setInterval(animate, 80); // 12.5 hz
         lastAnimationTime = UTIL.getCurrentTimeInSecs();
       }
-			UTIL.log("in setTargetView");
 
       refresh();
 
@@ -559,21 +557,17 @@ if (!window['$']) {
     };
 
     var readVideoDivSize = function() {
-    	UTIL.log("in readVideoDivSize");
       viewportWidth = parseInt(videoDiv.style.width);
       viewportHeight = parseInt(videoDiv.style.height);
     };
 
     var refresh = function() {
-    	UTIL.log("in refresh");
       if (!isFinite(view.scale)) return;
 
       var bestIdx = computeBestVideo(targetView);
       if (bestIdx != currentIdx) {
-        UTIL.log("bestIdx != currentIdx");
         currentVideo = addTileidx(bestIdx, currentVideo);
         currentIdx = bestIdx;
-        UTIL.log("got a new video");
       }
 
       var activeVideos = videoset.getActiveVideos();
@@ -611,7 +605,7 @@ if (!window['$']) {
     var addTileidx = function(tileidx, videoToUnload) {
       var url = getTileidxUrl(tileidx);
       var geom = tileidxGeometry(tileidx);
-      UTIL.log("adding tile " + dumpTileidx(tileidx) + " from " + url + " and geom = (left:" + geom['left'] + " ,top:" + geom['top'] + ", width:" + geom['width'] + ", height:" + geom['height'] + ")");
+      //UTIL.log("adding tile " + dumpTileidx(tileidx) + " from " + url + " and geom = (left:" + geom['left'] + " ,top:" + geom['top'] + ", width:" + geom['width'] + ", height:" + geom['height'] + ")");
       var video = videoset.addVideo(url, geom, videoToUnload);
       video.tileidx = tileidx;
       return video;

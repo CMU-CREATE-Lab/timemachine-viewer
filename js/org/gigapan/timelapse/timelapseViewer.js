@@ -314,7 +314,7 @@ function setViewportSize(newWidth, newHeight) {
   $("#timelineSlider").width(newWidth-8); //subtract 8px (width of the slider handle)
   $("#spinnerOverlay").css({"top": newHeight/2-$("#spinner").height()/2+"px", "left": newWidth/2-$("#spinner").width()/2+"px"});
   $("#snaplapse-annotation-description").css({"left": newWidth+44+"px"}); //not sure why 44px extra is needed...
-  $("#instructions").css({"height": newHeight+2+$("#filler").height()+"px"}); //not sure why there is a 2px offset...
+  $("#instructions").css({"width": newWidth+2+"px", "height": newHeight+2+$("#filler").height()+"px"}); //not sure why there is a 2px offset...
   $(".layerSlider").css({"top": newHeight+2+$("#filler").height()+$("#controls").height()+"px", "right": "28px"}); //not sure why there is a 2px offset...
 
   //wiki specific css
@@ -501,7 +501,7 @@ $(document).ready(function() {
         var largestSize = $("#sizechoices li a").last();
         largestSize.addClass("current");
         $("#playerSizeText").text(largestSize.text());
-        datasetIndex = timelapseMetadataJSON["dataset"] || gigapanDatasetsJSON["sizes"].length; //default to largest size (ie last in the list) if none is specified.
+        datasetIndex = timelapseMetadataJSON["dataset"] || gigapanDatasetsJSON["sizes"].length - 1; //default to largest size of the first dataset if none is specified.
         org.gigapan.Util.log("datasetIndex=["+datasetIndex+"]");
         
         // make sure the datasetIndex is a valid number, and within the range of datasets for this gigapan.

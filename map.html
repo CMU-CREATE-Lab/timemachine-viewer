@@ -2,9 +2,8 @@
 <html>
   <head>
     <meta http-equiv="content-type" content="text/html; charset=UTF-8"/>
-    <title>Time Machine In Google Maps - V1</title>
+    <title>Time Machine in Google Maps</title>
     <link href="css/timelapse.css" rel="stylesheet" type="text/css"/>
-    <link href="css/videoset_stats.css" rel="stylesheet" type="text/css"/>
     <link href="css/jquery-ui/smoothness/jquery-ui.custom.css" rel="stylesheet" type="text/css"/>
     <link href="css/ui.slider.extras.css" rel="stylesheet" type="text/css"/>
     <link href="css/player.css" rel="stylesheet" type="text/css"/>
@@ -20,7 +19,6 @@
     <script type="text/javascript">
       var timelapseLayer;
       var eeMapType;
-      var timelapseLayerZIndex;
       var map;
       var currentZoomLevel;
       var timelapseMetadata;
@@ -42,34 +40,87 @@
       var snaplapse = null;
       var timelapseStayOn = false;
       var timelapseControlUI;
+      var eEControlUI;
       var controlsHeight = 64; //in pixels
-      TimelapseOverlay.prototype = new google.maps.OverlayView();
+      var sliderHandleWidth = 11; //in pixels
+      var pendingTileUrls = [];
+      var eEngineLayerIndex = 0;
+      var showTimeMachineOnSpaceChange = decodeURIComponent(getUrlParam('showTimeMachineOnPanZoom'));
+      TimeMachineOverlay.prototype = new google.maps.OverlayView();
       google.maps.event.addDomListener(window, 'load', initialize);
 
-			$(window).resize(function() {
-        var newHeight = $(window).height()-controlsHeight;
-        $("#map_canvas").css({"height":newHeight});
-			});
+      function getUrlParam(name){
+        var results = new RegExp('[\\?&]' + name + '=([^&#]*)').exec(window.location.href);
+        return results ? results[1] : null
+      }
 
-      function TimelapseToggle(controlDiv, map) {
+      $(window).resize(function() {
+        var newHeight = $(window).height()-controlsHeight;
+        $("#map_canvas").css({"height":newHeight+"px"});
+        $("#filler").css({"width":($("#map_canvas").width() - sliderHandleWidth) + "px"});
+        $("#timelineSlider").css({"width":($("#map_canvas").width() - sliderHandleWidth) + "px"});
+      });
+
+      // Ya, duplicate code for creating these controls.
+      // Might want them to be different, but for now they are the same
+      // except inner text and width
+      function EarthEngineToggle(controlDiv, map) {
+        // Setting padding to 5 px will offset the control
+        // from the edge of the map.
+        controlDiv.style.padding = '5px';
+
+        // Outer box styling
+        eEControlUI = document.createElement('div');
+        eEControlUI.style.backgroundColor = 'white';
+        eEControlUI.style.borderStyle = 'solid';
+        eEControlUI.style.borderWidth = '1px';
+        eEControlUI.style.cursor = 'pointer';
+        eEControlUI.style.textAlign = 'center';
+        eEControlUI.style.width = "100%"
+        eEControlUI.style.height = "20px"
+        eEControlUI.title = 'Hide Layer';
+        eEControlUI.style.fontWeight = "bold"
+        controlDiv.appendChild(eEControlUI);
+
+        // Interior box styling
+        var controlText = document.createElement('div');
+        controlText.style.fontFamily = 'Arial,sans-serif';
+        controlText.style.fontSize = '16px';
+        controlText.style.paddingLeft = '4px';
+        controlText.style.paddingRight = '4px';
+        controlText.innerHTML = ''
+        eEControlUI.appendChild(controlText);
+
+        // Setup the click event listeners for the control button
+        google.maps.event.addDomListener(eEControlUI, 'click', function() {
+          if (map.overlayMapTypes.getAt(0) == null) {
+            showEeLayer();
+          } else {
+            hideEeLayer();
+          }
+        });
+      }
+
+      function TimeMachineToggle(controlDiv, map) {
 
         // Setting padding to 5 px will offset the control
         // from the edge of the map.
         controlDiv.style.padding = '5px';
 
-        // Set CSS for the control border.
-        timelapseControlUI = document.createElement('DIV');
+        // Outer box styling
+        timelapseControlUI = document.createElement('div');
         timelapseControlUI.style.backgroundColor = 'white';
         timelapseControlUI.style.borderStyle = 'solid';
         timelapseControlUI.style.borderWidth = '1px';
         timelapseControlUI.style.cursor = 'pointer';
         timelapseControlUI.style.textAlign = 'center';
         timelapseControlUI.style.width = "120px"
-        timelapseControlUI.title = 'Click to toggle Time Machine on/off';
+        timelapseControlUI.style.height = "20px"
+        timelapseControlUI.title = 'Show Time Machine';
         controlDiv.appendChild(timelapseControlUI);
 
-        // Set CSS for the control interior.
-        var controlText = document.createElement('DIV');
+        // Interior box styling
+        var controlText = document.createElement('div');
         controlText.style.fontFamily = 'Arial,sans-serif';
         controlText.style.fontSize = '16px';
         controlText.style.paddingLeft = '4px';
@@ -77,196 +128,246 @@
         controlText.innerHTML = 'Time Machine';
         timelapseControlUI.appendChild(controlText);
 
-        // Setup the click event listeners: simply set the map to Chicago.
+        // Setup the click event listeners for the control button
         google.maps.event.addDomListener(timelapseControlUI, 'click', function() {
           timelapseStayOn = !timelapseStayOn;
           if (timelapseStayOn) {
             timelapseLayer.show();
+            timelapseStayOn = true;
           } else {
             timelapseLayer.hide();
+            timelapseStayOn = false;
           }
-          console.log(timelapseStayOn);
         });
       }
 
-      // Initalize the map object. First run when the page loads
+      // Initalize the map. First run when the page loads
       function initialize() {
-        var latLng = new google.maps.LatLng(34, -98);
+        var latLng = new google.maps.LatLng(34, 0);
         var mapOptions = {
           zoom: 3,
           center: latLng,
           mapTypeId: google.maps.MapTypeId.ROADMAP
         }
 
-        var eeOptions = {
+        map = new google.maps.Map(document.getElementById("map_canvas"), mapOptions);
+
+        eeMapType = new google.maps.ImageMapType({
           getTileUrl: function(coord, zoom) {
-            url = "http://earthengine.googleapis.com/map/"+gigapanDatasetsJSON["earthengine-mapids"][0]["mapid"]+"/"+zoom+"/"+coord.x+"/"+coord.y+"?token="+gigapanDatasetsJSON["earthengine-mapids"][0]["token"]
+            url = "http://earthengine.googleapis.com/map/"+gigapanDatasetsJSON["earthengine-mapids"][getTimelapseCurrentCaptureTimeIndex()]["mapid"]+"/"+zoom+"/"+coord.x+"/"+coord.y+"?token="+gigapanDatasetsJSON["earthengine-mapids"][getTimelapseCurrentCaptureTimeIndex()]["token"]
+
+            // Add this url to our list of pending urls
+            pendingTileUrls.push(url);
+
+            // If this is our first pending tile, signal that we just became busy
+            if (pendingTileUrls.length == 1) {
+              console.log("we have our first pending tile, signal that we just got busy.");
+              $(eeMapType).trigger("overlay-busy");
+            }
+
             return url;
           },
           tileSize: new google.maps.Size(256, 256),
           mapTypeId: "ee"
-        };
+        });
 
-        map = new google.maps.Map(document.getElementById("map_canvas"), mapOptions);
-				eeMapType = new google.maps.ImageMapType(eeOptions);
-
+        // Set the height of the map view to be full screen minus the height of the time machine controls
         var newHeight = ((parseInt(jQuery("#map_canvas").css("height"))-controlsHeight));
         $("#map_canvas").css({"height":newHeight});
 
-				timelapseInitialize();
+        timelapseInitialize();
 
-        timelapseLayer = new TimelapseOverlay(map);
+        timelapseLayer = new TimeMachineOverlay(map);
 
-        map.overlayMapTypes.insertAt(0, eeMapType);
+        map.overlayMapTypes.insertAt(eEngineLayerIndex, eeMapType);
 
-        // Create the DIV to hold the timelapse toggle control
-        var timelapseToggleDiv = document.createElement('DIV');
-        var timelapseToggle = new TimelapseToggle(timelapseToggleDiv, map);
+        // Create the div to hold the timelapse toggle control
+        var timelapseToggleDiv = document.createElement('div');
+        var timeMachineToggle = new TimeMachineToggle(timelapseToggleDiv, map);
+
+        var eEToggleDiv = document.createElement('div');
+        var eEToggle = new EarthEngineToggle(eEToggleDiv, map);
+        eEToggleDiv.index = 1;
+        map.controls[google.maps.ControlPosition.TOP_RIGHT].push(eEToggleDiv);
 
         timelapseToggleDiv.index = 1;
         map.controls[google.maps.ControlPosition.TOP_RIGHT].push(timelapseToggleDiv);
 
         google.maps.event.addListener(map, 'center_changed', function() {
-          console.log("center_changed...");
+          //console.log("center_changed...");
           timelapseLayer.draw();
         });
 
+        google.maps.event.addListener(map, 'dragstart', function() {
+          if (showTimeMachineOnSpaceChange) timelapseLayer.show();
+        });
+
+        google.maps.event.addListener(map, 'zoom_changed', function() {
+          if (showTimeMachineOnSpaceChange) timelapseLayer.show();
+        });
+
         google.maps.event.addListenerOnce(map, 'idle', function(){
-          console.log("base tiles fully loaded");
-          //timelapseLayer.hide();
+          console.log("base tiles loaded");
           timelapseLayer.draw(); //call draw one more time to be sure everything is in sync
         });
 
+        handleChangeEeEvent();
       }
 
-      // Constructor for our timelapseLayer
-      function TimelapseOverlay(map, bounds) {
-        // Now initialize all properties.
+      function handleChangeEeEvent() {
+
+        $(eeMapType).bind("overlay-idle", function() {
+          console.log("overlay is idle");
+        });
+
+        $(eeMapType).bind("overlay-busy", function() {
+          console.log("overlay is busy");
+          //timelapseLayer.show();
+        });
+
+        // Copy the original getTile function so we can override it,
+        // but still make use of the original function
+        eeMapType.baseGetTile = eeMapType.getTile;
+
+        // Override getTile so we may add event listeners to know when the images load
+        eeMapType.getTile = function(tileCoord, zoom, ownerDocument) {
+
+          // Get the DOM node generated by ImageMapType
+          var node = eeMapType.baseGetTile(tileCoord, zoom, ownerDocument);
+
+          // Listen for any images within the node to finish loading
+          $("img", node).one("load", function() {
+            //console.log(this.__src__);
+
+            // Remove the image from our list of pending urls
+            //console.log("image being removed: " + this.__src__)
+            var index = $.inArray(this.__src__, pendingTileUrls);
+            pendingTileUrls.splice(index, 1);
+
+            console.log("images left to load: " + pendingTileUrls.length);
+
+            // If the pending url list is empty, emit an event to
+            // indicate that the tiles are finished loading
+            if (pendingTileUrls.length == 0) {
+              $(eeMapType).trigger("overlay-idle");
+              if (pendingTileUrls.length == 0) timelapseLayer.hide();
+            }
+          });
+
+          return node;
+        };
+      }
+
+      // Constructor for our timelapse overlay
+      function TimeMachineOverlay(map, bounds) {
+        // Initialize overlay properties.
         this.map_ = map;
-        //this.bounds_ = bounds;
+        this.div_ = null; //div will be created on add, so just set to null for now
 
-        // Define a property to hold the time
-        // div. We'll actually create this div
-        // upon receipt of the add() method so we'll
-        // leave it null for now.
-        this.div_ = null;
-
-        // Explicitly call setMap on this timelapseLayer
         this.setMap(map);
       }
 
       // Add the timelapseLayer ontop of the current layer
-      TimelapseOverlay.prototype.onAdd = function() {
-        // Note: a timelapseLayer's receipt of add() indicates that
-        // the map's panes are now available for attaching
-        // the timelapseLayer to the map via the DOM.
+      TimeMachineOverlay.prototype.onAdd = function() {
+        // If here, the map's panes are ready to have things attached to them
 
-        // Create the DIV and set some basic attributes.
-        var div = document.createElement('DIV');
+        // Create the div to hold the timelapse overlay
+        var div = document.createElement('div');
         div.style.position = "absolute";
         div.style.left = 0 + 'px';
         div.style.top = 0 + 'px';
         div.id = "timelapseLayer"
-        //div.style.background = "#000"
-        //div.style.width = 100 + "px";
-        //div.style.height = 100 + "px";
 
-        // Set the timelapseLayer's div_ property to this DIV
         this.div_ = div;
 
-        // We add a timelapseLayer to a map via one of the map's panes.
+        // We add a timelapse overlay to a map via one of the map's panes.
         var panes = this.getPanes();
         panes.overlayMouseTarget.appendChild(this.div_);
 
-				timelapseLayerZIndex = jQuery("#timelapseLayer").parent().css("z-index")
-
-        this.hide();
-				//jQuery("#timelapseLayer").parent().parent().children().last().css("z-index",99999);
-				//console.log(jQuery("#timelapseLayer").parent().next().next().next());
+        this.hide(); //initially hide the time machine layer
 
         $("#timelapseLayer").append($("#player"));
         $("#player").css({"visibility": "inherit"});
+        $("#filler").css({"width":($("#map_canvas").width() - sliderHandleWidth) + "px"});
+        $("#timelineSlider").css({"width":($("#map_canvas").width() - sliderHandleWidth) + "px"});
+
         console.log("onAdd");
       }
 
-      TimelapseOverlay.prototype.draw = function() {
+      TimeMachineOverlay.prototype.draw = function() {
         console.log("drawing...");
 
         var projection = this.getProjection();
         var lat = map.getCenter().lat();
         var lng = map.getCenter().lng();
-        //console.log("lat: " + lat + " lng: " + lng);
+
         latlng = new google.maps.LatLng(lat,lng, false);
         var containerCenter = projection.fromLatLngToContainerPixel(latlng);
-        //console.log("containerCenter: " + containerCenter);
+
         var point = new google.maps.Point(Math.ceil(containerCenter.x) - 409, Math.ceil(containerCenter.y) - 0);
         var southWestLatLng = projection.fromContainerPixelToLatLng(point);
         point = new google.maps.Point(Math.ceil(containerCenter.x) + 0, Math.ceil(containerCenter.y) - 235);
         var northEastLatLng = projection.fromContainerPixelToLatLng(point);
-        //console.log("southWestLatLng: " + southWestLatLng);
-        //console.log("northEastLatLng: " + northEastLatLng);
 
-        // Retrieve the southwest and northeast coordinates of this timelapseLayer
+        // Retrieve the southwest and northeast coordinates of this timelapse overlay
         // in latlngs and convert them to pixels coordinates.
-        // We'll use these coordinates to resize the DIV.
+        // We'll use these coordinates to resize the div.
         var sw = projection.fromLatLngToDivPixel(southWestLatLng);
         var ne = projection.fromLatLngToDivPixel(northEastLatLng);
 
-        // Resize the image's DIV to fit the indicated dimensions.
+        // Resize the image's div to fit the indicated dimensions.
         var div = this.div_;
 
         div.style.left = sw.x + 'px';
         div.style.top = ne.y + 'px';
-        //div.style.width = 0 + 'px';
-        //div.style.height = 0 + 'px';
 
-
-				if (timelapse == null) return;
+        if (timelapse == null) return;
 
         point = new google.maps.Point($("#map_canvas").width()*0.5, $("#map_canvas").height()*0.5);
         var centerLatLng = projection.fromContainerPixelToLatLng(point);
 
-        console.log("centerLatLng: " + centerLatLng);
+        //console.log("centerLatLng: " + centerLatLng);
 
-        var minLon = -179.99999999999997;
-        var maxLon = 179.99999999999997;
-        var minLat = -85.05112877980659;
-        var maxLat = 85.05112877980659;
+        var minLon = gigapanDatasetsJSON["projection_bounds"]["upper_left_lon"];
+        var maxLon = gigapanDatasetsJSON["projection_bounds"]["lower_right_lon"];
+        var minLat = gigapanDatasetsJSON["projection_bounds"]["lower_right_lat"];
+        var maxLat = gigapanDatasetsJSON["projection_bounds"]["upper_left_lat"];
 
         var centerPixel = map.getProjection().fromLatLngToPoint(centerLatLng);
         x = (centerPixel.x / 256.0) * timelapse.getWidth();
         y = (centerPixel.y / 256.0) * timelapse.getHeight();
 
-//        x = (centerLatLng.lng() - minLon) / (maxLon-minLon) * timelapse.getWidth();
-//        y = (maxLat - centerLatLng.lat()) / (maxLat-minLat) * timelapse.getHeight();
         scale = projection.getWorldWidth() / timelapse.getWidth() * (maxLon-minLon) / 360;
 
-        console.log("x: " + x + " y: " + y + " scale: " + scale);
+        //console.log("x: " + x + " y: " + y + " scale: " + scale);
 
         timelapse.warpTo({x: x, y: y, scale: scale});
       }
 
-      TimelapseOverlay.prototype.onRemove = function() {
+      TimeMachineOverlay.prototype.onRemove = function() {
         this.div_.parentNode.removeChild(this.div_);
       }
 
-      TimelapseOverlay.prototype.hide = function() {
+      TimeMachineOverlay.prototype.hide = function() {
         if (timelapseStayOn) return;
-
+				console.log("hiding timemachine");
         if (this.div_) {
           this.div_.style.visibility = "hidden";
           timelapseControlUI.style.fontWeight = "normal"
+          timelapseControlUI.title = 'Show Time Machine';
         }
       }
 
-      TimelapseOverlay.prototype.show = function() {
+      TimeMachineOverlay.prototype.show = function() {
+        console.log("showing timemachine");
         if (this.div_) {
           this.div_.style.visibility = "visible";
           timelapseControlUI.style.fontWeight = "bold"
+          timelapseControlUI.title = 'Hide Time Machine';
         }
       }
 
-      TimelapseOverlay.prototype.toggle = function() {
+      TimeMachineOverlay.prototype.toggle = function() {
         if (this.div_) {
           if (this.div_.style.visibility == "hidden") {
             this.show();
@@ -276,181 +377,161 @@
         }
       }
 
-      TimelapseOverlay.prototype.toggleDOM = function() {
-        if (this.getMap()) {
-          this.setMap(null);
-        } else {
-          this.setMap(this.map_);
-        }
-      }
-
       function hideEeLayer() {
         //eeMapType.setMap(null);
-        timelapseLayer.show();
-        if (map.overlayMapTypes.getLength() > 0) map.overlayMapTypes.removeAt(0);
-        //jQuery("#timelapseLayer").parent().css("z-index",timelapseLayerZIndex); //timelapse overlay container
-        //jQuery("#timelapseLayer").parent().parent().children().last().css("z-index",1) //tiles container
-        //jQuery("#timelapseLayer").parent().parent().children().last().css("z-index",0);
+        //if (map.overlayMapTypes.getLength() > 0) map.overlayMapTypes.setAt(0,null);
+        eEControlUI.style.fontWeight = "normal"
+        eEControlUI.title = 'Show Layer';
+        if (map.overlayMapTypes.getAt(eEngineLayerIndex) != null) map.overlayMapTypes.setAt(eEngineLayerIndex,null);
       }
 
-      function showTimelapseLayer() {
-        //eeMapType.setMap(map);
-        timelapseLayer.hide();
-        map.overlayMapTypes.insertAt(0, eeMapType);
-        //jQuery("#timelapseLayer").parent().css("z-index",0);
-        //jQuery("#timelapseLayer").parent().parent().children().last().css("z-index",99999);
+      function showEeLayer() {
+        //eeMapType.setMap(null);
+        //if (map.overlayMapTypes.getLength() > 0) map.overlayMapTypes.setAt(0,eeMapType);
+        eEControlUI.style.fontWeight = "bold"
+        eEControlUI.title = 'Hide Layer';
+        if (map.overlayMapTypes.getAt(eEngineLayerIndex) == null) map.overlayMapTypes.setAt(eEngineLayerIndex,eeMapType);
       }
+//end googole maps specific code
 
-			function createTimelineSlider() {
-				if (gigapanDatasetsJSON["capture-times"]) {
-					captureTimes = gigapanDatasetsJSON["capture-times"];
-				} else {
-					for (i = 0; i < timelapse.getNumFrames(); i++) {
-						captureTimes.push("--")
-					}
-				}
+//begin old timelapse code below
+      function createTimelineSlider() {
+        if (gigapanDatasetsJSON["capture-times"]) {
+          captureTimes = gigapanDatasetsJSON["capture-times"];
+        } else {
+          for (i = 0; i < timelapse.getNumFrames(); i++) {
+            captureTimes.push("--")
+          }
+        }
 
-				timelapseDurationInSeconds = (timelapse.getNumFrames() -1 ) / timelapse.getFps();
-				timeStepInSecs = 1 / timelapse.getFps();
-				$("#currentTime").text(org.gigapan.Util.formatTime(timelapseCurrentTimeInSeconds,true));
-				$("#totalTime").text(org.gigapan.Util.formatTime(timelapseDurationInSeconds,true));
-				$("#currentCaptureTime").text(captureTimes[timelapseCurrentCaptureTimeIndex]);
+        timelapseDurationInSeconds = (timelapse.getNumFrames() -1 ) / timelapse.getFps();
+        timeStepInSecs = 1 / timelapse.getFps();
+        $("#currentTime").text(org.gigapan.Util.formatTime(timelapseCurrentTimeInSeconds,true));
+        $("#totalTime").text(org.gigapan.Util.formatTime(timelapseDurationInSeconds,true));
+        $("#currentCaptureTime").text(captureTimes[timelapseCurrentCaptureTimeIndex]);
 
-				$("#timelineSlider")["slider"]({
-					animate: true,
-					value: 0,
-					min: 0.0,
-					max: timelapseDurationInSeconds,
-					range: "min",
-					step: timeStepInSecs,
-					slide: function(e, ui) {
-						timelapse.seek(ui.value);
-						timelapseLayer.show();
-						hideEeLayer();
-					},
-					stop: function() {
-					  //showTimelapseLayer();
-					  changeEeLayer();
-					},
-                                        start: function() {
-                                          timelapseStayOn = true;
-                                        }
-				});
-
-				$("#timelineSlider .ui-slider-handle").attr("title", "Drag to go to a different point in time");
-			}
-
-
-      function changeEeLayer() {
-        //showTimelapseLayer();
-        if (map.overlayMapTypes.getLength() > 0) map.overlayMapTypes.removeAt(0);
-        eeOptions = {
-          getTileUrl: function(coord, zoom) {
-            url = "http://earthengine.googleapis.com/map/"+gigapanDatasetsJSON["earthengine-mapids"][timelapseCurrentCaptureTimeIndex]["mapid"]+"/"+zoom+"/"+coord.x+"/"+coord.y+"?token="+gigapanDatasetsJSON["earthengine-mapids"][timelapseCurrentCaptureTimeIndex]["token"]
-            return url;
+        $("#timelineSlider")["slider"]({
+          animate: true,
+          value: 0,
+          min: 0.0,
+          max: timelapseDurationInSeconds,
+          range: "min",
+          step: timeStepInSecs,
+          slide: function(e, ui) {
+            timelapse.seek(ui.value);
+            timelapseLayer.show();
+            hideEeLayer();
           },
-          tileSize: new google.maps.Size(256, 256),
-          mapTypeId: "ee"
-        };
-        eeMapType = new google.maps.ImageMapType(eeOptions);
-        map.overlayMapTypes.insertAt(0, eeMapType);
+          stop: function() {
+            showEeLayer();
+          }
+        });
+
+        $("#timelineSlider .ui-slider-handle").attr("title", "Drag to go to a different point in time");
       }
 
-			function createPlaybackSpeedSlider() {
-				$("#speed").selectToUISlider({
-					labels: 4
-				}).hide();
-			}
+      function getTimelapseCurrentCaptureTimeIndex() {
+        return timelapseCurrentCaptureTimeIndex;
+      }
 
-			function loadTimelapse(gigapanUrl, gigapanJSON) {
-				$("#timelapse").empty();
+      function createPlaybackSpeedSlider() {
+        $("#speed").selectToUISlider({
+          labels: 6
+        }).hide();
+      }
 
-				// Create the timelapse
-				if (timelapse == null) {
-					timelapse = new org.gigapan.timelapse.Timelapse(gigapanUrl, "timelapse", gigapanJSON, "videoset_stats_container");
+      function loadTimelapse(gigapanUrl, gigapanJSON) {
+        $("#timelapse").empty();
 
-					timelapse.addTimeChangeListener(function(t) {
-						timelapseCurrentTimeInSeconds = t;
-						timelapseCurrentCaptureTimeIndex = Math.floor(t * timelapse.getFps());
+        // Create the timelapse
+        if (timelapse == null) {
+          timelapse = new org.gigapan.timelapse.Timelapse(gigapanUrl, "timelapse", gigapanJSON, "videoset_stats_container");
 
-						if (timelapseCurrentTimeInSeconds.toFixed(3) < 0) {
-							timelapseCurrentTimeInSeconds = 0;
-							timelapse.pause();
-							$("#mainbutton").attr({"class": "play", "title": "Play"});
-							changeEeLayer();
-						}
+          timelapse.addTimeChangeListener(function(t) {
+            timelapseCurrentTimeInSeconds = t;
+            timelapseCurrentCaptureTimeIndex = Math.floor(t * timelapse.getFps());
 
-						if (isCurrentTimeAtOrPastDuration()) {
-							timelapseCurrentTimeInSeconds = timelapseDurationInSeconds;
-							if (repeatVideo) {
-								timelapse.seek(0);
-							} else {
-								timelapse.pause();
-								$("#mainbutton").attr({"class": "play", "title": "Play"});
-								changeEeLayer();
-							}
-						}
-						$("#currentTime").text(org.gigapan.Util.formatTime(timelapseCurrentTimeInSeconds,true));
-						$("#currentCaptureTime").text(captureTimes[timelapseCurrentCaptureTimeIndex]);
-						$("#timelineSlider")["slider"]("option", "value", timelapseCurrentTimeInSeconds);
-					});
+            if (timelapseCurrentTimeInSeconds.toFixed(3) < 0) {
+              timelapseCurrentTimeInSeconds = 0;
+              timelapse.pause();
+              $("#mainbutton").attr({"class": "play", "title": "Play"});
+              showEeLayer();
+            }
 
-					timelapse.addTargetViewChangeListener(function(view) {
-						$("#zoomSlider")["slider"]("option", "value", timelapse.viewScaleToZoomSlider(view.scale));
-					});
+            if (isCurrentTimeAtOrPastDuration()) {
+              timelapseCurrentTimeInSeconds = timelapseDurationInSeconds;
+              //if (snaplapse != null && snaplapse.isPlaying()) return;
+              if (repeatVideo) {
+                timelapse.seek(0);
+              } else {
+                timelapse.pause();
+                $("#mainbutton").attr({"class": "play", "title": "Play"});
+                showEeLayer();
+              }
+            }
 
-					timelapse.getVideoset().addEventListener("videoset-pause", function() {
-						// the videoset might cause playback to pause, such as when it decides
-						// its hit the end (even though the current time might not be >= duration),
-						// so we need to make sure the play button is updated
-						$("#mainbutton").attr({"class": "play", "title": "Play"});
-					});
+            $("#currentTime").text(org.gigapan.Util.formatTime(timelapseCurrentTimeInSeconds,true));
+            $("#currentCaptureTime").text(captureTimes[timelapseCurrentCaptureTimeIndex]);
+            $("#timelineSlider")["slider"]("option", "value", timelapseCurrentTimeInSeconds);
+          });
 
-					//setupKeyboardHandlers();
-					//setupMouseHandlers();
-					createTimelineSlider();
-					//createZoomSlider();
-					createPlaybackSpeedSlider();
-					setupSliderHandlers();
-					setupUIHandlers();
-					//initializeSnaplapseUI();
-					//handlePluginVideoTagOverride();
-				} else {
-					org.gigapan.Util.log("Timelapse already loaded, so update it with new JSON.  gigapanUrl = ["+gigapanUrl+"] and JSON = ["+JSON.stringify(gigapanJSON)+"]");
-					timelapse.changeDataset(gigapanUrl, gigapanJSON);
-				}
-				setViewportSize(gigapanJSON["video_width"] - gigapanJSON["tile_width"], gigapanJSON["video_height"] - gigapanJSON["tile_height"]);
-			}
+          /*timelapse.addTargetViewChangeListener(function(view) {
+            $("#zoomSlider")["slider"]("option", "value", timelapse.viewScaleToZoomSlider(view.scale));
+          });*/
 
-			function setupSliderHandlers() {
-			  $(".ui-slider-handle").bind("mouseover mouseup", function() {
-			    this.style.cursor = 'url("css/cursors/openhand.cur") 10 10, move';
-			  });
+          timelapse.getVideoset().addEventListener("videoset-pause", function() {
+            // the videoset might cause playback to pause, such as when it decides
+            // its hit the end (even though the current time might not be >= duration),
+            // so we need to make sure the play button is updated
+            $("#mainbutton").attr({"class": "play", "title": "Play"});
+          });
 
-			  $(".ui-slider").bind({
-			    slide: function() {
-			      this.style.cursor = 'url("css/cursors/closedhand.cur") 10 10, move';
-			      $(".ui-slider-handle").bind("mousemove", function() {
-			        this.style.cursor = 'url("css/cursors/closedhand.cur") 10 10, move';
-			      });
-			    },
-			    slidestop: function() {
-			      $(".ui-slider-handle").bind("mousemove", function() {
-			        this.style.cursor = 'url("css/cursors/openhand.cur") 10 10, move';
-			      });
-			    },
-			    mouseover: function() {
-			      this.style.cursor = "pointer";
-			    }
-			  });
-			}
+          //setupKeyboardHandlers();
+          //setupMouseHandlers();
+          createTimelineSlider();
+          //createZoomSlider();
+          createPlaybackSpeedSlider();
+          setupSliderHandlers();
+          setupUIHandlers();
+          //initializeSnaplapseUI();
+          //handlePluginVideoTagOverride();
+        } else {
+          org.gigapan.Util.log("Timelapse already loaded, so update it with new JSON.  gigapanUrl = ["+gigapanUrl+"] and JSON = ["+JSON.stringify(gigapanJSON)+"]");
+          timelapse.changeDataset(gigapanUrl, gigapanJSON);
+        }
+        setViewportSize(gigapanJSON["video_width"] - gigapanJSON["tile_width"], gigapanJSON["video_height"] - gigapanJSON["tile_height"]);
+        eEControlUI.innerHTML = gigapanDatasetsJSON["name"];
+      }
 
-			function isCurrentTimeAtOrPastDuration() {
-			  // fix the numbers, but subtract 0 from each to convert back to float since toFixed gives a string
-			  var num1Fixed = timelapseCurrentTimeInSeconds.toFixed(3) - 0;
-			  var num2Fixed = timelapseDurationInSeconds.toFixed(3) - 0;
-			  return num1Fixed >= num2Fixed;
-			}
+      function setupSliderHandlers() {
+        $(".ui-slider-handle").bind("mouseover mouseup", function() {
+          this.style.cursor = 'url("css/cursors/openhand.cur") 10 10, move';
+        });
+
+        $(".ui-slider").bind({
+          slide: function() {
+            this.style.cursor = 'url("css/cursors/closedhand.cur") 10 10, move';
+            $(".ui-slider-handle").bind("mousemove", function() {
+              this.style.cursor = 'url("css/cursors/closedhand.cur") 10 10, move';
+            });
+          },
+          slidestop: function() {
+            $(".ui-slider-handle").bind("mousemove", function() {
+              this.style.cursor = 'url("css/cursors/openhand.cur") 10 10, move';
+            });
+          },
+          mouseover: function() {
+            this.style.cursor = "pointer";
+          }
+        });
+      }
+
+      function isCurrentTimeAtOrPastDuration() {
+        // fix the numbers, but subtract 0 from each to convert back to float since toFixed gives a string
+        var num1Fixed = timelapseCurrentTimeInSeconds.toFixed(3) - 0;
+        var num2Fixed = timelapseDurationInSeconds.toFixed(3) - 0;
+        return num1Fixed >= num2Fixed;
+      }
 
       function setupUIHandlers() {
         /*google.maps.event.addDomListener($("a#size").get(0), 'click', function() {
@@ -472,195 +553,198 @@
         google.maps.event.addDomListener($("#mainbutton.play").get(0), 'click', function() {
           if ($(this).attr("class") == "play") {
             $(this).attr({"class": "pause", "title": "Pause"});
+            if (isCurrentTimeAtOrPastDuration()) {
+              $("#timelineSlider")["slider"]("option", "value", 0);
+              timelapse.seek(0);
+            }
             timelapse.play();
+            timelapseLayer.show();
             hideEeLayer();
-            timelapseStayOn = true;
           } else {
             $(this).attr({"class": "play", "title": "Play"});
             timelapse.pause();
-            //showTimelapseLayer();
-            changeEeLayer();
+            showEeLayer()
           }
         });
       }
 
-			function setViewportSize(newWidth, newHeight) {
-				var bounds = timelapse.getBoundingBoxForCurrentView();
+      function setViewportSize(newWidth, newHeight) {
+        var bounds = timelapse.getBoundingBoxForCurrentView();
 
-				$("#timelapse").css({"width": newWidth+"px", "height": newHeight+"px"});
-				$("#controls").width(newWidth);
-				$("#timelineSlider").width(newWidth-8); //subtract 8px (width of the slider handle)
-				$("#spinnerOverlay").css({"top": newHeight/2-$("#spinner").height()/2+"px", "left": newWidth/2-$("#spinner").width()/2+"px"});
-				$("#instructions").css({"height": newHeight+2+$("#filler").height()+"px"}); //not sure why there is a 2px offset...
-				$(".layerSlider").css({"top": newHeight+2+$("#filler").height()+$("#controls").height()+"px", "right": "28px"}); //not sure why there is a 2px offset...
+        $("#timelapse").css({"width": newWidth+"px", "height": newHeight+"px"});
+        $("#controls").width(newWidth);
+        $("#timelineSlider").width(newWidth-8); //subtract 8px (width of the slider handle)
+        $("#spinnerOverlay").css({"top": newHeight/2-$("#spinner").height()/2+"px", "left": newWidth/2-$("#spinner").width()/2+"px"});
+        //$("#instructions").css({"height": newHeight+2+$("#filler").height()+"px"}); //not sure why there is a 2px offset...
+        //$(".layerSlider").css({"top": newHeight+2+$("#filler").height()+$("#controls").height()+"px", "right": "28px"}); //not sure why there is a 2px offset...
 
-				timelapse.updateDimensions();
-				timelapse.warpToBoundingBox(bounds);
+        timelapse.updateDimensions();
+        timelapse.warpToBoundingBox(bounds);
+      }
 
-				//var topPos = ((parseInt(jQuery("#map_canvas").css("height")))/2) - ((parseInt(jQuery("#player").css("height")))/2);
-				//var leftPos = ((parseInt(jQuery("#map_canvas").css("width")))/2) - ((parseInt(jQuery("#player").css("width")))/2);
-				//$('#player').css({"top":topPos, "left":leftPos});
-			}
+      function loadGigapanJSON() {
+        // fetch the datasetId and then construct the URL used to get the JSON for the desired dataset
+        var datasetId = gigapanDatasetsJSON["datasets"][datasetIndex]["id"];
+        var tileHostUrlPrefix = getTileHostUrlPrefix() + datasetId + "/";
+        var gigapanJSONHostUrlPrefix = (typeof gigapanDatasetsJSON["dataset-json-host-url-prefix"] != "undefined") ? gigapanDatasetsJSON["dataset-json-host-url-prefix"] + datasetId + "/" : tileHostUrlPrefix;
+        var jsonUrl = gigapanJSONHostUrlPrefix + "r.json";
 
-			function loadGigapanJSON() {
-				// fetch the datasetId and then construct the URL used to get the JSON for the desired dataset
-				var datasetId = gigapanDatasetsJSON["datasets"][datasetIndex]["id"];
-				var tileHostUrlPrefix = getTileHostUrlPrefix() + datasetId + "/";
-				var gigapanJSONHostUrlPrefix = (typeof gigapanDatasetsJSON["dataset-json-host-url-prefix"] != "undefined") ? gigapanDatasetsJSON["dataset-json-host-url-prefix"] + datasetId + "/" : tileHostUrlPrefix;
-				var jsonUrl = gigapanJSONHostUrlPrefix + "r.json";
+        org.gigapan.Util.log("Attempting to fetch gigapan JSON from URL [" + jsonUrl + "]...");
+        $.ajax({
+          dataType: "json",
+          url: jsonUrl,
+          success: function(gigapanJSON) {
+            if (gigapanJSON && gigapanJSON["tile_height"]) {
+              org.gigapan.Util.log("Loaded this JSON: [" + JSON.stringify(gigapanJSON) + "]");
+              loadTimelapse(tileHostUrlPrefix, gigapanJSON);
+            } else {
+              org.gigapan.Util.error("Failed to load gigapan json from URL [" + jsonUrl + "]");
+            }
 
-				org.gigapan.Util.log("Attempting to fetch gigapan JSON from URL [" + jsonUrl + "]...");
-				$.ajax({
-					dataType: "json",
-					url: jsonUrl,
-					success: function(gigapanJSON) {
-						if (gigapanJSON && gigapanJSON["tile_height"]) {
-							org.gigapan.Util.log("Loaded this JSON: [" + JSON.stringify(gigapanJSON) + "]");
-							loadTimelapse(tileHostUrlPrefix, gigapanJSON);
-						} else {
-							org.gigapan.Util.error("Failed to load gigapan json from URL [" + jsonUrl + "]");
-						}
-					
-                                                var videoDiv = document.getElementById("timelapse")
-                                                videoDiv['onmousedown'] = null;
-                                                videoDiv['ondblclick'] = null;
-                                        },
-					error: function() {
-						org.gigapan.Util.error("Error loading gigapan json from URL [" + jsonUrl + "]");
-					}
-				});
-			}
+            var videoDiv = document.getElementById("timelapse")
+            videoDiv['onmousedown'] = null;
+            videoDiv['ondblclick'] = null;
+            $(videoDiv).mousedown(function() {
+              videoDiv.style.cursor = 'url("css/cursors/closedhand.cur") 10 10, move';
+            }).mouseup(function() {
+              videoDiv.style.cursor = 'url("css/cursors/openhand.cur") 10 10, move';
+            });
+          },
+          error: function() {
+            org.gigapan.Util.error("Error loading gigapan json from URL [" + jsonUrl + "]");
+          }
+        });
+      }
 
+      function getTileHostUrlPrefix() {
+        // get the tile host URL prefixes from the JSON, or use a default if undefined
+        var prefixes = ["http://g7.gigapan.org/alpha/timelapses/"];
+        if (typeof gigapanDatasetsJSON["tile-host-url-prefixes"] != "undefined" && $.isArray(gigapanDatasetsJSON["tile-host-url-prefixes"]) && gigapanDatasetsJSON["tile-host-url-prefixes"].length > 0) {
+          prefixes = gigapanDatasetsJSON["tile-host-url-prefixes"];
+        }
+        // now pick one at random
+        return prefixes[Math.floor(Math.random() * prefixes.length)];
+      }
 
-			function getTileHostUrlPrefix() {
-				// get the tile host URL prefixes from the JSON, or use a default if undefined
-				var prefixes = ["http://g7.gigapan.org/alpha/timelapses/"];
-				if (typeof gigapanDatasetsJSON["tile-host-url-prefixes"] != "undefined" && $.isArray(gigapanDatasetsJSON["tile-host-url-prefixes"]) && gigapanDatasetsJSON["tile-host-url-prefixes"].length > 0) {
-					prefixes = gigapanDatasetsJSON["tile-host-url-prefixes"];
-				}
-				// now pick one at random
-				//return prefixes[Math.floor(Math.random() * prefixes.length)];
-				return prefixes;
-			}
+      function validateAndSetDatasetIndex(newDatasetIndex) {
+        // make sure the datasetIndex is a valid number, and within the range of datasets for this gigapan.
+        if (!org.gigapan.Util.isNumber(newDatasetIndex)) {
+          datasetIndex = 0;
+        } else {
+          datasetIndex = Math.max(0, Math.min(newDatasetIndex, gigapanDatasetsJSON["datasets"].length - 1));
+        }
+      }
 
-			function validateAndSetDatasetIndex(newDatasetIndex) {
-				// make sure the datasetIndex is a valid number, and within the range of datasets for this gigapan.
-				if (!org.gigapan.Util.isNumber(newDatasetIndex)) {
-					datasetIndex = 0;
-				} else {
-					datasetIndex = Math.max(0, Math.min(newDatasetIndex, gigapanDatasetsJSON["datasets"].length - 1));
-				}
-			}
+      function timelapseInitialize() {
+        timelapseMetadataJSON = {};
+        gigapanId = timelapseMetadataJSON["id"] || "MODIS_MCD43A4_L8_9800m";
+        hasLayers = timelapseMetadataJSON["has_layers"] || false;
+        if (hasLayers) $(".layerSlider").show();
+        repeatVideo = timelapseMetadataJSON["repeat"]
+        if (repeatVideo) $("#repeat").attr("class", "repeat active");
+        org.gigapan.Util.log("id=["+gigapanId+"]");
 
-			function timelapseInitialize() {
-				timelapseMetadataJSON = {};
-				gigapanId = timelapseMetadataJSON["id"] || "MODIS_MCD43A4_L4_9800m";
-				hasLayers = timelapseMetadataJSON["has_layers"] || false;
-				if (hasLayers) $(".layerSlider").show();
-				repeatVideo = timelapseMetadataJSON["repeat"]
-				if (repeatVideo) $("#repeat").attr("class", "repeat active");
-				org.gigapan.Util.log("id=["+gigapanId+"]");
+        var host = timelapseMetadataJSON["host"] || "000";
+        var hostPrefix = "/timemachines/" + gigapanId + "/";
+        var jsonUrl = hostPrefix + gigapanId + ".json";
+        var tileHostUrlPrefixes = ["http://tm"+host+".gigapan.org/timemachines/"+gigapanId+"/"];
 
-				var host = timelapseMetadataJSON["host"] || "000";
-				var hostPrefix = "/timemachines/" + gigapanId + "/";
-				var jsonUrl = hostPrefix + gigapanId + ".json";
-				var tileHostUrlPrefixes = ["http://tm"+host+".gigapan.org/timemachines/"+gigapanId+"/"];
+        //SPECIFIC CODE TO RUN LOCALLY
+        gigapanId = "MODIS_MCD43A4_L8_9800m"
+        hostPrefix = "/timemachines/" + gigapanId + "/";
+        jsonUrl = hostPrefix + gigapanId + ".json";
+        tileHostUrlPrefixes = ["/timemachines/"+gigapanId+"/"];
+        //END
 
-				//SPECIFIC CODE TO RUN LOCALLY
-				gigapanId = "MODIS_MCD43A4_L4_9800m"
-				hostPrefix = "timemachines/" + gigapanId + "/";
-				jsonUrl = hostPrefix + gigapanId + ".json";
-				tileHostUrlPrefixes = ["timemachines/"+gigapanId+"/"];
-				//END
+        org.gigapan.Util.log("Attempting to fetch gigapan datasets JSON from URL [" + jsonUrl + "]...");
+        $.ajax({
+          dataType: "json",
+          url: jsonUrl,
+          success: function(json) {
+            gigapanDatasetsJSON = json;
+            if (gigapanDatasetsJSON && gigapanDatasetsJSON["base-id"] == gigapanId && gigapanDatasetsJSON["datasets"] && gigapanDatasetsJSON["datasets"].length > 0 && gigapanDatasetsJSON["sizes"] && gigapanDatasetsJSON["sizes"].length > 0) {
+              gigapanDatasetsJSON["dataset-json-host-url-prefix"]=hostPrefix;
+              gigapanDatasetsJSON["tile-host-url-prefixes"]=tileHostUrlPrefixes;
 
-				org.gigapan.Util.log("Attempting to fetch gigapan datasets JSON from URL [" + jsonUrl + "]...");
-				$.ajax({
-					dataType: "json",
-					url: jsonUrl,
-					success: function(json) {
-						gigapanDatasetsJSON = json;
-						if (gigapanDatasetsJSON && gigapanDatasetsJSON["base-id"] == gigapanId && gigapanDatasetsJSON["datasets"] && gigapanDatasetsJSON["datasets"].length > 0 && gigapanDatasetsJSON["sizes"] && gigapanDatasetsJSON["sizes"].length > 0) {
-							gigapanDatasetsJSON["dataset-json-host-url-prefix"]=hostPrefix;
-							gigapanDatasetsJSON["tile-host-url-prefixes"]=tileHostUrlPrefixes;
+              org.gigapan.Util.log("Loaded this JSON: [" + JSON.stringify(gigapanDatasetsJSON) + "]");
 
-							org.gigapan.Util.log("Loaded this JSON: [" + JSON.stringify(gigapanDatasetsJSON) + "]");
+              // set document title
+              document.title = "GigaPan Time Machine: " + gigapanDatasetsJSON["name"];
 
-							// set document title
-							document.title = "GigaPan Time Machine: " + gigapanDatasetsJSON["name"];
+              // populate the player size dropdown
+              /*var html = "";
+              var numSizes = gigapanDatasetsJSON["sizes"].length;
+              for (var i = 0; i < numSizes; i++) {
+                html += '<li><a id='+gigapanDatasetsJSON["sizes"][i]+' href="#" onclick="switchSize('+i+'); return false;"> '+gigapanDatasetsJSON["sizes"][i]+' </a></li>';
+              }
+              $("#sizechoices").append(html);
 
-							// populate the player size dropdown
-							var html = "";
-							var numSizes = gigapanDatasetsJSON["sizes"].length;
-							for (var i = 0; i < numSizes; i++) {
-								html += '<li><a id='+gigapanDatasetsJSON["sizes"][i]+' href="#" onclick="switchSize('+i+'); return false;"> '+gigapanDatasetsJSON["sizes"][i]+' </a></li>';
-							}
-							$("#sizechoices").append(html);
+              // set the current view to the largest size
+              var largestSize = $("#sizechoices li a").last();
+              largestSize.addClass("current");
+              $("#playerSizeText").text(largestSize.text());*/
+              datasetIndex = timelapseMetadataJSON["dataset"] || gigapanDatasetsJSON["sizes"].length - 1; //default to largest size of the first dataset if none is specified.
+              org.gigapan.Util.log("datasetIndex=["+datasetIndex+"]");
 
-							// set the current view to the largest size
-							var largestSize = $("#sizechoices li a").last();
-							largestSize.addClass("current");
-							$("#playerSizeText").text(largestSize.text());
-							datasetIndex = timelapseMetadataJSON["dataset"] || gigapanDatasetsJSON["sizes"].length; //default to largest size (ie last in the list) if none is specified.
-							org.gigapan.Util.log("datasetIndex=["+datasetIndex+"]");
+              // make sure the datasetIndex is a valid number, and within the range of datasets for this gigapan.
+              validateAndSetDatasetIndex(datasetIndex);
 
-							// make sure the datasetIndex is a valid number, and within the range of datasets for this gigapan.
-							validateAndSetDatasetIndex(datasetIndex);
+              // finally, load the gigapan
+              loadGigapanJSON();
 
-							// finally, load the gigapan
-							loadGigapanJSON();
-
-						} else {
-							org.gigapan.Util.error("Failed to load gigapan datasets json from URL [" + jsonUrl + "]");
-						}
-					},
-					error: function() {
-						org.gigapan.Util.error("Error loading gigapan datasets json from URL [" + jsonUrl + "]");
-					}
-				});
-		  }
-		</script>
-	</head>
-
-	<body>
-		<div id="player" style="position: absolute; left:0px; top:0px; visibility: hidden">
-			<div id="spinnerOverlay"><img id="spinner" src="images/loading.gif" width="32" height="32"></div>
-			<div id="timelapse" style="position: relative; width:512px; height:288px; background:black; overflow:hidden; border: 1px solid black;"></div>
-		</div>
-	  <div id="map_canvas"></div>
-		<div id="filler" style="width:inherit !important; min-width: 512px !important;">
-		  <div id="timelineSlider" title="Click to go to a different point in time" style="width:99.4% !important; min-width: 512px !important"></div>
-		</div>
-		<div id="controls" style="width:100% !important; min-width: 512px !important; border: none">
-			<a href="#" title="Play" class="play" id="mainbutton"></a>
-			<a href="#" title="Stop time warp" class="stop" id="mainbutton" style="display: none;"></a>
-			<a href="#" title="Repeat" class="inactive" id="repeat" style="visibility: hidden"></a>
-			<ul id="sidebuttons" style="visibility: hidden">
-				<li id="sizeoptions" style="display: none;">
-					<ul id="sizechoices">
-						<li>Player Size</li>
-					</ul>
-				</li>
-				<li>
-					<a href="#" title="Player size" id="size" onclick="return false;">
-						<div id="playerSizeText"></div>
-					</a>
-				</li>
-				<li>
-					<a href="#" title="Instructions" id="help" class="enabled" onclick="return false;">
-						<div id="helpText">Help</div>
-					</a>
-				</li>
-			</ul>
-			<div id="videoTime"><b><span id="currentTime">00:00.00</span>/<span id="totalTime">00:00.00</span></b></div>
-			<div id="captureTime"><span id="currentCaptureTime"></span></div>
-			<div id="playBackSpeedSlider">
-				<select name="speed" id="speed">
-					<option value="-1">Backward, Full Speed</option>
-					<option value="-.5">Backward, Half Speed</option>
-					<option value=".5">Forward, Half Speed</option>
-					<option value="1" selected="selected">Forward, Full Speed</option>
-				</select>
-			</div>
-		</div>
-	</body>
+            } else {
+              org.gigapan.Util.error("Failed to load gigapan datasets json from URL [" + jsonUrl + "]");
+            }
+          },
+          error: function() {
+            org.gigapan.Util.error("Error loading gigapan datasets json from URL [" + jsonUrl + "]");
+          }
+        });
+      }
+    </script>
+  </head>
+  <body>
+    <div id="player" style="position: absolute; left:0px; top:0px; visibility: hidden">
+      <div id="spinnerOverlay"><img id="spinner" src="images/loading.gif" width="32" height="32"></div>
+      <div id="timelapse" style="position: relative; width:512px; height:288px; background:black; overflow:hidden; border: 1px solid black;"></div>
+    </div>
+    <div id="map_canvas"></div>
+    <div id="filler" style="min-width: 512px !important;">
+      <div id="timelineSlider" title="Click to go to a different point in time" style="min-width: 512px !important"></div>
+    </div>
+    <div id="controls" style="width:100% !important; min-width: 512px !important; border: none">
+      <a href="javascript:void(0)" title="Play" class="play" id="mainbutton"></a>
+      <a href="javascript:void(0)" title="Stop time warp" class="stop" id="mainbutton" style="display: none;"></a>
+      <a href="javascript:void(0)" title="Repeat" class="inactive" id="repeat" style="visibility: hidden"></a>
+      <ul id="sidebuttons" style="visibility: hidden">
+        <li id="sizeoptions" style="display: none;">
+          <ul id="sizechoices">
+            <li>Player Size</li>
+          </ul>
+        </li>
+        <li>
+          <a href="javascript:void(0)" title="Player size" id="size" onclick="return false;">
+            <div id="playerSizeText"></div>
+          </a>
+        </li>
+        <li>
+          <a href="javascript:void(0)" title="Instructions" id="help" class="enabled" onclick="return false;">
+            <div id="helpText">Help</div>
+          </a>
+        </li>
+      </ul>
+      <div id="videoTime"><b><span id="currentTime">00:00.00</span>/<span id="totalTime">00:00.00</span></b></div>
+      <div id="captureTime"><span id="currentCaptureTime"></span></div>
+      <div id="playBackSpeedSlider">
+        <select name="speed" id="speed">
+          <option value="-1">Backward, Full Speed</option>
+          <option value="-.5">Backward, Half Speed</option>
+          <option value="-.25">Backward, Quarter Speed</option>
+          <option value=".25">Forward, Quarter Speed</option>
+          <option value=".5">Forward, Half Speed</option>
+          <option value="1" selected="selected">Forward, Full Speed</option>
+        </select>
+      </div>
+    </div>
+  </body>
 </html>
