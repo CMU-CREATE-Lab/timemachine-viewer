@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html>
   <head>
+    <META HTTP-EQUIV="expires" CONTENT="0">
     <meta http-equiv="content-type" content="text/html; charset=UTF-8"/>
     <title>Time Machine In Google Maps - V1</title>
     <link href="css/timelapse.css" rel="stylesheet" type="text/css"/>
@@ -554,7 +555,7 @@
 
 			function timelapseInitialize() {
 				timelapseMetadataJSON = {};
-				gigapanId = timelapseMetadataJSON["id"] || "MODIS_MCD43A4_L7_1220m";
+				gigapanId = timelapseMetadataJSON["id"] || "MODIS_MCD43A4_L8_610m";
 				hasLayers = timelapseMetadataJSON["has_layers"] || false;
 				if (hasLayers) $(".layerSlider").show();
 				repeatVideo = timelapseMetadataJSON["repeat"]
@@ -567,7 +568,7 @@
 				var tileHostUrlPrefixes = ["http://tm"+host+".gigapan.org/timemachines/"+gigapanId+"/"];
 
 				//SPECIFIC CODE TO RUN LOCALLY
-				gigapanId = "MODIS_MCD43A4_L7_1220m"
+				gigapanId = "MODIS_MCD43A4_L8_610m"
 				hostPrefix = "/timemachines/" + gigapanId + "/";
 				jsonUrl = hostPrefix + gigapanId + ".json";
 				tileHostUrlPrefixes = ["/timemachines/"+gigapanId+"/"];
