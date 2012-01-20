@@ -15,10 +15,6 @@
 // * org.gigapan.Util
 // * jQuery (http://jquery.com/)
 //
-// Class containing various (static) generic utility methods.
-//
-// Dependencies: None
-//
 // Copyright 2011 Carnegie Mellon University. All rights reserved.
 // 
 // Redistribution and use in source and binary forms, with or without modification, are
@@ -300,7 +296,7 @@ if (!window['$']) {
           setTimeout(check, timeout);
         }
       }
-      //setTimeout(check, timeout);
+      setTimeout(check, timeout);
       publishVideoEvent(video.id, 'video-added', currentTime);
 
       updateStallState();
@@ -585,7 +581,6 @@ if (!window['$']) {
 
     // This seems to get called pretty late in the game
     var videoLoadedMetadata = function(event) {
-    	UTIL.log("in videoLoadedMetadata");
       var video = event.target;
       publishVideoEvent(video.id, 'video-loaded-metadata', new Date());
 
@@ -691,7 +686,6 @@ if (!window['$']) {
 
     var videoSeeked = function(event) {
       var video = event.target;
-			UTIL.log("in videoSeeked");
       var error = video.currentTime - leader - _getCurrentTime();
       if (_isPaused() && Math.abs(error) > DEFAULT_ERROR_THRESHOLD) {
         UTIL.log("video(" + video.id + ") videoSeeked():  readyState=[" + video.readyState + "] currentTime=[" + video.currentTime + "] error=[" + error + "] is too high, must re-seek");

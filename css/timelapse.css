@@ -61,13 +61,13 @@ div#player, img, a{
   position:relative;
   left: 89px;
   bottom: 70px;
-  width: 110px;
+  width: 140px;
   height:30px;
 }
 
 #mouse_debug_info {
   border: 1px solid black;
-    padding: 3px;
+  padding: 3px;
   margin: 3px 0 3px 0;
   width: 500px;
 }
