@@ -30,7 +30,7 @@
 // Randy Sargent (randy.sargent@cs.cmu.edu)
 
 var timelapseMetadata;
-var timelapseMetadataJSON;
+//var timelapseMetadataJSON;
 var gigapanId;
 var datasetIndex;
 var gigapanDatasetsJSON = null;
@@ -94,14 +94,14 @@ function createZoomSlider() {
 
 function createPlaybackSpeedSlider() {
   $("#speed").selectToUISlider({
-    labels: 4
+    labels: 6
   }).hide();
 }
 
 function setupSliderHandlers() {
-  $(".ui-slider-handle").bind("mouseover mouseup", function() {
+  $(".ui-slider-handle").bind("mouseover mouseup", function() { 
     this.style.cursor = 'url("../gigapan-timelapse-explorer/css/cursors/openhand.cur") 10 10, move';
-  });
+  }); 
 
   $(".ui-slider").bind({
     slide: function() {
@@ -116,7 +116,7 @@ function setupSliderHandlers() {
       });
     },
     mouseover: function() {
-      this.style.cursor = "pointer";  
+      this.style.cursor = "pointer";
     }
   });
 }
@@ -461,7 +461,7 @@ $(document).ready(function() {
 
   timelapseMetadata = $("#timelapse_metadata").text();
   org.gigapan.Util.log("timelapseMetadata=["+timelapseMetadata+"]");
-  timelapseMetadataJSON = timelapseMetadata ? JSON.parse(timelapseMetadata) : {};
+  timelapseMetadataJSON = timelapseMetadata ? JSON.parse(timelapseMetadata) : timelapseMetadataJSON;
   gigapanId = timelapseMetadataJSON["id"] || "brassica-15m-halfsize-g10-bf0-l15";
   hasLayers = timelapseMetadataJSON["has_layers"] || false;
   if (hasLayers) $(".layerSlider").show();
@@ -469,10 +469,10 @@ $(document).ready(function() {
   if (repeatVideo) $("#repeat").attr("class", "repeat active");
   org.gigapan.Util.log("id=["+gigapanId+"]");
 
-  var host = timelapseMetadataJSON["host"] || "000";
+  var host = timelapseMetadataJSON["host"] ? timelapseMetadataJSON["host"].replace(/\/$/, "") : "000";
   var hostPrefix = "../timemachines/" + host + "/" + gigapanId + "/";
-  var jsonUrl = hostPrefix + gigapanId + ".json"; 
-  var tileHostUrlPrefixes = ["http://tm"+host+".gigapan.org/timemachines/"+gigapanId+"/"];
+  var jsonUrl = hostPrefix + "tm.json";
+  tileHostUrlPrefixes = (typeof tileHostUrlPrefixes != "undefined" && tileHostUrlPrefixes) ? tileHostUrlPrefixes : ["http://tm"+host+".gigapan.org/timemachines/"+gigapanId+"/"];
 
   org.gigapan.Util.log("Attempting to fetch gigapan datasets JSON from URL [" + jsonUrl + "]...");
   $.ajax({
