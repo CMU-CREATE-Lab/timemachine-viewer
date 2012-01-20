@@ -644,7 +644,7 @@
         repeatVideo = timelapseMetadataJSON["repeat"]
         if (repeatVideo) $("#repeat").attr("class", "repeat active");
 
-        gigapanId = "MODIS_MCD43A4_L8_610m"
+        gigapanId = getUrlParam('gigapanId') || "MODIS_MCD43A4_L4_9800m"
         var hostPrefix = "../timemachines/" + gigapanId + "/";
         var jsonUrl = hostPrefix + "tm.json";
         var tileHostUrlPrefixes = ["../timemachines/"+gigapanId+"/"];
