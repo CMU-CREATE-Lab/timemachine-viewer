@@ -328,10 +328,10 @@
 
         //console.log("centerLatLng: " + centerLatLng);
 
-        var minLon = gigapanDatasetsJSON["projection_bounds"]["upper_left_lon"];
-        var maxLon = gigapanDatasetsJSON["projection_bounds"]["lower_right_lon"];
-        var minLat = gigapanDatasetsJSON["projection_bounds"]["lower_right_lat"];
-        var maxLat = gigapanDatasetsJSON["projection_bounds"]["upper_left_lat"];
+        var minLon = (gigapanDatasetsJSON["projection-bounds"] && gigapanDatasetsJSON["projection-bounds"]["upper-left-lon"]) ? gigapanDatasetsJSON["projection-bounds"]["upper-left-lon"] : -180.0;
+        var maxLon = (gigapanDatasetsJSON["projection-bounds"] && gigapanDatasetsJSON["projection-bounds"]["lower-right-lon"]) ? gigapanDatasetsJSON["projection-bounds"]["lower-right-lon"] : 180.0;
+        var minLat = (gigapanDatasetsJSON["projection-bounds"] && gigapanDatasetsJSON["projection-bounds"]["lower-right-lat"]) ? gigapanDatasetsJSON["projection-bounds"]["lower-right-lat"] : -85.0;
+        var maxLat = (gigapanDatasetsJSON["projection-bounds"] && gigapanDatasetsJSON["projection-bounds"]["upper-left-lat"]) ? gigapanDatasetsJSON["projection-bounds"]["upper-left-lat"] : 85.0;
 
         var centerPixel = map.getProjection().fromLatLngToPoint(centerLatLng);
         x = (centerPixel.x / 256.0) * timelapse.getWidth();
@@ -637,24 +637,16 @@
 
       function timelapseInitialize() {
         timelapseMetadataJSON = {};
-        gigapanId = timelapseMetadataJSON["id"] || "MODIS_MCD43A4_L8_9800m";
         hasLayers = timelapseMetadataJSON["has_layers"] || false;
         if (hasLayers) $(".layerSlider").show();
         repeatVideo = timelapseMetadataJSON["repeat"]
         if (repeatVideo) $("#repeat").attr("class", "repeat active");
-        org.gigapan.Util.log("id=["+gigapanId+"]");
 
-        var host = timelapseMetadataJSON["host"] || "000";
-        var hostPrefix = "/timemachines/" + gigapanId + "/";
+        gigapanId = "MODIS_MCD43A4_L4_9800m"
+        var hostPrefix = "../timemachines/" + gigapanId + "/";
         var jsonUrl = hostPrefix + "tm.json";
-        var tileHostUrlPrefixes = ["http://tm"+host+".gigapan.org/timemachines/"+gigapanId+"/"];
-
-        //SPECIFIC CODE TO RUN LOCALLY
-        gigapanId = "MODIS_MCD43A4_L8_9800m"
-        hostPrefix = "/timemachines/" + gigapanId + "/";
-        jsonUrl = hostPrefix + "tm.json";
-        tileHostUrlPrefixes = ["/timemachines/"+gigapanId+"/"];
-        //END
+        var tileHostUrlPrefixes = ["../timemachines/"+gigapanId+"/"];
+        org.gigapan.Util.log("id=["+gigapanId+"]");
 
         org.gigapan.Util.log("Attempting to fetch gigapan datasets JSON from URL [" + jsonUrl + "]...");
         $.ajax({
@@ -723,12 +715,12 @@
           </ul>
         </li>
         <li>
-          <a href="javascript:void(0)" title="Player size" id="size" onclick="return false;">
+          <a href="javascript:void(0);" title="Player size" id="size" onclick="return false;">
             <div id="playerSizeText"></div>
           </a>
         </li>
         <li>
-          <a href="javascript:void(0)" title="Instructions" id="help" class="enabled" onclick="return false;">
+          <a href="javascript:void(0);" title="Instructions" id="help" class="enabled" onclick="return false;">
             <div id="helpText">Help</div>
           </a>
         </li>
