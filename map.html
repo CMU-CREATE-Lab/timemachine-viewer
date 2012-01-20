@@ -646,13 +646,13 @@
 
         var host = timelapseMetadataJSON["host"] || "000";
         var hostPrefix = "/timemachines/" + gigapanId + "/";
-        var jsonUrl = hostPrefix + gigapanId + ".json";
+        var jsonUrl = hostPrefix + "tm.json";
         var tileHostUrlPrefixes = ["http://tm"+host+".gigapan.org/timemachines/"+gigapanId+"/"];
 
         //SPECIFIC CODE TO RUN LOCALLY
         gigapanId = "MODIS_MCD43A4_L8_9800m"
         hostPrefix = "/timemachines/" + gigapanId + "/";
-        jsonUrl = hostPrefix + gigapanId + ".json";
+        jsonUrl = hostPrefix + "tm.json";
         tileHostUrlPrefixes = ["/timemachines/"+gigapanId+"/"];
         //END
 
@@ -713,9 +713,9 @@
       <div id="timelineSlider" title="Click to go to a different point in time" style="min-width: 512px !important"></div>
     </div>
     <div id="controls" style="width:100% !important; min-width: 512px !important; border: none">
-      <a href="javascript:void(0)" title="Play" class="play" id="mainbutton"></a>
-      <a href="javascript:void(0)" title="Stop time warp" class="stop" id="mainbutton" style="display: none;"></a>
-      <a href="javascript:void(0)" title="Repeat" class="inactive" id="repeat" style="visibility: hidden"></a>
+      <a href="javascript:void(0);" title="Play" class="play" id="mainbutton"></a>
+      <a href="javascript:void(0);" title="Stop time warp" class="stop" id="mainbutton" style="display: none;"></a>
+      <a href="javascript:void(0);" title="Repeat" class="inactive" id="repeat" style="visibility: hidden"></a>
       <ul id="sidebuttons" style="visibility: hidden">
         <li id="sizeoptions" style="display: none;">
           <ul id="sizechoices">

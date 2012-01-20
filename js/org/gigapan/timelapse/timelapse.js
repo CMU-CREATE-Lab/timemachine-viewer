@@ -386,7 +386,7 @@ if (!window['$']) {
       var lastEvent = event;
       var saveMouseMove = document.onmousemove;
       var saveMouseUp = document.onmouseup;
-      videoDiv.style.cursor = 'url("../timelapse-20120105/css/cursors/closedhand.cur") 10 10, move';
+      videoDiv.style.cursor = 'url("../gigapan-timelapse-explorer/css/cursors/closedhand.cur") 10 10, move';
       document.onmousemove = function(event) {
         targetView.x += (lastEvent.pageX - event.pageX) / view.scale;
         targetView.y += (lastEvent.pageY - event.pageY) / view.scale;
@@ -395,7 +395,7 @@ if (!window['$']) {
         return false;
       };
       document.onmouseup = function() {
-        videoDiv.style.cursor = 'url("../timelapse-20120105/css/cursors/openhand.cur") 10 10, move';
+        videoDiv.style.cursor = 'url("../gigapan-timelapse-explorer/css/cursors/openhand.cur") 10 10, move';
         document.onmousemove = saveMouseMove;
         document.onmouseup = saveMouseUp;
       };
