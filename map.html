@@ -45,13 +45,13 @@
       var sliderHandleWidth = 11; //in pixels
       var pendingTileUrls = [];
       var eEngineLayerIndex = 0;
-      var showTimeMachineOnSpaceChange = decodeURIComponent(getUrlParam('showTimeMachineOnPanZoom'));
+      var showTimeMachineOnSpatialChange = getUrlParam('showTimeMachineOnSpatialChange');
       TimeMachineOverlay.prototype = new google.maps.OverlayView();
       google.maps.event.addDomListener(window, 'load', initialize);
 
       function getUrlParam(name){
         var results = new RegExp('[\\?&]' + name + '=([^&#]*)').exec(window.location.href);
-        return results ? results[1] : null
+        return results ? decodeURIComponent(results[1]) : null
       }
 
       $(window).resize(function() {
@@ -199,11 +199,11 @@
         });
 
         google.maps.event.addListener(map, 'dragstart', function() {
-          if (showTimeMachineOnSpaceChange) timelapseLayer.show();
+          if (showTimeMachineOnSpatialChange == "true") timelapseLayer.show();
         });
 
         google.maps.event.addListener(map, 'zoom_changed', function() {
-          if (showTimeMachineOnSpaceChange) timelapseLayer.show();
+          if (showTimeMachineOnSpatialChange == "true") timelapseLayer.show();
         });
 
         google.maps.event.addListenerOnce(map, 'idle', function(){
