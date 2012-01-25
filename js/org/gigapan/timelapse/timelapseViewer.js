@@ -465,7 +465,7 @@ $(document).ready(function() {
   gigapanId = timelapseMetadataJSON["id"] || "brassica-15m-halfsize-g10-bf0-l15";
   hasLayers = timelapseMetadataJSON["has_layers"] || false;
   if (hasLayers) $(".layerSlider").show();
-  repeatVideo = timelapseMetadataJSON["repeat"]
+  repeatVideo = timelapseMetadataJSON["repeat"] || false;
   if (repeatVideo) $("#repeat").attr("class", "repeat active");
   org.gigapan.Util.log("id=["+gigapanId+"]");
 
@@ -497,13 +497,12 @@ $(document).ready(function() {
         }
         $("#sizechoices").append(html);
 				
-        // set the current view to the largest size
-        var largestSize = $("#sizechoices li a").last();
-        largestSize.addClass("current");
-        $("#playerSizeText").text(largestSize.text());
-        datasetIndex = timelapseMetadataJSON["dataset"] || gigapanDatasetsJSON["sizes"].length - 1; //default to largest size of the first dataset if none is specified.
+        //change the viewer to a specific size
+        datasetIndex = timelapseMetadataJSON["dataset"] != undefined ? timelapseMetadataJSON["dataset"] : gigapanDatasetsJSON["sizes"].length - 1; //default to largest size of the first dataset if none is specified.
         org.gigapan.Util.log("datasetIndex=["+datasetIndex+"]");
-        
+        $("#sizechoices li #" + gigapanDatasetsJSON["datasets"][datasetIndex]["name"]).addClass("current");
+        $("#playerSizeText").text(gigapanDatasetsJSON["datasets"][datasetIndex]["name"]);
+
         // make sure the datasetIndex is a valid number, and within the range of datasets for this gigapan.
         validateAndSetDatasetIndex(datasetIndex);
 
