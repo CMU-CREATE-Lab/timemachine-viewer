@@ -499,13 +499,12 @@ $(document).ready(function() {
 				
         //change the viewer to a specific size
         datasetIndex = timelapseMetadataJSON["dataset"] != undefined ? timelapseMetadataJSON["dataset"] : gigapanDatasetsJSON["sizes"].length - 1; //default to largest size of the first dataset if none is specified.
-        org.gigapan.Util.log("datasetIndex=["+datasetIndex+"]");
-        $("#sizechoices li #" + gigapanDatasetsJSON["datasets"][datasetIndex]["name"]).addClass("current");
-        $("#playerSizeText").text(gigapanDatasetsJSON["datasets"][datasetIndex]["name"]);
-
         // make sure the datasetIndex is a valid number, and within the range of datasets for this gigapan.
         validateAndSetDatasetIndex(datasetIndex);
-
+        org.gigapan.Util.log("datasetIndex=["+datasetIndex+"]");
+        // set the size dropdown
+        $("#sizechoices li #" + gigapanDatasetsJSON["datasets"][datasetIndex]["name"]).addClass("current");
+        $("#playerSizeText").text(gigapanDatasetsJSON["datasets"][datasetIndex]["name"]);
         // finally, load the gigapan
         loadGigapanJSON();
       } else {
