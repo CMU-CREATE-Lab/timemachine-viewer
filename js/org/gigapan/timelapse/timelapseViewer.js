@@ -100,19 +100,19 @@ function createPlaybackSpeedSlider() {
 
 function setupSliderHandlers() {
   $(".ui-slider-handle").bind("mouseover mouseup", function() { 
-    this.style.cursor = 'url("../gigapan-timelapse-explorer/css/cursors/openhand.cur") 10 10, move';
+    this.style.cursor = 'url("css/cursors/openhand.cur") 10 10, move';
   }); 
 
   $(".ui-slider").bind({
     slide: function() {
-      this.style.cursor = 'url("../gigapan-timelapse-explorer/css/cursors/closedhand.cur") 10 10, move';
+      this.style.cursor = 'url("css/cursors/closedhand.cur") 10 10, move';
       $(".ui-slider-handle").bind("mousemove", function() {
-        this.style.cursor = 'url("../gigapan-timelapse-explorer/css/cursors/closedhand.cur") 10 10, move';
+        this.style.cursor = 'url("css/cursors/closedhand.cur") 10 10, move';
       });
     },
     slidestop: function() {
       $(".ui-slider-handle").bind("mousemove", function() {
-        this.style.cursor = 'url("../gigapan-timelapse-explorer/css/cursors/openhand.cur") 10 10, move';
+        this.style.cursor = 'url("css/cursors/openhand.cur") 10 10, move';
       });
     },
     mouseover: function() {
