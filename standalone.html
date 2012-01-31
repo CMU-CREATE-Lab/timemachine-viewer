@@ -44,7 +44,6 @@
         loadSelectedGigapan();
       }
       $(init);
-
     </script>
     <script src="js/org/gigapan/util.js" type="text/javascript"></script>
     <script src="js/org/gigapan/timelapse/videoset_stats.js" type="text/javascript"></script>
@@ -53,6 +52,15 @@
     <script src="js/Math.uuid.js" type="text/javascript"></script>
     <script src="js/org/gigapan/timelapse/snaplapse.js" type="text/javascript"></script>
     <script src="js/org/gigapan/timelapse/snaplapseViewer.js" type="text/javascript"></script>
+    <script type="text/javascript">
+      /*override normal snaplapse behavior for standalone player*/
+      function showLoadSnaplapseWindow() {
+        loadSnaplapseWindow = popup('load_snaplapse.html', 'loadSnaplapseWindow');
+      }
+      function showSaveSnaplapseWindow() {
+        saveSnaplapseWindow = popup('save_snaplapse.html', 'saveSnaplapseWindow');
+      }
+    </script>
     <script src="js/org/gigapan/timelapse/timelapseViewer.js" type="text/javascript"></script>
     <script src="js/jwplayer/jwplayer.js" type="text/javascript"></script>
     <script src="js/org/gigapan/timelapse/flashViewer.js" type="text/javascript"></script>
@@ -187,6 +195,48 @@
         <option value="MODIS_MCD43A4_L8_610m">MODIS MCD43A4 L8 (610m/pixel)</option>
         <option value="MODIS_MCD43A4_L7_1220m">MODIS MCD43A4 L7 (1220m/pixel)</option>
       </select>
+    </div>
+
+    <br/><br/>
+    <div id="time_warp_composer">
+      <h3><span class="mw-headline" id="Create_Your_Own_Time_Warp"> Create Your Own Time Warp </span></h3>
+      <table style="border-spacing:0;">
+        <tr>
+          <td>
+            <div class="button-container">
+              <button id="newSnaplapseButton" type="button" style="float:left;margin-left:0;" class="ui-state-default ui-corner-all button text-button" title="Create a new time warp">New</button>
+              <button id="loadSnaplapseButton" type="button" style="float:right;margin-right:0;" class="ui-state-default ui-corner-all button text-button" title="Load a time warp" onclick="$('#loadSnaplapseButton').unbind('click'); showLoadSnaplapseWindow(); return false;">Load</button>
+            </div>
+          </td>
+        </tr>
+        <tr class="snaplapse_composer_controls">
+          <td>
+            <div id="snaplapse_keyframe_container">
+              <div id="snaplapse_keyframe_list"></div>
+            </div>
+          </td>
+        </tr>
+        <tr class="snaplapse_composer_controls">
+          <td>
+            <div class="button-container">
+              <div id="recordKeyframeButton" class="ui-state-default ui-corner-all button" title="Record keyframe">
+                <span class="ui-icon ui-icon-plus"></span>
+              </div>
+              <div id="deleteKeyframeButton" style="margin-left:2px;" class="ui-state-active ui-state-disabled ui-corner-all button" title="Delete selected keyframe(s)">
+                <span class="ui-icon ui-icon-minus"></span>
+              </div>
+              <div id="playStopSnaplapseButton" style="margin-left:24px;margin-right:24px;" class="ui-state-active ui-state-disabled ui-corner-all button" title="Play time warp">
+                <span class="ui-icon ui-icon-play"></span>
+              </div>
+              <button type="button" style="float:right;margin-right:0;" id="saveSnaplapseButton" class="ui-state-disabled ui-state-active ui-corner-all button text-button" onclick="$('#saveSnaplapseButton').unbind('click'); showSaveSnaplapseWindow(); return false;">Save</button>
+            </div>
+          </td>
+        </tr>
+      </table>
+      <form id="save_snaplapse_form" method="post" action="../timelapse/save_time_warp.php" style="display:none" onsubmit="return false;">
+        <textarea id="save_snaplapse_form_json" name="json" rows="10" cols="40"></textarea>
+        <input id="save_snaplapse_form_filename" name="filename"/>
+      </form>
     </div>
   </body>
 </html>
