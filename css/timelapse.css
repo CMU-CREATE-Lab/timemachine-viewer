@@ -127,7 +127,7 @@ h1#firstHeading{top:450px;}
 
 a.time_warp_link {
   width:auto !important;
-  padding:16px 19px 16px 0px !important;
+  padding:0px 16px 0px 0px !important;
   text-decoration:underline !important; 
   background:url('../images/snaplink.png') right center no-repeat !important; 
 }
