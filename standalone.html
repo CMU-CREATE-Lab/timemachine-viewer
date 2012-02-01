@@ -12,6 +12,7 @@
     <script type="text/javascript">
       var timelapseMetadataJSON = {};
       var tileHostUrlPrefixes;
+      var timelapsesToRepeat = []
 
       function loadSelectedGigapan() {
         gigapanId = $('#dataList').val();
@@ -23,6 +24,7 @@
         /*override the variables used in timelapseViewer.js to run things offline*/
         timelapseMetadataJSON["id"] = gigapanId;
         timelapseMetadataJSON["host"] = "/";
+        if ($.inArray(gigapanId, timelapsesToRepeat) != -1) timelapseMetadataJSON["repeat"] = true;
         tileHostUrlPrefixes = ["../timemachines/"+timelapseMetadataJSON["id"]+"/"];
       }
 
