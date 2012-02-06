@@ -120,6 +120,7 @@ if (!window['$']) {
     var videoHeight = 0;
     var frames = 0;
     var maxLevel = 0;
+    var metadata = null;
     var view = null;
     var targetView = null;
     var currentIdx = null;
@@ -241,7 +242,8 @@ if (!window['$']) {
     };
 
     this.getView = function() {
-      return view;
+      // Clone current view
+      return $.extend({}, view);
     };
 
     this.getVideoset = function() {
@@ -324,6 +326,10 @@ if (!window['$']) {
       return panoHeight;
     };
 		
+    this.getMetadata = function() {
+      return metadata;
+    }
+
     this.addTimeChangeListener = function(listener) {
       videoset.addEventListener('sync', listener);
     };
@@ -443,6 +449,7 @@ if (!window['$']) {
 
       for (var i = 0; i < targetViewChangeListeners.length; i++) targetViewChangeListeners[i](targetView);
     };
+    this.setTargetView = setTargetView;
 
     var point2mag = function(point) {
       return Math.sqrt(point.x*point.x + point.y*point.y);
@@ -551,6 +558,7 @@ if (!window['$']) {
       frames = data['frames'];
       maxLevel = data['nlevels']-1;
       levelInfo = data['level_info'];
+      metadata = data;
 
       readVideoDivSize();
       _warpTo(typeof desiredView != 'undefined' && desiredView ? desiredView : _homeView());
