@@ -100,7 +100,8 @@ if (!Math.uuid) {
 
 (function() {
   var UTIL = org.gigapan.Util;
-  org.gigapan.timelapse.Snaplapse = function(timelapse) {
+  org.gigapan.timelapse.Snaplapse = function(composerDivId, timelapse) {
+
     var eventListeners = {};
     var keyframes = [];
     var keyframesById = {};
@@ -109,6 +110,12 @@ if (!Math.uuid) {
     var isCurrentlyPlaying = false;
     var warpStartingTime = null;
     var timeCounterIntervalHandle = null;
+    var thisObj = this;
+    var $composerDivObj = $("#"+composerDivId);
+
+    this.getComposerDivId = function() {
+    	return composerDivId;
+    }
 
     timelapse.getVideoset().addEventListener('stall-status-change', function(isStalled) {
       if (isCurrentlyPlaying) {
@@ -501,8 +508,15 @@ if (!Math.uuid) {
         else if (rate < 0.55) rate = .5 
         else rate = 1          
 
-        $("#speed").val(rate.toString());                                      
-        $("#speed").trigger('click');
+	var speedChoice;
+        var timelapseViewerDivId = timelapse.getViewerDivId();
+	$("#"+timelapseViewerDivId+" .playbackSpeedChoices li a").each(function() {
+	  speedChoice = $(this);
+	  if ((speedChoice.attr("data-speed")-0) == rate) return false;
+	});
+	$("#"+timelapseViewerDivId+" .playbackSpeedChoices li a").removeClass("current");
+	speedChoice.addClass("current");
+	$("#"+timelapseViewerDivId+" .playbackSpeedText").text(speedChoice.text());
 
         var keyframeStartingTime = currentKeyframeInterval.getStartingTime();
         timelapse.seek(keyframeStartingTime);              // make sure we're on track 
@@ -590,6 +604,21 @@ if (!Math.uuid) {
         _stop(true);
       }
     };
+    
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    //
+    // Constructor code
+    //
+    var viewer;
+    
+    $composerDivObj.load('time_warp_composer.html', function(response, status, xhr) {
+      if (status == "error") {
+        org.gigapan.Util.error("Error loading time warp composer controls.");
+        return;
+      }
+      viewer = org.gigapan.timelapse.snaplapse.SnaplapseViewer(thisObj,timelapse);
+    });
+
   };
 
   org.gigapan.timelapse.Snaplapse.normalizeTime = function(t) {
@@ -682,7 +711,6 @@ if (!Math.uuid) {
 
     return null;
   };
-
   this.toString = function() {
     return 'KeyframeInterval' +
            '[startTime=' + startingFrame['time'] +
@@ -695,5 +723,6 @@ if (!Math.uuid) {
            ',endingRunningDurationInMillis=' + endingRunningDurationInMillis +
            ']';
    };
+
  };
 })();

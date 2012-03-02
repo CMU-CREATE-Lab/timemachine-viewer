@@ -1,0 +1,38 @@
+<h2><span class="mw-headline"> Create Your Own Time Warp </span></h2>
+<p>Create a time warp by selecting keyframes and inserting annotations.</p>
+<table style="border-spacing:0;">
+	<tr>
+		 <td>
+				<div class="button-container">
+					 <button id="newSnaplapseButton" type="button" style="float:left;margin-left:0;" class="ui-state-default ui-corner-all button text-button" title="Create a new time warp">New</button>
+					 <button id="loadSnaplapseButton" type="button" style="float:right;margin-right:0;" class="ui-state-default ui-corner-all button text-button" title="Load a time warp">Load</button>
+				</div>
+		 </td>
+	</tr>
+	<tr class="snaplapse_composer_controls">
+		 <td>
+				<div class="snaplapse_keyframe_container">
+					 <div class="snaplapse_keyframe_list"></div>
+				</div>
+		 </td>
+	</tr>
+	<tr class="snaplapse_composer_controls">
+		 <td>
+				<div class="button-container">
+					 <div id="recordKeyframeButton" class="ui-state-default ui-corner-all button" title="Record keyframe">
+							<span class="ui-icon ui-icon-plus"></span>
+					 </div>
+					 <div id="deleteKeyframeButton" style="margin-left:2px;" class="ui-state-active ui-state-disabled ui-corner-all button" title="Delete selected keyframe(s)">
+							<span class="ui-icon ui-icon-minus"></span>
+					 </div>
+					 <div id="playStopSnaplapseButton" style="margin-left:24px;margin-right:24px;" class="ui-state-active ui-state-disabled ui-corner-all button" title="Play time warp">
+							<span class="ui-icon ui-icon-play"></span>
+					 </div>
+					 <button type="button" style="float:right;margin-right:0;" id="saveSnaplapseButton" class="ui-state-disabled ui-state-active ui-corner-all button text-button">Save</button>
+				</div>
+		 </td>
+	</tr>
+</table>
+<form id="save_snaplapse_form" method="post" action="../timelapse/save_time_warp.php" style="display:none" onsubmit="return false;">
+	<textarea id="save_snaplapse_form_json" name="json" rows="10" cols="40"></textarea>
+</form>

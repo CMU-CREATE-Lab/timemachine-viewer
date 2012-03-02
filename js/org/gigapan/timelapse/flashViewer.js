@@ -25,9 +25,7 @@
 // or implied, of Carnegie Mellon University.
 //
 // Authors:
-// Chris Bartley (bartley@cmu.edu)
 // Paul Dille (pdille@andrew.cmu.edu)
-// Randy Sargent (randy.sargent@cs.cmu.edu)
 
 var playlistPath = "../flash/playlists/INSERTNAME/INSERTNAME-512x288_playlist.xml";
 

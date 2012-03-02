@@ -73,7 +73,7 @@ if (!org.gigapan) {
   //0 == none
   //1 == errors only
   //2 == verbose (everything)
-  var loggingLevel = 1
+  var loggingLevel = 2
 
   org.gigapan.Util = function() { };
 

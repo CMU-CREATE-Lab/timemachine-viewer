@@ -4,14 +4,31 @@
     <meta http-equiv="content-type" content="text/html; charset=UTF-8"/>
     <script src="js/jquery/jquery.min.js" type="text/javascript"></script>
     <script src="js/jquery/jquery-ui.custom.min.js" type="text/javascript"></script>
-    <script src="js/jquery/plugins/mouse/jquery.mousewheel.js" type="text/javascript"></script>
-    <script src="js/jquery/plugins/slider/selectToUISlider.jQuery.js" type="text/javascript"></script>
+    <script src="js/jquery/plugins/mouse/jquery.mousewheel.min.js" type="text/javascript"></script>
     <script src="js/jquery/plugins/query/jquery.query-2.1.7.js" type="text/javascript"></script>
     <script src="js/jquery/plugins/carousel/jcarousellite.min.js" type="text/javascript"></script>
     <script src="js/jquery/plugins/mouse/jquery.mousecapture.js" type="text/javascript"></script>
+    <script src="js/org/gigapan/util.js" type="text/javascript"></script>
+    <script src="js/org/gigapan/timelapse/videoset_stats.js" type="text/javascript"></script>
+    <script src="js/org/gigapan/timelapse/videoset.js" type="text/javascript"></script>
+    <script src="js/org/gigapan/timelapse/timelapse.js" type="text/javascript"></script>
+    <script src="js/Math.uuid.js" type="text/javascript"></script>
+    <script src="js/org/gigapan/timelapse/snaplapse.js" type="text/javascript"></script>
+    <script src="js/org/gigapan/timelapse/snaplapseViewer.js" type="text/javascript"></script>
+
+    <script src="js/org/gigapan/timelapse/timelapseViewer.js" type="text/javascript"></script>
+    <script src="js/jwplayer/jwplayer.js" type="text/javascript"></script>
+    <script src="js/org/gigapan/timelapse/flashViewer.js" type="text/javascript"></script>
+    <link href="css/timelapse.css" rel="stylesheet" type="text/css"/>
+    <link href="css/videoset_stats.css" rel="stylesheet" type="text/css"/>
+    <link href="css/snaplapse.css" rel="stylesheet" type="text/css"/>
+    <link href="css/jquery-ui/smoothness/jquery-ui.custom.css" rel="stylesheet" type="text/css"/>
+    <link href="css/ui.slider.extras.css" rel="stylesheet" type="text/css"/>
+    <link href="css/player.css" rel="stylesheet" type="text/css"/>
+
     <script type="text/javascript">
       var timelapseMetadataJSON = {};
-      var tileHostUrlPrefixes;
+
       var timelapsesToRepeat = []
 
       function loadSelectedGigapan() {
@@ -21,11 +38,25 @@
         var baseUrl = (paramStartIndex == -1 ) ? fullUrl : fullUrl.substr(0,paramStartIndex);
         var newUrl = baseUrl + "?gigapanId=" + gigapanId;
         if (window.location != newUrl) window.location = newUrl;
-        /*override the variables used in timelapseViewer.js to run things offline*/
-        timelapseMetadataJSON["id"] = gigapanId;
-        timelapseMetadataJSON["host"] = "/";
-        if ($.inArray(gigapanId, timelapsesToRepeat) != -1) timelapseMetadataJSON["repeat"] = true;
-        tileHostUrlPrefixes = ["../timemachines/"+timelapseMetadataJSON["id"]+"/"];
+        var doRepeat = false;
+        if ($.inArray(gigapanId, timelapsesToRepeat) != -1) doRepeat = true;
+        var url = "../timemachines/"+gigapanId+"/";
+				url = "http://g7.gigapan.org/timemachines/radarmosaic-crf28-g10-bf0-6fps/"
+
+      	var viewerOptions = {
+					url: url, //can be absolute or relative
+					//initialView: {x: 1700, y: 800, scale: 0.15058823529411763}, //defaults to 'home view'; param currently ignored
+					initialTime: 0, //default to 0; video time
+					playerSize: "Large", //[Small, Large] defaults to Large size
+					loopPlayback: timelapseMetadataJSON["repeat"], //defaults to false
+					playOnLoad: false, //defaults to false
+					playbackSpeed: 1, //[-1,-.5,-.25,.25,.5,1] available, defaults to 1
+					layer: 0, //default to first layer. All sets have at least 1 layer starting at index 0
+					composerDiv: "composer1" //display the time warp composer; display nothing if param left out
+				};
+
+			  timelapse = new org.gigapan.timelapse.Timelapse("player1", viewerOptions);
+
       }
 
       function getUrlVars() {
@@ -47,206 +78,27 @@
       }
       $(init);
     </script>
-    <script src="js/org/gigapan/util.js" type="text/javascript"></script>
-    <script src="js/org/gigapan/timelapse/videoset_stats.js" type="text/javascript"></script>
-    <script src="js/org/gigapan/timelapse/videoset.js" type="text/javascript"></script>
-    <script src="js/org/gigapan/timelapse/timelapse.js" type="text/javascript"></script>
-    <script src="js/Math.uuid.js" type="text/javascript"></script>
-    <script src="js/org/gigapan/timelapse/snaplapse.js" type="text/javascript"></script>
-    <script src="js/org/gigapan/timelapse/snaplapseViewer.js" type="text/javascript"></script>
-    <script type="text/javascript">
-      /*override normal snaplapse behavior for standalone player*/
-      function showLoadSnaplapseWindow() {
-        loadSnaplapseWindow = popup('load_snaplapse.html', 'loadSnaplapseWindow');
-      }
-      function showSaveSnaplapseWindow() {
-        saveSnaplapseWindow = popup('save_snaplapse.html', 'saveSnaplapseWindow');
-      }
-    </script>
-    <script src="js/org/gigapan/timelapse/timelapseViewer.js" type="text/javascript"></script>
-    <script src="js/jwplayer/jwplayer.js" type="text/javascript"></script>
-    <script src="js/org/gigapan/timelapse/flashViewer.js" type="text/javascript"></script>
-    <link href="css/timelapse.css" rel="stylesheet" type="text/css"/>
-    <link href="css/videoset_stats.css" rel="stylesheet" type="text/css"/>
-    <link href="css/snaplapse.css" rel="stylesheet" type="text/css"/>
-    <link href="css/jquery-ui/smoothness/jquery-ui.custom.css" rel="stylesheet" type="text/css"/>
-    <link href="css/ui.slider.extras.css" rel="stylesheet" type="text/css"/>
-    <link href="css/player.css" rel="stylesheet" type="text/css"/>
-    <style type="text/css">
-      /*override the css since things are shifted in the viewer outside the wiki*/
-      #playerSizeText {
-        top: 0px;
-      }
-      #helpText {
-        top: 0px;
-      }
-    </style>
+
   </head>
   <body>
-    <div id="browser_not_supported" style="display: none;">
-        <div class="warning">We're sorry, but it looks like your browser isn't currently supported by our viewer.
-        At this time, only <a href="http://www.apple.com/safari/">Safari 5.0+</a> and
-        <a href="http://www.google.com/chrome/intl/en/make/download.html">Chrome 7.0+</a> are known to be fully
-        compatible.<br/><br/>
 
-        Firefox 8+ support will be coming soon. Please keep checking back or
-        <a href="http://groups.google.com/group/gigapan-time-machine-announcements/subscribe">join our mailing list</a> to stay up-to-date.
-      </div>
-    </div>
 
-    <div id="player">
-      <div id="zoom">
-        <a href="javascript:void(0);" id="zoom_in" title="Zoom in" class="zoomin" onclick="return false;"></a>
-        <a href="javascript:void(0);" id="zoom_out" title="Zoom out" class="zoomout" onclick="return false;"></a>
-        <div id="zoomSlider" title="Click to zoom"></div>
-        <a href="javascript:void(0);" id="home" title="Home" class="zoomall" onclick="return false;"></a>
-      </div>
+	<div id="player1"></div>
 
-      <div id="instructions">
-        <span class="zoomhelp"><p>Zoom in &amp; out to explore in greater detail. Click or use the scroll wheel.</p></span>
-        <span class="zoomallhelp"><p>Click to view the whole gigapan.</p></span>
-        <span class="speedhelp"><p>Drag to change playback speed.</p></span>
-        <span class="movehelp"><p>Click and drag to explore.</p></span>
-      </div>
+  <div id="dataListSelection">
+    Select Dataset:
+    <select name="dataList" id="dataList" onChange="loadSelectedGigapan(this.options[selectedIndex].value);">
+      <option value="blue-marble-v2">Blue Marble</option>
+      <option value="carnival-10m-halfsize-g10-bf0-l30">CMU Carnival 2010</option>
+      <option value="e5-crf28-g10-bf0-l">Early Universe</option>
+      <option value="chlorophyll-r32d-crf28-g10-bf0-l">Ocean Chlorophyll</option>
+      <option value="brassica-15m-g10-bf0-l">Plant Growth</option>
+      <option value="sdo-color-crf24-g10-bf0-l">Sun (304A)</option>
+      <option value="radarmosaic-crf28-g10-bf0-6fps">Weather Radar</option>
+    </select>
+  </div>
 
-      <div id="spinnerOverlay"><img id="spinner" src="images/loading.gif" width="32" height="32"></div>
-      <div id="timelapse" style="position: relative; width:512px; height:288px; background:black; overflow:hidden; border: 1px solid black;"></div>
-
-      <div id="filler">
-        <div id="timelineSlider" title="Click to go to a different point in time"></div>
-      </div>
-
-      <div id="controls">
-        <a href="javascript:void(0);" title="Play" class="play" id="mainbutton"></a>
-        <a href="javascript:void(0);" title="Stop time warp" class="stop" id="mainbutton" style="display: none;"></a>
-        <a href="javascript:void(0);" title="Repeat" class="inactive" id="repeat"></a>
-        <ul id="sidebuttons">
-          <li id="sizeoptions" style="display: none;">
-            <ul id="sizechoices">
-              <li>Player Size</li>
-            </ul>
-          </li>
-          <li>
-            <a href="javascript:void(0);" title="Player size" id="size" onclick="return false;">
-              <div id="playerSizeText"></div>
-            </a>
-          </li>
-          <li>
-            <a href="javascript:void(0);" title="Instructions" id="help" class="enabled" onclick="return false;">
-              <div id="helpText">Help</div>
-            </a>
-          </li>
-        </ul>
-
-        <div id="videoTime"><b><span id="currentTime">00:00.00</span>/<span id="totalTime">00:00.00</span></b></div>
-        <div id="captureTime"><span id="currentCaptureTime"></span></div>
-
-        <div id="playBackSpeedSlider">
-          <select name="speed" id="speed">
-            <option value="-1">Backward, Full Speed</option>
-            <option value="-.5">Backward, Half Speed</option>
-            <option value="-.25">Backward, Quarter Speed</option>
-            <option value=".25">Forward, Quarter Speed</option>
-            <option value=".5">Forward, Half Speed</option>
-            <option value="1" selected="selected">Forward, Full Speed</option>
-          </select>
-        </div>
-      </div>
-
-      <div class="carousel layerSlider" style="position: absolute; display: none;">
-        <a href="javascript:void(0);" class="prev">&nbsp</a>
-        <div class="jCarouselLite">
-          <ul id="layerChoices"></ul>
-        </div>
-        <a href="javascript:void(0);" class="next">&nbsp</a>
-        <div class="clear"></div>
-      </div>
-      <span id="snaplapse-annotation-description"><p></p></span>
-    </div>
-
-    <div id="flash_video_player" style="display: none;">
-      <div id="container">Loading the player ...</div>
-      <div id="flash_video_controls">
-        <label for="flash_video_sizes">Player Size: </label>
-        <select id="flash_video_sizes" name="video_sizes" onchange="resizeFlashPlayer(this.value);">
-          <option value="small">Small</option>
-          <option value="large">Large</option>
-        </select>
-      </div>
-    </div>
-
-    <div id="html5_overridden_message" style="display: none;">
-      <div class="warning">
-        Oops, it looks like some extension you have installed has taken control of the videos
-        on this page.
-        <br/><br/>
-        Most likely, the DivX Web Player is at fault here. In order to use GigaPan Time Machine properly,
-        you must first disable the 'DivX Plus Web Player HTML5 video' extension. You can disable it by typing
-        <b>chrome://extensions/</b> in your browser location bar. Once on that page, click disable under the
-        'DivX Plus Web Player HTML5 video' entry.
-        <br/> <br/>
-        Once you do this, you must refresh the Time Machine window for the change to take affect.
-        <br/><br/>
-        Sorry for this inconvenience. It isn't our fault...
-      </div>
-    </div>
-
-    <div id="dataListSelection">
-      Select Dataset:
-      <select name="dataList" id="dataList" onChange="loadSelectedGigapan(this.options[selectedIndex].value);">
-        <option value="MODIS_MCD43A4_L8_610m">MODIS MCD43A4 L8 (610m/pixel)</option>
-        <option value="MODIS_MCD43A4_L7_1220m">MODIS MCD43A4 L7 (1220m/pixel)</option>
-      </select>
-    </div>
-
-    <br/><br/>
-    <div id="time_warp_composer">
-      <h3><span class="mw-headline" id="Create_Your_Own_Time_Warp"> Create Your Own Time Warp </span></h3>
-      <table style="border-spacing:0;">
-        <tr>
-          <td>
-            <div class="button-container">
-              <button id="newSnaplapseButton" type="button" style="float:left;margin-left:0;" class="ui-state-default ui-corner-all button text-button" title="Create a new time warp">New</button>
-              <button id="loadSnaplapseButton" type="button" style="float:right;margin-right:0;" class="ui-state-default ui-corner-all button text-button" title="Load a time warp" onclick="$('#loadSnaplapseButton').unbind('click'); showLoadSnaplapseWindow(); return false;">Load</button>
-            </div>
-          </td>
-        </tr>
-        <tr class="snaplapse_composer_controls">
-          <td>
-            <div id="snaplapse_keyframe_container">
-              <div id="snaplapse_keyframe_list"></div>
-            </div>
-          </td>
-        </tr>
-        <tr class="snaplapse_composer_controls">
-          <td>
-            <div class="button-container">
-              <div id="recordKeyframeButton" class="ui-state-default ui-corner-all button" title="Record keyframe">
-                <span class="ui-icon ui-icon-plus"></span>
-              </div>
-              <div id="deleteKeyframeButton" style="margin-left:2px;" class="ui-state-active ui-state-disabled ui-corner-all button" title="Delete selected keyframe(s)">
-                <span class="ui-icon ui-icon-minus"></span>
-              </div>
-              <div id="playStopSnaplapseButton" style="margin-left:24px;margin-right:24px;" class="ui-state-active ui-state-disabled ui-corner-all button" title="Play time warp">
-                <span class="ui-icon ui-icon-play"></span>
-              </div>
-              <button type="button" style="float:right;margin-right:0;" id="saveSnaplapseButton" class="ui-state-disabled ui-state-active ui-corner-all button text-button" onclick="$('#saveSnaplapseButton').unbind('click'); showSaveSnaplapseWindow(); return false;">Save</button>
-            </div>
-          </td>
-        </tr>
-      </table>
-      <form id="save_snaplapse_form" method="post" action="../timelapse/save_time_warp.php" style="display:none" onsubmit="return false;">
-        <textarea id="save_snaplapse_form_json" name="json" rows="10" cols="40"></textarea>
-        <input id="save_snaplapse_form_filename" name="filename"/>
-      </form>
-    </div>
-
-    <!-- Example code which creates a link that will play a .warp file
-    <span class="snaplapse_link">
-       <span class="snaplapse_label">title for foo.warp</span>
-       <span class="snaplapse_filename" style="display:none"><a href="foo.warp" class="internal" title="foo.warp">Media:foo.warp</a></span>
-    </span>
-    -->
+	<div id="composer1"></div>
 
   </body>
 </html>

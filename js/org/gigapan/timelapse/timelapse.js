@@ -36,7 +36,6 @@
 // Chris Bartley (bartley@cmu.edu)
 // Paul Dille (pdille@andrew.cmu.edu)
 // Randy Sargent (randy.sargent@cs.cmu.edu)
-
 //
 // VERIFY NAMESPACE
 //
@@ -101,14 +100,14 @@ if (!window['$']) {
 //
 // CODE
 //
-
-(function() {
+(function () {
   var UTIL = org.gigapan.Util;
 
-  org.gigapan.timelapse.Timelapse = function(url, videoDivName, optionalInfo, videosetStatsDivName) {
-    var videoset = new org.gigapan.timelapse.Videoset(videoDivName);
-    var videosetStats = new org.gigapan.timelapse.VideosetStats(videoset, videosetStatsDivName);
-    var videoDiv = document.getElementById(videoDivName);
+  org.gigapan.timelapse.Timelapse = function (viewerDivId, settings) {
+    settings["videosetStatsDivId"] = settings["videosetStatsDivId"] || "videoset_stats_container";
+    var videoset;
+    var videosetStats;
+    var videoDiv;
     var tiles = {};
     var panoWidth = 0;
     var panoHeight = 0;
@@ -127,12 +126,31 @@ if (!window['$']) {
     var currentVideo = null;
     var animateInterval = null;
     var lastAnimationTime;
-    var minTranslateSpeedPixelsPerSecond = 25.;
-    var translateFractionPerSecond = 3.;
+    var minTranslateSpeedPixelsPerSecond = 25.0;
+    var translateFractionPerSecond = 3.0;
     var minZoomSpeedPerSecond = .25; // in log2
-    var zoomFractionPerSecond = 3.; // in log2
+    var zoomFractionPerSecond = 3.0; // in log2
     var keyIntervals = [];
     var targetViewChangeListeners = [];
+    var thisObj = this;
+    var tmJSON;
+    var datasetJSON;
+    var videoDivId;
+    //var hasLayers = settings["hasLayers"] || false;
+    var loopPlayback = settings["loopPlayback"] || false;
+    var playOnLoad = settings["playOnLoad"] || false;
+    var playbackSpeed = settings["playbackSpeed"] || 1;
+    var datasetLayer = settings["layer"] || 0;
+    var playerSize;
+    var datasetIndex;
+    var initialTime = settings["initialTime"] || 0;
+
+    var timelapseDurationInSeconds = 0.0;
+    var timelapseCurrentTimeInSeconds = 0.0;
+    var timelapseCurrentCaptureTimeIndex = 0;
+    var captureTimes = new Array();
+
+    var snaplapse;
 
     // levelThreshold sets the quality of display by deciding what level of tile to show for a given level of zoom:
     //
@@ -147,10 +165,17 @@ if (!window['$']) {
     //
     // Public methods
     //
+    this.getViewerDivId = function () {
+      return viewerDivId;
+    }
 
-    this.changeDataset = function(gigapanUrl, gigapanJSON) {
-      url = gigapanUrl;
-      UTIL.log("changeDataset("+gigapanUrl+"): view is " + JSON.stringify(view));
+    this.getVideoDivId = function () {
+      return videoDivId;
+    }
+
+    this.changeDataset = function (gigapanUrl, gigapanJSON) {
+      datasetPath = gigapanUrl;
+      UTIL.log("changeDataset(" + gigapanUrl + "): view is " + JSON.stringify(view));
 
       // Reset currentIdx so that we'll load in the new tile with the different resolution.  We don't null the
       // currentVideo here because 1) it will be assigned in the refresh() method when it compares the bestIdx
@@ -158,31 +183,64 @@ if (!window['$']) {
       // track of what video replaced it.
       currentIdx = null;
 
-      onPanoLoadSuccessCallback(gigapanJSON, "", "", view);
+      onPanoLoadSuccessCallback(gigapanJSON, view);
     };
 
-    this.handleKeydownEvent = function(event) {
+    var handleKeydownEvent = function (event) {
 
       // if we are focused on a text field, do not run any player specific controls
       if (document.activeElement == "[object HTMLInputElement]" || document.activeElement == "[object HTMLTextAreaElement]") return;
 
+
       var translationSpeedConstant = 20;
       var moveFn;
+      console.log(event.which);
       switch (event.which) {
-        case 37:  moveFn = function() {targetView.x -= translationSpeedConstant / view.scale; setTargetView(targetView);}; break;  // left arrow
-        case 39:  moveFn = function() {targetView.x += translationSpeedConstant / view.scale; setTargetView(targetView);}; break;  // right arrow
-        case 38:  moveFn = function() {targetView.y -= translationSpeedConstant / view.scale; setTargetView(targetView);}; break;  // up arrow
-        case 40:  moveFn = function() {targetView.y += translationSpeedConstant / view.scale; setTargetView(targetView);}; break;  // down arrow
-        case 189: moveFn = function() {targetView.scale *= .94;                               setTargetView(targetView);}; break;  // minus
-        case 187: moveFn = function() {targetView.scale /= .94;                               setTargetView(targetView);}; break;  // plus
-        case 80:  // P
-          if (_isPaused()) {
-            _play();
-          } else {
-            _pause();
-          }
-          break;
-        default:
+      case 37:
+        moveFn = function () {
+          targetView.x -= translationSpeedConstant / view.scale;
+          setTargetView(targetView);
+        };
+        break; // left arrow
+      case 39:
+        moveFn = function () {
+          targetView.x += translationSpeedConstant / view.scale;
+          setTargetView(targetView);
+        };
+        break; // right arrow
+      case 38:
+        moveFn = function () {
+          targetView.y -= translationSpeedConstant / view.scale;
+          setTargetView(targetView);
+        };
+        break; // up arrow
+      case 40:
+        moveFn = function () {
+          targetView.y += translationSpeedConstant / view.scale;
+          setTargetView(targetView);
+        };
+        break; // down arrow
+      case 189:
+        moveFn = function () {
+          targetView.scale *= .94;
+          setTargetView(targetView);
+        };
+        break; // minus
+      case 187:
+        moveFn = function () {
+          targetView.scale /= .94;
+          setTargetView(targetView);
+        };
+        break; // plus
+      case 80:
+        // P
+        if (_isPaused()) {
+          _play();
+        } else {
+          _pause();
+        }
+        break;
+      default:
         return;
       }
       // Install interval to run every 50 msec while key is down
@@ -194,23 +252,23 @@ if (!window['$']) {
       }
     }
 
-    this.handleKeyupEvent = function() {
+    var handleKeyupEvent = function () {
       if (keyIntervals[event.which] != undefined) {
         clearInterval(keyIntervals[event.which]);
         keyIntervals[event.which] = undefined;
       }
     };
 
-    this.handleMousescrollEvent = function(event) {
+    this.handleMousescrollEvent = function (event) {
       //UTIL.log('mousescroll delta  ' + event.wheelDelta);
       if (event.wheelDelta > 0) {
-        zoomAbout(1/.9, event.pageX, event.pageY);
+        zoomAbout(1 / .9, event.pageX, event.pageY);
       } else if (event.wheelDelta < 0) {
         zoomAbout(.9, event.pageX, event.pageY);
       }
     };
 
-    var _warpTo = function(newView) {
+    var _warpTo = function (newView) {
       setTargetView(newView);
       view.x = targetView.x;
       view.y = targetView.y;
@@ -219,188 +277,201 @@ if (!window['$']) {
     };
     this.warpTo = _warpTo;
 
-    var _homeView = function() {
-      var ret = computeViewFit({xmin:0, ymin:0, xmax:panoWidth, ymax:panoHeight});
+    var _homeView = function () {
+      var ret = computeViewFit({
+        xmin: 0,
+        ymin: 0,
+        xmax: panoWidth,
+        ymax: panoHeight
+      });
       return ret;
     };
     this.homeView = _homeView;
 
-    this.getBoundingBoxForCurrentView = function() {
+    this.getBoundingBoxForCurrentView = function () {
       return computeBoundingBox(view);
     };
 
-    this.warpToBoundingBox = function(bbox) {
+    this.warpToBoundingBox = function (bbox) {
       this.warpTo(computeViewFit(bbox));
     };
 
-    this.resetPerf = function() {
+    this.resetPerf = function () {
       videoset.resetPerf();
     };
 
-    this.getPerf = function() {
+    this.getPerf = function () {
       return videoset.getPerf();
     };
 
-    this.getView = function() {
+    this.getView = function () {
       // Clone current view
       return $.extend({}, view);
     };
 
-    this.getVideoset = function() {
+    this.getVideoset = function () {
       return videoset;
     };
 
-    this.addTargetViewChangeListener = function(listener) {
+    var _addTargetViewChangeListener = function (listener) {
       targetViewChangeListeners.push(listener);
     };
+    this.addTargetViewChangeListener = _addTargetViewChangeListener;
 
     ///////////////////////////
     // Timelapse video control
     //
-
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////
     //
     // Public methods
     //
-
-    var _isPaused = function() {
+    var _isPaused = function () {
       return videoset.isPaused();
     };
     this.isPaused = _isPaused;
 
-    var _pause = function() {
+    var _pause = function () {
       videoset.pause();
     };
     this.pause = _pause;
 
-    this.seek = function(t) {
+    var _seek = function (t) {
       videoset.seek(t);
     };
+    this.seek = _seek;
 
-    this.setPlaybackRate = function(rate) {
+    this.setPlaybackRate = function (rate) {
       videoset.setPlaybackRate(rate);
     };
 
-    this.getPlaybackRate = function() {
+    this.getPlaybackRate = function () {
       return videoset.getPlaybackRate();
     };
 
-    this.getVideoPosition = function() {
+    this.getVideoPosition = function () {
       return videoset.getVideoPosition();
     };
 
-    var _play = function() {
+    var _play = function () {
       videoset.play();
     };
     this.play = _play;
 
-    this.setStatusLoggingEnabled = function(enable) {
+    this.setStatusLoggingEnabled = function (enable) {
       videoset.setStatusLoggingEnabled(enable);
     };
 
-    this.setNativeVideoControlsEnabled = function(enable) {
+    this.setNativeVideoControlsEnabled = function (enable) {
       videoset.setNativeVideoControlsEnabled(enable);
     };
 
-    this.getNumFrames = function() {
+    var _getNumFrames = function () {
       return frames;
     };
+    this.getNumFrames = _getNumFrames;
 
-    this.getFps = function() {
+    var _getFps = function () {
       return videoset.getFps();
     };
+    this.getFps = _getFps;
 
-    this.getVideoWidth = function() {
+    this.getVideoWidth = function () {
       return videoWidth;
     };
 
-    this.getVideoHeight = function() {
+    this.getVideoHeight = function () {
       return videoHeight;
     };
 
-    this.getWidth = function() {
+    this.getWidth = function () {
       return panoWidth;
     };
 
-    this.getHeight = function() {
+    this.getHeight = function () {
       return panoHeight;
     };
-		
-    this.getMetadata = function() {
+
+    this.getMetadata = function () {
       return metadata;
     }
 
-    this.addTimeChangeListener = function(listener) {
+    var _addTimeChangeListener = function (listener) {
       videoset.addEventListener('sync', listener);
     };
+    this.addTimeChangeListener = _addTimeChangeListener;
 
-    this.removeTimeChangeListener = function(listener) {
+    var _removeTimeChangeListener = function (listener) {
       videoset.removeEventListener('sync', listener);
     };
+    this.removeTimeChangeListener = _removeTimeChangeListener;
 
-    this.getCurrentTime = function() {
+    this.getCurrentTime = function () {
       return videoset.getCurrentTime();
     };
 
-    this.setScale = function(val) {
+    this.setScale = function (val) {
       targetView.scale = val;
       setTargetView(targetView);
     };
-               
-    this.setScaleFromSlider = function(val) {
+
+    this.setScaleFromSlider = function (val) {
       targetView.scale = _zoomSliderToViewScale(val);
       setTargetView(targetView);
     };
-               
-    var _getMinScale = function() {
+
+    var _getMinScale = function () {
       return _homeView().scale * .5;
     };
 
     this.getMinScale = _getMinScale;
 
-    var _getMaxScale = function() {
+    var _getMaxScale = function () {
       return 2;
     };
 
     this.getMaxScale = _getMaxScale;
 
-    this.getDefaultScale = function() {
+    this.getDefaultScale = function () {
       return _homeView().scale;
     };
 
-    this.updateDimensions = function() {
+    this.updateDimensions = function () {
       readVideoDivSize();
     };
 
-    var _viewScaleToZoomSlider = function(value) {
+    var _viewScaleToZoomSlider = function (value) {
       var tmpValue = Math.sqrt((value - _getMinScale()) / (_getMaxScale() - _getMinScale()));
-      return (1/(Math.log(2)))*(Math.log(tmpValue+1));
+      return (1 / (Math.log(2))) * (Math.log(tmpValue + 1));
     };
     this.viewScaleToZoomSlider = _viewScaleToZoomSlider;
 
-    var _zoomSliderToViewScale = function(value) {
-      return _getMaxScale()*(Math.pow((Math.pow(2,value)-1),2)) - Math.pow(4,value)*_getMinScale() + 2*Math.pow(2,value)*_getMinScale();
+    var _zoomSliderToViewScale = function (value) {
+      return _getMaxScale() * (Math.pow((Math.pow(2, value) - 1), 2)) - Math.pow(4, value) * _getMinScale() + 2 * Math.pow(2, value) * _getMinScale();
     };
     this.zoomSliderToViewScale = _zoomSliderToViewScale;
+
+    var _getTimelapseJSON = function () {
+      return tmJSON;
+    }
+    this.getTimelapseJSON = _getTimelapseJSON;
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////
     //
     // Private methods
     //
-
-    var handleMousedownEvent = function(event) {
+    var handleMousedownEvent = function (event) {
       var lastEvent = event;
       var saveMouseMove = document.onmousemove;
       var saveMouseUp = document.onmouseup;
       videoDiv.style.cursor = 'url("css/cursors/closedhand.cur") 10 10, move';
-      document.onmousemove = function(event) {
+      document.onmousemove = function (event) {
         targetView.x += (lastEvent.pageX - event.pageX) / view.scale;
         targetView.y += (lastEvent.pageY - event.pageY) / view.scale;
         setTargetView(targetView);
         lastEvent = event;
         return false;
       };
-      document.onmouseup = function() {
+      document.onmouseup = function () {
         videoDiv.style.cursor = 'url("css/cursors/openhand.cur") 10 10, move';
         document.onmousemove = saveMouseMove;
         document.onmouseup = saveMouseUp;
@@ -408,7 +479,7 @@ if (!window['$']) {
       return false;
     };
 
-    var zoomAbout = function(zoom, x, y) {
+    var zoomAbout = function (zoom, x, y) {
       var newScale = limitScale(targetView.scale * zoom);
       var actualZoom = newScale / targetView.scale;
       targetView.x += 1 * (1 - 1 / actualZoom) * (x - $(videoDiv).offset().left - viewportWidth * .5) / targetView.scale; //depends on jquery
@@ -416,22 +487,22 @@ if (!window['$']) {
       targetView.scale = newScale;
       setTargetView(targetView);
       //make the scale map to the zoom slider range
-      $("#slider-vertical")['slider']("option", "value", _viewScaleToZoomSlider(targetView.scale)); //depends on jquery
+      $("#" + viewerDivId + " .slider-vertical")['slider']("option", "value", _viewScaleToZoomSlider(targetView.scale)); //depends on jquery
     };
 
-    var handleDoubleClickEvent = function(event) {
+    var handleDoubleClickEvent = function (event) {
       zoomAbout(2.0, event.pageX, event.pageY);
     };
 
-    var limitScale = function(scale) {
+    var limitScale = function (scale) {
       return Math.max(_getMinScale(), Math.min(_getMaxScale(), scale));
     };
 
-    var view2string = function(view) {
-      return "[view x:"+view.x+" y:"+view.y+" scale:"+view.scale+"]";
+    var view2string = function (view) {
+      return "[view x:" + view.x + " y:" + view.y + " scale:" + view.scale + "]";
     };
 
-    var setTargetView = function(newView) {
+    var setTargetView = function (newView) {
       var tempView = {};
       tempView.scale = limitScale(newView.scale);
       tempView.x = Math.max(0, Math.min(panoWidth, newView.x));
@@ -451,27 +522,33 @@ if (!window['$']) {
     };
     this.setTargetView = setTargetView;
 
-    var point2mag = function(point) {
-      return Math.sqrt(point.x*point.x + point.y*point.y);
+    var point2mag = function (point) {
+      return Math.sqrt(point.x * point.x + point.y * point.y);
     };
 
-    var point2sub = function(a,b) {
-      return {x: a.x-b.x, y: a.y-b.y};
+    var point2sub = function (a, b) {
+      return {
+        x: a.x - b.x,
+        y: a.y - b.y
+      };
     };
 
-    var point2scale = function(point, scale) {
-      return {x: point.x*scale, y: point.y*scale};
+    var point2scale = function (point, scale) {
+      return {
+        x: point.x * scale,
+        y: point.y * scale
+      };
     };
 
-    var log2 = function(x) {
+    var log2 = function (x) {
       return Math.log(x) / Math.log(2);
     };
 
-    var exp2 = function(x) {
-      return Math.pow(2,x);
+    var exp2 = function (x) {
+      return Math.pow(2, x);
     };
 
-    var animate = function() {
+    var animate = function () {
       // Compute deltaT between this animation frame and last
       var now = UTIL.getCurrentTimeInSecs();
       var deltaT = now - lastAnimationTime;
@@ -504,7 +581,7 @@ if (!window['$']) {
         view.y += translateDelta.y;
         viewChanged = true;
       }
-                
+
       // Animate scale
       var minZoomSpeed = minZoomSpeedPerSecond;
       var minZoomDelta = minZoomSpeed * deltaT;
@@ -512,7 +589,7 @@ if (!window['$']) {
 
       if (targetView.scale != view.scale) {
         var zoomDelta;
-        var toGoal = log2(targetView.scale)-log2(view.scale);
+        var toGoal = log2(targetView.scale) - log2(view.scale);
         if (Math.abs(toGoal) * zoomFraction > minZoomDelta) {
           view.scale = exp2(log2(view.scale) + toGoal * translateFraction);
         } else if (Math.abs(toGoal) > minZoomDelta) {
@@ -531,21 +608,31 @@ if (!window['$']) {
         refresh();
       }
     };
-            
-    var computeViewFit = function(bbox) {
-      var scale = Math.min(viewportWidth / (bbox.xmax - bbox.xmin),
-      viewportHeight / (bbox.ymax - bbox.ymin));
-      return {x:.5 * (bbox.xmin + bbox.xmax), y:.5 * (bbox.ymin + bbox.ymax), scale: scale};
+
+    var computeViewFit = function (bbox) {
+      var scale = Math.min(viewportWidth / (bbox.xmax - bbox.xmin), viewportHeight / (bbox.ymax - bbox.ymin));
+      return {
+        x: .5 * (bbox.xmin + bbox.xmax),
+        y: .5 * (bbox.ymin + bbox.ymax),
+        scale: scale
+      };
     };
 
-    var computeBoundingBox = function(theView) {
+    var computeBoundingBox = function (theView) {
       var halfWidth = .5 * viewportWidth / theView.scale;
       var halfHeight = .5 * viewportHeight / theView.scale;
-      return {xmin:theView.x - halfWidth, xmax:theView.x + halfWidth, ymin:theView.y - halfHeight, ymax:theView.y + halfHeight};
+      return {
+        xmin: theView.x - halfWidth,
+        xmax: theView.x + halfWidth,
+        ymin: theView.y - halfHeight,
+        ymax: theView.y + halfHeight
+      };
     };
 
-    var onPanoLoadSuccessCallback = function(data, status, xhr, desiredView) {
-      UTIL.log('onPanoLoadSuccessCallback(' + UTIL.dumpObject(data) + ', ' + status + ', ' + xhr + ')');
+    var onPanoLoadSuccessCallback = function (data, desiredView) {
+
+
+      UTIL.log('onPanoLoadSuccessCallback(' + JSON.stringify(data) + ', ' + view + ', ' + ')');
       panoWidth = data['width'];
       panoHeight = data['height'];
       tileWidth = data['tile_width'];
@@ -553,23 +640,28 @@ if (!window['$']) {
       videoWidth = data['video_width'];
       videoHeight = data['video_height'];
       videoset.setFps(data['fps']);
-      videoset.setDuration(1 / data['fps'] * (data['frames']-1));
-      videoset.setLeader(data['leader']/data['fps']);
+      videoset.setDuration(1 / data['fps'] * (data['frames'] - 1));
+      videoset.setLeader(data['leader'] / data['fps']);
       frames = data['frames'];
-      maxLevel = data['nlevels']-1;
+      maxLevel = data['nlevels'] - 1;
       levelInfo = data['level_info'];
       metadata = data;
 
       readVideoDivSize();
+
+      if (loopPlayback) $("#" + viewerDivId + " .repeat").toggleClass("inactive active");
+      if (playOnLoad) _play();
+      if (initialTime != 0) _seek(initialTime);
+
       _warpTo(typeof desiredView != 'undefined' && desiredView ? desiredView : _homeView());
     };
 
-    var readVideoDivSize = function() {
-      viewportWidth = parseInt(videoDiv.style.width);
-      viewportHeight = parseInt(videoDiv.style.height);
+    var readVideoDivSize = function () {
+      viewportWidth = $(videoDiv).width(); // depends on jQuery
+      viewportHeight = $(videoDiv).height(); // depends on jQuery
     };
 
-    var refresh = function() {
+    var refresh = function () {
       if (!isFinite(view.scale)) return;
 
       var bestIdx = computeBestVideo(targetView);
@@ -585,15 +677,14 @@ if (!window['$']) {
       }
     };
 
-    var needFirstAncestor = function(tileidx) {
+    var needFirstAncestor = function (tileidx) {
       //UTIL.log("need ancestor for " + dumpTileidx(tileidx));
       var a = tileidx;
       while (a) {
         a = getTileidxParent(a);
         //UTIL.log("checking " + dumpTileidx(a) + ": present=" + !!tiles[a] + ", ready=" + (tiles[a]?tiles[a].video.ready:"n/a"));
-
         if (tiles[a] && tiles[a].video.ready) {
-          tiles[a].needed=true;
+          tiles[a].needed = true;
           //UTIL.log("need ancestor " + dumpTileidx(tileidx) + ": " + dumpTileidx(a));
           return;
         }
@@ -601,7 +692,7 @@ if (!window['$']) {
       //UTIL.log("need ancestor " + dumpTileidx(tileidx) + ": none found");
     };
 
-		var findFirstNeededAncestor = function(tileidx) {
+    var findFirstNeededAncestor = function (tileidx) {
       var a = tileidx;
       while (a) {
         a = getTileidxParent(a);
@@ -610,7 +701,7 @@ if (!window['$']) {
       return false;
     };
 
-    var addTileidx = function(tileidx, videoToUnload) {
+    var addTileidx = function (tileidx, videoToUnload) {
       var url = getTileidxUrl(tileidx);
       var geom = tileidxGeometry(tileidx);
       //UTIL.log("adding tile " + dumpTileidx(tileidx) + " from " + url + " and geom = (left:" + geom['left'] + " ,top:" + geom['top'] + ", width:" + geom['width'] + ", height:" + geom['height'] + ")");
@@ -619,7 +710,7 @@ if (!window['$']) {
       return video;
     };
 
-    var deleteTileidx = function(tileidx) {
+    var deleteTileidx = function (tileidx) {
       var tile = tiles[tileidx];
       if (!tile) {
         UTIL.error('deleteTileidx(' + dumpTileidx(tileidx) + '): not loaded');
@@ -631,28 +722,28 @@ if (!window['$']) {
       delete tiles[tileidx];
     };
 
-    var getTileidxUrl = function(tileidx) {
+    var getTileidxUrl = function (tileidx) {
       //var shardIndex = (getTileidxRow(tileidx) % 2) * 2 + (getTileidxColumn(tileidx) % 2);
       //var urlPrefix = url.replace("//", "//t" + shardIndex + ".");
-      return url + getTileidxLevel(tileidx) + "/" + getTileidxRow(tileidx) + "/" + getTileidxColumn(tileidx) + ".mp4";
+      return datasetPath + getTileidxLevel(tileidx) + "/" + getTileidxRow(tileidx) + "/" + getTileidxColumn(tileidx) + ".mp4";
     };
 
-    var computeBestVideo = function(theView) {
+    var computeBestVideo = function (theView) {
       //UTIL.log("computeBestVideo " + view2string(theView));
       var level = scale2level(view.scale);
       var levelScale = Math.pow(2, maxLevel - level);
       var col = Math.round((theView.x - (videoWidth * levelScale * .5)) / (tileWidth * levelScale));
       col = Math.max(col, 0);
-      col = Math.min(col, levelInfo[level].cols-1);
+      col = Math.min(col, levelInfo[level].cols - 1);
       var row = Math.round((theView.y - (videoHeight * levelScale * .5)) / (tileHeight * levelScale));
       row = Math.max(row, 0);
-      row = Math.min(row, levelInfo[level].rows-1);
+      row = Math.min(row, levelInfo[level].rows - 1);
       //UTIL.log("computeBestVideo l=" + level + ", c=" + col + ", r=" + row);
-      return tileidxCreate(level,col,row);
+      return tileidxCreate(level, col, row);
     };
 
 
-    var scale2level = function(scale) {
+    var scale2level = function (scale) {
       // Minimum level is 0, which has one tile
       // Maximum level is maxLevel, which is displayed 1:1 at scale=1
       var idealLevel = Math.log(scale) / Math.log(2) + maxLevel;
@@ -664,7 +755,7 @@ if (!window['$']) {
     };
 
 
-    var tileidxGeometry = function(tileidx) {
+    var tileidxGeometry = function (tileidx) {
       var levelScale = Math.pow(2, maxLevel - getTileidxLevel(tileidx));
 
       // Calculate left, right, top, bottom, rounding to nearest pixel;  avoid gaps between tiles.
@@ -676,75 +767,501 @@ if (!window['$']) {
       var bottom = Math.round(top + view.scale * levelScale * videoHeight);
       top = Math.round(top);
 
-      return {left:left, top:top, width:(right - left), height:(bottom - top)};
+      return {
+        left: left,
+        top: top,
+        width: (right - left),
+        height: (bottom - top)
+      };
     };
 
-    var repositionVideo = function(video) {
+    var repositionVideo = function (video) {
       videoset.repositionVideo(video, tileidxGeometry(video.tileidx));
     };
 
-    this.writeStatusToLog = function() {
+    this.writeStatusToLog = function () {
       videoset.writeStatusToLog();
     };
-    
-    this.getTiles = function() { return tiles; };
+
+    this.getTiles = function () {
+      return tiles;
+    };
 
     ///////////////////////////
     // Tile index
     //
-
     // Represent tile coord as a 31-bit integer so we can use it as an index
     // l:4 (0-15)   r:13 (0-8191)  c:14 (0-16383)
     // 31-bit representation
     //
-    var tileidxCreate = function(l, c, r) {
+    var tileidxCreate = function (l, c, r) {
       return (l << 27) + (r << 14) + c;
     };
 
-    var getTileidxLevel = function(t) {
+    var getTileidxLevel = function (t) {
       return t >> 27;
     };
 
-    var getTileidxRow = function(t) {
+    var getTileidxRow = function (t) {
       return 8191 & (t >> 14);
     };
 
-    var getTileidxColumn = function(t) {
+    var getTileidxColumn = function (t) {
       return 16383 & t;
     };
 
-    var getTileidxParent = function(t) {
-      return tileidxCreate(getTileidxLevel(t)-1, getTileidxColumn(t)>>1, getTileidxRow(t)>>1);
+    var getTileidxParent = function (t) {
+      return tileidxCreate(getTileidxLevel(t) - 1, getTileidxColumn(t) >> 1, getTileidxRow(t) >> 1);
     };
 
-    var dumpTileidx = function(t) {
+    var dumpTileidx = function (t) {
       return "{l:" + getTileidxLevel(t) + ",c:" + getTileidxColumn(t) + ",r:" + getTileidxRow(t) + "}";
     };
+
+
+    function createTimelineSlider(div) {
+      if (_getTimelapseJSON()["capture-times"]) {
+        captureTimes = _getTimelapseJSON()["capture-times"];
+      } else {
+        for (i = 0; i < _getNumFrames(); i++) {
+          captureTimes.push("--")
+        }
+      }
+
+      timelapseDurationInSeconds = (_getNumFrames() - 1) / _getFps();
+      timeStepInSecs = 1 / _getFps();
+      $("#" + div + " .currentTime").text(org.gigapan.Util.formatTime(timelapseCurrentTimeInSeconds, true));
+      $("#" + div + " .totalTime").text(org.gigapan.Util.formatTime(timelapseDurationInSeconds, true));
+      $("#" + div + " .currentCaptureTime").text(captureTimes[timelapseCurrentCaptureTimeIndex]);
+
+      $("#" + div + " .timelineSlider")["slider"]({
+        value: 0,
+        min: 0.0,
+        max: timelapseDurationInSeconds,
+        range: "min",
+        step: timeStepInSecs,
+        slide: function (e, ui) {
+          _seek(ui.value);
+        }
+      });
+
+      $("#" + div + " .timelineSlider .ui-slider-handle").attr("title", "Drag to go to a different point in time");
+    }
+
+
+    function createPlaybackSpeedSlider(div) {
+      //populate playback speed dropdown
+      populateSpeedPlaybackChoices(div);
+      var speedChoice;
+      // set the playback speed dropdown
+      $("#" + div + " .playbackSpeedChoices li a").each(function () {
+        speedChoice = $(this);
+        if (speedChoice.attr("data-speed") == playbackSpeed) return false;
+      });
+      speedChoice.addClass("current");
+      $("#" + div + " .playbackSpeedText").text(speedChoice.text());
+      $("#" + div + " .playbackSpeedChoices li a").bind("click", function () {
+        changePlaybackRate(this);
+      });
+    }
+
+    function changePlaybackRate(obj) {
+      var rate = $(obj).attr("data-speed") - 0; //convert to number
+      thisObj.setPlaybackRate(rate);
+      $("#" + viewerDivId + " li.playbackSpeedOptions").hide();
+      $("#" + viewerDivId + " li.playbackSpeedOptions a").removeClass("current");
+      $(obj).addClass("current");
+      $("#" + viewerDivId + " .playbackSpeedText").text($(obj).text());
+    }
+
+    function populateSizes(viewerDivId) {
+      // populate the player size dropdown
+      var html = "";
+      var numSizes = tmJSON["sizes"].length;
+      for (var i = 0; i < numSizes; i++) {
+        html += '<li><a href="javascript:void(0);" data-index=\'' + i + '\'>' + tmJSON["sizes"][i] + '</a></li>';
+      }
+      $("#" + viewerDivId + " .sizechoices").append(html);
+
+      // set the size dropdown      
+      //default to last size of first set?
+
+      $("#" + viewerDivId + " .sizechoices li a:contains(" + tmJSON["datasets"][datasetIndex]["name"] + ")").addClass("current");
+      $("#" + viewerDivId + " .playerSizeText").text(tmJSON["datasets"][datasetIndex]["name"]);
+
+
+      $("#" + viewerDivId + " .sizechoices li a").bind("click", function () {
+        thisObj.switchSize($(this).attr("data-index"));
+        $("#" + viewerDivId + " li.sizeoptions a").removeClass("current");
+        $(this).addClass("current");
+      });
+    }
+
+    function populateLayers() {
+      var numLayers = tmJSON["layers"].length
+      var html = "";
+      for (i = 0; i < numLayers; i++) {
+        html += "<li data-index=" + i + "><img src=\"" + tmJSON["layers"][i]["tn-path"] + "\" " + "alt='layer' width='45' height='45' ><br/><span style='font-size:small; text-align:center; display:block; margin: -5px 0px 0px 0px !important;'>" + tmJSON['layers'][i]['description'] + "</span></li>"
+      }
+      $("#" + viewerDivId + " .layerChoices").append(html);
+
+      $("#" + viewerDivId + " .layerChoices li").bind("click", function () {
+        thisObj.switchLayer($(this).attr("data-index"));
+      });
+    }
+
+    this.switchSize = function (index) {
+      playerSize = index;
+      var newIndex = datasetLayer * tmJSON["sizes"].length + playerSize;
+      validateAndSetDatasetIndex(newIndex);
+      loadGigapanJSON();
+      $("#" + viewerDivId + " .playerSizeText").text(tmJSON["datasets"][index]["name"]);
+
+    }
+
+    this.switchLayer = function (index) {
+      playerLayer = index;
+      var newIndex = playerLayer * tmJSON["sizes"].length + playerSize;
+      validateAndSetDatasetIndex(newIndex);
+      loadGigapanJSON();
+    }
+
+    function validateAndSetDatasetIndex(newDatasetIndex) {
+      // make sure the datasetIndex is a valid number, and within the range of datasets for this gigapan.
+      if (!org.gigapan.Util.isNumber(newDatasetIndex)) {
+        datasetIndex = 0;
+      } else {
+        datasetIndex = Math.max(0, Math.min(newDatasetIndex, tmJSON["datasets"].length - 1));
+      }
+    }
+
+    function loadGigapanJSON() {
+      var datasetId = _getTimelapseJSON()["datasets"][datasetIndex]["id"];
+
+      datasetPath = settings["url"] + tmJSON["datasets"][datasetIndex]['id'] + "/";
+
+      //org.gigapan.Util.log("Attempting to fetch gigapan JSON from URL [" + jsonUrl + "]...");
+      showSpinner(viewerDivId);
+      $.ajax({
+        dataType: "json",
+        url: datasetPath + 'r.json',
+        success: function (data) {
+          if (data && data["tile_height"]) {
+            //org.gigapan.Util.log("Loaded this JSON: [" + JSON.stringify(gigapanJSON) + "]");
+            loadTimelapse(datasetPath, data);
+          } else {
+            //org.gigapan.Util.error("Failed to load gigapan json from URL [" + jsonUrl + "]");
+          }
+        }, error: function () {
+          //org.gigapan.Util.error("Error loading gigapan json from URL [" + jsonUrl + "]");
+        }
+      });
+    }
+
+    function loadTimelapse(gigapanUrl, gigapanJSON) {
+      thisObj.changeDataset(gigapanUrl, gigapanJSON);
+      setViewportSize(gigapanJSON["video_width"] - gigapanJSON["tile_width"], gigapanJSON["video_height"] - gigapanJSON["tile_height"], thisObj);
+      hideSpinner(viewerDivId);
+    }
+
+    function setupUIHandlers(viewerDivId, obj) {
+      var intervalId;
+      if (tmJSON["layers"]) {
+        $("#" + viewerDivId + " .layerSlider").show();
+        populateLayers();
+
+        $("#" + viewerDivId + " .layerSlider .jCarouselLite").jCarouselLite({
+          btnNext: "#" + viewerDivId + " .layerSlider .next",
+          btnPrev: "#" + viewerDivId + " .layerSlider .prev",
+          circular: true,
+          visible: 3.5
+        });
+      }
+
+      $("#" + viewerDivId + " a.playbackspeed").click(function () {
+        if ($("#" + viewerDivId + " .help").hasClass("on") || $("#" + viewerDivId + " .zoomSlider")["slider"]("option", "disabled")) return;
+
+        $("#" + viewerDivId + " li.playbackSpeedOptions").fadeIn(100);
+      });
+
+      $(document).click(function (event) {
+        if ($(event.target).closest("#" + viewerDivId + " a.playbackspeed").get(0) == null) {
+          $("#" + viewerDivId + " li.playbackSpeedOptions").hide();
+        }
+      });
+
+      $("#" + viewerDivId + " a.size").click(function () {
+        if ($("#" + viewerDivId + " .help").hasClass("on") || $("#" + viewerDivId + " .zoomSlider")["slider"]("option", "disabled")) return;
+
+        $("#" + viewerDivId + " li.sizeoptions").fadeIn(100);
+      });
+
+      $(document).click(function (event) {
+        if ($(event.target).closest("#" + viewerDivId + " a.size").get(0) == null) {
+          $("#" + viewerDivId + " li.sizeoptions").hide();
+        }
+      });
+
+      $("#" + viewerDivId + " .help").toggle(
+
+      function () {
+        if ($("#" + viewerDivId + " .zoomSlider")["slider"]("option", "disabled")) return;
+        $("#" + viewerDivId + " li.sizeoptions").hide(); //might be already opened
+        $("#" + viewerDivId + " li.playbackSpeedOptions").hide(); //might be already opened
+        $("#" + viewerDivId + " .instructions").fadeIn(100);
+        $("#" + viewerDivId + " .repeat").addClass("disabled");
+        $(this).addClass("on");
+        if ($("#" + viewerDivId + " .playbackButton").hasClass('pause')) {
+          obj.pause();
+          $("#" + viewerDivId + " .playbackButton").addClass("pause_disabled");
+        } else {
+          $("#" + viewerDivId + " .playbackButton").addClass("play_disabled");
+        }
+        $("#" + viewerDivId + " .timelineSlider")["slider"]("option", "disabled", true);
+      }, function () {
+        if ($("#" + viewerDivId + " .zoomSlider")["slider"]("option", "disabled")) return;
+        $("#" + viewerDivId + " .instructions").fadeOut(50);
+        $("#" + viewerDivId + " .repeat").removeClass("disabled");
+        $(this).removeClass("on");
+        if ($("#" + viewerDivId + " .playbackButton").hasClass('pause_disabled')) {
+          obj.play();
+          $("#" + viewerDivId + " .playbackButton").addClass("pause");
+        } else {
+          $("#" + viewerDivId + " .playbackButton").addClass("play");
+        }
+        $("#" + viewerDivId + " .timelineSlider")["slider"]("option", "disabled", false);
+      });
+
+      $("#" + viewerDivId + " .playbackButton").bind("click", function () {
+        if ($("#" + viewerDivId + " .timelineSlider")["slider"]("option", "disabled")) return;
+        if ($(this).hasClass('play')) {
+          $(this).toggleClass("play pause");
+          $(this).attr({
+            "title": "Pause"
+          });
+          if (isCurrentTimeAtOrPastDuration()) {
+            $("#" + viewerDivId + " .timelineSlider")["slider"]("option", "value", 0);
+            obj.seek(0);
+          }
+          obj.play();
+        } else if ($(this).hasClass('pause')) {
+          $(this).toggleClass("pause play");
+          $(this).attr({
+            "title": "Play"
+          });
+          obj.pause();
+        }
+      });
+
+      $("#" + viewerDivId + " .repeat").bind("click", function () {
+        if ($(this).hasClass("disabled") || $("#" + viewerDivId + " .zoomSlider")["slider"]("option", "disabled") == true) return;
+        loopPlayback = !loopPlayback
+        if (loopPlayback) {
+          $(this).toggleClass("inactive active");
+        }
+        else {
+          $(this).toggleClass("active inactive");
+        }
+      });
+
+      $("#" + viewerDivId + " .zoomall").click(function () {
+        if ($("#" + viewerDivId + " .zoomSlider")["slider"]("option", "disabled") == true) return;
+        obj.warpTo(obj.homeView());
+        $("#" + viewerDivId + " .zoomSlider")['slider']("option", "value", obj.viewScaleToZoomSlider(obj.getDefaultScale()));
+      });
+
+      $("#" + viewerDivId + " .zoomin").mousedown(function () {
+        if ($("#" + viewerDivId + " .zoomSlider")["slider"]("option", "disabled") == true) return;
+        intervalId = setInterval(function () {
+          zoomIn(viewerDivId, obj);
+        }, 50);
+      }).click(function () {
+        if ($("#" + viewerDivId + " .zoomSlider")["slider"]("option", "disabled") == true) return;
+        zoomIn(viewerDivId, obj);
+      }).mouseup(function () {
+        clearInterval(intervalId);
+      }).mouseout(function () {
+        clearInterval(intervalId);
+      });
+
+      $("#" + viewerDivId + " .zoomout").mousedown(function () {
+        if ($("#" + viewerDivId + " .zoomSlider")["slider"]("option", "disabled") == true) return;
+        intervalId = setInterval(function () {
+          zoomOut(viewerDivId, obj);
+        }, 50);
+      }).click(function () {
+        if ($("#" + viewerDivId + " .zoomSlider")["slider"]("option", "disabled") == true) return;
+        zoomOut(viewerDivId, obj);
+      }).mouseup(function () {
+        clearInterval(intervalId);
+      }).mouseout(function () {
+        clearInterval(intervalId);
+      });
+
+    }
+
+    function isCurrentTimeAtOrPastDuration() {
+      // fix the numbers, but subtract 0 from each to convert back to float since toFixed gives a string
+      var num1Fixed = timelapseCurrentTimeInSeconds.toFixed(3) - 0;
+      var num2Fixed = timelapseDurationInSeconds.toFixed(3) - 0;
+      return num1Fixed >= num2Fixed;
+    }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////
     //
     // Constructor code
     //
-
-    view = _homeView();
-    targetView = _homeView();
-    UTIL.log('Timelapse("' + url + '")');
-    videoDiv['onmousedown'] = handleMousedownEvent;
-    videoDiv['ondblclick'] = handleDoubleClickEvent;
-
-    if (optionalInfo) {
-      onPanoLoadSuccessCallback(optionalInfo, "", "");
-    } else {
-      $.ajax({url:url + 'r.json', dataType: 'json', success: onPanoLoadSuccessCallback});  // TODO: move this to index.html; depends upon jquery
+    var browserSupported = org.gigapan.Util.browserSupported();
+    if (!browserSupported) {
+      $("#" + viewerDivId).load('browser_not_supported_template.html', function (response, status, xhr) {
+        if (status == "error") {
+          org.gigapan.Util.error("Error loading browser not supported message.");
+        }
+        $("#browser_not_supported").show();
+      });
+      return;
     }
 
-    // Fixes Safari bug which causes the video to not be displayed if the video has no leader and the initial
-    // time is zero (the video seeked event is never fired, so videoset never gets the cue that the video
-    // should be displayed).  The fix is to simply seek half a frame in.  Yeah, the video won't be starting at
-    // *zero*, but the displayed frame will still be the right one, so...good enough.  :-)
-    if (videoset.getLeader() <= 0  && UTIL.isSafari()) {
-      var halfOfAFrame = 1 / this.getFps() / 2;
-      this.seek(halfOfAFrame);
-    }
+    view = (typeof(settings["initialView"]) != "undefined") ? settings["initialView"] : _homeView();
+    targetView = view;
+
+    var datasetPath;
+
+    var tileRootPath;
+
+    UTIL.log('Timelapse("' + settings["url"] + '")');
+
+    //load UI
+    $("#" + viewerDivId).load('player_template.html', function (response, status, xhr) {
+
+      if (status == "error") {
+        org.gigapan.Util.error("Error loading viewer controls.");
+        return;
+      }
+
+      var tmp = document.getElementById("{REPLACE}");
+      $(tmp).attr("id", viewerDivId + "_timelapse");
+      videoDivId = $(tmp).attr("id");
+
+      $("#" + viewerDivId).attr('unselectable', 'on').css({
+        '-moz-user-select': 'none',
+        '-o-user-select': 'none',
+        '-khtml-user-select': 'none',
+        '-webkit-user-select': 'none',
+        '-ms-user-select': 'none',
+        'user-select': 'none'
+      });
+
+      videoset = new org.gigapan.timelapse.Videoset(viewerDivId, videoDivId);
+      videosetStats = new org.gigapan.timelapse.VideosetStats(videoset, settings["videosetStatsDivId"]);
+
+      videoDiv = document.getElementById(videoDivId);
+      videoDiv['onmousedown'] = handleMousedownEvent;
+      videoDiv['ondblclick'] = handleDoubleClickEvent;
+
+      $("#" + videoDivId).mousewheel(thisObj.handleMousescrollEvent);
+
+      $("#" + videoDivId).bind("click", function () {
+        $(document).unbind('keydown.tm_keydown keyup.tm_keyup');
+        $(document).bind("keydown.tm_keydown", handleKeydownEvent);
+        $(document).bind("keyup.tm_keyup", handleKeyupEvent);
+      });
+
+      //add trailing slash to url if it was omitted
+      if (settings["url"].charAt(settings["url"].length - 1) != "/") settings["url"] += "/";
+
+      //load data
+      $.ajax({
+        dataType: "json",
+        url: settings["url"] + "tm.json",
+        success: function (json) {
+          tmJSON = json;
+          tileRootPath = settings["url"]; //initially assume tile and json are on same host
+          for (i = 0; i < tmJSON["sizes"].length; i++) {
+            playerSize = i;
+            if (settings["playerSize"] && tmJSON["sizes"][i].toLowerCase() == settings["playerSize"].toLowerCase()) break;
+          }
+
+          validateAndSetDatasetIndex(datasetLayer * tmJSON["sizes"].length + playerSize); //layer + size = index of dataset
+          datasetPath = settings["url"] + tmJSON["datasets"][datasetIndex]['id'] + "/";
+          $.ajax({
+            url: settings["url"] + "tileroot.json",
+            dataType: 'json',
+            success: function (tilerootJSON) {
+              tileRootPath = tilerootJSON["tileroot"]; //tiles are not on the same host as the json
+            }, error: function () {
+              org.gigapan.Util.error("Error loading tileroot.json from URL [" + settings["url"] + "] We will assume tiles are on the same host as the json.");
+            }, complete: function () {
+              $.ajax({
+                url: datasetPath + 'r.json',
+                dataType: 'json',
+                success: function (data) {
+                  datasetJSON = data;
+                  setViewportSize(data["video_width"] - data["tile_width"], data["video_height"] - data["tile_height"], thisObj);
+                  onPanoLoadSuccessCallback(data, settings["initialView"]);
+                  _addTimeChangeListener(function (t) {
+                    timelapseCurrentTimeInSeconds = t;
+                    timelapseCurrentCaptureTimeIndex = Math.floor(t * _getFps());
+                    if (timelapseCurrentTimeInSeconds.toFixed(3) < 0) {
+                      timelapseCurrentTimeInSeconds = 0;
+                      _pause();
+                      $(".playbackButton").attr({
+                        "class": "play",
+                        "title": "Play"
+                      });
+                    }
+
+                    if (isCurrentTimeAtOrPastDuration()) {
+                      timelapseCurrentTimeInSeconds = timelapseDurationInSeconds;
+                      if (snaplapse != null && snaplapse.isPlaying()) return;
+                      if (loopPlayback) {
+                        _seek(0);
+                      } else {
+                        _pause();
+                        $("playbackButton").attr({
+                          "class": "play",
+                          "title": "Play"
+                        });
+                      }
+                    }
+                    $("#" + viewerDivId + " .currentTime").text(org.gigapan.Util.formatTime(timelapseCurrentTimeInSeconds, true));
+                    $("#" + viewerDivId + " .currentCaptureTime").text(captureTimes[timelapseCurrentCaptureTimeIndex]);
+                    $("#" + viewerDivId + " .timelineSlider")["slider"]("option", "value", timelapseCurrentTimeInSeconds);
+                  });
+
+                  _addTargetViewChangeListener(function (view) {
+                    $("#" + viewerDivId + " .zoomSlider")["slider"]("option", "value", _viewScaleToZoomSlider(view.scale));
+                  });
+
+                  if (settings["composerDiv"]) snaplapse = new org.gigapan.timelapse.Snaplapse(settings["composerDiv"], thisObj);
+
+                  populateSizes(viewerDivId);
+                  //hasLayers = timelapseMetadataJSON["has_layers"] || false;
+                  createTimelineSlider(viewerDivId);
+                  createZoomSlider(viewerDivId, thisObj);
+                  createPlaybackSpeedSlider(viewerDivId);
+                  setupSliderHandlers(viewerDivId);
+                  setupUIHandlers(viewerDivId, thisObj);
+                  //handlePluginVideoTagOverride(); //TODO
+                }, error: function () {
+                  org.gigapan.Util.error("Error loading r.json from URL [" + datasetPath + "]");
+                }
+              });
+            }
+          });
+        }, error: function () {
+          org.gigapan.Util.error("Error loading tm.json from URL [" + settings["url"] + "]");
+        }
+      });
+
+      // Fixes Safari bug which causes the video to not be displayed if the video has no leader and the initial
+      // time is zero (the video seeked event is never fired, so videoset never gets the cue that the video
+      // should be displayed).  The fix is to simply seek half a frame in.  Yeah, the video won't be starting at
+      // *zero*, but the displayed frame will still be the right one, so...good enough.  :-)
+      if (videoset.getLeader() <= 0 && UTIL.isSafari()) {
+        var halfOfAFrame = 1 / this.getFps() / 2;
+        this.seek(halfOfAFrame);
+      }
+    });
   };
 })();

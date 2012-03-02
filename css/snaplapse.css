@@ -33,7 +33,7 @@ span.ui-icon {
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
-#snaplapse_keyframe_container {
+.snaplapse_keyframe_container {
    min-height: 75px;
    max-height: 550px;
    display: block;
@@ -45,11 +45,11 @@ span.ui-icon {
    background-color: #eeeeee;
 }
 
-#snaplapse_keyframe_list .ui-selecting {
+.snaplapse_keyframe_list .ui-selecting {
    background: #eeeeff;
 }
 
-#snaplapse_keyframe_list .ui-selected {
+.snaplapse_keyframe_list .ui-selected {
    background: #ddddff;
    color: black;
 }

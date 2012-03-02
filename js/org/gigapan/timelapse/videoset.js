@@ -107,8 +107,9 @@ if (!window['$']) {
   var MAX_QUEUED_VIDEO_LENGTH = 2;   // max number of videos allowed to be queued without stalling
   var DEFAULT_ERROR_THRESHOLD = UTIL.isChrome() ? 0.005 : 0.04;
 
-  org.gigapan.timelapse.Videoset = function(videoDivName) {
-    var videoDiv = document.getElementById(videoDivName);
+  org.gigapan.timelapse.Videoset = function(viewerDivId,videoDivId) {
+    var videoDiv = document.getElementById(videoDivId);
+    var viewerDiv = document.getElementById(viewerDivId);
     var isStatusLoggingEnabled = false;
     var activeVideos = {};
     var inactiveVideos = {};
@@ -224,15 +225,7 @@ if (!window['$']) {
       return perf;
     };
 
-    var showSpinner = function() {
-      UTIL.log("showSpinner");
-      $('#spinnerOverlay').show(); //depends on jquery
-    };
 
-    var hideSpinner = function() {
-      UTIL.log("hideSpinner");
-      $('#spinnerOverlay').hide(); //depends on jquery
-    };
 
     ///////////////////////////
     // Add and remove videos
@@ -252,7 +245,7 @@ if (!window['$']) {
 
       var currentTime = new Date();
       var video = document.createElement('video');
-      video.id = id;
+      video.id = videoDiv.id+"_"+id;
       video.active = true;
       video.ready = false;
       if (typeof videoBeingReplaced != 'undefined' && videoBeingReplaced != null) {
@@ -769,7 +762,7 @@ if (!window['$']) {
       }
       UTIL.log("Video stalling...");
       stalled = true;
-      showSpinner();
+      showSpinner(viewerDivId);
       notifyStallEventListeners();
       _updateVideoAdvance();
     };
@@ -780,7 +773,7 @@ if (!window['$']) {
       }
       UTIL.log("Video unstalled...");
       stalled = false;
-      hideSpinner();
+      hideSpinner(viewerDivId);
       notifyStallEventListeners();
       _updateVideoAdvance();
     };
