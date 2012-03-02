@@ -15,10 +15,10 @@
     <script src="js/Math.uuid.js" type="text/javascript"></script>
     <script src="js/org/gigapan/timelapse/snaplapse.js" type="text/javascript"></script>
     <script src="js/org/gigapan/timelapse/snaplapseViewer.js" type="text/javascript"></script>
-
     <script src="js/org/gigapan/timelapse/timelapseViewer.js" type="text/javascript"></script>
     <script src="js/jwplayer/jwplayer.js" type="text/javascript"></script>
     <script src="js/org/gigapan/timelapse/flashViewer.js" type="text/javascript"></script>
+
     <link href="css/timelapse.css" rel="stylesheet" type="text/css"/>
     <link href="css/videoset_stats.css" rel="stylesheet" type="text/css"/>
     <link href="css/snaplapse.css" rel="stylesheet" type="text/css"/>
@@ -28,7 +28,6 @@
 
     <script type="text/javascript">
       var timelapseMetadataJSON = {};
-
       var timelapsesToRepeat = []
 
       function loadSelectedGigapan() {
@@ -40,22 +39,22 @@
         if (window.location != newUrl) window.location = newUrl;
         var doRepeat = false;
         if ($.inArray(gigapanId, timelapsesToRepeat) != -1) doRepeat = true;
-        var url = "../timemachines/"+gigapanId+"/";
-				url = "http://g7.gigapan.org/timemachines/radarmosaic-crf28-g10-bf0-6fps/"
+        //var url = "../timemachines/"+gigapanId+"/"; //if you use the drop down, use this
+	var url = "http://g7.gigapan.org/timemachines/radarmosaic-crf28-g10-bf0-6fps/"
 
       	var viewerOptions = {
-					url: url, //can be absolute or relative
-					//initialView: {x: 1700, y: 800, scale: 0.15058823529411763}, //defaults to 'home view'; param currently ignored
-					initialTime: 0, //default to 0; video time
-					playerSize: "Large", //[Small, Large] defaults to Large size
-					loopPlayback: timelapseMetadataJSON["repeat"], //defaults to false
-					playOnLoad: false, //defaults to false
-					playbackSpeed: 1, //[-1,-.5,-.25,.25,.5,1] available, defaults to 1
-					layer: 0, //default to first layer. All sets have at least 1 layer starting at index 0
-					composerDiv: "composer1" //display the time warp composer; display nothing if param left out
-				};
+          url: url, //can be absolute or relative
+          //initialView: {x: 1700, y: 800, scale: 0.15058823529411763}, //defaults to 'home view'; param currently ignored
+          initialTime: 0, //default to 0; video time
+          playerSize: "Large", //[Small, Large] defaults to Large size
+          loopPlayback: timelapseMetadataJSON["repeat"], //defaults to false
+          playOnLoad: false, //defaults to false
+          playbackSpeed: 1, //[-1,-.5,-.25,.25,.5,1] available, defaults to 1
+          layer: 0, //default to first layer. All sets have at least 1 layer starting at index 0
+          composerDiv: "composer1" //display the time warp composer; display nothing if param left out
+        };
 
-			  timelapse = new org.gigapan.timelapse.Timelapse("player1", viewerOptions);
+        timelapse = new org.gigapan.timelapse.Timelapse("player1", viewerOptions);
 
       }
 
@@ -82,23 +81,22 @@
   </head>
   <body>
 
+    <div id="player1"></div>
 
-	<div id="player1"></div>
+    <div id="dataListSelection">
+      Select Dataset:
+      <select name="dataList" id="dataList" onChange="loadSelectedGigapan(this.options[selectedIndex].value);">
+        <option value="blue-marble-v2">Blue Marble</option>
+        <option value="carnival-10m-halfsize-g10-bf0-l30">CMU Carnival 2010</option>
+        <option value="e5-crf28-g10-bf0-l">Early Universe</option>
+        <option value="chlorophyll-r32d-crf28-g10-bf0-l">Ocean Chlorophyll</option>
+        <option value="brassica-15m-g10-bf0-l">Plant Growth</option>
+        <option value="sdo-color-crf24-g10-bf0-l">Sun (304A)</option>
+        <option value="radarmosaic-crf28-g10-bf0-6fps">Weather Radar</option>
+      </select>
+    </div>
 
-  <div id="dataListSelection">
-    Select Dataset:
-    <select name="dataList" id="dataList" onChange="loadSelectedGigapan(this.options[selectedIndex].value);">
-      <option value="blue-marble-v2">Blue Marble</option>
-      <option value="carnival-10m-halfsize-g10-bf0-l30">CMU Carnival 2010</option>
-      <option value="e5-crf28-g10-bf0-l">Early Universe</option>
-      <option value="chlorophyll-r32d-crf28-g10-bf0-l">Ocean Chlorophyll</option>
-      <option value="brassica-15m-g10-bf0-l">Plant Growth</option>
-      <option value="sdo-color-crf24-g10-bf0-l">Sun (304A)</option>
-      <option value="radarmosaic-crf28-g10-bf0-6fps">Weather Radar</option>
-    </select>
-  </div>
-
-	<div id="composer1"></div>
+    <div id="composer1"></div>
 
   </body>
 </html>
