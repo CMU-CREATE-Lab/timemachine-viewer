@@ -191,10 +191,9 @@ if (!window['$']) {
       // if we are focused on a text field, do not run any player specific controls
       if (document.activeElement == "[object HTMLInputElement]" || document.activeElement == "[object HTMLTextAreaElement]") return;
 
-
       var translationSpeedConstant = 20;
       var moveFn;
-      console.log(event.which);
+      //console.log(event.which);
       switch (event.which) {
       case 37:
         moveFn = function () {
@@ -260,6 +259,7 @@ if (!window['$']) {
     };
 
     this.handleMousescrollEvent = function (event) {
+      event.preventDefault();
       //UTIL.log('mousescroll delta  ' + event.wheelDelta);
       if (event.wheelDelta > 0) {
         zoomAbout(1 / .9, event.pageX, event.pageY);
@@ -317,6 +317,16 @@ if (!window['$']) {
       targetViewChangeListeners.push(listener);
     };
     this.addTargetViewChangeListener = _addTargetViewChangeListener;
+
+    var _addVideoPauseListener = function (listener) {
+      videoset.addEventListener('videoset-pause', listener);
+    };
+    this.addVideoPauseListener = _addVideoPauseListener;
+
+    var _addVideoPlayListener = function (listener) {
+      videoset.addEventListener('videoset-play', listener);
+    };
+    this.addVideoPlayListener = _addVideoPlayListener;
 
     ///////////////////////////
     // Timelapse video control
@@ -486,8 +496,6 @@ if (!window['$']) {
       targetView.y += 1 * (1 - 1 / actualZoom) * (y - $(videoDiv).offset().top - viewportHeight * .5) / targetView.scale; //depends on jquery
       targetView.scale = newScale;
       setTargetView(targetView);
-      //make the scale map to the zoom slider range
-      $("#" + viewerDivId + " .slider-vertical")['slider']("option", "value", _viewScaleToZoomSlider(targetView.scale)); //depends on jquery
     };
 
     var handleDoubleClickEvent = function (event) {
@@ -640,7 +648,7 @@ if (!window['$']) {
       videoWidth = data['video_width'];
       videoHeight = data['video_height'];
       videoset.setFps(data['fps']);
-      videoset.setDuration(1 / data['fps'] * (data['frames'] - 1));
+      videoset.setDuration(1 / data['fps'] * (data['frames'] ));
       videoset.setLeader(data['leader'] / data['fps']);
       frames = data['frames'];
       maxLevel = data['nlevels'] - 1;
@@ -827,21 +835,26 @@ if (!window['$']) {
           captureTimes.push("--")
         }
       }
-
-      timelapseDurationInSeconds = (_getNumFrames() - 1) / _getFps();
-      timeStepInSecs = 1 / _getFps();
+      
+      timelapseDurationInSeconds = (_getNumFrames() - 0.5) / _getFps();
+      
       $("#" + div + " .currentTime").text(org.gigapan.Util.formatTime(timelapseCurrentTimeInSeconds, true));
       $("#" + div + " .totalTime").text(org.gigapan.Util.formatTime(timelapseDurationInSeconds, true));
       $("#" + div + " .currentCaptureTime").text(captureTimes[timelapseCurrentCaptureTimeIndex]);
 
-      $("#" + div + " .timelineSlider")["slider"]({
-        value: 0,
-        min: 0.0,
-        max: timelapseDurationInSeconds,
+      $("#" + div + " .timelineSlider").slider({
+        min: 0,
+        max: _getNumFrames() - 1, // this way the time scrubber goes exactly to the end of timeline
         range: "min",
-        step: timeStepInSecs,
+        step: 1,
         slide: function (e, ui) {
-          _seek(ui.value);
+          // $(this).slider('value') 	--> previous value
+          // ui.value 								--> current value
+          // If we are manually using the slider and we are pulling it back to the start
+          // we wont actually get to time 0 because of how we are snapping.
+          // Manually seek to position 0 when this happens.
+          if (($(this).slider('value') > ui.value) && ui.value == 0) _seek(0);
+          else _seek((ui.value + 0.5) / _getFps());
         }
       });
 
@@ -979,7 +992,7 @@ if (!window['$']) {
       }
 
       $("#" + viewerDivId + " a.playbackspeed").click(function () {
-        if ($("#" + viewerDivId + " .help").hasClass("on") || $("#" + viewerDivId + " .zoomSlider")["slider"]("option", "disabled")) return;
+        if ($("#" + viewerDivId + " .help").hasClass("on") || $("#" + viewerDivId + " .zoomSlider").slider("option", "disabled")) return;
 
         $("#" + viewerDivId + " li.playbackSpeedOptions").fadeIn(100);
       });
@@ -991,7 +1004,7 @@ if (!window['$']) {
       });
 
       $("#" + viewerDivId + " a.size").click(function () {
-        if ($("#" + viewerDivId + " .help").hasClass("on") || $("#" + viewerDivId + " .zoomSlider")["slider"]("option", "disabled")) return;
+        if ($("#" + viewerDivId + " .help").hasClass("on") || $("#" + viewerDivId + " .zoomSlider").slider("option", "disabled")) return;
 
         $("#" + viewerDivId + " li.sizeoptions").fadeIn(100);
       });
@@ -1005,7 +1018,7 @@ if (!window['$']) {
       $("#" + viewerDivId + " .help").toggle(
 
       function () {
-        if ($("#" + viewerDivId + " .zoomSlider")["slider"]("option", "disabled")) return;
+        if ($("#" + viewerDivId + " .zoomSlider").slider("option", "disabled")) return;
         $("#" + viewerDivId + " li.sizeoptions").hide(); //might be already opened
         $("#" + viewerDivId + " li.playbackSpeedOptions").hide(); //might be already opened
         $("#" + viewerDivId + " .instructions").fadeIn(100);
@@ -1017,9 +1030,9 @@ if (!window['$']) {
         } else {
           $("#" + viewerDivId + " .playbackButton").addClass("play_disabled");
         }
-        $("#" + viewerDivId + " .timelineSlider")["slider"]("option", "disabled", true);
+        $("#" + viewerDivId + " .timelineSlider").slider("option", "disabled", true);
       }, function () {
-        if ($("#" + viewerDivId + " .zoomSlider")["slider"]("option", "disabled")) return;
+        if ($("#" + viewerDivId + " .zoomSlider").slider("option", "disabled")) return;
         $("#" + viewerDivId + " .instructions").fadeOut(50);
         $("#" + viewerDivId + " .repeat").removeClass("disabled");
         $(this).removeClass("on");
@@ -1029,18 +1042,21 @@ if (!window['$']) {
         } else {
           $("#" + viewerDivId + " .playbackButton").addClass("play");
         }
-        $("#" + viewerDivId + " .timelineSlider")["slider"]("option", "disabled", false);
+        $("#" + viewerDivId + " .timelineSlider").slider("option", "disabled", false);
       });
 
       $("#" + viewerDivId + " .playbackButton").bind("click", function () {
-        if ($("#" + viewerDivId + " .timelineSlider")["slider"]("option", "disabled")) return;
+        if ($("#" + viewerDivId + " .timelineSlider").slider("option", "disabled")) return;
+        if (timelapseCurrentTimeInSeconds <=0 && thisObj.getPlaybackRate() <= 0) return;
+        
         if ($(this).hasClass('play')) {
           $(this).toggleClass("play pause");
           $(this).attr({
             "title": "Pause"
           });
-          if (isCurrentTimeAtOrPastDuration()) {
-            $("#" + viewerDivId + " .timelineSlider")["slider"]("option", "value", 0);
+          if (isCurrentTimeAtOrPastDuration() && thisObj.getPlaybackRate() > 0) {
+            $("#" + viewerDivId + " .timelineSlider").slider("option", "value", 0);
+            obj.pause();
             obj.seek(0);
           }
           obj.play();
@@ -1054,7 +1070,7 @@ if (!window['$']) {
       });
 
       $("#" + viewerDivId + " .repeat").bind("click", function () {
-        if ($(this).hasClass("disabled") || $("#" + viewerDivId + " .zoomSlider")["slider"]("option", "disabled") == true) return;
+        if ($(this).hasClass("disabled") || $("#" + viewerDivId + " .zoomSlider").slider("option", "disabled") == true) return;
         loopPlayback = !loopPlayback
         if (loopPlayback) {
           $(this).toggleClass("inactive active");
@@ -1065,18 +1081,18 @@ if (!window['$']) {
       });
 
       $("#" + viewerDivId + " .zoomall").click(function () {
-        if ($("#" + viewerDivId + " .zoomSlider")["slider"]("option", "disabled") == true) return;
+        if ($("#" + viewerDivId + " .zoomSlider").slider("option", "disabled") == true) return;
         obj.warpTo(obj.homeView());
-        $("#" + viewerDivId + " .zoomSlider")['slider']("option", "value", obj.viewScaleToZoomSlider(obj.getDefaultScale()));
+        //$("#" + viewerDivId + " .zoomSlider")['slider']("option", "value", obj.viewScaleToZoomSlider(obj.getDefaultScale()));
       });
 
       $("#" + viewerDivId + " .zoomin").mousedown(function () {
-        if ($("#" + viewerDivId + " .zoomSlider")["slider"]("option", "disabled") == true) return;
+        if ($("#" + viewerDivId + " .zoomSlider").slider("option", "disabled") == true) return;
         intervalId = setInterval(function () {
           zoomIn(viewerDivId, obj);
         }, 50);
       }).click(function () {
-        if ($("#" + viewerDivId + " .zoomSlider")["slider"]("option", "disabled") == true) return;
+        if ($("#" + viewerDivId + " .zoomSlider").slider("option", "disabled") == true) return;
         zoomIn(viewerDivId, obj);
       }).mouseup(function () {
         clearInterval(intervalId);
@@ -1085,12 +1101,12 @@ if (!window['$']) {
       });
 
       $("#" + viewerDivId + " .zoomout").mousedown(function () {
-        if ($("#" + viewerDivId + " .zoomSlider")["slider"]("option", "disabled") == true) return;
+        if ($("#" + viewerDivId + " .zoomSlider").slider("option", "disabled") == true) return;
         intervalId = setInterval(function () {
           zoomOut(viewerDivId, obj);
         }, 50);
       }).click(function () {
-        if ($("#" + viewerDivId + " .zoomSlider")["slider"]("option", "disabled") == true) return;
+        if ($("#" + viewerDivId + " .zoomSlider").slider("option", "disabled") == true) return;
         zoomOut(viewerDivId, obj);
       }).mouseup(function () {
         clearInterval(intervalId);
@@ -1202,35 +1218,60 @@ if (!window['$']) {
                   _addTimeChangeListener(function (t) {
                     timelapseCurrentTimeInSeconds = t;
                     timelapseCurrentCaptureTimeIndex = Math.floor(t * _getFps());
-                    if (timelapseCurrentTimeInSeconds.toFixed(3) < 0) {
+                    if (timelapseCurrentTimeInSeconds.toFixed(3) < 0 || (timelapseCurrentTimeInSeconds.toFixed(3) == 0 && thisObj.getPlaybackRate() < 0)) {
                       timelapseCurrentTimeInSeconds = 0;
                       _pause();
-                      $(".playbackButton").attr({
-                        "class": "play",
-                        "title": "Play"
-                      });
+                      _seek(0);
+                      $("#" + viewerDivId + " .playbackButton").removeClass("pause");
+                      $("#" + viewerDivId + " .playbackButton").addClass("play");
+                      $("#" + viewerDivId + " .playbackButton").attr({"title": "Play"});
                     }
-
-                    if (isCurrentTimeAtOrPastDuration()) {
+										//console.log("current time: " + t);
+										//console.log("total time: " + timelapseDurationInSeconds);
+                    if (isCurrentTimeAtOrPastDuration() && thisObj.getPlaybackRate() > 0) {
                       timelapseCurrentTimeInSeconds = timelapseDurationInSeconds;
                       if (snaplapse != null && snaplapse.isPlaying()) return;
                       if (loopPlayback) {
-                        _seek(0);
+                        if ($("#" + viewerDivId + " .playbackButton").hasClass("pause")) {
+                      	  //setTimeout(
+                      	   // function() {
+                      	    	_seek(0);
+                      	      _pause();
+                      	  	  _play();
+                      	  //}, 
+                      	  //Math.abs((1/thisObj.getPlaybackRate())*300));
+                      	  
+                      	}
                       } else {
-                        _pause();
-                        $("playbackButton").attr({
-                          "class": "play",
-                          "title": "Play"
-                        });
+                       _pause();
+                       $("#" + viewerDivId + " .playbackButton").removeClass("pause");
+                       $("#" + viewerDivId + " .playbackButton").addClass("play");
+                       $("#" + viewerDivId + " .playbackButton").attr({"title": "Play"});
                       }
                     }
                     $("#" + viewerDivId + " .currentTime").text(org.gigapan.Util.formatTime(timelapseCurrentTimeInSeconds, true));
                     $("#" + viewerDivId + " .currentCaptureTime").text(captureTimes[timelapseCurrentCaptureTimeIndex]);
-                    $("#" + viewerDivId + " .timelineSlider")["slider"]("option", "value", timelapseCurrentTimeInSeconds);
+                    $("#" + viewerDivId + " .timelineSlider").slider("value", (timelapseCurrentTimeInSeconds * _getFps() - 0.5));
                   });
 
                   _addTargetViewChangeListener(function (view) {
-                    $("#" + viewerDivId + " .zoomSlider")["slider"]("option", "value", _viewScaleToZoomSlider(view.scale));
+                    $("#" + viewerDivId + " .zoomSlider").slider("value", _viewScaleToZoomSlider(view.scale));
+                  });
+
+                  _addVideoPauseListener(function() {
+                    // the videoset might cause playback to pause, such as when it decides
+                    // it's hit the end (even though the current time might not be >= duration),
+                    // so we need to make sure the play button is updated
+                    $("#" + viewerDivId + " .playbackButton").removeClass("pause");
+                    $("#" + viewerDivId + " .playbackButton").addClass("play");
+                    $("#" + viewerDivId + " .playbackButton").attr({"title": "Play"})                
+                  });
+
+                  _addVideoPlayListener(function() {
+                    // always make sure that when we are playing, the button status is updated
+                    $("#" + viewerDivId + " .playbackButton").removeClass("play");
+                    $("#" + viewerDivId + " .playbackButton").addClass("pause");
+                    $("#" + viewerDivId + " .playbackButton").attr({"title": "Pause"})   
                   });
 
                   if (settings["composerDiv"]) snaplapse = new org.gigapan.timelapse.Snaplapse(settings["composerDiv"], thisObj);

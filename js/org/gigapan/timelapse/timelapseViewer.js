@@ -70,14 +70,12 @@ function setupSliderHandlers(viewerDivId) {
 }
 
 function zoomIn(viewerDivId,obj) {
-  var val = Math.min($("#"+viewerDivId+" .zoomSlider")["slider"]("option", "value") + .01, 1);
-  $("#"+viewerDivId+" .zoomSlider")["slider"]("option", "value", val);
+  var val = Math.min($("#"+viewerDivId+" .zoomSlider").slider("value") + .01, 1);
   obj.setScaleFromSlider(val);
 }
 
 function zoomOut(viewerDivId,obj) {
-  var val = Math.max($(".zoomSlider")["slider"]("option", "value") - .01, 0);
-  $("#"+viewerDivId+" .zoomSlider")["slider"]("option", "value", val);
+  var val = Math.max($("#"+viewerDivId+" .zoomSlider").slider("value") - .01, 0);
   obj.setScaleFromSlider(val);
 }
 
