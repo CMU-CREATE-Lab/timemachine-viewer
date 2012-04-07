@@ -258,12 +258,12 @@ if (!window['$']) {
       }
     };
 
-    this.handleMousescrollEvent = function (event) {
+    this.handleMousescrollEvent = function (event, delta) {
       event.preventDefault();
-      //UTIL.log('mousescroll delta  ' + event.wheelDelta);
-      if (event.wheelDelta > 0) {
+      //UTIL.log('mousescroll delta  ' + delta);
+      if (delta > 0) {
         zoomAbout(1 / .9, event.pageX, event.pageY);
-      } else if (event.wheelDelta < 0) {
+      } else if (delta < 0) {
         zoomAbout(.9, event.pageX, event.pageY);
       }
     };
@@ -573,6 +573,7 @@ if (!window['$']) {
 
       var toGoal = point2sub(targetView, view);
       var toGoalMag = point2mag(toGoal);
+
       if (toGoalMag > 0) {
         var translateDelta;
         if (toGoalMag * translateFraction > minTranslateDelta) {
@@ -836,7 +837,7 @@ if (!window['$']) {
         }
       }
       
-      timelapseDurationInSeconds = (_getNumFrames() - 0.5) / _getFps();
+      timelapseDurationInSeconds = (_getNumFrames() - 0.7) / _getFps();
       
       $("#" + div + " .currentTime").text(org.gigapan.Util.formatTime(timelapseCurrentTimeInSeconds, true));
       $("#" + div + " .totalTime").text(org.gigapan.Util.formatTime(timelapseDurationInSeconds, true));
@@ -854,7 +855,7 @@ if (!window['$']) {
           // we wont actually get to time 0 because of how we are snapping.
           // Manually seek to position 0 when this happens.
           if (($(this).slider('value') > ui.value) && ui.value == 0) _seek(0);
-          else _seek((ui.value + 0.5) / _getFps());
+          else _seek((ui.value + 0.3) / _getFps());
         }
       });
 
@@ -1139,7 +1140,7 @@ if (!window['$']) {
     }
 
     view = (typeof(settings["initialView"]) != "undefined") ? settings["initialView"] : _homeView();
-    targetView = view;
+    targetView = {};
 
     var datasetPath;
 
@@ -1251,7 +1252,7 @@ if (!window['$']) {
                     }
                     $("#" + viewerDivId + " .currentTime").text(org.gigapan.Util.formatTime(timelapseCurrentTimeInSeconds, true));
                     $("#" + viewerDivId + " .currentCaptureTime").text(captureTimes[timelapseCurrentCaptureTimeIndex]);
-                    $("#" + viewerDivId + " .timelineSlider").slider("value", (timelapseCurrentTimeInSeconds * _getFps() - 0.5));
+                    $("#" + viewerDivId + " .timelineSlider").slider("value", (timelapseCurrentTimeInSeconds * _getFps() - 0.3));
                   });
 
                   _addTargetViewChangeListener(function (view) {
