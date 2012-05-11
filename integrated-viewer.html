@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<!-- Copied to "view.html" by ct.rb -->
+<html>
+  <head>
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8"/>
+    <script src="js/jquery/jquery.min.js" type="text/javascript"></script>
+    <script src="js/jquery/jquery-ui.custom.min.js" type="text/javascript"></script>
+    <script src="js/jquery/plugins/mouse/jquery.mousewheel.min.js" type="text/javascript"></script>
+    <script src="js/jquery/plugins/query/jquery.query-2.1.7.js" type="text/javascript"></script>
+    <script src="js/jquery/plugins/carousel/jcarousellite.min.js" type="text/javascript"></script>
+    <script src="js/jquery/plugins/mouse/jquery.mousecapture.js" type="text/javascript"></script>
+    <script src="js/org/gigapan/util.js" type="text/javascript"></script>
+    <script src="js/org/gigapan/timelapse/videoset_stats.js" type="text/javascript"></script>
+    <script src="js/org/gigapan/timelapse/videoset.js" type="text/javascript"></script>
+    <script src="js/org/gigapan/timelapse/timelapse.js" type="text/javascript"></script>
+    <script src="js/Math.uuid.js" type="text/javascript"></script>
+    <script src="js/org/gigapan/timelapse/snaplapse.js" type="text/javascript"></script>
+    <script src="js/org/gigapan/timelapse/snaplapseViewer.js" type="text/javascript"></script>
+    <script src="js/org/gigapan/timelapse/timelapseViewer.js" type="text/javascript"></script>
+    <script src="js/jwplayer/jwplayer.js" type="text/javascript"></script>
+    <script src="js/org/gigapan/timelapse/flashViewer.js" type="text/javascript"></script>
+
+    <link href="css/timelapse.css" rel="stylesheet" type="text/css"/>
+    <link href="css/videoset_stats.css" rel="stylesheet" type="text/css"/>
+    <link href="css/snaplapse.css" rel="stylesheet" type="text/css"/>
+    <link href="css/jquery-ui/smoothness/jquery-ui.custom.css" rel="stylesheet" type="text/css"/>
+    <link href="css/ui.slider.extras.css" rel="stylesheet" type="text/css"/>
+    <link href="css/player.css" rel="stylesheet" type="text/css"/>
+
+    <script type="text/javascript">
+      var timelapseMetadataJSON = {};
+      var timelapsesToRepeat = []
+
+      function init() {
+        var url = "./"
+
+      	var viewerOptions = {
+          url: url, //can be absolute or relative
+          initialTime: 0, //default to 0; video time
+          playerSize: "Large", //[Small, Large] defaults to Large size
+          loopPlayback: timelapseMetadataJSON["repeat"], //defaults to false
+          playOnLoad: false, //defaults to false
+          playbackSpeed: 1, //[-1,-.5,-.25,.25,.5,1] available, defaults to 1
+          layer: 0, //default to first layer. All sets have at least 1 layer starting at index 0
+          composerDiv: "composer1" //display the time warp composer; display nothing if param left out
+        };
+
+        timelapse = new org.gigapan.timelapse.Timelapse("player1", viewerOptions);
+      }
+
+      $(init);
+    </script>
+
+  </head>
+  <body>
+    <div id="player1"></div>
+    <div id="composer1"></div>
+  </body>
+</html>
