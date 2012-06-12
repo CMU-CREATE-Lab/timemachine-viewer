@@ -394,6 +394,7 @@ function doLoadSnaplapse(json) {
 
 			return true;
 		}
+		this.loadNewSnaplapse = newSnaplapse;
 
 		var setKeyframeThumbail = function(keyframe) {
 			try {
