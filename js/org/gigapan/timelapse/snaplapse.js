@@ -475,6 +475,8 @@ if (!Math.uuid) {
       }
     };
 
+    this.getSnaplapseViewer = function() { return viewer;};
+
     var cloneFrame = function(frame) {
       var frameCopy = null;
       if (frame) {
@@ -616,7 +618,7 @@ if (!Math.uuid) {
         org.gigapan.Util.error("Error loading time warp composer controls.");
         return;
       }
-      viewer = org.gigapan.timelapse.snaplapse.SnaplapseViewer(thisObj,timelapse);
+      viewer = new org.gigapan.timelapse.snaplapse.SnaplapseViewer(thisObj,timelapse);
     });
 
   };
