@@ -186,8 +186,8 @@ if (!Math.uuid) {
             // NOTE: if is-description-visible is undefined, then we define it as *true* in order to maintain
             // backward compatibility with older time warps which don't have this property.
             this.recordKeyframe(null,
-                                keyframe['time'], 
-                                keyframe['bounds'], 
+                                keyframe['time'],
+                                keyframe['bounds'],
                                 keyframe['description'],
                                 (typeof keyframe['is-description-visible'] == 'undefined') ? true : keyframe['is-description-visible'],
                                 keyframe['duration'],
@@ -433,7 +433,7 @@ if (!Math.uuid) {
         }
       }
     };
-         
+
     this.stop = _stop;
 
     this.getKeyframeById = function(keyframeId) {
@@ -501,12 +501,12 @@ if (!Math.uuid) {
 
       if (currentKeyframeInterval != null) {
         var rate = currentKeyframeInterval.getPlaybackRate();
-        timelapse.setPlaybackRate(rate);                                     
+        timelapse.setPlaybackRate(rate);
 
-        if (rate < -0.55) rate = -1 
-        else if (rate < 0.0) rate = -.5 
-        else if (rate < 0.55) rate = .5 
-        else rate = 1          
+        if (rate < -0.55) rate = -1;
+        else if (rate < 0.0) rate = -.5;
+        else if (rate < 0.55) rate = .5;
+        else rate = 1;
 
 	var speedChoice;
         var timelapseViewerDivId = timelapse.getViewerDivId();
@@ -519,7 +519,7 @@ if (!Math.uuid) {
 	$("#"+timelapseViewerDivId+" .playbackSpeedText").text(speedChoice.text());
 
         var keyframeStartingTime = currentKeyframeInterval.getStartingTime();
-        timelapse.seek(keyframeStartingTime);              // make sure we're on track 
+        timelapse.seek(keyframeStartingTime);              // make sure we're on track
         updateWarpStartingTime(keyframeStartingTime);      // update the warp starting time since we just corrected with a seek
       }
 
@@ -588,7 +588,7 @@ if (!Math.uuid) {
           setCurrentKeyframeInterval(currentKeyframeInterval.getNextKeyframeInterval());
         }
       } while (!foundMatchingInterval && currentKeyframeInterval != null);
-      
+
       if (currentKeyframeInterval) {
         // compute the frame for the current time
         var frameBounds = currentKeyframeInterval.computeFrameBoundsForElapsedTime(elapsedTimeInMillis);
@@ -604,13 +604,13 @@ if (!Math.uuid) {
         _stop(true);
       }
     };
-    
+
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////
     //
     // Constructor code
     //
     var viewer;
-    
+
     $composerDivObj.load('time_warp_composer.html', function(response, status, xhr) {
       if (status == "error") {
         org.gigapan.Util.error("Error loading time warp composer controls.");
@@ -691,38 +691,46 @@ if (!Math.uuid) {
       return startingRunningDurationInMillis <= millis && millis <= endingRunningDurationInMillis;
     };
 
-    this.computeFrameBoundsForElapsedTime = function(elapsedMillis) {
-      if (this.containsElapsedTime(elapsedMillis)) {
-        var timePercentage = (elapsedMillis - startingRunningDurationInMillis) / desiredDurationInMillis;
+      this.computeFrameBoundsForElapsedTime = function(elapsedMillis) {
+          if (this.containsElapsedTime(elapsedMillis)) {
 
-        var boundsXminOffset = (endingFrame['bounds'].xmin - startingFrame['bounds'].xmin ) * timePercentage;
-        var boundsYminOffset = (endingFrame['bounds'].ymin - startingFrame['bounds'].ymin ) * timePercentage;
-        var boundsXmaxOffset = (endingFrame['bounds'].xmax - startingFrame['bounds'].xmax ) * timePercentage;
-        var boundsYmaxOffset = (endingFrame['bounds'].ymax - startingFrame['bounds'].ymax ) * timePercentage;
+              var timeRatio = (elapsedMillis - startingRunningDurationInMillis) / desiredDurationInMillis;
 
-        var bounds = {};
-        bounds.xmin = startingFrame['bounds'].xmin + boundsXminOffset;
-        bounds.ymin = startingFrame['bounds'].ymin + boundsYminOffset;
-        bounds.xmax = startingFrame['bounds'].xmax + boundsXmaxOffset;
-        bounds.ymax = startingFrame['bounds'].ymax + boundsYmaxOffset;
+              var s0 = startingFrame['bounds'].xmax - startingFrame['bounds'].xmin;
+              var s1 = endingFrame['bounds'].xmax - endingFrame['bounds'].xmin;
+              var s1_over_s0 = s1 / s0;
 
-        return bounds;
-      }
+              var f_of_t = (Math.pow(s1_over_s0, timeRatio) - 1) / (s1_over_s0 - 1);
 
-    return null;
+              var boundsXminOffset = (endingFrame['bounds'].xmin - startingFrame['bounds'].xmin ) * f_of_t;
+              var boundsYminOffset = (endingFrame['bounds'].ymin - startingFrame['bounds'].ymin ) * f_of_t;
+              var boundsXmaxOffset = (endingFrame['bounds'].xmax - startingFrame['bounds'].xmax ) * f_of_t;
+              var boundsYmaxOffset = (endingFrame['bounds'].ymax - startingFrame['bounds'].ymax ) * f_of_t;
+
+              var bounds = {};
+              bounds.xmin = startingFrame['bounds'].xmin + boundsXminOffset;
+              bounds.ymin = startingFrame['bounds'].ymin + boundsYminOffset;
+              bounds.xmax = startingFrame['bounds'].xmax + boundsXmaxOffset;
+              bounds.ymax = startingFrame['bounds'].ymax + boundsYmaxOffset;
+
+              return bounds;
+          }
+
+          return null;
+      };
+
+      this.toString = function() {
+          return 'KeyframeInterval' +
+                 '[startTime=' + startingFrame['time'] +
+                 ',endTime=' + endingFrame['time'] +
+                 ',actualDuration=' + actualDuration +
+                 ',desiredDuration=' + desiredDuration +
+                 ',playbackRate=' + playbackRate +
+                 ',timeDirection=' + timeDirection +
+                 ',startingRunningDurationInMillis=' + startingRunningDurationInMillis +
+                 ',endingRunningDurationInMillis=' + endingRunningDurationInMillis +
+                 ']';
+      };
+
   };
-  this.toString = function() {
-    return 'KeyframeInterval' +
-           '[startTime=' + startingFrame['time'] +
-           ',endTime=' + endingFrame['time'] +
-           ',actualDuration=' + actualDuration +
-           ',desiredDuration=' + desiredDuration +
-           ',playbackRate=' + playbackRate +
-           ',timeDirection=' + timeDirection +
-           ',startingRunningDurationInMillis=' + startingRunningDurationInMillis +
-           ',endingRunningDurationInMillis=' + endingRunningDurationInMillis +
-           ']';
-   };
-
- };
 })();
