@@ -173,6 +173,10 @@ if (!window['$']) {
       return videoDivId;
     }
 
+    this.getSnaplapse = function () {
+      return snaplapse;
+    }
+
     this.changeDataset = function (gigapanUrl, gigapanJSON) {
       datasetPath = gigapanUrl;
       UTIL.log("changeDataset(" + gigapanUrl + "): view is " + JSON.stringify(view));
@@ -1301,8 +1305,8 @@ if (!window['$']) {
       // should be displayed).  The fix is to simply seek half a frame in.  Yeah, the video won't be starting at
       // *zero*, but the displayed frame will still be the right one, so...good enough.  :-)
       if (videoset.getLeader() <= 0 && UTIL.isSafari()) {
-        var halfOfAFrame = 1 / this.getFps() / 2;
-        this.seek(halfOfAFrame);
+        var halfOfAFrame = 1 / _getFps() / 2;
+        _seek(halfOfAFrame);
       }
     });
   };
