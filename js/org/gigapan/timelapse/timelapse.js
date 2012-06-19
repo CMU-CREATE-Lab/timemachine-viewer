@@ -127,7 +127,7 @@ if (!window['$']) {
     var animateInterval = null;
     var lastAnimationTime;
     var minTranslateSpeedPixelsPerSecond = 25.0;
-    var translateFractionPerSecond = 3.0;
+    var translateFractionPerSecond = 3.0;   // goes 300% toward goal in 1 sec
     var minZoomSpeedPerSecond = .25; // in log2
     var zoomFractionPerSecond = 3.0; // in log2
     var keyIntervals = [];
@@ -571,7 +571,7 @@ if (!window['$']) {
       var viewChanged = false;
 
       // Animate translation
-      var minTranslateSpeed = minTranslateSpeedPixelsPerSecond / view.scale;
+      var minTranslateSpeed = minTranslateSpeedPixelsPerSecond / view.scale;    // convert to pano coords / sec
       var minTranslateDelta = minTranslateSpeed * deltaT;
       var translateFraction = Math.min(.5, translateFractionPerSecond * deltaT);
 
