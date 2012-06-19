@@ -702,7 +702,9 @@ if (!Math.uuid) {
               var s1 = endingFrame['bounds'].xmax - endingFrame['bounds'].xmin;
               var s1_over_s0 = s1 / s0;
 
-              var f_of_t = (Math.pow(s1_over_s0, timeRatio) - 1) / (s1_over_s0 - 1);
+              // Compute f(t), but check whether we're merely panning, in which case we shouldn't attempt to do the
+              // special scaling (because it'll blow up with f(1) being NaN since we'd be dividing by zero by zero).
+              var f_of_t = (s1_over_s0 == 1) ? timeRatio : (Math.pow(s1_over_s0, timeRatio) - 1) / (s1_over_s0 - 1);
 
               var boundsXminOffset = (endingFrame['bounds'].xmin - startingFrame['bounds'].xmin ) * f_of_t;
               var boundsYminOffset = (endingFrame['bounds'].ymin - startingFrame['bounds'].ymin ) * f_of_t;
