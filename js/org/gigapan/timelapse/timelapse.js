@@ -649,7 +649,7 @@ if (!window['$']) {
 
       UTIL.log('onPanoLoadSuccessCallback(' + JSON.stringify(data) + ', ' + view + ', ' + ')');
       isSplitVideo = 'frames_per_fragment' in data;
-      framesPerFragment = isSplitVideo ? data['framesPerFragment'] : data['frames'];
+      framesPerFragment = isSplitVideo ? data['frames_per_fragment'] : data['frames'];
       UTIL.log("isSplitVideo=[" + isSplitVideo + "], framesPerFragment=[" + framesPerFragment + "]")
       panoWidth = data['width'];
       panoHeight = data['height'];
