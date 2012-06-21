@@ -109,6 +109,8 @@ if (!window['$']) {
     var videosetStats;
     var videoDiv;
     var tiles = {};
+    var isSplitVideo = false;
+    var framesPerFragment = 0;
     var panoWidth = 0;
     var panoHeight = 0;
     var viewportWidth = 0;
@@ -646,6 +648,9 @@ if (!window['$']) {
 
 
       UTIL.log('onPanoLoadSuccessCallback(' + JSON.stringify(data) + ', ' + view + ', ' + ')');
+      isSplitVideo = 'frames_per_fragment' in data;
+      framesPerFragment = isSplitVideo ? data['framesPerFragment'] : data['frames'];
+      UTIL.log("isSplitVideo=[" + isSplitVideo + "], framesPerFragment=[" + framesPerFragment + "]")
       panoWidth = data['width'];
       panoHeight = data['height'];
       tileWidth = data['tile_width'];
