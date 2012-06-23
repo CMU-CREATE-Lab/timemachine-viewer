@@ -146,6 +146,8 @@ if (!window['$']) {
     var playerSize;
     var datasetIndex;
     var initialTime = settings["initialTime"] || 0;
+    var datasetPath;
+    var tileRootPath;
 
     var timelapseDurationInSeconds = 0.0;
     var timelapseCurrentTimeInSeconds = 0.0;
@@ -179,9 +181,9 @@ if (!window['$']) {
       return snaplapse;
     }
 
-    this.changeDataset = function (gigapanUrl, gigapanJSON) {
-      datasetPath = gigapanUrl;
-      UTIL.log("changeDataset(" + gigapanUrl + "): view is " + JSON.stringify(view));
+    this.changeDataset = function (data) {
+      //datasetPath = gigapanUrl;
+      UTIL.log("changeDataset(" + datasetPath + "): view is " + JSON.stringify(view));
 
       // Reset currentIdx so that we'll load in the new tile with the different resolution.  We don't null the
       // currentVideo here because 1) it will be assigned in the refresh() method when it compares the bestIdx
@@ -189,7 +191,7 @@ if (!window['$']) {
       // track of what video replaced it.
       currentIdx = null;
 
-      onPanoLoadSuccessCallback(gigapanJSON, view);
+      onPanoLoadSuccessCallback(data, view);
     };
 
     var handleKeydownEvent = function (event) {
@@ -479,7 +481,7 @@ if (!window['$']) {
       var lastEvent = event;
       var saveMouseMove = document.onmousemove;
       var saveMouseUp = document.onmouseup;
-      videoDiv.style.cursor = 'url("css/cursors/closedhand.cur") 10 10, move';
+      videoDiv.style.cursor = 'url("css/cursors/closedhand.png") 10 10, move';
       document.onmousemove = function (event) {
         targetView.x += (lastEvent.pageX - event.pageX) / view.scale;
         targetView.y += (lastEvent.pageY - event.pageY) / view.scale;
@@ -488,7 +490,7 @@ if (!window['$']) {
         return false;
       };
       document.onmouseup = function () {
-        videoDiv.style.cursor = 'url("css/cursors/openhand.cur") 10 10, move';
+        videoDiv.style.cursor = 'url("css/cursors/openhand.png") 10 10, move';
         document.onmousemove = saveMouseMove;
         document.onmouseup = saveMouseUp;
       };
@@ -645,8 +647,6 @@ if (!window['$']) {
     };
 
     var onPanoLoadSuccessCallback = function (data, desiredView) {
-
-
       UTIL.log('onPanoLoadSuccessCallback(' + JSON.stringify(data) + ', ' + view + ', ' + ')');
       isSplitVideo = 'frames_per_fragment' in data;
       framesPerFragment = isSplitVideo ? data['framesPerFragment'] : data['frames'];
@@ -760,7 +760,6 @@ if (!window['$']) {
       return tileidxCreate(level, col, row);
     };
 
-
     var scale2level = function (scale) {
       // Minimum level is 0, which has one tile
       // Maximum level is maxLevel, which is displayed 1:1 at scale=1
@@ -771,7 +770,6 @@ if (!window['$']) {
       //UTIL.log('scale2level('+scale+'): idealLevel='+idealLevel+', ret='+selectedLevel);
       return selectedLevel;
     };
-
 
     var tileidxGeometry = function (tileidx) {
       var levelScale = Math.pow(2, maxLevel - getTileidxLevel(tileidx));
@@ -836,7 +834,6 @@ if (!window['$']) {
       return "{l:" + getTileidxLevel(t) + ",c:" + getTileidxColumn(t) + ",r:" + getTileidxRow(t) + "}";
     };
 
-
     function createTimelineSlider(div) {
       if (_getTimelapseJSON()["capture-times"]) {
         captureTimes = _getTimelapseJSON()["capture-times"];
@@ -870,7 +867,6 @@ if (!window['$']) {
 
       $("#" + div + " .timelineSlider .ui-slider-handle").attr("title", "Drag to go to a different point in time");
     }
-
 
     function createPlaybackSpeedSlider(div) {
       //populate playback speed dropdown
@@ -906,9 +902,7 @@ if (!window['$']) {
       }
       $("#" + viewerDivId + " .sizechoices").append(html);
 
-      // set the size dropdown      
-      //default to last size of first set?
-
+      // set the size dropdown
       $("#" + viewerDivId + " .sizechoices li a:contains(" + tmJSON["datasets"][datasetIndex]["name"] + ")").addClass("current");
       $("#" + viewerDivId + " .playerSizeText").text(tmJSON["datasets"][datasetIndex]["name"]);
 
@@ -937,20 +931,19 @@ if (!window['$']) {
       playerSize = index;
       var newIndex = datasetLayer * tmJSON["sizes"].length + playerSize;
       validateAndSetDatasetIndex(newIndex);
-      loadGigapanJSON();
+      loadVideosetJSON();
       $("#" + viewerDivId + " .playerSizeText").text(tmJSON["datasets"][index]["name"]);
-
     }
 
     this.switchLayer = function (index) {
       playerLayer = index;
       var newIndex = playerLayer * tmJSON["sizes"].length + playerSize;
       validateAndSetDatasetIndex(newIndex);
-      loadGigapanJSON();
+      loadVideosetJSON();
     }
 
     function validateAndSetDatasetIndex(newDatasetIndex) {
-      // make sure the datasetIndex is a valid number, and within the range of datasets for this gigapan.
+      // make sure the datasetIndex is a valid number, and within the range of datasets for this timelapse.
       if (!org.gigapan.Util.isNumber(newDatasetIndex)) {
         datasetIndex = 0;
       } else {
@@ -958,32 +951,17 @@ if (!window['$']) {
       }
     }
 
-    function loadGigapanJSON() {
-      var datasetId = _getTimelapseJSON()["datasets"][datasetIndex]["id"];
-
+    function loadVideosetJSON() {
       datasetPath = settings["url"] + tmJSON["datasets"][datasetIndex]['id'] + "/";
-
-      //org.gigapan.Util.log("Attempting to fetch gigapan JSON from URL [" + jsonUrl + "]...");
       showSpinner(viewerDivId);
-      $.ajax({
-        dataType: "json",
-        url: datasetPath + 'r.json',
-        success: function (data) {
-          if (data && data["tile_height"]) {
-            //org.gigapan.Util.log("Loaded this JSON: [" + JSON.stringify(gigapanJSON) + "]");
-            loadTimelapse(datasetPath, data);
-          } else {
-            //org.gigapan.Util.error("Failed to load gigapan json from URL [" + jsonUrl + "]");
-          }
-        }, error: function () {
-          //org.gigapan.Util.error("Error loading gigapan json from URL [" + jsonUrl + "]");
-        }
-      });
+      //org.gigapan.Util.log("Attempting to fetch videoset JSON from URL [" + datasetPath + "]...");
+      org.gigapan.Util.ajax("json",datasetPath + 'r.json',loadVideoSet);
     }
 
-    function loadTimelapse(gigapanUrl, gigapanJSON) {
-      thisObj.changeDataset(gigapanUrl, gigapanJSON);
-      setViewportSize(gigapanJSON["video_width"] - gigapanJSON["tile_width"], gigapanJSON["video_height"] - gigapanJSON["tile_height"], thisObj);
+    function loadVideoSet(data) {
+      datasetJSON = data;
+      thisObj.changeDataset(data);
+      setViewportSize(data["video_width"] - data["tile_width"], data["video_height"] - data["tile_height"], thisObj);
       hideSpinner(viewerDivId);
     }
 
@@ -1003,7 +981,6 @@ if (!window['$']) {
 
       $("#" + viewerDivId + " a.playbackspeed").click(function () {
         if ($("#" + viewerDivId + " .help").hasClass("on") || $("#" + viewerDivId + " .zoomSlider").slider("option", "disabled")) return;
-
         $("#" + viewerDivId + " li.playbackSpeedOptions").fadeIn(100);
       });
 
@@ -1015,7 +992,6 @@ if (!window['$']) {
 
       $("#" + viewerDivId + " a.size").click(function () {
         if ($("#" + viewerDivId + " .help").hasClass("on") || $("#" + viewerDivId + " .zoomSlider").slider("option", "disabled")) return;
-
         $("#" + viewerDivId + " li.sizeoptions").fadeIn(100);
       });
 
@@ -1026,34 +1002,34 @@ if (!window['$']) {
       });
 
       $("#" + viewerDivId + " .help").toggle(
-
-      function () {
-        if ($("#" + viewerDivId + " .zoomSlider").slider("option", "disabled")) return;
-        $("#" + viewerDivId + " li.sizeoptions").hide(); //might be already opened
-        $("#" + viewerDivId + " li.playbackSpeedOptions").hide(); //might be already opened
-        $("#" + viewerDivId + " .instructions").fadeIn(100);
-        $("#" + viewerDivId + " .repeat").addClass("disabled");
-        $(this).addClass("on");
-        if ($("#" + viewerDivId + " .playbackButton").hasClass('pause')) {
-          obj.pause();
-          $("#" + viewerDivId + " .playbackButton").addClass("pause_disabled");
-        } else {
-          $("#" + viewerDivId + " .playbackButton").addClass("play_disabled");
+        function () {
+          if ($("#" + viewerDivId + " .zoomSlider").slider("option", "disabled")) return;
+          $("#" + viewerDivId + " li.sizeoptions").hide(); //might be already opened
+          $("#" + viewerDivId + " li.playbackSpeedOptions").hide(); //might be already opened
+          $("#" + viewerDivId + " .instructions").fadeIn(100);
+          $("#" + viewerDivId + " .repeat").addClass("disabled");
+          $(this).addClass("on");
+          if ($("#" + viewerDivId + " .playbackButton").hasClass('pause')) {
+            obj.pause();
+            $("#" + viewerDivId + " .playbackButton").addClass("pause_disabled");
+          } else {
+            $("#" + viewerDivId + " .playbackButton").addClass("play_disabled");
+          }
+          $("#" + viewerDivId + " .timelineSlider").slider("option", "disabled", true);
+        }, function () {
+          if ($("#" + viewerDivId + " .zoomSlider").slider("option", "disabled")) return;
+          $("#" + viewerDivId + " .instructions").fadeOut(50);
+          $("#" + viewerDivId + " .repeat").removeClass("disabled");
+          $(this).removeClass("on");
+          if ($("#" + viewerDivId + " .playbackButton").hasClass('pause_disabled')) {
+            obj.play();
+            $("#" + viewerDivId + " .playbackButton").addClass("pause");
+          } else {
+            $("#" + viewerDivId + " .playbackButton").addClass("play");
+          }
+          $("#" + viewerDivId + " .timelineSlider").slider("option", "disabled", false);
         }
-        $("#" + viewerDivId + " .timelineSlider").slider("option", "disabled", true);
-      }, function () {
-        if ($("#" + viewerDivId + " .zoomSlider").slider("option", "disabled")) return;
-        $("#" + viewerDivId + " .instructions").fadeOut(50);
-        $("#" + viewerDivId + " .repeat").removeClass("disabled");
-        $(this).removeClass("on");
-        if ($("#" + viewerDivId + " .playbackButton").hasClass('pause_disabled')) {
-          obj.play();
-          $("#" + viewerDivId + " .playbackButton").addClass("pause");
-        } else {
-          $("#" + viewerDivId + " .playbackButton").addClass("play");
-        }
-        $("#" + viewerDivId + " .timelineSlider").slider("option", "disabled", false);
-      });
+      );
 
       $("#" + viewerDivId + " .playbackButton").bind("click", function () {
         if ($("#" + viewerDivId + " .timelineSlider").slider("option", "disabled")) return;
@@ -1123,7 +1099,6 @@ if (!window['$']) {
       }).mouseout(function () {
         clearInterval(intervalId);
       });
-
     }
 
     function isCurrentTimeAtOrPastDuration() {
@@ -1133,38 +1108,108 @@ if (!window['$']) {
       return num1Fixed >= num2Fixed;
     }
 
-    ////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    //
-    // Constructor code
-    //
-    var browserSupported = org.gigapan.Util.browserSupported();
-    if (!browserSupported) {
-      $("#" + viewerDivId).load('browser_not_supported_template.html', function (response, status, xhr) {
-        if (status == "error") {
-          org.gigapan.Util.error("Error loading browser not supported message.");
+    function setupTimelapse(){
+      _addTimeChangeListener(function (t) {
+        timelapseCurrentTimeInSeconds = t;
+        timelapseCurrentCaptureTimeIndex = Math.floor(t * _getFps());
+        if (timelapseCurrentTimeInSeconds.toFixed(3) < 0 || (timelapseCurrentTimeInSeconds.toFixed(3) == 0 && thisObj.getPlaybackRate() < 0)) {
+          timelapseCurrentTimeInSeconds = 0;
+          _pause();
+          _seek(0);
+          $("#" + viewerDivId + " .playbackButton").removeClass("pause");
+          $("#" + viewerDivId + " .playbackButton").addClass("play");
+          $("#" + viewerDivId + " .playbackButton").attr({"title": "Play"});
         }
-        $("#browser_not_supported").show();
+        //console.log("current time: " + t);
+        //console.log("total time: " + timelapseDurationInSeconds);
+        if (isCurrentTimeAtOrPastDuration() && thisObj.getPlaybackRate() > 0) {
+          timelapseCurrentTimeInSeconds = timelapseDurationInSeconds;
+          if (snaplapse != null && snaplapse.isPlaying()) return;
+          if (loopPlayback) {
+            if ($("#" + viewerDivId + " .playbackButton").hasClass("pause")) {
+              //setTimeout(
+                //function() {
+                  _seek(0);
+                  _pause();
+                  _play();
+                //},
+              //Math.abs((1/thisObj.getPlaybackRate())*300));
+            }
+          } else {
+           _pause();
+           $("#" + viewerDivId + " .playbackButton").removeClass("pause");
+           $("#" + viewerDivId + " .playbackButton").addClass("play");
+           $("#" + viewerDivId + " .playbackButton").attr({"title": "Play"});
+          }
+        }
+        $("#" + viewerDivId + " .currentTime").text(org.gigapan.Util.formatTime(timelapseCurrentTimeInSeconds, true));
+        $("#" + viewerDivId + " .currentCaptureTime").text(captureTimes[timelapseCurrentCaptureTimeIndex]);
+        $("#" + viewerDivId + " .timelineSlider").slider("value", (timelapseCurrentTimeInSeconds * _getFps() - 0.3));
       });
-      return;
+
+      _addTargetViewChangeListener(function (view) {
+        $("#" + viewerDivId + " .zoomSlider").slider("value", _viewScaleToZoomSlider(view.scale));
+      });
+
+      _addVideoPauseListener(function() {
+        // the videoset might cause playback to pause, such as when it decides
+        // it's hit the end (even though the current time might not be >= duration),
+        // so we need to make sure the play button is updated
+        $("#" + viewerDivId + " .playbackButton").removeClass("pause");
+        $("#" + viewerDivId + " .playbackButton").addClass("play");
+        $("#" + viewerDivId + " .playbackButton").attr({"title": "Play"});
+      });
+
+      _addVideoPlayListener(function() {
+        // always make sure that when we are playing, the button status is updated
+        $("#" + viewerDivId + " .playbackButton").removeClass("play");
+        $("#" + viewerDivId + " .playbackButton").addClass("pause");
+        $("#" + viewerDivId + " .playbackButton").attr({"title": "Pause"});
+      });
+
+      if (settings["composerDiv"]) snaplapse = new org.gigapan.timelapse.Snaplapse(settings["composerDiv"], thisObj);
+
+      populateSizes(viewerDivId);
+      //hasLayers = timelapseMetadataJSON["has_layers"] || false;
+      createTimelineSlider(viewerDivId);
+      createZoomSlider(viewerDivId, thisObj);
+      createPlaybackSpeedSlider(viewerDivId);
+      setupSliderHandlers(viewerDivId);
+      setupUIHandlers(viewerDivId, thisObj);
+      //handlePluginVideoTagOverride(); //TODO
+
+      // Fixes Safari bug which causes the video to not be displayed if the video has no leader and the initial
+      // time is zero (the video seeked event is never fired, so videoset never gets the cue that the video
+      // should be displayed).  The fix is to simply seek half a frame in.  Yeah, the video won't be starting at
+      // *zero*, but the displayed frame will still be the right one, so...good enough.  :-)
+      if (videoset.getLeader() <= 0 && UTIL.isSafari()) {
+        var halfOfAFrame = 1 / _getFps() / 2;
+        _seek(halfOfAFrame);
+      }
     }
 
-    view = (typeof(settings["initialView"]) != "undefined") ? settings["initialView"] : _homeView();
-    targetView = {};
-
-    var datasetPath;
-
-    var tileRootPath;
-
-    UTIL.log('Timelapse("' + settings["url"] + '")');
-
-    //load UI
-    $("#" + viewerDivId).load('player_template.html', function (response, status, xhr) {
-
-      if (status == "error") {
-        org.gigapan.Util.error("Error loading viewer controls.");
-        return;
+    function loadTimelapseJSON(json) {
+      tmJSON = json;
+      tileRootPath = settings["url"]; // assume tiles and json are on same host
+      for (i = 0; i < tmJSON["sizes"].length; i++) {
+        playerSize = i;
+        if (settings["playerSize"] && tmJSON["sizes"][i].toLowerCase() == settings["playerSize"].toLowerCase()) break;
       }
+      validateAndSetDatasetIndex(datasetLayer * tmJSON["sizes"].length + playerSize); //layer + size = index of dataset
+      datasetPath = settings["url"] + tmJSON["datasets"][datasetIndex]['id'] + "/";
+      org.gigapan.Util.ajax("json",datasetPath + 'r.json',loadInitialVideoSet);
+    }
 
+    function loadInitialVideoSet(data) {
+      datasetJSON = data;
+      setViewportSize(data["video_width"] - data["tile_width"], data["video_height"] - data["tile_height"], thisObj);
+      onPanoLoadSuccessCallback(data, settings["initialView"]);
+      setupTimelapse();
+      hideSpinner(viewerDivId);
+    }
+
+    function loadPlayerControlsTemplate(html) {
+      $("#" + viewerDivId).html(html);
       var tmp = document.getElementById("{REPLACE}");
       $(tmp).attr("id", viewerDivId + "_timelapse");
       videoDivId = $(tmp).attr("id");
@@ -1193,126 +1238,32 @@ if (!window['$']) {
         $(document).bind("keyup.tm_keyup", handleKeyupEvent);
       });
 
-      //add trailing slash to url if it was omitted
-      if (settings["url"].charAt(settings["url"].length - 1) != "/") settings["url"] += "/";
+      org.gigapan.Util.ajax("json",settings["url"] + "tm.json",loadTimelapseJSON);
+    }
 
-      //load data
-      $.ajax({
-        dataType: "json",
-        url: settings["url"] + "tm.json",
-        success: function (json) {
-          tmJSON = json;
-          tileRootPath = settings["url"]; //initially assume tile and json are on same host
-          for (i = 0; i < tmJSON["sizes"].length; i++) {
-            playerSize = i;
-            if (settings["playerSize"] && tmJSON["sizes"][i].toLowerCase() == settings["playerSize"].toLowerCase()) break;
-          }
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    //
+    // Constructor code
+    //
 
-          validateAndSetDatasetIndex(datasetLayer * tmJSON["sizes"].length + playerSize); //layer + size = index of dataset
-          datasetPath = settings["url"] + tmJSON["datasets"][datasetIndex]['id'] + "/";
-          $.ajax({
-            url: settings["url"] + "tileroot.json",
-            dataType: 'json',
-            success: function (tilerootJSON) {
-              tileRootPath = tilerootJSON["tileroot"]; //tiles are not on the same host as the json
-            }, error: function () {
-              org.gigapan.Util.error("Error loading tileroot.json from URL [" + settings["url"] + "] We will assume tiles are on the same host as the json.");
-            }, complete: function () {
-              $.ajax({
-                url: datasetPath + 'r.json',
-                dataType: 'json',
-                success: function (data) {
-                  datasetJSON = data;
-                  setViewportSize(data["video_width"] - data["tile_width"], data["video_height"] - data["tile_height"], thisObj);
-                  onPanoLoadSuccessCallback(data, settings["initialView"]);
-                  _addTimeChangeListener(function (t) {
-                    timelapseCurrentTimeInSeconds = t;
-                    timelapseCurrentCaptureTimeIndex = Math.floor(t * _getFps());
-                    if (timelapseCurrentTimeInSeconds.toFixed(3) < 0 || (timelapseCurrentTimeInSeconds.toFixed(3) == 0 && thisObj.getPlaybackRate() < 0)) {
-                      timelapseCurrentTimeInSeconds = 0;
-                      _pause();
-                      _seek(0);
-                      $("#" + viewerDivId + " .playbackButton").removeClass("pause");
-                      $("#" + viewerDivId + " .playbackButton").addClass("play");
-                      $("#" + viewerDivId + " .playbackButton").attr({"title": "Play"});
-                    }
-										//console.log("current time: " + t);
-										//console.log("total time: " + timelapseDurationInSeconds);
-                    if (isCurrentTimeAtOrPastDuration() && thisObj.getPlaybackRate() > 0) {
-                      timelapseCurrentTimeInSeconds = timelapseDurationInSeconds;
-                      if (snaplapse != null && snaplapse.isPlaying()) return;
-                      if (loopPlayback) {
-                        if ($("#" + viewerDivId + " .playbackButton").hasClass("pause")) {
-                      	  //setTimeout(
-                      	   // function() {
-                      	    	_seek(0);
-                      	      _pause();
-                      	  	  _play();
-                      	  //}, 
-                      	  //Math.abs((1/thisObj.getPlaybackRate())*300));
-                      	  
-                      	}
-                      } else {
-                       _pause();
-                       $("#" + viewerDivId + " .playbackButton").removeClass("pause");
-                       $("#" + viewerDivId + " .playbackButton").addClass("play");
-                       $("#" + viewerDivId + " .playbackButton").attr({"title": "Play"});
-                      }
-                    }
-                    $("#" + viewerDivId + " .currentTime").text(org.gigapan.Util.formatTime(timelapseCurrentTimeInSeconds, true));
-                    $("#" + viewerDivId + " .currentCaptureTime").text(captureTimes[timelapseCurrentCaptureTimeIndex]);
-                    $("#" + viewerDivId + " .timelineSlider").slider("value", (timelapseCurrentTimeInSeconds * _getFps() - 0.3));
-                  });
-
-                  _addTargetViewChangeListener(function (view) {
-                    $("#" + viewerDivId + " .zoomSlider").slider("value", _viewScaleToZoomSlider(view.scale));
-                  });
-
-                  _addVideoPauseListener(function() {
-                    // the videoset might cause playback to pause, such as when it decides
-                    // it's hit the end (even though the current time might not be >= duration),
-                    // so we need to make sure the play button is updated
-                    $("#" + viewerDivId + " .playbackButton").removeClass("pause");
-                    $("#" + viewerDivId + " .playbackButton").addClass("play");
-                    $("#" + viewerDivId + " .playbackButton").attr({"title": "Play"})                
-                  });
-
-                  _addVideoPlayListener(function() {
-                    // always make sure that when we are playing, the button status is updated
-                    $("#" + viewerDivId + " .playbackButton").removeClass("play");
-                    $("#" + viewerDivId + " .playbackButton").addClass("pause");
-                    $("#" + viewerDivId + " .playbackButton").attr({"title": "Pause"})   
-                  });
-
-                  if (settings["composerDiv"]) snaplapse = new org.gigapan.timelapse.Snaplapse(settings["composerDiv"], thisObj);
-
-                  populateSizes(viewerDivId);
-                  //hasLayers = timelapseMetadataJSON["has_layers"] || false;
-                  createTimelineSlider(viewerDivId);
-                  createZoomSlider(viewerDivId, thisObj);
-                  createPlaybackSpeedSlider(viewerDivId);
-                  setupSliderHandlers(viewerDivId);
-                  setupUIHandlers(viewerDivId, thisObj);
-                  //handlePluginVideoTagOverride(); //TODO
-                }, error: function () {
-                  org.gigapan.Util.error("Error loading r.json from URL [" + datasetPath + "]");
-                }
-              });
-            }
-          });
-        }, error: function () {
-          org.gigapan.Util.error("Error loading tm.json from URL [" + settings["url"] + "]");
-        }
+    var browserSupported = org.gigapan.Util.browserSupported();
+    if (!browserSupported) {
+      org.gigapan.Util.ajax("html","browser_not_supported_template.html",function(html){
+        $("#" + viewerDivId).html(html);
+        $("#browser_not_supported").show();
       });
+      return;
+    }
 
-      // Fixes Safari bug which causes the video to not be displayed if the video has no leader and the initial
-      // time is zero (the video seeked event is never fired, so videoset never gets the cue that the video
-      // should be displayed).  The fix is to simply seek half a frame in.  Yeah, the video won't be starting at
-      // *zero*, but the displayed frame will still be the right one, so...good enough.  :-)
-      if (videoset.getLeader() <= 0 && UTIL.isSafari()) {
-        var halfOfAFrame = 1 / _getFps() / 2;
-        _seek(halfOfAFrame);
-      }
-    });
+    view = (typeof(settings["initialView"]) != "undefined") ? settings["initialView"] : _homeView();
+    targetView = {};
+
+    // add trailing slash to url if it was omitted
+    if (settings["url"].charAt(settings["url"].length - 1) != "/") settings["url"] += "/";
+
+    UTIL.log('Timelapse("' + settings["url"] + '")');
+    showSpinner(viewerDivId);
+    org.gigapan.Util.ajax("html","player_template.html",loadPlayerControlsTemplate);
+
   };
 })();

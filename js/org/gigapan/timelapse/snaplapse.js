@@ -613,13 +613,18 @@ if (!Math.uuid) {
     //
     var viewer;
 
-    $composerDivObj.load('time_warp_composer.html', function(response, status, xhr) {
+    org.gigapan.Util.ajax("html","time_warp_composer.html",function(html){
+      $composerDivObj.html(html);
+      viewer = org.gigapan.timelapse.snaplapse.SnaplapseViewer(thisObj,timelapse);
+    });
+
+    /*$composerDivObj.load('time_warp_composer.html', function(response, status, xhr) {
       if (status == "error") {
         org.gigapan.Util.error("Error loading time warp composer controls.");
         return;
       }
-      viewer = new org.gigapan.timelapse.snaplapse.SnaplapseViewer(thisObj,timelapse);
-    });
+      viewer = org.gigapan.timelapse.snaplapse.SnaplapseViewer(thisObj,timelapse);
+    });*/
 
   };
 
@@ -693,48 +698,48 @@ if (!Math.uuid) {
       return startingRunningDurationInMillis <= millis && millis <= endingRunningDurationInMillis;
     };
 
-      this.computeFrameBoundsForElapsedTime = function(elapsedMillis) {
-          if (this.containsElapsedTime(elapsedMillis)) {
+    this.computeFrameBoundsForElapsedTime = function(elapsedMillis) {
+      if (this.containsElapsedTime(elapsedMillis)) {
 
-              var timeRatio = (elapsedMillis - startingRunningDurationInMillis) / desiredDurationInMillis;
+        var timeRatio = (elapsedMillis - startingRunningDurationInMillis) / desiredDurationInMillis;
 
-              var s0 = startingFrame['bounds'].xmax - startingFrame['bounds'].xmin;
-              var s1 = endingFrame['bounds'].xmax - endingFrame['bounds'].xmin;
-              var s1_over_s0 = s1 / s0;
+        var s0 = startingFrame['bounds'].xmax - startingFrame['bounds'].xmin;
+        var s1 = endingFrame['bounds'].xmax - endingFrame['bounds'].xmin;
+        var s1_over_s0 = s1 / s0;
 
-              // Compute f(t), but check whether we're merely panning, in which case we shouldn't attempt to do the
-              // special scaling (because it'll blow up with f(1) being NaN since we'd be dividing by zero by zero).
-              var f_of_t = (s1_over_s0 == 1) ? timeRatio : (Math.pow(s1_over_s0, timeRatio) - 1) / (s1_over_s0 - 1);
+        // Compute f(t), but check whether we're merely panning, in which case we shouldn't attempt to do the
+        // special scaling (because it'll blow up with f(1) being NaN since we'd be dividing by zero by zero).
+        var f_of_t = (s1_over_s0 == 1) ? timeRatio : (Math.pow(s1_over_s0, timeRatio) - 1) / (s1_over_s0 - 1);
 
-              var boundsXminOffset = (endingFrame['bounds'].xmin - startingFrame['bounds'].xmin ) * f_of_t;
-              var boundsYminOffset = (endingFrame['bounds'].ymin - startingFrame['bounds'].ymin ) * f_of_t;
-              var boundsXmaxOffset = (endingFrame['bounds'].xmax - startingFrame['bounds'].xmax ) * f_of_t;
-              var boundsYmaxOffset = (endingFrame['bounds'].ymax - startingFrame['bounds'].ymax ) * f_of_t;
+        var boundsXminOffset = (endingFrame['bounds'].xmin - startingFrame['bounds'].xmin ) * f_of_t;
+        var boundsYminOffset = (endingFrame['bounds'].ymin - startingFrame['bounds'].ymin ) * f_of_t;
+        var boundsXmaxOffset = (endingFrame['bounds'].xmax - startingFrame['bounds'].xmax ) * f_of_t;
+        var boundsYmaxOffset = (endingFrame['bounds'].ymax - startingFrame['bounds'].ymax ) * f_of_t;
 
-              var bounds = {};
-              bounds.xmin = startingFrame['bounds'].xmin + boundsXminOffset;
-              bounds.ymin = startingFrame['bounds'].ymin + boundsYminOffset;
-              bounds.xmax = startingFrame['bounds'].xmax + boundsXmaxOffset;
-              bounds.ymax = startingFrame['bounds'].ymax + boundsYmaxOffset;
+        var bounds = {};
+        bounds.xmin = startingFrame['bounds'].xmin + boundsXminOffset;
+        bounds.ymin = startingFrame['bounds'].ymin + boundsYminOffset;
+        bounds.xmax = startingFrame['bounds'].xmax + boundsXmaxOffset;
+        bounds.ymax = startingFrame['bounds'].ymax + boundsYmaxOffset;
 
-              return bounds;
-          }
+        return bounds;
+      }
 
-          return null;
-      };
+      return null;
+    };
 
-      this.toString = function() {
-          return 'KeyframeInterval' +
-                 '[startTime=' + startingFrame['time'] +
-                 ',endTime=' + endingFrame['time'] +
-                 ',actualDuration=' + actualDuration +
-                 ',desiredDuration=' + desiredDuration +
-                 ',playbackRate=' + playbackRate +
-                 ',timeDirection=' + timeDirection +
-                 ',startingRunningDurationInMillis=' + startingRunningDurationInMillis +
-                 ',endingRunningDurationInMillis=' + endingRunningDurationInMillis +
-                 ']';
-      };
+    this.toString = function() {
+      return 'KeyframeInterval' +
+             '[startTime=' + startingFrame['time'] +
+             ',endTime=' + endingFrame['time'] +
+             ',actualDuration=' + actualDuration +
+             ',desiredDuration=' + desiredDuration +
+             ',playbackRate=' + playbackRate +
+             ',timeDirection=' + timeDirection +
+             ',startingRunningDurationInMillis=' + startingRunningDurationInMillis +
+             ',endingRunningDurationInMillis=' + endingRunningDurationInMillis +
+             ']';
+    };
 
   };
 })();
