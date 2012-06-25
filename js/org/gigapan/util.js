@@ -175,7 +175,7 @@ if (!org.gigapan) {
 
   // wrapper for ajax calls
   org.gigapan.Util.ajax = function(dataType, url, callback) {
-    if ((document.URL.indexOf("file:") != -1) && (typeof(cached_ajax) != "undefined")) {
+    if (typeof(cached_ajax) != "undefined") {
       // we are on file url and part of view.html
       //org.gigapan.Util.log("We are loading from file url.");
       if (typeof(cached_ajax[url]) == "undefined") {
