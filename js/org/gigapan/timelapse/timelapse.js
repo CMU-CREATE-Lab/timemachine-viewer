@@ -111,6 +111,7 @@ if (!window['$']) {
     var tiles = {};
     var isSplitVideo = false;
     var framesPerFragment = 0;
+    var secondsPerFragment = 0;
     var panoWidth = 0;
     var panoHeight = 0;
     var viewportWidth = 0;
@@ -264,7 +265,7 @@ if (!window['$']) {
       }
     };
 
-    this.handleMousescrollEvent = function (event, delta) {
+    this.handleMousescrollEvent = function(event, delta) {
       event.preventDefault();
       //UTIL.log('mousescroll delta  ' + delta);
       if (delta > 0) {
@@ -650,7 +651,8 @@ if (!window['$']) {
       UTIL.log('onPanoLoadSuccessCallback(' + JSON.stringify(data) + ', ' + view + ', ' + ')');
       isSplitVideo = 'frames_per_fragment' in data;
       framesPerFragment = isSplitVideo ? data['frames_per_fragment'] : data['frames'];
-      UTIL.log("isSplitVideo=[" + isSplitVideo + "], framesPerFragment=[" + framesPerFragment + "]")
+      secondsPerFragment = isSplitVideo ? framesPerFragment / data['fps'] :  1 / data['fps'] * (data['frames'] - 1);
+      UTIL.log("isSplitVideo=[" + isSplitVideo + "], framesPerFragment=[" + framesPerFragment + "], secondsPerFragment=[" + secondsPerFragment + "]");
       panoWidth = data['width'];
       panoHeight = data['height'];
       tileWidth = data['tile_width'];
@@ -660,6 +662,8 @@ if (!window['$']) {
       videoset.setFps(data['fps']);
       videoset.setDuration(1 / data['fps'] * (data['frames'] ));
       videoset.setLeader(data['leader'] / data['fps']);
+      videoset.setIsSplitVideo(isSplitVideo);
+      videoset.setSecondsPerFragment(secondsPerFragment);
       frames = data['frames'];
       maxLevel = data['nlevels'] - 1;
       levelInfo = data['level_info'];
@@ -689,7 +693,7 @@ if (!window['$']) {
       }
 
       var activeVideos = videoset.getActiveVideos();
-      for (var key in videoset.getActiveVideos()) {
+      for (var key in activeVideos) {
         var video = activeVideos[key];
         repositionVideo(video);
       }
@@ -723,7 +727,7 @@ if (!window['$']) {
       var url = getTileidxUrl(tileidx);
       var geom = tileidxGeometry(tileidx);
       //UTIL.log("adding tile " + dumpTileidx(tileidx) + " from " + url + " and geom = (left:" + geom['left'] + " ,top:" + geom['top'] + ", width:" + geom['width'] + ", height:" + geom['height'] + ")");
-      var video = videoset.addVideo(url, geom, videoToUnload);
+      var video = videoset.addVideo(url, geom);
       video.tileidx = tileidx;
       return video;
     };
@@ -743,7 +747,8 @@ if (!window['$']) {
     var getTileidxUrl = function (tileidx) {
       //var shardIndex = (getTileidxRow(tileidx) % 2) * 2 + (getTileidxColumn(tileidx) % 2);
       //var urlPrefix = url.replace("//", "//t" + shardIndex + ".");
-      return datasetPath + getTileidxLevel(tileidx) + "/" + getTileidxRow(tileidx) + "/" + getTileidxColumn(tileidx) + ".mp4";
+      var fragmentSpecifier = isSplitVideo ? "_" + Math.floor(videoset.getCurrentTime() / secondsPerFragment) : "";
+      return datasetPath + getTileidxLevel(tileidx) + "/" + getTileidxRow(tileidx) + "/" + getTileidxColumn(tileidx) + fragmentSpecifier + ".mp4";
     };
 
     var computeBestVideo = function (theView) {
@@ -786,7 +791,7 @@ if (!window['$']) {
       top = Math.round(top);
 
       return {
-        left: left,
+        left : left,
         top: top,
         width: (right - left),
         height: (bottom - top)

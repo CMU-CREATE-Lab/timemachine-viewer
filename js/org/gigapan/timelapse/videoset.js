@@ -54,7 +54,7 @@ var org;
 if (!org) {
   org = {};
 } else {
-  if (typeof org != "object") {
+  if (typeof org !== "object") {
     var orgExistsMessage = "Error: failed to create org namespace: org already exists and is not an object";
     alert(orgExistsMessage);
     throw new Error(orgExistsMessage);
@@ -65,7 +65,7 @@ if (!org) {
 if (!org.gigapan) {
   org.gigapan = {};
 } else {
-  if (typeof org.gigapan != "object") {
+  if (typeof org.gigapan !== "object") {
     var orgGigapanExistsMessage = "Error: failed to create org.gigapan namespace: org.gigapan already exists and is not an object";
     alert(orgGigapanExistsMessage);
     throw new Error(orgGigapanExistsMessage);
@@ -76,7 +76,7 @@ if (!org.gigapan) {
 if (!org.gigapan.timelapse) {
   org.gigapan.timelapse = {};
 } else {
-  if (typeof org.gigapan.timelapse != "object") {
+  if (typeof org.gigapan.timelapse !== "object") {
     var orgGigapanTimelapseExistsMessage = "Error: failed to create org.gigapan.timelapse namespace: org.gigapan.timelapse already exists and is not an object";
     alert(orgGigapanTimelapseExistsMessage);
     throw new Error(orgGigapanTimelapseExistsMessage);
@@ -107,6 +107,10 @@ if (!window['$']) {
   var MAX_QUEUED_VIDEO_LENGTH = 2;   // max number of videos allowed to be queued without stalling
   var DEFAULT_ERROR_THRESHOLD = UTIL.isChrome() ? 0.005 : 0.04;
 
+  // Create a regex to extract the fragment number for split videos.  I construct the pattern this way
+  // instead of "new RegExp()" for better performance (see https://developer.mozilla.org/en/JavaScript/Guide/Regular_Expressions)
+  var SPLIT_VIDEO_FRAGMENT_URL_PATTERN = /_(\d+).mp4$/i;
+
   org.gigapan.timelapse.Videoset = function(viewerDivId,videoDivId) {
     var videoDiv = document.getElementById(videoDivId);
     var viewerDiv = document.getElementById(viewerDivId);
@@ -116,6 +120,8 @@ if (!window['$']) {
     var playbackRate = 1;
     var id = 0;
     var fps = 25;
+    var isSplitVideo = false;
+    var secondsPerFragment = 0;
     var areNativeVideoControlsVisible = false;
     var duration = 0;
     var isCacheDisabled = false;
@@ -136,6 +142,8 @@ if (!window['$']) {
     var emulatingPlaybackRate = false;
     var leader = 0;
     var eventListeners = {};
+
+    var mostRecentlyAddedVideo = null;
 
     ////////////////////////
     //
@@ -196,6 +204,14 @@ if (!window['$']) {
       return leader;
     };
 
+    this.setIsSplitVideo = function(isSplit) {
+      isSplitVideo = isSplit;
+    };
+
+    this.setSecondsPerFragment = function(newSecondsPerFragment) {
+      secondsPerFragment = newSecondsPerFragment;
+    };
+
     this.getActiveVideos = function() {
       return activeVideos;
     };
@@ -231,7 +247,7 @@ if (!window['$']) {
     // Add and remove videos
     //
 
-    this.addVideo = function(src, geometry, videoBeingReplaced, onloadCallback) {
+    var _addVideo = function(src, geometry) {
       perfAdded++;
       id++;
       //Note: Safari and Chrome already let you do this
@@ -239,7 +255,8 @@ if (!window['$']) {
       if (isCacheDisabled) {
         src += "?nocache=" + UTIL.getCurrentTimeInSecs() + "." + id;
       }
-      var msg = "video(" + id + ") added from " + src + " at left=" + geometry.left + ",top=" + geometry.top + ", w=" + geometry.width + ",h=" + geometry.height;
+      var videoBeingReplaced = mostRecentlyAddedVideo;
+      var msg = ">>>>>>>>>> video(" + id + ") added from " + src + " at left=" + geometry.left + ",top=" + geometry.top + ", w=" + geometry.width + ",h=" + geometry.height;
       if (videoBeingReplaced != null) msg += "; replace=video(" + videoBeingReplaced.id + ")";
       UTIL.log(msg);
 
@@ -248,12 +265,32 @@ if (!window['$']) {
       video.id = videoDiv.id+"_"+id;
       video.active = true;
       video.ready = false;
-      if (typeof videoBeingReplaced != 'undefined' && videoBeingReplaced != null) {
+      if (typeof videoBeingReplaced !== 'undefined' && videoBeingReplaced != null) {
         video.idOfVideoBeingReplaced = videoBeingReplaced.id;
       }
-      if (typeof onloadCallback == 'function') {
-        video.onloadCallback = onloadCallback;
+
+      // Add methods getCurrentTime() and setCurrentTime() to the video.  We MUST use these methods instead of accessing
+      // the currentTime property directly so that we can abstract away the time offset calculations required for split
+      // videos.
+      if (isSplitVideo) {
+        var fragmentRegexMatch = src.match(SPLIT_VIDEO_FRAGMENT_URL_PATTERN);
+        if (fragmentRegexMatch != null && fragmentRegexMatch.length == 2) {
+          video.fragmentNumber = fragmentRegexMatch[1];
+          video.fragmentTimeOffset = video.fragmentNumber * secondsPerFragment;
+          video.getCurrentTime = function() {return this.currentTime + video.fragmentTimeOffset};
+          video.setCurrentTime = function(newTime) {
+            // modify the given global newTime, adjusting it for this fragment, and then
+            // make sure the adjusted time is within the valid range of [0, this.duration]
+            this.currentTime = Math.max(0, Math.min(this.duration, newTime - video.fragmentTimeOffset));
+          };
+        } else {
+          UTIL.error("Unexpected split video URL pattern [" + src + "], could not determine fragment number!");
+        }
+      } else {
+        video.getCurrentTime = function() {return this.currentTime};
+        video.setCurrentTime = function(newTime) {this.currentTime = newTime};
       }
+
       //UTIL.log(getVideoSummaryAsString(video));
       video.setAttribute('src', src);
       //UTIL.log("set src successfully");
@@ -261,7 +298,7 @@ if (!window['$']) {
         video.setAttribute('controls', true);
       }
       video.setAttribute('preload', true);
-      this.repositionVideo(video, geometry);
+      _repositionVideo(video, geometry);
       video.defaultPlaybackRate = video.playbackRate = playbackRate;
       video.style.display = 'inline';
       video.style.position = 'absolute';
@@ -288,16 +325,19 @@ if (!window['$']) {
           timeout *= 2;
           setTimeout(check, timeout);
         }
-      }
+      };
       setTimeout(check, timeout);
       publishVideoEvent(video.id, 'video-added', currentTime);
 
       updateStallState();
 
+      mostRecentlyAddedVideo = video;
+
       return video;
     };
+    this.addVideo = _addVideo;
 
-    this.repositionVideo = function(video, geometry) {
+    var _repositionVideo = function(video, geometry) {
       //UTIL.log("video(" + video.id + ") reposition to left=" + geometry.left + ",top=" + geometry.top + ", w=" + geometry.width + ",h=" + geometry.height + "; ready="+video.ready);
       // toFixed prevents going to scientific notation when close to zero;  this confuses the DOM
       video.style.left = geometry.left.toFixed(4) - (video.ready ? 0 : 100000) + "px";
@@ -306,6 +346,7 @@ if (!window['$']) {
       video.style.width = geometry.width + "px";
       video.style.height = geometry.height + "px";
     };
+    this.repositionVideo = _repositionVideo;
 
     var garbageCollect = function() {
       var numInactiveVideos = 0;
@@ -530,7 +571,7 @@ if (!window['$']) {
     this.getCurrentTime = _getCurrentTime;
 
     this.addEventListener = function(eventName, listener) {
-      if (eventName && listener && typeof(listener) == "function") {
+      if (eventName && listener && typeof(listener) === "function") {
         if (!eventListeners[eventName]) {
           eventListeners[eventName] = [];
         }
@@ -540,7 +581,7 @@ if (!window['$']) {
     };
 
     this.removeEventListener = function(eventName, listener) {
-      if (eventName && eventListeners[eventName] && listener && typeof(listener) == "function") {
+      if (eventName && eventListeners[eventName] && listener && typeof(listener) === "function") {
         for (var i = 0; i < eventListeners[eventName].length; i++) {
           if (listener == eventListeners[eventName][i]) {
             eventListeners[eventName].splice(i, 1);
@@ -595,8 +636,8 @@ if (!window['$']) {
           var desiredTime = null;
 
           // clamp desired time to video.duration
-          if (parseFloat(theCurrentTime.toFixed(3)) + leader >= video.duration) {
-            desiredTime = video.duration;
+          if (parseFloat(theCurrentTime.toFixed(3)) >= duration) {
+            desiredTime = leader + duration;
             if (UTIL.isChrome()) {
               desiredTime = desiredTime - DEFAULT_ERROR_THRESHOLD;
             }
@@ -604,14 +645,41 @@ if (!window['$']) {
             desiredTime = leader + theCurrentTime;
           }
 
-          UTIL.log("video(" + video.id + ") _setVideoToCurrentTime; readyState=[" + video.readyState + "], seek to [" + theCurrentTime + "] which is [" + desiredTime + "]");
+          // If we're using split video, then we need to check whether we need to replace the current video with one
+          // which contains the desired time.
+          if (isSplitVideo) {
+            // first calculate the fragement number video containing the desired time
+            var desiredFragmentNumber = Math.floor(_getCurrentTime() / secondsPerFragment);
+
+            // if the desired fragment number differs from the current fragment, then we need to load in a new video,
+            // and replace the current one with the new one.
+            if (desiredFragmentNumber != video.fragmentNumber) {
+              var fragmentSpecifier = "_" + desiredFragmentNumber + ".mp4";
+              var url = video.src.replace(SPLIT_VIDEO_FRAGMENT_URL_PATTERN, fragmentSpecifier);
+              var geometry = {
+                      left: parseFloat(video.style.left) + (video.ready ? 0 : 100000),
+                      top: parseFloat(video.style.top),
+                      width: parseFloat(video.style.width),
+                      height: parseFloat(video.style.height)
+                    };
+              // Load the new video, replacing the current one, then retry in 10 ms
+              var newVideo = _addVideo(url, geometry);
+              newVideo.tileidx = video.tileidx;
+              UTIL.log("++++++++++ Loading new fragment [" + newVideo.id + "] based on geometry of [" + video.id + "|" + video.ready + "|" + video.active + "], will retry setting time in 10 ms.  URL = [" + url + "]");
+              setTimeout(function() { _setVideoToCurrentTime(newVideo);}, 10);
+              return;
+            }
+          }
+
+          UTIL.log("@@@@@@@@@@ 2 video(" + video.id + ") _setVideoToCurrentTime; readyState=[" + video.readyState + "], seek to [" + theCurrentTime + "] which is [" + desiredTime + "]");
 
           // check the time ranges to see if we've loaded enough to perform a seek without causing a INDEX_SIZE_ERR: DOM Exception 1...
           var canSeek = false;
           var timeRanges = "";
+          var desiredSeekTime = isSplitVideo ? desiredTime - video.fragmentTimeOffset : desiredTime;
           for (var i = 0; i < video.seekable.length; i++) {
             timeRanges += "(id=" + i + "|start=" + video.seekable.start(i) + "|end=" + video.seekable.end(i) + ")";
-            if (video.seekable.start(i) <= desiredTime && desiredTime <= video.seekable.end(i)) {
+            if (video.seekable.start(i) <= desiredSeekTime && desiredSeekTime <= video.seekable.end(i)) {
               canSeek = true;
               break;
             }
@@ -620,7 +688,7 @@ if (!window['$']) {
           if (canSeek) {
             perfInitialSeeks++;
             try {
-              video.currentTime = desiredTime;
+              video.setCurrentTime(desiredTime);
             } catch(e) {
               UTIL.error("video(" + video.id + ") _setVideoToCurrentTime(): caught " + e.toString() + " setting currentTime to [" + desiredTime + "].  Will retry in 10 ms...");
               setTimeout(function() { _setVideoToCurrentTime(video);}, 10);
@@ -647,7 +715,7 @@ if (!window['$']) {
       video.ready = true;
       video.style.left = parseFloat(video.style.left) + 100000 + "px";
 
-      var error = video.currentTime - leader - _getCurrentTime();
+      var error = video.getCurrentTime() - leader - _getCurrentTime();
       publishVideoEvent(video.id, 'video-made-visible', new Date());
       UTIL.log("video(" + video.id + ") _makeVideoVisible(" + callingFunction + "): ready=[" + video.ready + "] error=[" + error + "] " + videoStats(video));
 
@@ -657,7 +725,9 @@ if (!window['$']) {
       window.setTimeout(function() {
         var videoToDelete = activeVideos[video.idOfVideoBeingReplaced];
         var chainOfDeletes = "";
+        var deletedVideoUrls = [];
         while (videoToDelete) {
+          deletedVideoUrls.push(videoToDelete.src);
           var nextVideoToDelete = activeVideos[videoToDelete.idOfVideoBeingReplaced];
           delete videoToDelete.idOfVideoBeingReplaced;  // delete this to prevent multiple deletes
           chainOfDeletes += videoToDelete.id + ",";
@@ -666,25 +736,16 @@ if (!window['$']) {
         }
         UTIL.log("video(" + video.id + ") _makeVideoVisible(" + callingFunction + "): chain of deletes: " + chainOfDeletes);
       }, 1);
-
-      // notify onload listener by calling the callback, if any
-      if (video.onloadCallback) {
-        try {
-          video.onloadCallback();
-        } catch(e) {
-          UTIL.error(e.name + " while calling callback function for onload of video [" + video.src + "]: " + e.message, e);
-        }
-      }
     };
 
     var videoSeeked = function(event) {
       var video = event.target;
-      var error = video.currentTime - leader - _getCurrentTime();
+      var error = video.getCurrentTime() - leader - _getCurrentTime();
       if (_isPaused() && Math.abs(error) > DEFAULT_ERROR_THRESHOLD) {
-        UTIL.log("video(" + video.id + ") videoSeeked():  readyState=[" + video.readyState + "] currentTime=[" + video.currentTime + "] error=[" + error + "] is too high, must re-seek");
+        UTIL.log("video(" + video.id + ") videoSeeked():  readyState=[" + video.readyState + "] currentTime=[" + video.getCurrentTime() + "] error=[" + error + "] is too high, must re-seek");
         _setVideoToCurrentTime(video);
       } else {
-        UTIL.log("video(" + video.id + ") videoSeeked():  readyState=[" + video.readyState + "] currentTime=[" + video.currentTime + "] error=[" + error + "] is acceptable");
+        UTIL.log("video(" + video.id + ") videoSeeked():  readyState=[" + video.readyState + "] currentTime=[" + video.getCurrentTime() + "] error=[" + error + "] is acceptable");
 
         if (!video.ready) {
           var checkVideoReadyState = function() {
@@ -724,7 +785,7 @@ if (!window['$']) {
       summary += ";R=" + video.readyState;
       summary += ";P=" + (video.paused ? "y" : "n");
       summary += ";S=" + (video.seeking ? "y" : "n");
-      summary += ";T=" + video.currentTime.toFixed(3);
+      summary += ";T=" + video.getCurrentTime().toFixed(3);
       summary += ";B=" + dumpTimerange(video.buffered);
       summary += ";P=" + dumpTimerange(video.played);
       summary += ";E=" + (video.error ? "y" : "n");
@@ -752,7 +813,7 @@ if (!window['$']) {
       } else if (!stalled && numQueued > MAX_QUEUED_VIDEO_LENGTH) {
         stall();
       } else if (stalled) {
-        UTIL.log("Still stalled...");
+        UTIL.log("Still stalled... numQueued=[" + numQueued + "]");
       }
     };
 
@@ -863,26 +924,26 @@ if (!window['$']) {
       for (var videoId in activeVideos) {
         var video = activeVideos[videoId];
         //updateVideoBandwidth(video);
-        var error = video.currentTime - leader - t;
+        var error = video.getCurrentTime() - leader - t;
         (video.ready ? ready_stats : not_ready_stats)[video.readyState].push(video.bandwidth.toFixed(1));
         if (video.readyState >= 1 && (Math.abs(error) > errorThreshold || emulatingPlaybackRate)) {  // HAVE_METADATA=1
           perfTimeCorrections.push(error);
           var rateTweak = 1 - error / syncIntervalTime;
           if (!advancing || emulatingPlaybackRate || rateTweak < .25 || rateTweak > 2) {
             perfTimeSeeks++;
-            //UTIL.log("current time " + video.currentTime);
+            //UTIL.log("current time " + video.getCurrentTime());
             //UTIL.log("leader " + leader);
-            UTIL.log("video("+videoId+") time correction: seeking from " + (video.currentTime-leader) + " to " + t + " (error=" + error + ", state=" + video.readyState + ")");
+            UTIL.log("video("+videoId+") time correction: seeking from " + (video.getCurrentTime()-leader) + " to " + t + " (error=" + error + ", state=" + video.readyState + ")");
             var desiredTime = leader + t + (advancing ? playbackRate * errorThreshold * .5 : 0);  // seek ahead slightly if advancing
             try {
-              video.currentTime = desiredTime;
+              video.setCurrentTime(desiredTime);
             } catch(e) {
               // log this, but otherwise don't worry about it since sync will try again later and take care of it
               UTIL.log("video(" + video.id + ") sync(): caught " + e.toString() + " setting currentTime to [" + desiredTime + "]");
             }
           } else {
             perfTimeTweaks++;
-            UTIL.log("video("+videoId+") time correction: tweaking from " + (video.currentTime-leader) + " to " + t + " (error=" + error + ", rate=" + rateTweak + ", state=" + video.readyState + ")");
+            UTIL.log("video("+videoId+") time correction: tweaking from " + (video.getCurrentTime()-leader) + " to " + t + " (error=" + error + ", rate=" + rateTweak + ", state=" + video.readyState + ")");
             // Speed or slow video so that we'll be even by the next sync interval
             video.playbackRate = playbackRate * rateTweak;
           }
