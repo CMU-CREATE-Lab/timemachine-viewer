@@ -48,19 +48,19 @@ function createZoomSlider(viewerDivId,obj) {
 
 function setupSliderHandlers(viewerDivId) {
   $("#"+viewerDivId+" .ui-slider-handle").bind("mouseover mouseup", function() { 
-    this.style.cursor = 'url("css/cursors/openhand.cur") 10 10, move';
+    this.style.cursor = 'url("css/cursors/openhand.png") 10 10, move';
   }); 
 
   $("#"+viewerDivId+" .ui-slider").bind({
     slide: function() {
-      this.style.cursor = 'url("css/cursors/closedhand.cur") 10 10, move';
+      this.style.cursor = 'url("css/cursors/closedhand.png") 10 10, move';
       $("#"+viewerDivId+" .ui-slider-handle").bind("mousemove", function() {
-        this.style.cursor = 'url("css/cursors/closedhand.cur") 10 10, move';
+        this.style.cursor = 'url("css/cursors/closedhand.png") 10 10, move';
       });
     },
     slidestop: function() {
       $("#"+viewerDivId+" .ui-slider-handle").bind("mousemove", function() {
-        this.style.cursor = 'url("css/cursors/openhand.cur") 10 10, move';
+        this.style.cursor = 'url("css/cursors/openhand.png") 10 10, move';
       });
     },
     mouseover: function() {

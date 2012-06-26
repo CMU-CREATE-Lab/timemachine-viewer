@@ -172,4 +172,32 @@ if (!org.gigapan) {
     }
     return isChromeCached = (navigator.userAgent.indexOf("Chrome") >= 0);
   };
+
+  // wrapper for ajax calls
+  org.gigapan.Util.ajax = function(dataType, url, callback) {
+    if (typeof(cached_ajax) != "undefined") {
+      // we are on file url and part of view.html
+      //org.gigapan.Util.log("We are loading from file url.");
+      if (typeof(cached_ajax[url]) == "undefined") {
+        org.gigapan.Util.error("Error loading file from file URL [" + url + "]");
+        return;
+      }
+      callback(cached_ajax[url]);
+    } else {
+      // We are not on file url or we are utilizing the Chrome
+      // --allow-file-access-from-files param and can do normal ajax calls
+      //org.gigapan.Util.log("We are not loading from file url.");
+      $.ajax({
+        dataType: dataType,
+        url: url,
+        success: function (data) {
+          callback(data);
+        }, error: function () {
+          org.gigapan.Util.error("Error loading file from URL [" + url + "]");
+          return;
+        }
+      });
+    }
+  }
+
 })();
