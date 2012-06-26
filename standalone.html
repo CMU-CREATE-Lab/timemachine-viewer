@@ -40,7 +40,7 @@
         var doRepeat = false;
         if ($.inArray(gigapanId, timelapsesToRepeat) != -1) doRepeat = true;
         //var url = "../timemachines/"+gigapanId+"/"; //if you use the drop down, use this
-        var url = "http://g7.gigapan.org/timemachines/radarmosaic-crf28-g10-bf0-6fps/"
+        var url = "http://g7.gigapan.org/timemachines/" + gigapanId;
 
       	var viewerOptions = {
           url: url, //can be absolute or relative
@@ -93,6 +93,8 @@
         <option value="brassica-15m-g10-bf0-l">Plant Growth</option>
         <option value="sdo-color-crf24-g10-bf0-l">Sun (304A)</option>
         <option value="radarmosaic-crf28-g10-bf0-6fps">Weather Radar</option>
+        <option value="patp10_1x1.timemachine">Paddle at the Point</option>
+        <option value="patp10_1x1_split4.timemachine">Paddle at the Point (split video)</option>
       </select>
     </div>
 
