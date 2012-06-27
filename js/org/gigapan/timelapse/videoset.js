@@ -629,6 +629,40 @@ if (!window['$']) {
       }
     };
 
+    // Given a video and a desired time, this function checks whether the desired time
+    // is contained within the video.  If so, it returns null.  Otherwise, it causes
+    // a new video to be loaded (which will replace the given one) and returns it.
+    // This method always returns null when isSplitVideo is false.
+    var _loadNewFragmentForDesiredTime = function(video, desiredTime) {
+
+      // If we're using split video, then we need to check whether we need to replace the current video with one
+      // which contains the desired time.
+      if (isSplitVideo) {
+        // first calculate the fragement number video containing the desired time
+        var desiredFragmentNumber = Math.floor(desiredTime / secondsPerFragment);
+
+        // if the desired fragment number differs from the current fragment, then we need to load in a new video,
+        // and replace the current one with the new one.
+        if (desiredFragmentNumber != video.fragmentNumber) {
+          var fragmentSpecifier = "_" + desiredFragmentNumber + ".mp4";
+          var url = video.src.replace(SPLIT_VIDEO_FRAGMENT_URL_PATTERN, fragmentSpecifier);
+          var geometry = {
+            left   : parseFloat(video.style.left) + (video.ready ? 0 : 100000),
+            top    : parseFloat(video.style.top),
+            width  : parseFloat(video.style.width),
+            height : parseFloat(video.style.height)
+          };
+          // Load the new video, replacing the current one, then retry in 10 ms
+          var newVideo = _addVideo(url, geometry);
+          newVideo.tileidx = video.tileidx;
+          UTIL.log("////////// Loading new fragment [" + newVideo.id + "] based on geometry of [" + video.id + "|" + video.ready + "|" + video.active + "], will retry setting time in 10 ms.  URL = [" + url + "]");
+          return newVideo;
+        }
+      }
+
+      return null;
+    };
+
     var _setVideoToCurrentTime = function(video) {
       if (video.active) {
         if (video.readyState > 0) {
@@ -648,24 +682,8 @@ if (!window['$']) {
           // If we're using split video, then we need to check whether we need to replace the current video with one
           // which contains the desired time.
           if (isSplitVideo) {
-            // first calculate the fragement number video containing the desired time
-            var desiredFragmentNumber = Math.floor(_getCurrentTime() / secondsPerFragment);
-
-            // if the desired fragment number differs from the current fragment, then we need to load in a new video,
-            // and replace the current one with the new one.
-            if (desiredFragmentNumber != video.fragmentNumber) {
-              var fragmentSpecifier = "_" + desiredFragmentNumber + ".mp4";
-              var url = video.src.replace(SPLIT_VIDEO_FRAGMENT_URL_PATTERN, fragmentSpecifier);
-              var geometry = {
-                      left: parseFloat(video.style.left) + (video.ready ? 0 : 100000),
-                      top: parseFloat(video.style.top),
-                      width: parseFloat(video.style.width),
-                      height: parseFloat(video.style.height)
-                    };
-              // Load the new video, replacing the current one, then retry in 10 ms
-              var newVideo = _addVideo(url, geometry);
-              newVideo.tileidx = video.tileidx;
-              UTIL.log("++++++++++ Loading new fragment [" + newVideo.id + "] based on geometry of [" + video.id + "|" + video.ready + "|" + video.active + "], will retry setting time in 10 ms.  URL = [" + url + "]");
+            var newVideo = _loadNewFragmentForDesiredTime(video, _getCurrentTime());
+            if (newVideo != null) {
               setTimeout(function() { _setVideoToCurrentTime(newVideo);}, 10);
               return;
             }
@@ -933,10 +951,15 @@ if (!window['$']) {
             perfTimeSeeks++;
             //UTIL.log("current time " + video.getCurrentTime());
             //UTIL.log("leader " + leader);
-            UTIL.log("video("+videoId+") time correction: seeking from " + (video.getCurrentTime()-leader) + " to " + t + " (error=" + error + ", state=" + video.readyState + ")");
+            UTIL.log("video("+videoId+") time correction: seeking from " + (video.getCurrentTime()-leader) + " to " + t + " (error=" + error + ", state=" + video.readyState + ")");;
             var desiredTime = leader + t + (advancing ? playbackRate * errorThreshold * .5 : 0);  // seek ahead slightly if advancing
             try {
-              video.setCurrentTime(desiredTime);
+              var newVideo = isSplitVideo ? _loadNewFragmentForDesiredTime(video, desiredTime) : null;
+              if (newVideo == null) {
+                video.setCurrentTime(desiredTime);
+              } else {
+                UTIL.log("video("+videoId+") time correction: not setting time to [" + desiredTime + "] since we needed to load in a new video (" + newVideo.id + ")")
+              }
             } catch(e) {
               // log this, but otherwise don't worry about it since sync will try again later and take care of it
               UTIL.log("video(" + video.id + ") sync(): caught " + e.toString() + " setting currentTime to [" + desiredTime + "]");
