@@ -937,8 +937,8 @@ if (!window['$']) {
         return;
       }
 
-      var ready_stats=[[],[],[],[],[]];
-      var not_ready_stats=[[],[],[],[],[]];
+      var ready_stats = [ [], [], [], [], [] ];
+      var not_ready_stats = [ [], [], [], [], [] ];
       for (var videoId in activeVideos) {
         var video = activeVideos[videoId];
         //updateVideoBandwidth(video);
@@ -951,27 +951,30 @@ if (!window['$']) {
             perfTimeSeeks++;
             //UTIL.log("current time " + video.getCurrentTime());
             //UTIL.log("leader " + leader);
-            UTIL.log("video("+videoId+") time correction: seeking from " + (video.getCurrentTime()-leader) + " to " + t + " (error=" + error + ", state=" + video.readyState + ")");;
+            UTIL.log("video(" + videoId + ") time correction: seeking from " + (video.getCurrentTime() - leader) + " to " + t + " (error=" + error + ", state=" + video.readyState + ")");
             var desiredTime = leader + t + (advancing ? playbackRate * errorThreshold * .5 : 0);  // seek ahead slightly if advancing
             try {
               var newVideo = isSplitVideo ? _loadNewFragmentForDesiredTime(video, desiredTime) : null;
               if (newVideo == null) {
                 video.setCurrentTime(desiredTime);
               } else {
-                UTIL.log("video("+videoId+") time correction: not setting time to [" + desiredTime + "] since we needed to load in a new video (" + newVideo.id + ")")
+                UTIL.log("video(" + videoId + ") time correction: not setting time to [" + desiredTime + "] since we needed to load in a new video (" + newVideo.id + ")")
               }
-            } catch(e) {
+            }
+            catch (e) {
               // log this, but otherwise don't worry about it since sync will try again later and take care of it
               UTIL.log("video(" + video.id + ") sync(): caught " + e.toString() + " setting currentTime to [" + desiredTime + "]");
             }
           } else {
             perfTimeTweaks++;
-            UTIL.log("video("+videoId+") time correction: tweaking from " + (video.getCurrentTime()-leader) + " to " + t + " (error=" + error + ", rate=" + rateTweak + ", state=" + video.readyState + ")");
+            UTIL.log("video(" + videoId + ") time correction: tweaking from " + (video.getCurrentTime() - leader) + " to " + t + " (error=" + error + ", rate=" + rateTweak + ", state=" + video.readyState + ")");
             // Speed or slow video so that we'll be even by the next sync interval
             video.playbackRate = playbackRate * rateTweak;
           }
         } else {
-        if (video.playbackRate != playbackRate) video.playbackRate = playbackRate;
+          if (video.playbackRate != playbackRate) {
+            video.playbackRate = playbackRate;
+          }
           //video.playbackRate = playbackRate;
           if (!video.ready && video.readyState >= 3) {
             _makeVideoVisible(video, "sync");
