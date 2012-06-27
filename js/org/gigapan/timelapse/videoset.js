@@ -283,6 +283,15 @@ if (!window['$']) {
             // make sure the adjusted time is within the valid range of [0, this.duration]
             this.currentTime = Math.max(0, Math.min(this.duration, newTime - video.fragmentTimeOffset));
           };
+          video.getPercentTimeRemainingInFragment = function() {
+            if (this.duration == 0) {
+              return 1;
+            }
+            return 1 - this.currentTime / this.duration;
+          };
+          video.getSecondsRemainingInFragment = function() {
+            return this.duration - this.currentTime;
+          };
         } else {
           UTIL.error("Unexpected split video URL pattern [" + src + "], could not determine fragment number!");
         }
@@ -944,6 +953,12 @@ if (!window['$']) {
         //updateVideoBandwidth(video);
         var error = video.getCurrentTime() - leader - t;
         (video.ready ? ready_stats : not_ready_stats)[video.readyState].push(video.bandwidth.toFixed(1));
+        if (isSplitVideo && video.readyState >= 1) {
+          if (video.getPercentTimeRemainingInFragment() < .5) {
+            // TODO: add prefetch here...
+            // UTIL.log("sync(" + t + "): should do prefetch here (" + video.getPercentTimeRemainingInFragment() + ")...")
+          }
+        }
         if (video.readyState >= 1 && (Math.abs(error) > errorThreshold || emulatingPlaybackRate)) {  // HAVE_METADATA=1
           perfTimeCorrections.push(error);
           var rateTweak = 1 - error / syncIntervalTime;
