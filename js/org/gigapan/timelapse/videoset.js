@@ -400,8 +400,11 @@ if (!window['$']) {
       if (arguments.length > 1) {
         videoWhichCausedTheDelete = arguments[1];
         msg += " and replaced by video("+videoWhichCausedTheDelete.id+")";
-        delete video.prefetch;
-        console.assert(!video.prefetch, "Deleted prefetch video incorrectly");
+        if(video.prefetchVid) {
+          console.log("removing prefetch video");
+          delete video.prefetchVid;
+          console.assert(!video.prefetchVid, "Deleted prefetch video incorrectly");
+        }
       }
       UTIL.log(msg);
       video.active = false;
@@ -664,6 +667,8 @@ if (!window['$']) {
             height : parseFloat(video.style.height)
           };
           // Load the new video, replacing the current one, then retry in 10 ms
+          if(video.prefetchVid)
+            console.log("PREFETCHED video available.");
           var newVideo = _addVideo(url, geometry);
           newVideo.tileidx = video.tileidx;
           UTIL.log("////////// Loading new fragment [" + newVideo.id + "] based on geometry of [" + video.id + "|" + video.ready + "|" + video.active + "], will retry setting time in 10 ms.  URL = [" + url + "]");
@@ -956,7 +961,7 @@ if (!window['$']) {
         var error = video.getCurrentTime() - leader - t;
         (video.ready ? ready_stats : not_ready_stats)[video.readyState].push(video.bandwidth.toFixed(1));
         if (isSplitVideo && video.readyState >= 1) {
-          if (video.getPercentTimeRemainingInFragment() < .5 && !video.prefetchVideo) {
+          if (video.getPercentTimeRemainingInFragment() < .5 && !video.prefetchVid) {
             // TODO: add prefetch here...
             UTIL.log("sync(" + t + "): should do prefetch here (" + video.getPercentTimeRemainingInFragment() + ")...")
             var prefetchVideo = document.createElement('video');
