@@ -667,7 +667,7 @@ if (!window['$']) {
             height : parseFloat(video.style.height)
           };
           // Load the new video, replacing the current one, then retry in 10 ms
-          if(video.prefetchVid) {
+          if(video.prefetchVid && !video.prefetchVid.id) {
             console.log("PREFETCHED video available.");
             if(desiredFragmentNumber == video.prefetchVid.fragmentNumber)
             {
@@ -685,10 +685,16 @@ if (!window['$']) {
             }
           }
           console.log("Prefetched video not available.");
-          var newVideo = _addVideo(url, geometry);
-          newVideo.tileidx = video.tileidx;
-          UTIL.log("////////// Loading new fragment [" + newVideo.id + "] based on geometry of [" + video.id + "|" + video.ready + "|" + video.active + "], will retry setting time in 10 ms.  URL = [" + url + "]");
-          return newVideo;
+          var largestFragment = Math.ceil(duration / secondsPerFragment);
+          if(desiredFragmentNumber < largestFragment) {
+            var newVideo = _addVideo(url, geometry);
+            newVideo.tileidx = video.tileidx;
+            UTIL.log("////////// Loading new fragment [" + newVideo.id + "] based on geometry of [" + video.id + "|" + video.ready + "|" + video.active + "], will retry setting time in 10 ms.  URL = [" + url + "]");
+            return newVideo;
+          }
+          else {
+            console.log("REQUESTING A BAD FRAGMENT NUMBER: " + desiredFragmentNumber + " > " + largestFragment);
+          }
         }
       }
 
@@ -984,8 +990,10 @@ if (!window['$']) {
             var fragmentRegexMatch = video.src.match(SPLIT_VIDEO_FRAGMENT_URL_PATTERN);
             prefetchVideo.fragmentNumber = parseInt(fragmentRegexMatch[1]) + 1;
             var largestFragment = Math.ceil(duration / secondsPerFragment);
-            console.log(largestFragment + " " + duration + " " + secondsPerFragment);
+            console.log(largestFragment + "/" + duration + "/" + secondsPerFragment + 
+              "/" + prefetchVideo.fragmentNumber);
             if(prefetchVideo.fragmentNumber < largestFragment) {
+              console.log("Prefetching fragment " + prefetchVideo.fragmentNumber);
               var fragmentSpecifier = "_" + prefetchVideo.fragmentNumber + ".mp4";
               var url = video.src.replace(SPLIT_VIDEO_FRAGMENT_URL_PATTERN, fragmentSpecifier);
               console.log(url);
