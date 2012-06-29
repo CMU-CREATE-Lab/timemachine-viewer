@@ -983,13 +983,17 @@ if (!window['$']) {
             prefetchVideo.setAttribute('preload', 'auto');
             var fragmentRegexMatch = video.src.match(SPLIT_VIDEO_FRAGMENT_URL_PATTERN);
             prefetchVideo.fragmentNumber = parseInt(fragmentRegexMatch[1]) + 1;
-            var fragmentSpecifier = "_" + prefetchVideo.fragmentNumber + ".mp4";
-            var url = video.src.replace(SPLIT_VIDEO_FRAGMENT_URL_PATTERN, fragmentSpecifier);
-            console.log(url);
-            prefetchVideo.setAttribute('src', url);
-            var now = new Date();
-            prefetchVideo.someTime = now.getTime();
-            video.prefetchVid = prefetchVideo;
+            var largestFragment = Math.ceil(duration / secondsPerFragment);
+            console.log(largestFragment + " " + duration + " " + secondsPerFragment);
+            if(prefetchVideo.fragmentNumber < largestFragment) {
+              var fragmentSpecifier = "_" + prefetchVideo.fragmentNumber + ".mp4";
+              var url = video.src.replace(SPLIT_VIDEO_FRAGMENT_URL_PATTERN, fragmentSpecifier);
+              console.log(url);
+              prefetchVideo.setAttribute('src', url);
+              var now = new Date();
+              prefetchVideo.someTime = now.getTime();
+              video.prefetchVid = prefetchVideo;
+            }
           }
         }
         if (video.readyState >= 1 && (Math.abs(error) > errorThreshold || emulatingPlaybackRate)) {  // HAVE_METADATA=1
