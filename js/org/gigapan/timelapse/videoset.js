@@ -405,11 +405,6 @@ if (!window['$']) {
       if (arguments.length > 1) {
         videoWhichCausedTheDelete = arguments[1];
         msg += " and replaced by video("+videoWhichCausedTheDelete.id+")";
-        if(video.prefetchVid) {
-          console.log("removing prefetch video");
-          delete video.prefetchVid;
-          console.assert(!video.prefetchVid, "Deleted prefetch video incorrectly");
-        }
       }
       UTIL.log(msg);
       video.active = false;
@@ -676,7 +671,9 @@ if (!window['$']) {
             console.log("PREFETCHED video available.");
             if(desiredFragmentNumber == video.prefetchVid.fragmentNumber)
             {
-              console.log("Switching to prefetch video");
+              var now = new Date();
+              console.log("Switching to prefetch video " + 
+                (now.getTime() - video.prefetchVid.someTime) + "ms after " + video.prefetchVid.someTime);
               console.assert(url == video.prefetchVid.src, "Mismatched URLs");
               var newVideo = _addVideo(url, geometry, video.prefetchVid);
 
@@ -687,6 +684,7 @@ if (!window['$']) {
               console.log("Correct video not prefetched");
             }
           }
+          console.log("Prefetched video not available.");
           var newVideo = _addVideo(url, geometry);
           newVideo.tileidx = video.tileidx;
           UTIL.log("////////// Loading new fragment [" + newVideo.id + "] based on geometry of [" + video.id + "|" + video.ready + "|" + video.active + "], will retry setting time in 10 ms.  URL = [" + url + "]");
@@ -979,7 +977,7 @@ if (!window['$']) {
         var error = video.getCurrentTime() - leader - t;
         (video.ready ? ready_stats : not_ready_stats)[video.readyState].push(video.bandwidth.toFixed(1));
         if (isSplitVideo && video.readyState >= 1) {
-          if (video.getPercentTimeRemainingInFragment() < .3 && video.prefetchVid == undefined) {
+          if (video.getPercentTimeRemainingInFragment() < .5 && video.prefetchVid == undefined) {
             UTIL.log("sync(" + t + "): should do prefetch here (" + video.getPercentTimeRemainingInFragment() + ")...")
             var prefetchVideo = document.createElement('video');
             prefetchVideo.setAttribute('preload', 'auto');
@@ -989,13 +987,15 @@ if (!window['$']) {
             var url = video.src.replace(SPLIT_VIDEO_FRAGMENT_URL_PATTERN, fragmentSpecifier);
             console.log(url);
             prefetchVideo.setAttribute('src', url);
+            var now = new Date();
+            prefetchVideo.someTime = now.getTime();
             video.prefetchVid = prefetchVideo;
           }
         }
         if (video.readyState >= 1 && (Math.abs(error) > errorThreshold || emulatingPlaybackRate)) {  // HAVE_METADATA=1
           perfTimeCorrections.push(error);
           var rateTweak = 1 - error / syncIntervalTime;
-          if (!advancing || emulatingPlaybackRate || rateTweak < .25 || rateTweak > 2) {
+          if (!advancing || emulatingPlaybackRate || rateTweak < .25 || rateTweak > 1) {
             perfTimeSeeks++;
             //UTIL.log("current time " + video.getCurrentTime());
             //UTIL.log("leader " + leader);
