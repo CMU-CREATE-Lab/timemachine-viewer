@@ -400,6 +400,8 @@ if (!window['$']) {
       if (arguments.length > 1) {
         videoWhichCausedTheDelete = arguments[1];
         msg += " and replaced by video("+videoWhichCausedTheDelete.id+")";
+        delete video.prefetch;
+        console.assert(!video.prefetch, "Deleted prefetch video incorrectly");
       }
       UTIL.log(msg);
       video.active = false;
@@ -954,9 +956,17 @@ if (!window['$']) {
         var error = video.getCurrentTime() - leader - t;
         (video.ready ? ready_stats : not_ready_stats)[video.readyState].push(video.bandwidth.toFixed(1));
         if (isSplitVideo && video.readyState >= 1) {
-          if (video.getPercentTimeRemainingInFragment() < .5) {
+          if (video.getPercentTimeRemainingInFragment() < .5 && !video.prefetchVideo) {
             // TODO: add prefetch here...
-            // UTIL.log("sync(" + t + "): should do prefetch here (" + video.getPercentTimeRemainingInFragment() + ")...")
+            UTIL.log("sync(" + t + "): should do prefetch here (" + video.getPercentTimeRemainingInFragment() + ")...")
+            var prefetchVideo = document.createElement('video');
+            prefetchVideo.setAttribute('preload', 'auto');
+            var fragmentRegexMatch = video.src.match(SPLIT_VIDEO_FRAGMENT_URL_PATTERN);
+            var fragmentSpecifier = "_" + (parseInt(fragmentRegexMatch[1]) + 1) + ".mp4";
+            var url = video.src.replace(SPLIT_VIDEO_FRAGMENT_URL_PATTERN, fragmentSpecifier);
+            console.log(url);
+            prefetchVideo.setAttribute('src', url);
+            video.prefetchVid = prefetchVideo;
           }
         }
         if (video.readyState >= 1 && (Math.abs(error) > errorThreshold || emulatingPlaybackRate)) {  // HAVE_METADATA=1
