@@ -667,7 +667,9 @@ if (!window['$']) {
             height : parseFloat(video.style.height)
           };
           // Load the new video, replacing the current one, then retry in 10 ms
-          if(video.prefetchVid && !video.prefetchVid.id) {
+          if(video.prefetchVid && video.prefetchVid.id)
+            return;
+          if(video.prefetchVid) {
             console.log("PREFETCHED video available.");
             if(desiredFragmentNumber == video.prefetchVid.fragmentNumber)
             {
