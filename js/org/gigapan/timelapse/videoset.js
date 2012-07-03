@@ -1009,7 +1009,7 @@ if (!window['$']) {
         if (video.readyState >= 1 && (Math.abs(error) > errorThreshold || emulatingPlaybackRate)) {  // HAVE_METADATA=1
           perfTimeCorrections.push(error);
           var rateTweak = 1 - error / syncIntervalTime;
-          if (!advancing || emulatingPlaybackRate || rateTweak < .25 || rateTweak > 1) {
+          if (!advancing || emulatingPlaybackRate || rateTweak < .25 || rateTweak > 2) {
             perfTimeSeeks++;
             //UTIL.log("current time " + video.getCurrentTime());
             //UTIL.log("leader " + leader);
@@ -1028,10 +1028,14 @@ if (!window['$']) {
               UTIL.log("video(" + video.id + ") sync(): caught " + e.toString() + " setting currentTime to [" + desiredTime + "]");
             }
           } else {
-            perfTimeTweaks++;
-            UTIL.log("video(" + videoId + ") time correction: tweaking from " + (video.getCurrentTime() - leader) + " to " + t + " (error=" + error + ", rate=" + rateTweak + ", state=" + video.readyState + ")");
-            // Speed or slow video so that we'll be even by the next sync interval
-            video.playbackRate = playbackRate * rateTweak;
+            if(isSplitVideo && video.fragmentTimeOffset + secondsPerFragment <= _getCurrentTime()) {
+              _loadNewFragmentForDesiredTime(video, _getCurrentTime());
+            } else {
+              perfTimeTweaks++;
+              UTIL.log("video(" + videoId + ") time correction: tweaking from " + (video.getCurrentTime() - leader) + " to " + t + " (error=" + error + ", rate=" + rateTweak + ", state=" + video.readyState + ")");
+              // Speed or slow video so that we'll be even by the next sync interval
+              video.playbackRate = playbackRate * rateTweak;
+            }
           }
         } else {
           if (video.playbackRate != playbackRate) {
