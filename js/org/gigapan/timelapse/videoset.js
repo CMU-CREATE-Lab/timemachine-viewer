@@ -50,6 +50,7 @@
 // VERIFY NAMESPACE
 //
 // Create the global symbol "org" if it doesn't exist.  Throw an error if it does exist but is not an object.
+"use strict";
 var org;
 if (!org) {
   org = {};
@@ -247,7 +248,7 @@ if (!window['$']) {
     // Add and remove videos
     //
 
-    var _addVideo = function(src, geometry) {
+    var _addVideo = function(src, geometry, video) {
       perfAdded++;
       id++;
       //Note: Safari and Chrome already let you do this
@@ -261,7 +262,8 @@ if (!window['$']) {
       UTIL.log(msg);
 
       var currentTime = new Date();
-      var video = document.createElement('video');
+      if(!video)
+        video = document.createElement('video');
       video.id = videoDiv.id+"_"+id;
       video.active = true;
       video.ready = false;
@@ -301,12 +303,13 @@ if (!window['$']) {
       }
 
       //UTIL.log(getVideoSummaryAsString(video));
-      video.setAttribute('src', src);
+      if(video.src == '')
+        video.setAttribute('src', src);
       //UTIL.log("set src successfully");
       if (areNativeVideoControlsVisible) {
         video.setAttribute('controls', true);
       }
-      video.setAttribute('preload', true);
+      video.setAttribute('preload', 'auto');
       _repositionVideo(video, geometry);
       video.defaultPlaybackRate = video.playbackRate = playbackRate;
       video.style.display = 'inline';
@@ -314,11 +317,13 @@ if (!window['$']) {
       activeVideos[video.id] = video;
       videoDiv.appendChild(video);
       video.addEventListener('loadedmetadata', videoLoadedMetadata, false);
+      if(video.readyState >= 1)
+        videoLoadedMetadata({target: video});
       video.addEventListener('seeked', videoSeeked, false);
       video.bwLastTime = UTIL.getCurrentTimeInSecs();
       video.bwLastBuf = 0;
       video.bandwidth = 0;
-      video.load();
+      //video.load();
       var check;
       var timeout = 2000;
       check = function() {
@@ -662,10 +667,36 @@ if (!window['$']) {
             height : parseFloat(video.style.height)
           };
           // Load the new video, replacing the current one, then retry in 10 ms
-          var newVideo = _addVideo(url, geometry);
-          newVideo.tileidx = video.tileidx;
-          UTIL.log("////////// Loading new fragment [" + newVideo.id + "] based on geometry of [" + video.id + "|" + video.ready + "|" + video.active + "], will retry setting time in 10 ms.  URL = [" + url + "]");
-          return newVideo;
+          if(video.prefetchVid && video.prefetchVid.id)
+            return;
+          if(video.prefetchVid) {
+            console.log("PREFETCHED video available.");
+            if(desiredFragmentNumber == video.prefetchVid.fragmentNumber)
+            {
+              var now = new Date();
+              console.log("Switching to prefetch video " + 
+                (now.getTime() - video.prefetchVid.someTime) + "ms after " + video.prefetchVid.someTime);
+              console.assert(url == video.prefetchVid.src, "Mismatched URLs");
+              var newVideo = _addVideo(url, geometry, video.prefetchVid);
+
+              newVideo.tileidx = video.tileidx;
+              return newVideo;
+            }
+            else {
+              console.log("Correct video not prefetched");
+            }
+          }
+          console.log("Prefetched video not available.");
+          var largestFragment = Math.ceil(duration / secondsPerFragment);
+          if(desiredFragmentNumber < largestFragment) {
+            var newVideo = _addVideo(url, geometry);
+            newVideo.tileidx = video.tileidx;
+            UTIL.log("////////// Loading new fragment [" + newVideo.id + "] based on geometry of [" + video.id + "|" + video.ready + "|" + video.active + "], will retry setting time in 10 ms.  URL = [" + url + "]");
+            return newVideo;
+          }
+          else {
+            console.log("REQUESTING A BAD FRAGMENT NUMBER: " + desiredFragmentNumber + " > " + largestFragment);
+          }
         }
       }
 
@@ -954,9 +985,25 @@ if (!window['$']) {
         var error = video.getCurrentTime() - leader - t;
         (video.ready ? ready_stats : not_ready_stats)[video.readyState].push(video.bandwidth.toFixed(1));
         if (isSplitVideo && video.readyState >= 1) {
-          if (video.getPercentTimeRemainingInFragment() < .5) {
-            // TODO: add prefetch here...
-            // UTIL.log("sync(" + t + "): should do prefetch here (" + video.getPercentTimeRemainingInFragment() + ")...")
+          if (video.getPercentTimeRemainingInFragment() < .5 && video.prefetchVid == undefined) {
+            UTIL.log("sync(" + t + "): should do prefetch here (" + video.getPercentTimeRemainingInFragment() + ")...")
+            var prefetchVideo = document.createElement('video');
+            prefetchVideo.setAttribute('preload', 'auto');
+            var fragmentRegexMatch = video.src.match(SPLIT_VIDEO_FRAGMENT_URL_PATTERN);
+            prefetchVideo.fragmentNumber = parseInt(fragmentRegexMatch[1]) + 1;
+            var largestFragment = Math.ceil(duration / secondsPerFragment);
+            console.log(largestFragment + "/" + duration + "/" + secondsPerFragment + 
+              "/" + prefetchVideo.fragmentNumber);
+            if(prefetchVideo.fragmentNumber < largestFragment) {
+              console.log("Prefetching fragment " + prefetchVideo.fragmentNumber);
+              var fragmentSpecifier = "_" + prefetchVideo.fragmentNumber + ".mp4";
+              var url = video.src.replace(SPLIT_VIDEO_FRAGMENT_URL_PATTERN, fragmentSpecifier);
+              console.log(url);
+              prefetchVideo.setAttribute('src', url);
+              var now = new Date();
+              prefetchVideo.someTime = now.getTime();
+              video.prefetchVid = prefetchVideo;
+            }
           }
         }
         if (video.readyState >= 1 && (Math.abs(error) > errorThreshold || emulatingPlaybackRate)) {  // HAVE_METADATA=1
@@ -981,10 +1028,14 @@ if (!window['$']) {
               UTIL.log("video(" + video.id + ") sync(): caught " + e.toString() + " setting currentTime to [" + desiredTime + "]");
             }
           } else {
-            perfTimeTweaks++;
-            UTIL.log("video(" + videoId + ") time correction: tweaking from " + (video.getCurrentTime() - leader) + " to " + t + " (error=" + error + ", rate=" + rateTweak + ", state=" + video.readyState + ")");
-            // Speed or slow video so that we'll be even by the next sync interval
-            video.playbackRate = playbackRate * rateTweak;
+            if(isSplitVideo && video.fragmentTimeOffset + secondsPerFragment <= _getCurrentTime()) {
+              _loadNewFragmentForDesiredTime(video, _getCurrentTime());
+            } else {
+              perfTimeTweaks++;
+              UTIL.log("video(" + videoId + ") time correction: tweaking from " + (video.getCurrentTime() - leader) + " to " + t + " (error=" + error + ", rate=" + rateTweak + ", state=" + video.readyState + ")");
+              // Speed or slow video so that we'll be even by the next sync interval
+              video.playbackRate = playbackRate * rateTweak;
+            }
           }
         } else {
           if (video.playbackRate != playbackRate) {
