@@ -1,12 +1,5 @@
 @charset "UTF-8";
 
-body, html {
-  margin: 0px auto;
-  padding: 0px;
-  width: 100%;
-  font-family: Arial, Helvetica, sans-serif;
-}
-
 .tiledContentHolder {
   position: relative;
   width: 512px;
@@ -45,6 +38,26 @@ body, html {
 
 .instructions p{font-size:13px;}
 
+.instructions span.loophelp {
+  width:135px;
+  background-color:#262626;
+  border:1px solid #444;
+  height:19px;
+  overflow:visible;
+  bottom: -2px;
+  left:40px;
+  padding:12px 16px 16px;
+}
+
+.instructions span.loophelp p {
+  margin:0;
+  padding:0;
+  background-repeat:no-repeat;
+  background-position:bottom left;
+  background-image:url(../images/bubble_edge_horizontal.png);
+  height:46px;
+}
+
 .instructions span.movehelp {
   top:60px;
   right:60px;
@@ -81,7 +94,7 @@ body, html {
 }
 
 .instructions span.speedhelp {
-  width:190px;
+  width:268px;
   background-color:#262626;
   border:1px solid #444;
   height:19px;
@@ -128,7 +141,7 @@ li.playbackSpeedOptions {
   position:absolute;
   bottom:0px;
   z-index:5;
-  margin: 1px 0px 0px -380px !important;
+  margin: 1px 0px 0px -272px !important;
 }
 
 li.playbackSpeedOptions ul {
@@ -164,7 +177,7 @@ a.playbackspeed {
   display:inline-block;
   padding:8px 0px 0px 0px;
   position: absolute;
-  margin: 6px 0px 0px -380px;
+  margin: 6px 0px 0px -263px;
   width:143px;
   height:21px;
   text-align:center;

@@ -200,4 +200,15 @@ if (!org.gigapan) {
     }
   }
 
+  org.gigapan.Util.htmlForTextWithEmbeddedNewlines = function(text) {
+    var htmls = [];
+    var lines = text.split(/\n/);
+    for (var i = 0 ; i < lines.length ; i++) {
+      htmls.push(
+        jQuery(document.createElement('div')).text(lines[i]).html()
+      );
+    }
+    return htmls.join("<br>");
+  }
+
 })();

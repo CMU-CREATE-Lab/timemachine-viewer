@@ -850,9 +850,9 @@ if (!window['$']) {
       
       timelapseDurationInSeconds = (_getNumFrames() - 0.7) / _getFps();
       
-      $("#" + div + " .currentTime").text(org.gigapan.Util.formatTime(timelapseCurrentTimeInSeconds, true));
-      $("#" + div + " .totalTime").text(org.gigapan.Util.formatTime(timelapseDurationInSeconds, true));
-      $("#" + div + " .currentCaptureTime").text(captureTimes[timelapseCurrentCaptureTimeIndex]);
+      $("#" + div + " .currentTime").html(org.gigapan.Util.formatTime(timelapseCurrentTimeInSeconds, true));
+      $("#" + div + " .totalTime").html(org.gigapan.Util.formatTime(timelapseDurationInSeconds, true));
+      $("#" + div + " .currentCaptureTime").html(org.gigapan.Util.htmlForTextWithEmbeddedNewlines(captureTimes[timelapseCurrentCaptureTimeIndex]));
 
       $("#" + div + " .timelineSlider").slider({
         min: 0,
@@ -1147,8 +1147,8 @@ if (!window['$']) {
            $("#" + viewerDivId + " .playbackButton").attr({"title": "Play"});
           }
         }
-        $("#" + viewerDivId + " .currentTime").text(org.gigapan.Util.formatTime(timelapseCurrentTimeInSeconds, true));
-        $("#" + viewerDivId + " .currentCaptureTime").text(captureTimes[timelapseCurrentCaptureTimeIndex]);
+        $("#" + viewerDivId + " .currentTime").html(org.gigapan.Util.formatTime(timelapseCurrentTimeInSeconds, true));
+        $("#" + viewerDivId + " .currentCaptureTime").html(org.gigapan.Util.htmlForTextWithEmbeddedNewlines(captureTimes[timelapseCurrentCaptureTimeIndex]));
         $("#" + viewerDivId + " .timelineSlider").slider("value", (timelapseCurrentTimeInSeconds * _getFps() - 0.3));
       });
 
