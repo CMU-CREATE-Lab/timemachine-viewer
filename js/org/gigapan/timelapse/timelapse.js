@@ -1136,8 +1136,8 @@ if (!window['$']) {
         /* Perform looping playback speed adjustments */
         if(customLoopPlaybackRates) {
           var newRate = videoset.getPlaybackRate();
-          for(var i in loopPlaybackRate) {
-            var rateObj = loopPlaybackRate[i];
+          for(var i in customLoopPlaybackRates) {
+            var rateObj = customLoopPlaybackRates[i];
             if(timelapseCurrentTimeInSeconds >= rateObj.start && timelapseCurrentTimeInSeconds < rateObj.end) {
               newRate = rateObj.rate;
               break;
