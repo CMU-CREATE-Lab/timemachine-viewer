@@ -1134,7 +1134,7 @@ if (!window['$']) {
         //console.log("total time: " + timelapseDurationInSeconds);
 
         /* Perform looping playback speed adjustments */
-        if(customLoopPlaybackRates) {
+        if(loopPlayback && customLoopPlaybackRates) {
           var newRate = videoset.getPlaybackRate();
           for(var i in customLoopPlaybackRates) {
             var rateObj = customLoopPlaybackRates[i];
