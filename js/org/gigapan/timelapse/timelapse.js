@@ -41,6 +41,7 @@
 //
 // Create the global symbol "org" if it doesn't exist.  Throw an error if it does exist but is not an object.
 var org;
+"use strict";
 if (!org) {
   org = {};
 } else {
@@ -122,6 +123,7 @@ if (!window['$']) {
     var videoHeight = 0;
     var frames = 0;
     var maxLevel = 0;
+    var levelInfo;
     var metadata = null;
     var view = null;
     var targetView = null;
@@ -141,6 +143,7 @@ if (!window['$']) {
     var videoDivId;
     //var hasLayers = settings["hasLayers"] || false;
     var loopPlayback = settings["loopPlayback"] || false;
+    var customLoopPlaybackRates = settings["customLoopPlaybackRates"] || null;
     var playOnLoad = settings["playOnLoad"] || false;
     var playbackSpeed = settings["playbackSpeed"] || 1;
     var datasetLayer = settings["layer"] || 0;
@@ -843,7 +846,7 @@ if (!window['$']) {
       if (_getTimelapseJSON()["capture-times"]) {
         captureTimes = _getTimelapseJSON()["capture-times"];
       } else {
-        for (i = 0; i < _getNumFrames(); i++) {
+        for (var i = 0; i < _getNumFrames(); i++) {
           captureTimes.push("--")
         }
       }
@@ -922,7 +925,7 @@ if (!window['$']) {
     function populateLayers() {
       var numLayers = tmJSON["layers"].length
       var html = "";
-      for (i = 0; i < numLayers; i++) {
+      for (var i = 0; i < numLayers; i++) {
         html += "<li data-index=" + i + "><img src=\"" + tmJSON["layers"][i]["tn-path"] + "\" " + "alt='layer' width='45' height='45' ><br/><span style='font-size:small; text-align:center; display:block; margin: -5px 0px 0px 0px !important;'>" + tmJSON['layers'][i]['description'] + "</span></li>"
       }
       $("#" + viewerDivId + " .layerChoices").append(html);
@@ -1068,6 +1071,8 @@ if (!window['$']) {
         }
         else {
           $(this).toggleClass("active inactive");
+          /* Set playback back to what the dropdown says */
+          changePlaybackRate($("#" + viewerDivId + " .playbackSpeedChoices .current"));
         }
       });
 
@@ -1127,6 +1132,20 @@ if (!window['$']) {
         }
         //console.log("current time: " + t);
         //console.log("total time: " + timelapseDurationInSeconds);
+
+        /* Perform looping playback speed adjustments */
+        if(customLoopPlaybackRates) {
+          var newRate = videoset.getPlaybackRate();
+          for(var i in loopPlaybackRate) {
+            var rateObj = loopPlaybackRate[i];
+            if(timelapseCurrentTimeInSeconds >= rateObj.start && timelapseCurrentTimeInSeconds < rateObj.end) {
+              newRate = rateObj.rate;
+              break;
+            }
+          }
+          if(newRate != videoset.getPlaybackRate()) videoset.setPlaybackRate(newRate);
+        }
+
         if (isCurrentTimeAtOrPastDuration() && thisObj.getPlaybackRate() > 0) {
           timelapseCurrentTimeInSeconds = timelapseDurationInSeconds;
           if (snaplapse != null && snaplapse.isPlaying()) return;
@@ -1196,7 +1215,7 @@ if (!window['$']) {
     function loadTimelapseJSON(json) {
       tmJSON = json;
       tileRootPath = settings["url"]; // assume tiles and json are on same host
-      for (i = 0; i < tmJSON["sizes"].length; i++) {
+      for (var i = 0; i < tmJSON["sizes"].length; i++) {
         playerSize = i;
         if (settings["playerSize"] && tmJSON["sizes"][i].toLowerCase() == settings["playerSize"].toLowerCase()) break;
       }
