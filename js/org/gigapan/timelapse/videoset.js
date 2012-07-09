@@ -110,7 +110,7 @@ if (!window['$']) {
 
   // Create a regex to extract the fragment number for split videos.  I construct the pattern this way
   // instead of "new RegExp()" for better performance (see https://developer.mozilla.org/en/JavaScript/Guide/Regular_Expressions)
-  var SPLIT_VIDEO_FRAGMENT_URL_PATTERN = /_(\d+).mp4$/i;
+  var SPLIT_VIDEO_FRAGMENT_URL_PATTERN = /_(\d+).mp4(?:\?time=[0-9]+)?$/i;
 
   org.gigapan.timelapse.Videoset = function(viewerDivId,videoDivId) {
     var videoDiv = document.getElementById(videoDivId);
