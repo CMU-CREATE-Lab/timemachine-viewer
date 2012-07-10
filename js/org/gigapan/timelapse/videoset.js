@@ -323,17 +323,17 @@ if (!window['$']) {
       video.bwLastTime = UTIL.getCurrentTimeInSecs();
       video.bwLastBuf = 0;
       video.bandwidth = 0;
-      //video.load();
+      video.load();
       var check;
-      var timeout = 2000;
+      var timeout = 500;
       check = function() {
         UTIL.log("check load for video("+video.id+")");
         UTIL.log("readyState: " + video.readyState);
-        if (video.readyState == 0 && activeVideos[video.id] == video) {
+        if (video.buffered.length == 0 && activeVideos[video.id] == video) {
           // Ouch.  A brand new bug in Chrome 15 (apparently) causes videos to never load
           // if they've been loaded recently and are being loaded again now.
           // It's pretty weird, but this disgusting code seems to work around the problem.
-          UTIL.log("we're still active but have ready state zero;  calling load again");
+          UTIL.log("Chrome bug detected, adding cache buster");
           video.setAttribute('src', src+"?time="+(new Date().getTime()));
           video.load();
           timeout *= 2;
