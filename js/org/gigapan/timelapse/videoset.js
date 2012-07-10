@@ -143,6 +143,7 @@ if (!window['$']) {
     var emulatingPlaybackRate = false;
     var leader = 0;
     var eventListeners = {};
+    var largestFragment = 0;
 
     var mostRecentlyAddedVideo = null;
 
@@ -186,6 +187,7 @@ if (!window['$']) {
 
     this.setDuration = function(newDuration) {
       duration = newDuration;
+      setLargestFragment();
     };
 
     this.getFps = function() {
@@ -211,6 +213,7 @@ if (!window['$']) {
 
     this.setSecondsPerFragment = function(newSecondsPerFragment) {
       secondsPerFragment = newSecondsPerFragment;
+      setLargestFragment();
     };
 
     this.getActiveVideos = function() {
@@ -687,8 +690,7 @@ if (!window['$']) {
             }
           }
           console.log("Prefetched video not available.");
-          var largestFragment = Math.ceil(duration / secondsPerFragment);
-          if(desiredFragmentNumber < largestFragment) {
+          if(desiredFragmentNumber <= largestFragment) {
             var newVideo = _addVideo(url, geometry);
             newVideo.tileidx = video.tileidx;
             UTIL.log("////////// Loading new fragment [" + newVideo.id + "] based on geometry of [" + video.id + "|" + video.ready + "|" + video.active + "], will retry setting time in 10 ms.  URL = [" + url + "]");
@@ -753,7 +755,7 @@ if (!window['$']) {
             }
           } else {
             // try again in 10 ms
-            UTIL.log("video(" + video.id + ") _setVideoToCurrentTime(): can't seek to [" + desiredTime + "] since no valid time range found [" + timeRanges + "].  Will retry in 10 ms...");
+            UTIL.log("video(" + video.id + ") _setVideoToCurrentTime(): can't seek to [" + desiredTime + " (" + desiredSeekTime + ")] since no valid time range found [" + timeRanges + "].  Will retry in 10 ms...");
             setTimeout(function() {_setVideoToCurrentTime(video);}, 10);
           }
         } else {
@@ -991,10 +993,9 @@ if (!window['$']) {
             prefetchVideo.setAttribute('preload', 'auto');
             var fragmentRegexMatch = video.src.match(SPLIT_VIDEO_FRAGMENT_URL_PATTERN);
             prefetchVideo.fragmentNumber = parseInt(fragmentRegexMatch[1]) + 1;
-            var largestFragment = Math.ceil(duration / secondsPerFragment);
             console.log(largestFragment + "/" + duration + "/" + secondsPerFragment + 
               "/" + prefetchVideo.fragmentNumber);
-            if(prefetchVideo.fragmentNumber < largestFragment) {
+            if(prefetchVideo.fragmentNumber <= largestFragment) {
               console.log("Prefetching fragment " + prefetchVideo.fragmentNumber);
               var fragmentSpecifier = "_" + prefetchVideo.fragmentNumber + ".mp4";
               var url = video.src.replace(SPLIT_VIDEO_FRAGMENT_URL_PATTERN, fragmentSpecifier);
@@ -1064,6 +1065,9 @@ if (!window['$']) {
       }
     };
 
+    function setLargestFragment() {
+      largestFragment = Math.ceil(duration / secondsPerFragment) - 1;
+    }
     //////////////////////////////////
     //
     // Constructor code
