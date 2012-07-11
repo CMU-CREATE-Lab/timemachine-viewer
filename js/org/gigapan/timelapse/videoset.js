@@ -328,7 +328,7 @@ if (!window['$']) {
       video.bandwidth = 0;
       video.load();
       var check;
-      var timeout = 500;
+      var timeout = 1000;
       check = function() {
         UTIL.log("check load for video("+video.id+")");
         UTIL.log("readyState: " + video.readyState);
