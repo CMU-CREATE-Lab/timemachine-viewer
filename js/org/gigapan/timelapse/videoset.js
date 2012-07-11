@@ -365,6 +365,15 @@ if (!window['$']) {
     };
     this.repositionVideo = _repositionVideo;
 
+    var stopStreaming = function(video) {
+      if(org.gigapan.Util.isChrome()) {
+        video.src = ""; /* This is the right way to do things */
+      }
+      else { /* This is for Safari and IE */
+        video.src = "data:video/mp4;base64";
+      }
+    };
+
     var garbageCollect = function() {
       var numInactiveVideos = 0;
       var idsOfVideosToDelete = [];
@@ -389,7 +398,7 @@ if (!window['$']) {
           var videoElement = document.getElementById(id);
           if (videoElement) {
             // try to force browser to stop streaming the video
-            videoElement.src = "data:video/mp4;base64";
+            stopStreaming(videoElement);
 						// TODO: Should we check that the video actually stopped streaming?
             videoDiv.removeChild(inactiveVideos[id]);
           }
@@ -415,7 +424,7 @@ if (!window['$']) {
 
       if (!org.gigapan.Util.isChrome()) {
         // this causes Safari and IE to stop streaming the video
-        video.src = "data:video/mp4;base64";
+        stopStreaming(video);
       }
 
       //UTIL.log(getVideoSummaryAsString(video));
