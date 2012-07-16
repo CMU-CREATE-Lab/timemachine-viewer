@@ -232,6 +232,14 @@ if (!window['$']) {
       perfTimeSeeks = 0;
     };
 
+    var _getFragment = function(time) {
+      var frag = Math.floor(time / secondsPerFragment);
+      if(time == duration)
+        frag--;
+      return frag;
+    }
+
+    this.getFragment = _getFragment;
     var getPerf = function() {
       var perf = "Videos added: " + perfAdded;
       perf += "; initial seeks: " + perfInitialSeeks;
@@ -665,7 +673,7 @@ if (!window['$']) {
       // which contains the desired time.
       if (isSplitVideo) {
         // first calculate the fragment number containing the desired time
-        var desiredFragmentNumber = Math.floor(desiredTime / secondsPerFragment);
+        var desiredFragmentNumber = _getFragment(desiredTime);
 
         // if the desired fragment number differs from the current fragment, then we need to load in a new video,
         // and replace the current one with the new one.

@@ -750,7 +750,7 @@ if (!window['$']) {
     var getTileidxUrl = function (tileidx) {
       //var shardIndex = (getTileidxRow(tileidx) % 2) * 2 + (getTileidxColumn(tileidx) % 2);
       //var urlPrefix = url.replace("//", "//t" + shardIndex + ".");
-      var fragmentSpecifier = isSplitVideo ? "_" + Math.floor(videoset.getCurrentTime() / secondsPerFragment) : "";
+      var fragmentSpecifier = isSplitVideo ? "_" + videoset.getFragment(videoset.getCurrentTime()) : "";
       return datasetPath + getTileidxLevel(tileidx) + "/" + getTileidxRow(tileidx) + "/" + getTileidxColumn(tileidx) + fragmentSpecifier + ".mp4";
     };
 
@@ -1121,6 +1121,8 @@ if (!window['$']) {
       _addTimeChangeListener(function (t) {
         timelapseCurrentTimeInSeconds = t;
         timelapseCurrentCaptureTimeIndex = Math.floor(t * _getFps());
+        if(t == timelapseDurationInSeconds)
+          timelapseCurrentCaptureTimeIndex--;
         if (timelapseCurrentTimeInSeconds.toFixed(3) < 0 || (timelapseCurrentTimeInSeconds.toFixed(3) == 0 && thisObj.getPlaybackRate() < 0)) {
           timelapseCurrentTimeInSeconds = 0;
           _pause();
