@@ -430,10 +430,7 @@ if (!window['$']) {
       video.active = false;
       video.pause();
 
-      if (!org.gigapan.Util.isChrome()) {
-        // this causes Safari and IE to stop streaming the video
-        stopStreaming(video);
-      }
+      stopStreaming(video);
 
       //UTIL.log(getVideoSummaryAsString(video));
       video.style.display = 'none';
