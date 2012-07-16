@@ -237,7 +237,7 @@ if (!window['$']) {
       if(time == duration)
         frag--;
       return frag;
-    } 
+    }
 
     this.getFragment = _getFragment;
     var getPerf = function() {
@@ -667,7 +667,7 @@ if (!window['$']) {
       // If we're using split video, then we need to check whether we need to replace the current video with one
       // which contains the desired time.
       if (isSplitVideo) {
-        // first calculate the fragement number video containing the desired time
+        // first calculate the fragment number containing the desired time
         var desiredFragmentNumber = _getFragment(desiredTime);
 
         // if the desired fragment number differs from the current fragment, then we need to load in a new video,
@@ -685,23 +685,33 @@ if (!window['$']) {
           if(video.prefetchVid && video.prefetchVid.id)
             return;
           if(video.prefetchVid) {
-            UTIL.log("PREFETCHED video available.");
+            UTIL.log("_loadNewFragmentForDesiredTime(): PREFETCHED video available (src=[" + video.prefetchVid.src + "], tileidx=[" + video.prefetchVid.tileidx + "])");
             if(desiredFragmentNumber == video.prefetchVid.fragmentNumber)
             {
-              var now = new Date();
-              UTIL.log("Switching to prefetch video " + 
-                (now.getTime() - video.prefetchVid.someTime) + "ms after " + video.prefetchVid.someTime);
-              console.assert(url == video.prefetchVid.src, "Mismatched URLs");
-              var newVideo = _addVideo(url, geometry, video.prefetchVid);
+              // Make sure that, while prefetching, the view didn't change such that it would cause timelapse.js to add
+              // a new video with a different tileidx.  If it did, then we need to ignore this prefetched video, and
+              // fetch a new one based on mostRecentlyAddedVideo with the appropriate fragment.
+              if (video.prefetchVid.tileidx != mostRecentlyAddedVideo.tileidx) {
+                if (typeof mostRecentlyAddedVideo.prefetchVid === 'undefined') {
+                  UTIL.log("!!!!!!!!!! PREFETCH idx [" + video.prefetchVid.tileidx + "] doesn't match current [" + mostRecentlyAddedVideo.tileidx + "], so must prefetch a new one");
+                  prefetchNextVideoFragment(mostRecentlyAddedVideo);
+                }
+                return null;
+              } else {
+                var now = new Date();
+                UTIL.log("Switching to prefetch video " + (now.getTime() - video.prefetchVid.someTime) + "ms after " + video.prefetchVid.someTime);
+                console.assert(url == video.prefetchVid.src, "Mismatched URLs");
+                var newVideo = _addVideo(url, geometry, video.prefetchVid);
 
-              newVideo.tileidx = video.tileidx;
-              return newVideo;
+                newVideo.tileidx = video.tileidx;
+                return newVideo;
+              }
             }
             else {
               UTIL.log("Correct video not prefetched");
             }
           }
-          UTIL.log("Prefetched video not available.");
+          UTIL.log("_loadNewFragmentForDesiredTime(): Prefetched video not available.");
           if(desiredFragmentNumber <= largestFragment) {
             var newVideo = _addVideo(url, geometry);
             newVideo.tileidx = video.tileidx;
@@ -709,7 +719,7 @@ if (!window['$']) {
             return newVideo;
           }
           else {
-            UTIL.error("REQUESTING A BAD FRAGMENT NUMBER: " + desiredFragmentNumber + " > " + largestFragment);
+            UTIL.log("REQUESTING A BAD FRAGMENT NUMBER: " + desiredFragmentNumber + " > " + largestFragment);
           }
         }
       }
@@ -967,6 +977,25 @@ if (!window['$']) {
       UTIL.log(msg);
     };
 
+    var prefetchNextVideoFragment = function(currentVideo) {
+      var prefetchVideo = document.createElement('video');
+      prefetchVideo.setAttribute('preload', 'auto');
+      var fragmentRegexMatch = currentVideo.src.match(SPLIT_VIDEO_FRAGMENT_URL_PATTERN);
+      prefetchVideo.fragmentNumber = parseInt(fragmentRegexMatch[1]) + 1;
+      //UTIL.log("prefetchNextVideoFragment(): " + largestFragment + "/" + duration + "/" + secondsPerFragment +
+      //            "/" + prefetchVideo.fragmentNumber);
+      if (prefetchVideo.fragmentNumber <= largestFragment) {
+        var fragmentSpecifier = "_" + prefetchVideo.fragmentNumber + ".mp4";
+        var url = currentVideo.src.replace(SPLIT_VIDEO_FRAGMENT_URL_PATTERN, fragmentSpecifier);
+        UTIL.log("Prefetching fragment [" + prefetchVideo.fragmentNumber + "], idx [" + currentVideo.tileidx + "], URL [" + url + "]");
+        prefetchVideo.setAttribute('src', url);
+        var now = new Date();
+        prefetchVideo.someTime = now.getTime();
+        prefetchVideo.tileidx = currentVideo.tileidx;
+        currentVideo.prefetchVid = prefetchVideo;
+      }
+    };
+
     var sync = function(errorThreshold) {
       //UTIL.log("sync");
       if (errorThreshold == undefined) {
@@ -1001,19 +1030,7 @@ if (!window['$']) {
         if (isSplitVideo && video.readyState >= 1) {
           if (video.getPercentTimeRemainingInFragment() < .5 && video.prefetchVid == undefined) {
             UTIL.log("sync(" + t + "): should do prefetch here (" + video.getPercentTimeRemainingInFragment() + ")...")
-            var prefetchVideo = document.createElement('video');
-            prefetchVideo.setAttribute('preload', 'auto');
-            var fragmentRegexMatch = video.src.match(SPLIT_VIDEO_FRAGMENT_URL_PATTERN);
-            prefetchVideo.fragmentNumber = parseInt(fragmentRegexMatch[1]) + 1;
-            if(prefetchVideo.fragmentNumber <= largestFragment) {
-              var fragmentSpecifier = "_" + prefetchVideo.fragmentNumber + ".mp4";
-              var url = video.src.replace(SPLIT_VIDEO_FRAGMENT_URL_PATTERN, fragmentSpecifier);
-              UTIL.log("Prefetching fragment " + prefetchVideo.fragmentNumber + " (" + url + ")");
-              prefetchVideo.setAttribute('src', url);
-              var now = new Date();
-              prefetchVideo.someTime = now.getTime();
-              video.prefetchVid = prefetchVideo;
-            }
+            prefetchNextVideoFragment(video);
           }
         }
         if (video.readyState >= 1 && (Math.abs(error) > errorThreshold || emulatingPlaybackRate)) {  // HAVE_METADATA=1

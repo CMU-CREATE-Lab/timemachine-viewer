@@ -944,8 +944,7 @@ if (!window['$']) {
     }
 
     this.switchLayer = function (index) {
-      playerLayer = index;
-      var newIndex = playerLayer * tmJSON["sizes"].length + playerSize;
+      var newIndex = index * tmJSON["sizes"].length + playerSize;
       validateAndSetDatasetIndex(newIndex);
       loadVideosetJSON();
     }
