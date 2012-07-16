@@ -336,7 +336,7 @@ if (!window['$']) {
       video.bandwidth = 0;
       video.load();
       var check;
-      var timeout = 1000;
+      var timeout = 2000;
       check = function() {
         UTIL.log("check load for video("+video.id+")");
         UTIL.log("readyState: " + video.readyState);
@@ -347,8 +347,6 @@ if (!window['$']) {
           UTIL.log("Chrome bug detected, adding cache buster");
           video.setAttribute('src', src+"?time="+(new Date().getTime()));
           video.load();
-          timeout *= 2;
-          setTimeout(check, timeout);
         }
       };
       setTimeout(check, timeout);
