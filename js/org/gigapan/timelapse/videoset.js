@@ -827,14 +827,12 @@ if (!window['$']) {
       if(video.active == false)
         return;
       var error = video.getCurrentTime() - leader - _getCurrentTime();
-      if (_isPaused() && Math.abs(error) > DEFAULT_ERROR_THRESHOLD) {
+      if ((_isPaused() || videoStalled) && Math.abs(error) > DEFAULT_ERROR_THRESHOLD) {
         UTIL.log("video(" + video.id + ") videoSeeked():  readyState=[" + video.readyState + "] currentTime=[" + video.getCurrentTime() + "] error=[" + error + "] is too high, must re-seek");
         _setVideoToCurrentTime(video);
       } else {
-        if(videoStalled && Math.abs(error) <= DEFAULT_ERROR_THRESHOLD) {
-          videoStalled = false;
-          updateStallState();
-        }
+        videoStalled = false;
+        updateStallState();
         UTIL.log("video(" + video.id + ") videoSeeked():  readyState=[" + video.readyState + "] currentTime=[" + video.getCurrentTime() + "] error=[" + error + "] is acceptable");
 
         if (!video.ready) {
