@@ -827,12 +827,11 @@ if (!window['$']) {
       if(video.active == false)
         return;
       var error = video.getCurrentTime() - leader - _getCurrentTime();
-      if (Math.abs(error) > DEFAULT_ERROR_THRESHOLD) {
+      if (_isPaused() && Math.abs(error) > DEFAULT_ERROR_THRESHOLD) {
         UTIL.log("video(" + video.id + ") videoSeeked():  readyState=[" + video.readyState + "] currentTime=[" + video.getCurrentTime() + "] error=[" + error + "] is too high, must re-seek");
-        stall(true);
         _setVideoToCurrentTime(video);
       } else {
-        if(videoStalled) {
+        if(videoStalled && Math.abs(error) <= DEFAULT_ERROR_THRESHOLD) {
           videoStalled = false;
           updateStallState();
         }
