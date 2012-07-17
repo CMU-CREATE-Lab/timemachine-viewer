@@ -129,6 +129,7 @@ if (!window['$']) {
     var advancing = false;
     var paused = true;
     var stalled = false;
+    var videoStalled = false;
     var timeOffset = 0;
     var logInterval = null;
     var syncInterval = null;
@@ -733,7 +734,7 @@ if (!window['$']) {
           var theCurrentTime = _getCurrentTime();
           var desiredTime = null;
 
-          // clamp desired time to video.duration
+          // clamp desired time to duration
           if (parseFloat(theCurrentTime.toFixed(3)) >= duration) {
             desiredTime = leader + duration;
             if (UTIL.isChrome()) {
@@ -817,16 +818,24 @@ if (!window['$']) {
           videoToDelete = nextVideoToDelete;
         }
         UTIL.log("video(" + video.id + ") _makeVideoVisible(" + callingFunction + "): chain of deletes: " + chainOfDeletes);
+        _setVideoToCurrentTime(video);
       }, 1);
     };
 
     var videoSeeked = function(event) {
       var video = event.target;
+      if(video.active == false)
+        return;
       var error = video.getCurrentTime() - leader - _getCurrentTime();
-      if (_isPaused() && Math.abs(error) > DEFAULT_ERROR_THRESHOLD) {
+      if (Math.abs(error) > DEFAULT_ERROR_THRESHOLD) {
         UTIL.log("video(" + video.id + ") videoSeeked():  readyState=[" + video.readyState + "] currentTime=[" + video.getCurrentTime() + "] error=[" + error + "] is too high, must re-seek");
+        stall(true);
         _setVideoToCurrentTime(video);
       } else {
+        if(videoStalled) {
+          videoStalled = false;
+          updateStallState();
+        }
         UTIL.log("video(" + video.id + ") videoSeeked():  readyState=[" + video.readyState + "] currentTime=[" + video.getCurrentTime() + "] error=[" + error + "] is acceptable");
 
         if (!video.ready) {
@@ -884,6 +893,8 @@ if (!window['$']) {
     };
 
     var updateStallState = function() {
+      if(videoStalled)
+        return;
       // We stall if there are more than MAX_QUEUED_VIDEO_LENGTH videos queued, so count the number of active videos
       var numQueued = 0;
       for (var v in activeVideos) {
@@ -899,19 +910,23 @@ if (!window['$']) {
       }
     };
 
-    var stall = function () {
-      if (stalled) {
+    var stall = function (isVideo) {
+      if(isVideo === undefined) isVideo = false;
+      if (stalled && (videoStalled || !isVideo)) {
         return;
       }
-      UTIL.log("Video stalling...");
-      stalled = true;
-      showSpinner(viewerDivId);
-      notifyStallEventListeners();
-      _updateVideoAdvance();
+      if(!videoStalled) videoStalled = isVideo;
+      if(!stalled) {
+        UTIL.log("Video stalling...");
+        stalled = true;
+        showSpinner(viewerDivId);
+        notifyStallEventListeners();
+        _updateVideoAdvance();
+      }
     };
 
     var unstall = function () {
-      if (!stalled) {
+      if (!stalled || videoStalled) {
         return;
       }
       UTIL.log("Video unstalled...");
@@ -1041,6 +1056,7 @@ if (!window['$']) {
             //UTIL.log("current time " + video.getCurrentTime());
             //UTIL.log("leader " + leader);
             UTIL.log("video(" + videoId + ") time correction: seeking from " + (video.getCurrentTime() - leader) + " to " + t + " (error=" + error + ", state=" + video.readyState + ")");
+            stall(true);
             var desiredTime = leader + t + (advancing ? playbackRate * errorThreshold * .5 : 0);  // seek ahead slightly if advancing
             try {
               var newVideo = isSplitVideo ? _loadNewFragmentForDesiredTime(video, desiredTime) : null;
