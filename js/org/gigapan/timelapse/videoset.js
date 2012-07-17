@@ -335,7 +335,6 @@ if (!window['$']) {
       video.bwLastTime = UTIL.getCurrentTimeInSecs();
       video.bwLastBuf = 0;
       video.bandwidth = 0;
-      video.load();
       var check;
       var timeout = 2000;
       check = function() {
