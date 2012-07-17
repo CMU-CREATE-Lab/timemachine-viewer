@@ -129,6 +129,7 @@ if (!window['$']) {
     var advancing = false;
     var paused = true;
     var stalled = false;
+    var videoStalled = false;
     var timeOffset = 0;
     var logInterval = null;
     var syncInterval = null;
@@ -232,6 +233,14 @@ if (!window['$']) {
       perfTimeSeeks = 0;
     };
 
+    var _getFragment = function(time) {
+      var frag = Math.floor(time / secondsPerFragment);
+      if(time == duration)
+        frag--;
+      return frag;
+    }
+
+    this.getFragment = _getFragment;
     var getPerf = function() {
       var perf = "Videos added: " + perfAdded;
       perf += "; initial seeks: " + perfInitialSeeks;
@@ -326,9 +335,8 @@ if (!window['$']) {
       video.bwLastTime = UTIL.getCurrentTimeInSecs();
       video.bwLastBuf = 0;
       video.bandwidth = 0;
-      video.load();
       var check;
-      var timeout = 1000;
+      var timeout = 2000;
       check = function() {
         UTIL.log("check load for video("+video.id+")");
         UTIL.log("readyState: " + video.readyState);
@@ -339,8 +347,6 @@ if (!window['$']) {
           UTIL.log("Chrome bug detected, adding cache buster");
           video.setAttribute('src', src+"?time="+(new Date().getTime()));
           video.load();
-          timeout *= 2;
-          setTimeout(check, timeout);
         }
       };
       setTimeout(check, timeout);
@@ -422,10 +428,7 @@ if (!window['$']) {
       video.active = false;
       video.pause();
 
-      if (!org.gigapan.Util.isChrome()) {
-        // this causes Safari and IE to stop streaming the video
-        stopStreaming(video);
-      }
+      stopStreaming(video);
 
       //UTIL.log(getVideoSummaryAsString(video));
       video.style.display = 'none';
@@ -664,8 +667,8 @@ if (!window['$']) {
       // If we're using split video, then we need to check whether we need to replace the current video with one
       // which contains the desired time.
       if (isSplitVideo) {
-        // first calculate the fragement number video containing the desired time
-        var desiredFragmentNumber = Math.floor(desiredTime / secondsPerFragment);
+        // first calculate the fragment number containing the desired time
+        var desiredFragmentNumber = _getFragment(desiredTime);
 
         // if the desired fragment number differs from the current fragment, then we need to load in a new video,
         // and replace the current one with the new one.
@@ -682,23 +685,33 @@ if (!window['$']) {
           if(video.prefetchVid && video.prefetchVid.id)
             return;
           if(video.prefetchVid) {
-            console.log("PREFETCHED video available.");
+            UTIL.log("_loadNewFragmentForDesiredTime(): PREFETCHED video available (src=[" + video.prefetchVid.src + "], tileidx=[" + video.prefetchVid.tileidx + "])");
             if(desiredFragmentNumber == video.prefetchVid.fragmentNumber)
             {
-              var now = new Date();
-              console.log("Switching to prefetch video " + 
-                (now.getTime() - video.prefetchVid.someTime) + "ms after " + video.prefetchVid.someTime);
-              console.assert(url == video.prefetchVid.src, "Mismatched URLs");
-              var newVideo = _addVideo(url, geometry, video.prefetchVid);
+              // Make sure that, while prefetching, the view didn't change such that it would cause timelapse.js to add
+              // a new video with a different tileidx.  If it did, then we need to ignore this prefetched video, and
+              // fetch a new one based on mostRecentlyAddedVideo with the appropriate fragment.
+              if (video.prefetchVid.tileidx != mostRecentlyAddedVideo.tileidx) {
+                if (typeof mostRecentlyAddedVideo.prefetchVid === 'undefined') {
+                  UTIL.log("!!!!!!!!!! PREFETCH idx [" + video.prefetchVid.tileidx + "] doesn't match current [" + mostRecentlyAddedVideo.tileidx + "], so must prefetch a new one");
+                  prefetchNextVideoFragment(mostRecentlyAddedVideo);
+                }
+                return null;
+              } else {
+                var now = new Date();
+                UTIL.log("Switching to prefetch video " + (now.getTime() - video.prefetchVid.someTime) + "ms after " + video.prefetchVid.someTime);
+                console.assert(url == video.prefetchVid.src, "Mismatched URLs");
+                var newVideo = _addVideo(url, geometry, video.prefetchVid);
 
-              newVideo.tileidx = video.tileidx;
-              return newVideo;
+                newVideo.tileidx = video.tileidx;
+                return newVideo;
+              }
             }
             else {
-              console.log("Correct video not prefetched");
+              UTIL.log("Correct video not prefetched");
             }
           }
-          console.log("Prefetched video not available.");
+          UTIL.log("_loadNewFragmentForDesiredTime(): Prefetched video not available.");
           if(desiredFragmentNumber <= largestFragment) {
             var newVideo = _addVideo(url, geometry);
             newVideo.tileidx = video.tileidx;
@@ -706,7 +719,7 @@ if (!window['$']) {
             return newVideo;
           }
           else {
-            console.log("REQUESTING A BAD FRAGMENT NUMBER: " + desiredFragmentNumber + " > " + largestFragment);
+            UTIL.log("REQUESTING A BAD FRAGMENT NUMBER: " + desiredFragmentNumber + " > " + largestFragment);
           }
         }
       }
@@ -720,7 +733,7 @@ if (!window['$']) {
           var theCurrentTime = _getCurrentTime();
           var desiredTime = null;
 
-          // clamp desired time to video.duration
+          // clamp desired time to duration
           if (parseFloat(theCurrentTime.toFixed(3)) >= duration) {
             desiredTime = leader + duration;
             if (UTIL.isChrome()) {
@@ -804,16 +817,21 @@ if (!window['$']) {
           videoToDelete = nextVideoToDelete;
         }
         UTIL.log("video(" + video.id + ") _makeVideoVisible(" + callingFunction + "): chain of deletes: " + chainOfDeletes);
+        _setVideoToCurrentTime(video);
       }, 1);
     };
 
     var videoSeeked = function(event) {
       var video = event.target;
+      if(video.active == false)
+        return;
       var error = video.getCurrentTime() - leader - _getCurrentTime();
-      if (_isPaused() && Math.abs(error) > DEFAULT_ERROR_THRESHOLD) {
+      if ((_isPaused() || videoStalled) && Math.abs(error) > DEFAULT_ERROR_THRESHOLD) {
         UTIL.log("video(" + video.id + ") videoSeeked():  readyState=[" + video.readyState + "] currentTime=[" + video.getCurrentTime() + "] error=[" + error + "] is too high, must re-seek");
         _setVideoToCurrentTime(video);
       } else {
+        videoStalled = false;
+        updateStallState();
         UTIL.log("video(" + video.id + ") videoSeeked():  readyState=[" + video.readyState + "] currentTime=[" + video.getCurrentTime() + "] error=[" + error + "] is acceptable");
 
         if (!video.ready) {
@@ -871,6 +889,8 @@ if (!window['$']) {
     };
 
     var updateStallState = function() {
+      if(videoStalled)
+        return;
       // We stall if there are more than MAX_QUEUED_VIDEO_LENGTH videos queued, so count the number of active videos
       var numQueued = 0;
       for (var v in activeVideos) {
@@ -886,19 +906,23 @@ if (!window['$']) {
       }
     };
 
-    var stall = function () {
-      if (stalled) {
+    var stall = function (isVideo) {
+      if(isVideo === undefined) isVideo = false;
+      if (stalled && (videoStalled || !isVideo)) {
         return;
       }
-      UTIL.log("Video stalling...");
-      stalled = true;
-      showSpinner(viewerDivId);
-      notifyStallEventListeners();
-      _updateVideoAdvance();
+      if(!videoStalled) videoStalled = isVideo;
+      if(!stalled) {
+        UTIL.log("Video stalling...");
+        stalled = true;
+        showSpinner(viewerDivId);
+        notifyStallEventListeners();
+        _updateVideoAdvance();
+      }
     };
 
     var unstall = function () {
-      if (!stalled) {
+      if (!stalled || videoStalled) {
         return;
       }
       UTIL.log("Video unstalled...");
@@ -964,6 +988,25 @@ if (!window['$']) {
       UTIL.log(msg);
     };
 
+    var prefetchNextVideoFragment = function(currentVideo) {
+      var prefetchVideo = document.createElement('video');
+      prefetchVideo.setAttribute('preload', 'auto');
+      var fragmentRegexMatch = currentVideo.src.match(SPLIT_VIDEO_FRAGMENT_URL_PATTERN);
+      prefetchVideo.fragmentNumber = parseInt(fragmentRegexMatch[1]) + 1;
+      //UTIL.log("prefetchNextVideoFragment(): " + largestFragment + "/" + duration + "/" + secondsPerFragment +
+      //            "/" + prefetchVideo.fragmentNumber);
+      if (prefetchVideo.fragmentNumber <= largestFragment) {
+        var fragmentSpecifier = "_" + prefetchVideo.fragmentNumber + ".mp4";
+        var url = currentVideo.src.replace(SPLIT_VIDEO_FRAGMENT_URL_PATTERN, fragmentSpecifier);
+        UTIL.log("Prefetching fragment [" + prefetchVideo.fragmentNumber + "], idx [" + currentVideo.tileidx + "], URL [" + url + "]");
+        prefetchVideo.setAttribute('src', url);
+        var now = new Date();
+        prefetchVideo.someTime = now.getTime();
+        prefetchVideo.tileidx = currentVideo.tileidx;
+        currentVideo.prefetchVid = prefetchVideo;
+      }
+    };
+
     var sync = function(errorThreshold) {
       //UTIL.log("sync");
       if (errorThreshold == undefined) {
@@ -998,22 +1041,7 @@ if (!window['$']) {
         if (isSplitVideo && video.readyState >= 1) {
           if (video.getPercentTimeRemainingInFragment() < .5 && video.prefetchVid == undefined) {
             UTIL.log("sync(" + t + "): should do prefetch here (" + video.getPercentTimeRemainingInFragment() + ")...")
-            var prefetchVideo = document.createElement('video');
-            prefetchVideo.setAttribute('preload', 'auto');
-            var fragmentRegexMatch = video.src.match(SPLIT_VIDEO_FRAGMENT_URL_PATTERN);
-            prefetchVideo.fragmentNumber = parseInt(fragmentRegexMatch[1]) + 1;
-            console.log(largestFragment + "/" + duration + "/" + secondsPerFragment + 
-              "/" + prefetchVideo.fragmentNumber);
-            if(prefetchVideo.fragmentNumber <= largestFragment) {
-              console.log("Prefetching fragment " + prefetchVideo.fragmentNumber);
-              var fragmentSpecifier = "_" + prefetchVideo.fragmentNumber + ".mp4";
-              var url = video.src.replace(SPLIT_VIDEO_FRAGMENT_URL_PATTERN, fragmentSpecifier);
-              console.log(url);
-              prefetchVideo.setAttribute('src', url);
-              var now = new Date();
-              prefetchVideo.someTime = now.getTime();
-              video.prefetchVid = prefetchVideo;
-            }
+            prefetchNextVideoFragment(video);
           }
         }
         if (video.readyState >= 1 && (Math.abs(error) > errorThreshold || emulatingPlaybackRate)) {  // HAVE_METADATA=1
@@ -1024,6 +1052,7 @@ if (!window['$']) {
             //UTIL.log("current time " + video.getCurrentTime());
             //UTIL.log("leader " + leader);
             UTIL.log("video(" + videoId + ") time correction: seeking from " + (video.getCurrentTime() - leader) + " to " + t + " (error=" + error + ", state=" + video.readyState + ")");
+            stall(true);
             var desiredTime = leader + t + (advancing ? playbackRate * errorThreshold * .5 : 0);  // seek ahead slightly if advancing
             try {
               var newVideo = isSplitVideo ? _loadNewFragmentForDesiredTime(video, desiredTime) : null;
