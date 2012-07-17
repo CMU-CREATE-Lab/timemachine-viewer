@@ -73,7 +73,7 @@ if (!org.gigapan) {
   //0 == none
   //1 == errors only
   //2 == verbose (everything)
-  var loggingLevel = 2
+  var loggingLevel = 1;
 
   org.gigapan.Util = function() { };
 
@@ -176,25 +176,46 @@ if (!org.gigapan) {
   // wrapper for ajax calls
   org.gigapan.Util.ajax = function(dataType, url, callback) {
     if (typeof(cached_ajax) != "undefined") {
-      // we are on file url and part of view.html
-      //org.gigapan.Util.log("We are loading from file url.");
+      // We are on file url or using cached ajax to get around
+      // cross domain security policies
       if (typeof(cached_ajax[url]) == "undefined") {
-        org.gigapan.Util.error("Error loading file from file URL [" + url + "]");
-        return;
+        // TODO: deprecate *.json for *.js
+        // left here for backwards compatibility
+        url = url.replace(".js",".json")
+        if (typeof(cached_ajax[url]) == "undefined") {
+          org.gigapan.Util.error("Error loading file from file URL [" + url + "]");
+          return;
+        }
       }
       callback(cached_ajax[url]);
     } else {
       // We are not on file url or we are utilizing the Chrome
       // --allow-file-access-from-files param and can do normal ajax calls
-      //org.gigapan.Util.log("We are not loading from file url.");
       $.ajax({
         dataType: dataType,
         url: url,
+        timeout: 1000, // 1 second timeout; part of deprecated code
         success: function (data) {
-          callback(data);
+          if (data) callback(data);
         }, error: function () {
-          org.gigapan.Util.error("Error loading file from URL [" + url + "]");
-          return;
+          // TODO: deprecate *.json for *.js
+          // left here for backwards compatibility
+          if (dataType == "script") {
+            url = url.replace(".js",".json");
+            $.ajax({
+              dataType: "json",
+              url: url,
+              success: function (data) {
+                if (data) callback(data);
+              }, error: function () {
+                org.gigapan.Util.error("Error loading file from URL [" + url + "]");
+                return;
+              }
+            });
+          } else {
+            org.gigapan.Util.error("Error loading file from URL [" + url + "]");
+            return;
+          }
         }
       });
     }
@@ -203,12 +224,67 @@ if (!org.gigapan) {
   org.gigapan.Util.htmlForTextWithEmbeddedNewlines = function(text) {
     var htmls = [];
     var lines = text.split(/\n/);
+    var className = "";
     for (var i = 0 ; i < lines.length ; i++) {
+      if (i == 0) className = "captureTimeMain";
+      else className = "captureTimeSub"+i;
       htmls.push(
-        jQuery(document.createElement('div')).text(lines[i]).html()
+        jQuery(document.createElement('div')).html("<div class=\""+className+"\">"+lines[i]).html()+"</div>"
       );
     }
-    return htmls.join("<br>");
+    return htmls.join("");
   }
+
+  org.gigapan.Util.unpackVars = function(str) {
+    var keyvals = str.split('&');
+    var vars = {};
+
+    if (keyvals.length == 1 && keyvals[0] == "") return null;
+
+    for (var i = 0; i < keyvals.length; i++) {
+      var keyval = keyvals[i].split('=');
+      vars[keyval[0]] = keyval[1];
+    }
+    return vars;
+  }
+
+  org.gigapan.Util.getQueryVars = function() {
+    return org.gigapan.Util.unpackVars(window.location.search.slice(1));
+  }
+
+  org.gigapan.Util.getHashVars = function() {
+    return org.gigapan.Util.unpackVars(window.location.hash.slice(1));
+  }
+
+  org.gigapan.Util.onQueryChange = function() {
+    if (org.gigapan.Util.getQueryVars().v != undefined) {
+      if (org.gigapan.Util.getQueryVars().t != undefined) {
+        setViewAndTime(org.gigapan.Util.getQueryVars().v, org.gigapan.Util.getQueryVars().t);
+      } else {
+        setView(org.gigapan.Util.getQueryVars().v);
+      }
+    }
+  };
+
+  org.gigapan.Util.onHashChange = function() {
+    if ((org.gigapan.Util.getHashVars().v != undefined) &&
+       (org.gigapan.Util.getHashVars().t != undefined)) {
+      setViewAndTime(org.gigapan.Util.getHashVars().v, org.gigapan.Util.getHashVars().t);
+    } else if (org.gigapan.Util.getHashVars().v != undefined) {
+      setView(org.gigapan.Util.getHashVars().v);
+    } else if (org.gigapan.Util.getHashVars().t != undefined) {
+      setTime(org.gigapan.Util.getHashVars().t);
+    }
+  };
+
+  org.gigapan.Util.queryAndHash = function(query, hash) {
+    if (window.location.search != query) {
+      window.location.href =
+        window.location.href.slice(0, window.location.href.indexOf('?')) + query + hash;
+    } else {
+      window.location.hash = hash;
+      org.gigapan.Util.onHashChange();
+    }
+  };
 
 })();

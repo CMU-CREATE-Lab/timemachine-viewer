@@ -591,3 +591,25 @@ a.zoomall:active{background-image:url(../images/zoom/zoom_viewall_down.png);}
   cursor: pointer;
   float: left;
 }
+
+.shareurl {
+  width:600px;
+  height: 32px;
+}
+
+a.share {
+  padding:8px 0px 0px 0px;
+  position: absolute;
+  margin: 6px 0px 0px -510px;
+  width:120px;
+  height:21px;
+  text-align:center;
+  text-indent:0px;
+  background-repeat:no-repeat;
+  background-position:top left;
+  background-image:url("../images/buttons/share.png");
+}
+
+a.share:hover{background-image:url("../images/buttons/share_hover.png");}
+
+a.share:active{background-image:url("../images/buttons/share_down.png");}

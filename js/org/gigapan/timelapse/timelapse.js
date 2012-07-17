@@ -40,8 +40,9 @@
 // VERIFY NAMESPACE
 //
 // Create the global symbol "org" if it doesn't exist.  Throw an error if it does exist but is not an object.
-var org;
 "use strict";
+var org;
+var availableTimelapses=[];
 if (!org) {
   org = {};
 } else {
@@ -104,7 +105,24 @@ if (!window['$']) {
 (function () {
   var UTIL = org.gigapan.Util;
 
+  org.gigapan.timelapse.loadTimeMachine = function (json) {
+    var timelapseObj = availableTimelapses[availableTimelapses.length-1];
+    timelapseObj.loadTimelapseJSON(json);
+  };
+
+  org.gigapan.timelapse.loadVideoset = function (json) {
+    var timelapseObj = availableTimelapses[availableTimelapses.length-1];
+    if (timelapseObj.getDatasetJSON() == null) timelapseObj.loadInitialVideoSet(json);
+    else timelapseObj.loadVideoSet(json);
+  };
+
+  org.gigapan.timelapse.loadTours = function (json) {
+    var timelapseObj = availableTimelapses[availableTimelapses.length-1];
+    timelapseObj.loadToursJSON(json);
+  };
+
   org.gigapan.timelapse.Timelapse = function (viewerDivId, settings) {
+    availableTimelapses.push(this);
     settings["videosetStatsDivId"] = settings["videosetStatsDivId"] || "videoset_stats_container";
     var videoset;
     var videosetStats;
@@ -139,17 +157,19 @@ if (!window['$']) {
     var targetViewChangeListeners = [];
     var thisObj = this;
     var tmJSON;
-    var datasetJSON;
+    var datasetJSON = null;
     var videoDivId;
     //var hasLayers = settings["hasLayers"] || false;
     var loopPlayback = settings["loopPlayback"] || false;
     var customLoopPlaybackRates = settings["customLoopPlaybackRates"] || null;
     var playOnLoad = settings["playOnLoad"] || false;
-    var playbackSpeed = settings["playbackSpeed"] || 1;
-    var datasetLayer = settings["layer"] || 0;
+    var playbackSpeed = settings["playbackSpeed"] && org.gigapan.Util.isNumber(settings["playbackSpeed"]) ? settings["playbackSpeed"] : 1;
+    var datasetLayer = settings["layer"] && org.gigapan.Util.isNumber(settings["layer"]) ? settings["layer"] : 0;
     var playerSize;
     var datasetIndex;
-    var initialTime = settings["initialTime"] || 0;
+    var initialTime = settings["initialTime"] && org.gigapan.Util.isNumber(settings["initialTime"]) ? settings["initialTime"] : 0;
+    var initialView = settings["initialView"] || null
+    var showShareBtn = (typeof(settings["showShareBtn"]) == "undefined") ? true : settings["showShareBtn"];
     var datasetPath;
     var tileRootPath;
 
@@ -159,6 +179,7 @@ if (!window['$']) {
     var captureTimes = new Array();
 
     var snaplapse;
+    var toursJSON = {};
 
     // levelThreshold sets the quality of display by deciding what level of tile to show for a given level of zoom:
     //
@@ -340,6 +361,100 @@ if (!window['$']) {
     };
     this.addVideoPlayListener = _addVideoPlayListener;
 
+    var _getProjection = function (projectionType) {
+      projectionType = typeof(projectionType) != 'undefined' ? projectionType : "mercator";
+      if (projectionType == "mercator") {
+        var projectionBounds = tmJSON['projection-bounds'];
+
+        return new org.gigapan.timelapse.MercatorProjection(
+          projectionBounds["west"], projectionBounds["north"],
+          projectionBounds["east"], projectionBounds["south"],
+          panoWidth, panoHeight);
+      }
+    };
+    this.getProjection = _getProjection;
+
+    var _getViewStrAsProjection = function () {
+      var latlng = _getProjection().pointToLatlng(view);
+      return Math.round(1e5 * latlng.lat) / 1e5 + "," +
+             Math.round(1e5 * latlng.lng) / 1e5 + "," +
+             Math.round(1e3 * Math.log(view.scale / _homeView().scale) / Math.log(2))/ 1e3;
+    };
+    this.getViewStrAsProjection = _getViewStrAsProjection;
+
+    var _getViewStrAsPoints = function () {
+      return Math.round(1e5 * view.x) / 1e5 + "," +
+             Math.round(1e5 * view.y) / 1e5 + "," +
+             Math.round(1e3 * Math.log(view.scale / _homeView().scale) / Math.log(2))/ 1e3;
+    };
+    this.getViewStrAsPoints = _getViewStrAsPoints;
+
+    var _getViewStr  = function () {
+      if (typeof(tmJSON['projection-bounds']) != 'undefined') {
+        return _getViewStrAsProjection();
+      } else {
+        return _getViewStrAsPoints();
+      }
+    }
+    this.getViewStr = _getViewStr;
+
+    var _setNewView  = function (data) {
+      var newView = view;
+      if (data['center']) { // Center view
+        if ((typeof(tmJSON['projection-bounds']) != 'undefined') && data['center']['lat'] && data['center']['lng'] && data['zoom']) {
+          newView = computeViewLatLngCenter(data);
+        } else if (data['center']['x'] && data['center']['y'] && data['zoom']) {
+          newView = computeViewPointCenter(data);
+        }
+      } else if (data['bbox']) { // Bounding box view
+        if ((typeof(tmJSON['projection-bounds']) != 'undefined') && data['bbox']['ne'] && data['bbox']['sw'] &&
+            data['bbox']['ne']['lat'] && data['bbox']['ne']['lng'] &&
+            data['bbox']['sw']['lat'] && data['bbox']['sw']['lng']) {
+          newView = computeViewLatLngFit(data);
+        } else if (data['bbox']['xmin'] && data['bbox']['xmax'] && data['bbox']['ymin'] && data['bbox']['ymax']) {
+          newView = computeViewFit(data);
+        }
+      }
+      setTargetView(newView);
+    }
+    this.setNewView = _setNewView;
+
+    var _setViewFromProjectionViewStr = function (viewstr) {
+      var a = viewstr.split(",");
+      var view = _getProjection().latlngToPoint({"lat": a[0] - 0, "lng": a[1] - 0});
+      var zoom = a[2] - 0;
+      view.scale = Math.pow(2, zoom) * _homeView().scale;
+      setTargetView(view);
+    };
+    this.setViewFromProjectionViewStr = _setViewFromProjectionViewStr;
+
+    var _setViewFromPointsViewStr = function (viewstr) {
+      var a = viewstr.split(",");
+      var view = {'x': a[0], 'y': a[1]};
+      var zoom = a[2] - 0;
+      view.scale = Math.pow(2, zoom) * _homeView().scale;
+      setTargetView(view);
+    };
+    this.setViewFromPointsViewStr = _setViewFromPointsViewStr;
+
+    var _setViewFromViewStr  = function (viewstr) {
+      if (typeof(tmJSON['projection-bounds']) != 'undefined') {
+        return _setViewFromProjectionViewStr(viewstr);
+      } else {
+        return _setViewFromPointsViewStr(viewstr);
+      }
+    }
+    this.setViewFromViewStr = _setViewFromViewStr;
+
+    var _shareView = function () {
+      $("#" + viewerDivId + " .shareurl").val(window.location.href.split("#")[0] + '#v=' + _getViewStr() + '&t=' + timelapse.getCurrentTime().toFixed(2));
+      $("#" + viewerDivId + " .shareurl").focus(function(){$(this).select();});
+      $("#" + viewerDivId + " .shareurl").click(function(){$(this).select();});
+      $("#" + viewerDivId + " .shareurl").mouseup(function(e){e.preventDefault();});
+      $("#" + viewerDivId + " .shareView").dialog("open");
+    };
+    this.shareView = _shareView;
+
     ///////////////////////////
     // Timelapse video control
     //
@@ -358,7 +473,7 @@ if (!window['$']) {
     this.pause = _pause;
 
     var _seek = function (t) {
-      videoset.seek(t);
+      videoset.seek(Math.min(Math.max(0,t),timelapseDurationInSeconds));
     };
     this.seek = _seek;
 
@@ -472,10 +587,10 @@ if (!window['$']) {
     };
     this.zoomSliderToViewScale = _zoomSliderToViewScale;
 
-    var _getTimelapseJSON = function () {
-      return tmJSON;
+    var _getDatasetJSON = function () {
+      return datasetJSON;
     }
-    this.getTimelapseJSON = _getTimelapseJSON;
+    this.getDatasetJSON = _getDatasetJSON;
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////
     //
@@ -630,11 +745,58 @@ if (!window['$']) {
       }
     };
 
+    //bounding box fit
     var computeViewFit = function (bbox) {
+      if (typeof(bbox['bbox']) != 'undefined') bbox = bbox['bbox'];
+
       var scale = Math.min(viewportWidth / (bbox.xmax - bbox.xmin), viewportHeight / (bbox.ymax - bbox.ymin));
+
       return {
         x: .5 * (bbox.xmin + bbox.xmax),
         y: .5 * (bbox.ymin + bbox.ymax),
+        scale: scale
+      };
+    };
+
+    //bounding box lat/lng fit
+    var computeViewLatLngFit = function (view) {
+      var projection = _getProjection();
+
+      var a = projection.latlngToPoint({"lat": view['bbox']['ne']['lng'], "lng": view['bbox']['sw']['lng']});
+      var b = projection.latlngToPoint({"lat": view['bbox']['ne']['lat'], "lng": view['bbox']['sw']['lat']});
+
+      var scale = Math.min(viewportWidth / (b.x - a.x), viewportHeight / (a.y - b.y));
+
+      return {
+        x: .5 * (a.x + b.x),
+        y: .5 * (a.y + b.y),
+        scale: scale
+      };
+    };
+
+    //point center
+    var computeViewPointCenter = function (view) {
+      var zoom = org.gigapan.Util.isNumber(view["zoom"]) ? view["zoom"] : 0;
+      var scale = Math.pow(2, zoom) * _homeView().scale;
+      return {
+        x: view["center"].x,
+        y: view["center"].y,
+        scale: scale
+      };
+    };
+
+    //latlng center
+    var computeViewLatLngCenter = function (view) {
+
+      var projection = _getProjection();
+
+      var zoom = org.gigapan.Util.isNumber(view["zoom"]) ? view["zoom"] : 0;
+      var point = projection.latlngToPoint({"lat": view["center"]["lat"], "lng": view["center"]["lng"]});
+      var scale = Math.pow(2, zoom) * _homeView().scale;
+
+      return {
+        x: point.x,
+        y: point.y,
         scale: scale
       };
     };
@@ -673,10 +835,6 @@ if (!window['$']) {
       metadata = data;
 
       readVideoDivSize();
-
-      if (loopPlayback) $("#" + viewerDivId + " .repeat").toggleClass("inactive active");
-      if (playOnLoad) _play();
-      if (initialTime != 0) _seek(initialTime);
 
       _warpTo(typeof desiredView != 'undefined' && desiredView ? desiredView : _homeView());
     };
@@ -843,8 +1001,8 @@ if (!window['$']) {
     };
 
     function createTimelineSlider(div) {
-      if (_getTimelapseJSON()["capture-times"]) {
-        captureTimes = _getTimelapseJSON()["capture-times"];
+      if (tmJSON["capture-times"]) {
+        captureTimes = tmJSON["capture-times"];
       } else {
         for (var i = 0; i < _getNumFrames(); i++) {
           captureTimes.push("--")
@@ -963,7 +1121,7 @@ if (!window['$']) {
       datasetPath = settings["url"] + tmJSON["datasets"][datasetIndex]['id'] + "/";
       showSpinner(viewerDivId);
       //org.gigapan.Util.log("Attempting to fetch videoset JSON from URL [" + datasetPath + "]...");
-      org.gigapan.Util.ajax("json",datasetPath + 'r.json',loadVideoSet);
+      org.gigapan.Util.ajax("script",datasetPath + 'r.js',loadVideoSet);
     }
 
     function loadVideoSet(data) {
@@ -973,8 +1131,59 @@ if (!window['$']) {
       hideSpinner(viewerDivId);
     }
 
+    function doHelpOverlay(obj) {
+      if ($("#" + viewerDivId + " .zoomSlider").slider("option", "disabled")) return;
+      $("#" + viewerDivId + " li.sizeoptions").hide(); //might be already opened
+      $("#" + viewerDivId + " li.playbackSpeedOptions").hide(); //might be already opened
+      $("#" + viewerDivId + " .instructions").fadeIn(100);
+      $("#" + viewerDivId + " .repeat").addClass("disabled");
+      $("#" + viewerDivId + " .help").addClass("on");
+      if ($("#" + viewerDivId + " .playbackButton").hasClass('pause')) {
+        obj.pause();
+        $("#" + viewerDivId + " .playbackButton").addClass("pause_disabled from_help");
+      } else {
+        $("#" + viewerDivId + " .playbackButton").addClass("play_disabled");
+      }
+      $("#" + viewerDivId + " .timelineSlider").slider("option", "disabled", true);
+    }
+
+    function removeHelpOverlay(obj) {
+      if ($("#" + viewerDivId + " .zoomSlider").slider("option", "disabled")) return;
+      $("#" + viewerDivId + " .instructions").fadeOut(50);
+      $("#" + viewerDivId + " .repeat").removeClass("disabled");
+      $("#" + viewerDivId + " .help").removeClass("on");
+      if ($("#" + viewerDivId + " .playbackButton").hasClass('from_help')) {
+        obj.play();
+        $("#" + viewerDivId + " .playbackButton").addClass("pause");
+        $("#" + viewerDivId + " .playbackButton").removeClass("from_help");
+      } else {
+        $("#" + viewerDivId + " .playbackButton").addClass("play");
+      }
+      $("#" + viewerDivId + " .timelineSlider").slider("option", "disabled", false);
+    }
+
     function setupUIHandlers(viewerDivId, obj) {
       var intervalId;
+
+      $("#" + viewerDivId + " .shareView").dialog({
+          resizable: false,
+          autoOpen: false,
+          width: 640,
+          height: 110,
+          create: function(event, ui) {
+            $(this).parents(".ui-dialog").css({'border': '1px solid #000'});
+          }
+        }
+      ).parent().appendTo($("#" + viewerDivId));
+
+      if (showShareBtn) {
+        $("#" + viewerDivId + " .share").bind("click", function () {
+          _shareView()
+        });
+      } else {
+        $("#" + viewerDivId + " .share").hide();
+      }
+
       if (tmJSON["layers"]) {
         $("#" + viewerDivId + " .layerSlider").show();
         populateLayers();
@@ -992,52 +1201,27 @@ if (!window['$']) {
         $("#" + viewerDivId + " li.playbackSpeedOptions").fadeIn(100);
       });
 
-      $(document).click(function (event) {
-        if ($(event.target).closest("#" + viewerDivId + " a.playbackspeed").get(0) == null) {
-          $("#" + viewerDivId + " li.playbackSpeedOptions").hide();
-        }
-      });
-
       $("#" + viewerDivId + " a.size").click(function () {
         if ($("#" + viewerDivId + " .help").hasClass("on") || $("#" + viewerDivId + " .zoomSlider").slider("option", "disabled")) return;
         $("#" + viewerDivId + " li.sizeoptions").fadeIn(100);
       });
 
       $(document).click(function (event) {
+        if ($(event.target).closest("#" + viewerDivId + " a.playbackspeed").get(0) == null) {
+          $("#" + viewerDivId + " li.playbackSpeedOptions").hide();
+        }
         if ($(event.target).closest("#" + viewerDivId + " a.size").get(0) == null) {
           $("#" + viewerDivId + " li.sizeoptions").hide();
         }
+        if ($(event.target).closest("#" + viewerDivId + " .help").get(0) == null) {
+          if ($("#" + viewerDivId + " .help").hasClass("on")) removeHelpOverlay(obj);
+        }
       });
 
-      $("#" + viewerDivId + " .help").toggle(
-        function () {
-          if ($("#" + viewerDivId + " .zoomSlider").slider("option", "disabled")) return;
-          $("#" + viewerDivId + " li.sizeoptions").hide(); //might be already opened
-          $("#" + viewerDivId + " li.playbackSpeedOptions").hide(); //might be already opened
-          $("#" + viewerDivId + " .instructions").fadeIn(100);
-          $("#" + viewerDivId + " .repeat").addClass("disabled");
-          $(this).addClass("on");
-          if ($("#" + viewerDivId + " .playbackButton").hasClass('pause')) {
-            obj.pause();
-            $("#" + viewerDivId + " .playbackButton").addClass("pause_disabled");
-          } else {
-            $("#" + viewerDivId + " .playbackButton").addClass("play_disabled");
-          }
-          $("#" + viewerDivId + " .timelineSlider").slider("option", "disabled", true);
-        }, function () {
-          if ($("#" + viewerDivId + " .zoomSlider").slider("option", "disabled")) return;
-          $("#" + viewerDivId + " .instructions").fadeOut(50);
-          $("#" + viewerDivId + " .repeat").removeClass("disabled");
-          $(this).removeClass("on");
-          if ($("#" + viewerDivId + " .playbackButton").hasClass('pause_disabled')) {
-            obj.play();
-            $("#" + viewerDivId + " .playbackButton").addClass("pause");
-          } else {
-            $("#" + viewerDivId + " .playbackButton").addClass("play");
-          }
-          $("#" + viewerDivId + " .timelineSlider").slider("option", "disabled", false);
-        }
-      );
+      $("#" + viewerDivId + " .help").click(function () {
+        if ($("#" + viewerDivId + " .help").hasClass("on")) removeHelpOverlay(obj);
+        else doHelpOverlay(obj);
+      });
 
       $("#" + viewerDivId + " .playbackButton").bind("click", function () {
         if ($("#" + viewerDivId + " .timelineSlider").slider("option", "disabled")) return;
@@ -1212,7 +1396,13 @@ if (!window['$']) {
       }
     }
 
-    function loadTimelapseJSON(json) {
+    var _loadToursJSON = function (json) {
+      toursJSON = json;
+      // Do stuff
+    }
+    this.loadToursJSON = _loadToursJSON;
+
+    var _loadTimelapseJSON = function (json) {
       tmJSON = json;
       tileRootPath = settings["url"]; // assume tiles and json are on same host
       for (var i = 0; i < tmJSON["sizes"].length; i++) {
@@ -1221,16 +1411,39 @@ if (!window['$']) {
       }
       validateAndSetDatasetIndex(datasetLayer * tmJSON["sizes"].length + playerSize); //layer + size = index of dataset
       datasetPath = settings["url"] + tmJSON["datasets"][datasetIndex]['id'] + "/";
-      org.gigapan.Util.ajax("json",datasetPath + 'r.json',loadInitialVideoSet);
+      org.gigapan.Util.ajax("script",datasetPath + 'r.js',_loadInitialVideoSet);
     }
+    this.loadTimelapseJSON = _loadTimelapseJSON;
 
-    function loadInitialVideoSet(data) {
+    var _loadInitialVideoSet= function (data) {
       datasetJSON = data;
       setViewportSize(data["video_width"] - data["tile_width"], data["video_height"] - data["tile_height"], thisObj);
-      onPanoLoadSuccessCallback(data, settings["initialView"]);
+
+      onPanoLoadSuccessCallback(data, null);
+
       setupTimelapse();
+
+      if (initialView) {
+        console.log("loadInitialVideo");
+        console.log(initialView);
+        _setNewView(initialView);
+      }
+
+      if (loopPlayback) $("#" + viewerDivId + " .repeat").toggleClass("inactive active");
+      if (playOnLoad) _play();
+      if (initialTime != 0) _seek(initialTime);
+
       hideSpinner(viewerDivId);
+
+      // Fix for the video initially not being displayed
+      $("#" + videoDivId +" :first-child").css({'display': 'none'});
+      $("#" + videoDivId +" :first-child").css({'display': 'inherit'});
+
+      if (typeof(onTimeMachinePlayerReady) === "function") {
+        onTimeMachinePlayerReady(viewerDivId);
+      }
     }
+    this.loadInitialVideoSet = _loadInitialVideoSet;
 
     function loadPlayerControlsTemplate(html) {
       $("#" + viewerDivId).html(html);
@@ -1262,7 +1475,7 @@ if (!window['$']) {
         $(document).bind("keyup.tm_keyup", handleKeyupEvent);
       });
 
-      org.gigapan.Util.ajax("json",settings["url"] + "tm.json",loadTimelapseJSON);
+      org.gigapan.Util.ajax("script",settings["url"] + "tm.js",_loadTimelapseJSON);
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1279,7 +1492,7 @@ if (!window['$']) {
       return;
     }
 
-    view = (typeof(settings["initialView"]) != "undefined") ? settings["initialView"] : _homeView();
+    view =  _homeView();
     targetView = {};
 
     // add trailing slash to url if it was omitted
