@@ -3,6 +3,7 @@ var timelapse;
 var doHelpPrompt = true;
 var tmSeekToTime = 0;
 var timeWarp;
+var earthTimeUrl;
 
 function onytplayerStateChange(newState) {
    //console.log("Player's new state: " + newState);
@@ -27,11 +28,11 @@ function ytStop() {
   }
 }
 
-function loadNewVideo(newTimeWarp) {
+function loadNewVideo(newTimeWarpName) {
   if (ytplayer) {
     //ytplayer.loadVideoById(id, startSeconds);
     ytplayer.stopVideo();
-    timeWarp = newTimeWarp;
+    timeWarp = cached_ajax[earthTimeUrl+newTimeWarpName];
     ytplayer.cueVideoById(timeWarp["youtube_url"], 0);
     autoPlay = false;
     doYouTube(autoPlay);
@@ -48,25 +49,27 @@ function onYouTubePlayerReady(playerId) {
   });
 
   $('.overlay').show();
-  $(".flashToggleMap").delay(500).animate({'background-color':'#ffffff'}, 1000);
-  $(".flashToggleMap").animate({'background-color':'#6b6b6b'}, 1000);
+  $(".flashToggleMap").delay(500).animate({'background-color':'#ffffff'}, 2000);
+  $(".flashToggleMap").animate({'background-color':'#6b6b6b'}, 2000);
 }
 
 function init() {
   //YouTube init
   var params = { allowScriptAccess: "always", allowFullScreen: "true", wmode: "opaque" };
   var atts = { id: "myytplayer" };
-  timeWarp = cached_ajax['time_warp']['amazon'];
+  //##### This is where you will use the data pulled from your own json blob you use for the gallery
+  // earthTimeUrl and timeWarp are global so that other functions can make use of them
+  earthTimeUrl = "http://mw1.google.com/et/annual30m.timemachine/"
+  var timelapsetour = earthTimeUrl + "amazon.json";
+  //##### End
+  timeWarp = cached_ajax[timelapsetour];
 
   swfobject.embedSWF("http://www.youtube.com/v/"+timeWarp["youtube_url"]+"?enablejsapi=1&playerapiid=ytplayer&modestbranding=1&showinfo=0&version=3&rel=0",
                      "ytapiplayer", "818", "495", "8", null, null, params, atts);
 
   //EarthTime init
-  var earthTimeUrl = "http://mw1.google.com/et/annual30m.timemachine/"
-
   var myView = null;
   var myTime = 0;
-
   var hashVars = org.gigapan.Util.getHashVars();
 
   if (hashVars) {
@@ -128,11 +131,7 @@ function init() {
   $("#earthTimePlayer .helpmsg").bind("click", function () {
     $('#earthTimePlayer .helpmsg').hide();
   });
-  
 
-  //$("#youtubePlayer").css("visiblity", "hidden");
-  //$("#youtubePlayer").hide();
-  //$("#earthTimePlayer").hide();
 }
 
 function computeBoundsToWarpTo(currentTime) {
