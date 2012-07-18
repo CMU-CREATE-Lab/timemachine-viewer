@@ -80,14 +80,13 @@ function zoomOut(viewerDivId,obj) {
 }
 
 function populateSpeedPlaybackChoices(div) {
-  var choices = [
-    {"name":"Backward, Full Speed", "value": -1.0},
-    {"name":"Backward, &#189; Speed", "value": -0.5},
-    {"name":"Backward, &#188; Speed", "value": -0.25},
-    {"name":"Forward, &#188; Speed", "value": 0.25},
-    {"name":"Forward, &#189; Speed", "value": 0.5},
-    {"name":"Forward, Full Speed", "value": 1.0}
-  ];
+  var choices = [];
+
+  if(!org.gigapan.Util.isSafari())
+    choices.push({"name":"Forward, &#188; Speed", "value": 0.25});
+
+  choices.push({"name":"Forward, &#189; Speed", "value": 0.5},
+    {"name":"Forward, Full Speed", "value": 1.0});
   var html = "";
   var numChoices = choices.length;
   for (var i = 0; i < numChoices; i++) {
