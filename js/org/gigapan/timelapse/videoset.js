@@ -1025,6 +1025,7 @@ if (!window['$']) {
         publishSyncEvent(duration);
         return;
       }
+      publishSyncEvent(t);
 
       updateStallState();
       if (stalled) {
@@ -1086,7 +1087,6 @@ if (!window['$']) {
           }
         }
       }
-      publishSyncEvent(t);
     };
 
     var publishSyncEvent = function(t) {
