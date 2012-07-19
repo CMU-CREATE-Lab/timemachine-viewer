@@ -135,7 +135,6 @@ function init() {
 }
 
 function computeBoundsToWarpTo(currentTime) {
-
   var keyframe_time = 0;
   var keyframes = timeWarp.snaplapse.keyframes;
   var i;
@@ -154,13 +153,11 @@ function computeBoundsToWarpTo(currentTime) {
 
 function doYouTube(doAutoPlay) {
   view = "youtube";
-  timelapse.pause();
+  if (org.gigapan.Util.browserSupported()) timelapse.pause();
   $("#earthTimePlayer").hide();
   $("#youtubePlayer").width("818px");
   $("#youtubePlayer").height("495px");
   $("#youtubePlayer").css("top", "");
-  $("#ytTimeline").show();
-  $("#ytControls").show();
   $(".overlay").show();
   if (doAutoPlay) {
     ytPlay();
@@ -171,16 +168,17 @@ function doTimeMachine(doWarpAndSeek) {
   view = "earthtime";
   ytPause();
   var currentTime = ytplayer.getCurrentTime();
-  if (doWarpAndSeek) {
-    timelapse.warpToBoundingBox(computeBoundsToWarpTo(currentTime));
-    timelapse.seek(tmSeekToTime);
-  } else {
-    timelapse.pause();
-    timelapse.setTargetView(timelapse.homeView());
-    timelapse.seek(0);
+
+  if (org.gigapan.Util.browserSupported()) {
+    if (doWarpAndSeek) {
+      timelapse.warpToBoundingBox(computeBoundsToWarpTo(currentTime));
+      timelapse.seek(tmSeekToTime);
+    } else {
+      timelapse.pause();
+      timelapse.setTargetView(timelapse.homeView());
+      timelapse.seek(0);
+    }
   }
-  $("#ytTimeline").hide();
-  $("#ytControls").hide();
   $("#youtubePlayer").width(0);
   $("#youtubePlayer").height(0);
   $("#youtubePlayer").css("top", "-2000px");

@@ -1425,8 +1425,6 @@ if (!window['$']) {
       setupTimelapse();
 
       if (initialView) {
-        console.log("loadInitialVideo");
-        console.log(initialView);
         _setNewView(initialView);
       }
 
