@@ -1438,6 +1438,15 @@ if (!window['$']) {
       $("#" + videoDivId +" :first-child").css({'display': 'none'});
       $("#" + videoDivId +" :first-child").css({'display': 'inherit'});
 
+      $("#" + viewerDivId + " img " + ", #" + viewerDivId + " a").css({
+        "-moz-user-select": "none",
+        "-webkit-user-select": "none",
+        "-webkit-user-drag": "none",
+        "-khtml-user-select": "none",
+        "-o-user-select": "none",
+        "user-select": "none",
+      });
+
       if (typeof(onTimeMachinePlayerReady) === "function") {
         onTimeMachinePlayerReady(viewerDivId);
       }
