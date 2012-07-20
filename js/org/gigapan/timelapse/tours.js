@@ -6,8 +6,9 @@ var timeWarp;
 var earthTimeUrl;
 
 function onytplayerStateChange(newState) {
-   //console.log("Player's new state: " + newState);
-   //console.log(ytplayer.getAvailableQualityLevels());
+  if (newState == 0) {
+    if (org.gigapan.Util.browserSupported()) doTimeMachine(true);
+  }
 }
 
 function ytPlay() {
@@ -47,6 +48,8 @@ function onYouTubePlayerReady(playerId) {
   }, function () {
     $(this).stop().animate({'background-color':'#6b6b6b'}, 100);
   });
+
+  ytplayer.addEventListener("onStateChange", "onytplayerStateChange");
 
   $('.overlay').show();
   $(".flashToggleMap").delay(500).animate({'background-color':'#ffffff'}, 2000);
@@ -178,6 +181,7 @@ function doTimeMachine(doWarpAndSeek) {
       timelapse.setTargetView(timelapse.homeView());
       timelapse.seek(0);
     }
+    timelapse.play();
   }
   $("#youtubePlayer").width(0);
   $("#youtubePlayer").height(0);
