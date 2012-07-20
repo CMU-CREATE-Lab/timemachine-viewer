@@ -6,9 +6,9 @@ var timeWarp;
 var earthTimeUrl;
 
 function onytplayerStateChange(newState) {
-  if (newState == 0) {
-    if (org.gigapan.Util.browserSupported()) doTimeMachine(true);
-  }
+  if (newState == 0 && (Math.ceil(ytplayer.getCurrentTime()) >= ytplayer.getDuration())
+      && org.gigapan.Util.browserSupported())
+    doTimeMachine(true, false);
 }
 
 function ytPlay() {
@@ -167,13 +167,13 @@ function doYouTube(doAutoPlay) {
   }
 }
 
-function doTimeMachine(doWarpAndSeek) {
+function doTimeMachine(warpAndSeek, autoPlay) {
   view = "earthtime";
   ytPause();
   var currentTime = ytplayer.getCurrentTime();
 
   if (org.gigapan.Util.browserSupported()) {
-    if (doWarpAndSeek) {
+    if (warpAndSeek) {
       timelapse.warpToBoundingBox(computeBoundsToWarpTo(currentTime));
       timelapse.seek(tmSeekToTime);
     } else {
@@ -181,7 +181,7 @@ function doTimeMachine(doWarpAndSeek) {
       timelapse.setTargetView(timelapse.homeView());
       timelapse.seek(0);
     }
-    timelapse.play();
+    if (autoPlay) timelapse.play();
   }
   $("#youtubePlayer").width(0);
   $("#youtubePlayer").height(0);
@@ -200,7 +200,7 @@ function doTimeMachine(doWarpAndSeek) {
 function switchViews() {
   if ($("#earthTimePlayer .help").hasClass("on")) return;
   if (view == "youtube") {
-    doTimeMachine(true);
+    doTimeMachine(true, true);
   } else {
     doYouTube(true);
   }
