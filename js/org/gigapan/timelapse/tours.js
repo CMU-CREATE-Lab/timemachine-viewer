@@ -135,15 +135,6 @@ function init() {
     $('#earthTimePlayer .helpmsg').hide();
   });
 
-  $("#earthTimePlayer > img").css({
-    "-moz-user-select": "none",
-    "-moz-user-select": "-moz-none",
-    "-webkit-user-select": "none",
-    "-webkit-user-drag": "none",
-    "-khtml-user-select": "none",
-    "-o-user-select": "none",   
-    "user-select": "none",       
-  });
 }
 
 function computeBoundsToWarpTo(currentTime) {
