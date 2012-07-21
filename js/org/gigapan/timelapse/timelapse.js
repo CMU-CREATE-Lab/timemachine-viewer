@@ -597,22 +597,27 @@ if (!window['$']) {
     // Private methods
     //
     var handleMousedownEvent = function (event) {
+      if (event.which != 1) return;
+      var mouseIsDown = true;
       var lastEvent = event;
       var saveMouseMove = document.onmousemove;
       var saveMouseUp = document.onmouseup;
       videoDiv.style.cursor = 'url("css/cursors/closedhand.png") 10 10, move';
       document.onmousemove = function (event) {
-        targetView.x += (lastEvent.pageX - event.pageX) / view.scale;
-        targetView.y += (lastEvent.pageY - event.pageY) / view.scale;
-        setTargetView(targetView);
-        lastEvent = event;
+        if (mouseIsDown) {
+          targetView.x += (lastEvent.pageX - event.pageX) / view.scale;
+          targetView.y += (lastEvent.pageY - event.pageY) / view.scale;
+          setTargetView(targetView);
+          lastEvent = event;
+        }
         return false;
       };
-      document.onmouseup = function () {
+      $("body").bind("mouseup mouseleave", function(event){
+        mouseIsDown = false;
         videoDiv.style.cursor = 'url("css/cursors/openhand.png") 10 10, move';
         document.onmousemove = saveMouseMove;
         document.onmouseup = saveMouseUp;
-      };
+      });
       return false;
     };
 
