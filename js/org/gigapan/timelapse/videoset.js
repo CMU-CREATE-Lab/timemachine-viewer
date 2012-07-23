@@ -817,7 +817,6 @@ if (!window['$']) {
           videoToDelete = nextVideoToDelete;
         }
         UTIL.log("video(" + video.id + ") _makeVideoVisible(" + callingFunction + "): chain of deletes: " + chainOfDeletes);
-        _setVideoToCurrentTime(video);
       }, 1);
     };
 
