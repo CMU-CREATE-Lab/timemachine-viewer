@@ -172,6 +172,7 @@ if (!window['$']) {
     var showShareBtn = (typeof(settings["showShareBtn"]) == "undefined") ? true : settings["showShareBtn"];
     var datasetPath;
     var tileRootPath;
+    var customPlaybackTimeout = null;
 
     var timelapseDurationInSeconds = 0.0;
     var timelapseCurrentTimeInSeconds = 0.0;
@@ -468,6 +469,7 @@ if (!window['$']) {
     this.isPaused = _isPaused;
 
     var _pause = function () {
+      window.clearTimeout(customPlaybackTimeout);
       videoset.pause();
     };
     this.pause = _pause;
@@ -489,7 +491,39 @@ if (!window['$']) {
       return videoset.getVideoPosition();
     };
 
+    function updateCustomPlayback() {
+      /* Startup custom playback stuff if possible */
+      if(loopPlayback && customLoopPlaybackRates) {
+        var nextSegment = null; /* next segment with custom playback */
+        for(var i in customLoopPlaybackRates) {
+          var rateObj = customLoopPlaybackRates[i];
+          if(timelapseCurrentTimeInSeconds < rateObj.end) {
+            if(timelapseCurrentTimeInSeconds >= rateObj.start) {
+              nextSegment = rateObj;
+              break;
+            }
+            else if(nextSegment === null || rateObj.start < nextSegment.start) {
+              nextSegment = rateObj;
+            }
+          }
+        }
+        if(nextSegment === null) { /* Make sure playback rate matches selection */
+          thisObj.setPlaybackRate(playbackRate);
+        }
+        else {
+          var difference = nextSegment.start - timelapseCurrentTimeInSeconds;
+          if(difference > 0)
+            customPlaybackTimeout = window.setTimeout(updateCustomPlayback, difference);
+          else {
+            thisObj.setPlaybackRate(nextSegment.rate);
+            customPlaybackTimeout = window.setTimeout(updateCustomPlayback, difference);
+          }
+        }
+      }
+    }
+
     var _play = function () {
+      updateCustomPlayback();
       videoset.play();
     };
     this.play = _play;
@@ -1058,6 +1092,7 @@ if (!window['$']) {
     function changePlaybackRate(obj) {
       var rate = $(obj).attr("data-speed") - 0; //convert to number
       thisObj.setPlaybackRate(rate);
+      playbackSpeed = rate;
       $("#" + viewerDivId + " li.playbackSpeedOptions").hide();
       $("#" + viewerDivId + " li.playbackSpeedOptions a").removeClass("current");
       $(obj).addClass("current");
@@ -1254,6 +1289,7 @@ if (!window['$']) {
       $("#" + viewerDivId + " .repeat").bind("click", function () {
         if ($(this).hasClass("disabled") || $("#" + viewerDivId + " .zoomSlider").slider("option", "disabled") == true) return;
         loopPlayback = !loopPlayback
+        updateCustomPlayback();
         if (loopPlayback) {
           $(this).toggleClass("inactive active");
         }
@@ -1322,19 +1358,6 @@ if (!window['$']) {
         }
         //console.log("current time: " + t);
         //console.log("total time: " + timelapseDurationInSeconds);
-
-        /* Perform looping playback speed adjustments */
-        if(loopPlayback && customLoopPlaybackRates) {
-          var newRate = videoset.getPlaybackRate();
-          for(var i in customLoopPlaybackRates) {
-            var rateObj = customLoopPlaybackRates[i];
-            if(timelapseCurrentTimeInSeconds >= rateObj.start && timelapseCurrentTimeInSeconds < rateObj.end) {
-              newRate = rateObj.rate;
-              break;
-            }
-          }
-          if(newRate != videoset.getPlaybackRate()) videoset.setPlaybackRate(newRate);
-        }
 
         if (isCurrentTimeAtOrPastDuration() && thisObj.getPlaybackRate() > 0) {
           timelapseCurrentTimeInSeconds = timelapseDurationInSeconds;
