@@ -17,6 +17,7 @@
         if (top.opener) {
           var json = window.opener.document.getElementById("save_snaplapse_form").save_snaplapse_form_json.value
           $("#snaplapse_code").text(json).focus().select();
+          $("#snaplapse_code").click(function() { $(this).text(json).focus().select(); });
         }
       });
     </script>
