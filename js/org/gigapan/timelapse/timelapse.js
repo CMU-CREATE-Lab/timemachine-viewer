@@ -1519,7 +1519,7 @@ if (!window['$']) {
     // Constructor code
     //
 
-    var browserSupported = org.gigapan.Util.browserSupported();
+    browserSupported = org.gigapan.Util.browserSupported();
     if (!browserSupported) {
       org.gigapan.Util.ajax("html","browser_not_supported_template.html",function(html){
         $("#" + viewerDivId).html(html);

@@ -29,6 +29,7 @@
 // Paul Dille (pdille@andrew.cmu.edu)
 // Randy Sargent (randy.sargent@cs.cmu.edu)
 
+var browserSupported;
 var timelapseMetadata;
 var snaplapse;
 function createZoomSlider(viewerDivId,obj) {

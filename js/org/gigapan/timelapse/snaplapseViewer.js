@@ -94,8 +94,29 @@ function doLoadSnaplapse(json) {
   activeSnaplapse.loadSnaplapse(json);
 }
 
+function playCachedSnaplapse(snaplapseId) {
+  org.gigapan.Util.log("playCachedSnaplapse(" + snaplapseId + ")");
+  var s = cachedSnaplapses[snaplapseId];
+  var snaplapse = timelapse.getSnaplapse();
+  var snaplapseViewer = snaplapse.getSnaplapseViewer();
+  console.log("Num keyframes: " + snaplapse.getNumKeyframes());
+  if (typeof s != 'undefined' && s) {
+    if (snaplapse && snaplapse.isPlaying()) {
+      snaplapse.stop();
+    }
+    console.log(s);
+    console.log(snaplapseId);
+    if (snaplapseViewer.loadNewSnaplapse(JSON.stringify(s))) {
+      snaplapseViewer.playStopSnaplapse();
+    } else {
+      alert("ERROR: Invalid time warp file.");
+    }
+  }
+}
+
 (function() {
   var UTIL = org.gigapan.Util;
+  var didOnce = false;
   org.gigapan.timelapse.snaplapse.SnaplapseViewer = function(snaplapse,timelapse) {
 		var thisObj = this;
 		var composerDivId = snaplapse.getComposerDivId();
@@ -153,7 +174,7 @@ function doLoadSnaplapse(json) {
 			// add mouse event handlers to the Play/Stop Snaplapse button
 			addMouseEventHandlersToButton('#'+composerDivId+' #playStopSnaplapseButton',
 				function() {
-					playStopSnaplapse();
+					_playStopSnaplapse();
 				});
 
 			// add mouse event handlers to the Record Keyframe button
@@ -177,7 +198,7 @@ function doLoadSnaplapse(json) {
 
 			// add mouse event handlers to the Play/Stop button in the viewer
 			$("#"+timelapseViewerDivId+' .stopTimeWarp').click(function() {
-				playStopSnaplapse();
+				_playStopSnaplapse();
 				return false;
 			});
 
@@ -280,113 +301,116 @@ function doLoadSnaplapse(json) {
 		}
 
 		var newSnaplapse = function(json) {
-			//snaplapse = new org.gigapan.timelapse.Snaplapse(timelapse);
+			//snaplapse = new org.gigapan.timelapse.Snaplapse(composerDivId,timelapse);
 
-			snaplapse.addEventListener('play',
-				function() {
-					setButtonEnabled("#"+composerDivId+" #newSnaplapseButton", false);
-					setButtonEnabled("#"+composerDivId+" #recordKeyframeButton", false);
-					setButtonEnabled("#"+composerDivId+" #loadSnaplapseButton", false);
-					setButtonEnabled("#"+composerDivId+" #saveSnaplapseButton", false);
-					$("#"+composerDivId+" #playStopSnaplapseButton > span").removeClass("ui-icon-play");
-					$("#"+composerDivId+" #playStopSnaplapseButton > span").addClass("ui-icon-stop");
-					$("#"+composerDivId+" #playStopSnaplapseButton").attr("title", "Stop time warp");
+			if (!didOnce) {
+                          snaplapse.addEventListener('play',
+                                  function() {
+                                          setButtonEnabled("#"+composerDivId+" #newSnaplapseButton", false);
+                                          setButtonEnabled("#"+composerDivId+" #recordKeyframeButton", false);
+                                          setButtonEnabled("#"+composerDivId+" #loadSnaplapseButton", false);
+                                          setButtonEnabled("#"+composerDivId+" #saveSnaplapseButton", false);
+                                          $("#"+composerDivId+" #playStopSnaplapseButton > span").removeClass("ui-icon-play");
+                                          $("#"+composerDivId+" #playStopSnaplapseButton > span").addClass("ui-icon-stop");
+                                          $("#"+composerDivId+" #playStopSnaplapseButton").attr("title", "Stop time warp");
 
-					setButtonEnabled("#"+composerDivId+" #deleteKeyframeButton", false);
+                                          setButtonEnabled("#"+composerDivId+" #deleteKeyframeButton", false);
 
-					$("#"+timelapseViewerDivId+" .timelineSlider")['slider']("option", "disabled", true);
-					$("#"+timelapseViewerDivId+" .zoomSlider")['slider']("option", "disabled", true);
+                                          $("#"+timelapseViewerDivId+" .timelineSlider")['slider']("option", "disabled", true);
+                                          $("#"+timelapseViewerDivId+" .zoomSlider")['slider']("option", "disabled", true);
 
-					$("#"+timelapseViewerDivId+' .help').removeClass("enabled").addClass("disabled");
-					$("#"+timelapseViewerDivId+" .instructions").fadeOut(50);
-					$("#"+timelapseViewerDivId+" .instructions").removeClass('on');
-					if ($("#"+timelapseViewerDivId+' .playbackButton').hasClass("pause_disabled")) {
-						$("#"+timelapseViewerDivId+' .playbackButton').removeClass('pause_disabled').addClass("pause");
-					} else {
-						$("#"+timelapseViewerDivId+' .playbackButton').removeClass('play_disabled').addClass("play");
-					}
+                                          $("#"+timelapseViewerDivId+' .help').removeClass("enabled").addClass("disabled");
+                                          $("#"+timelapseViewerDivId+" .instructions").fadeOut(50);
+                                          $("#"+timelapseViewerDivId+" .instructions").removeClass('on');
+                                          if ($("#"+timelapseViewerDivId+' .playbackButton').hasClass("pause_disabled")) {
+                                                  $("#"+timelapseViewerDivId+' .playbackButton').removeClass('pause_disabled').addClass("pause");
+                                          } else {
+                                                  $("#"+timelapseViewerDivId+' .playbackButton').removeClass('play_disabled').addClass("play");
+                                          }
 
-					$("#"+timelapseViewerDivId+' .playbackButton').hide();
-					$("#"+timelapseViewerDivId+' .stopTimeWarp').show();
+                                          $("#"+timelapseViewerDivId+' .playbackButton').hide();
+                                          $("#"+timelapseViewerDivId+' .stopTimeWarp').show();
 
-					$("#"+timelapseViewerDivId+" .zoomin").css("opacity", ".35");
-					$("#"+timelapseViewerDivId+" .zoomout").css("opacity", ".35");
-					$("#"+timelapseViewerDivId+" .zoomall").css("opacity", ".35");
+                                          $("#"+timelapseViewerDivId+" .zoomin").css("opacity", ".35");
+                                          $("#"+timelapseViewerDivId+" .zoomout").css("opacity", ".35");
+                                          $("#"+timelapseViewerDivId+" .zoomall").css("opacity", ".35");
 
-					$("#"+composerDivId+" .snaplapse_keyframe_list")['selectable']("option", "disabled", true);
-					clearKeyframeSelection();
-					var keyframes = $("#"+composerDivId+" .snaplapse_keyframe_list > div");
-					$(keyframes[0]).addClass("snaplapse_keyframe_list_item ui-selected");
-				});
+                                          $("#"+composerDivId+" .snaplapse_keyframe_list")['selectable']("option", "disabled", true);
+                                          clearKeyframeSelection();
+                                          var keyframes = $("#"+composerDivId+" .snaplapse_keyframe_list > div");
+                                          $(keyframes[0]).addClass("snaplapse_keyframe_list_item ui-selected");
+                                  });
 
-			snaplapse.addEventListener('stop',
-				function() {
-					setButtonEnabled("#"+composerDivId+" #newSnaplapseButton", true);
-					setButtonEnabled("#"+composerDivId+" #recordKeyframeButton", true);
-					setButtonEnabled("#"+composerDivId+" #loadSnaplapseButton", true);
-					setButtonEnabled("#"+composerDivId+" #saveSnaplapseButton", true);
-					$("#"+composerDivId+" #playStopSnaplapseButton > span").removeClass("ui-icon-stop");
-					$("#"+composerDivId+" #playStopSnaplapseButton > span").addClass("ui-icon-play");
-					$("#"+composerDivId+" #playStopSnaplapseButton").attr("title", "Play time warp");
+                          snaplapse.addEventListener('stop',
+                                  function() {
+                                          setButtonEnabled("#"+composerDivId+" #newSnaplapseButton", true);
+                                          setButtonEnabled("#"+composerDivId+" #recordKeyframeButton", true);
+                                          setButtonEnabled("#"+composerDivId+" #loadSnaplapseButton", true);
+                                          setButtonEnabled("#"+composerDivId+" #saveSnaplapseButton", true);
+                                          $("#"+composerDivId+" #playStopSnaplapseButton > span").removeClass("ui-icon-stop");
+                                          $("#"+composerDivId+" #playStopSnaplapseButton > span").addClass("ui-icon-play");
+                                          $("#"+composerDivId+" #playStopSnaplapseButton").attr("title", "Play time warp");
 
-					$("#"+timelapseViewerDivId+" .timelineSlider")['slider']("option", "disabled", false);
-					$("#"+timelapseViewerDivId+" .zoomSlider")['slider']("option", "disabled", false);
-					$("#"+timelapseViewerDivId+' .stopTimeWarp').hide();
-					$("#"+timelapseViewerDivId+' .playbackButton').removeClass("pause").addClass("play");
-					$("#"+timelapseViewerDivId+' .playbackButton').attr("title", "Play");
-					$("#"+timelapseViewerDivId+' .playbackButton').show();
+                                          $("#"+timelapseViewerDivId+" .timelineSlider")['slider']("option", "disabled", false);
+                                          $("#"+timelapseViewerDivId+" .zoomSlider")['slider']("option", "disabled", false);
+                                          $("#"+timelapseViewerDivId+' .stopTimeWarp').hide();
+                                          $("#"+timelapseViewerDivId+' .playbackButton').removeClass("pause").addClass("play");
+                                          $("#"+timelapseViewerDivId+' .playbackButton').attr("title", "Play");
+                                          $("#"+timelapseViewerDivId+' .playbackButton').show();
 
-					$("#"+timelapseViewerDivId+" .zoomin").css("opacity", "1");
-					$("#"+timelapseViewerDivId+" .zoomout").css("opacity", "1");
-					$("#"+timelapseViewerDivId+" .zoomall").css("opacity", "1");
-					$("#"+timelapseViewerDivId+' .help').removeClass("disabled").addClass("enabled");
+                                          $("#"+timelapseViewerDivId+" .zoomin").css("opacity", "1");
+                                          $("#"+timelapseViewerDivId+" .zoomout").css("opacity", "1");
+                                          $("#"+timelapseViewerDivId+" .zoomall").css("opacity", "1");
+                                          $("#"+timelapseViewerDivId+' .help').removeClass("disabled").addClass("enabled");
 
-					hideAnnotationBubble();
+                                          hideAnnotationBubble();
 
-					$("#"+composerDivId+" .snaplapse_keyframe_list")['selectable']("option", "disabled", false);
-					var keyframes = $("#"+composerDivId+" .snaplapse_keyframe_list > div");
-					for (var i = 0; i < keyframes.size(); i++) {
-						var frame = keyframes[i];
-						$(frame).removeClass().addClass("snaplapse_keyframe_list_item");
-					}
-				});
+                                          $("#"+composerDivId+" .snaplapse_keyframe_list")['selectable']("option", "disabled", false);
+                                          var keyframes = $("#"+composerDivId+" .snaplapse_keyframe_list > div");
+                                          for (var i = 0; i < keyframes.size(); i++) {
+                                                  var frame = keyframes[i];
+                                                  $(frame).removeClass().addClass("snaplapse_keyframe_list_item");
+                                          }
+                                  });
 
-			snaplapse.addEventListener('keyframe-added',
-				function(keyframe, insertionIndex) {
-					addSnaplapseKeyframeListItem(keyframe, insertionIndex, true);
-					toggleSnaplapseButtons();
-				});
+                          snaplapse.addEventListener('keyframe-added',
+                                  function(keyframe, insertionIndex) {
+                                          addSnaplapseKeyframeListItem(keyframe, insertionIndex, true);
+                                          toggleSnaplapseButtons();
+                                  });
 
-			snaplapse.addEventListener('keyframe-loaded',
-				function(keyframe, insertionIndex) {
-					addSnaplapseKeyframeListItem(keyframe, insertionIndex, false);
-					toggleSnaplapseButtons();
-				});
-			snaplapse.addEventListener('keyframe-modified',
-				function(keyframe) {
-					$("#"+composerDivId + "_snaplapse_keyframe_" + keyframe['id'] + "_timestamp").text(org.gigapan.Util.formatTime(keyframe['time'], true));
-					setKeyframeThumbail(keyframe);
-				});
+                          snaplapse.addEventListener('keyframe-loaded',
+                                  function(keyframe, insertionIndex) {
+                                          addSnaplapseKeyframeListItem(keyframe, insertionIndex, false);
+                                          toggleSnaplapseButtons();
+                                  });
+                          snaplapse.addEventListener('keyframe-modified',
+                                  function(keyframe) {
+                                          $("#"+composerDivId + "_snaplapse_keyframe_" + keyframe['id'] + "_timestamp").text(org.gigapan.Util.formatTime(keyframe['time'], true));
+                                          setKeyframeThumbail(keyframe);
+                                  });
 
-			snaplapse.addEventListener('keyframe-interval-change',
-				function(keyframe) {
-					org.gigapan.Util.log("##################### snaplapse keyframe-interval-change: " + JSON.stringify(keyframe));
+                          snaplapse.addEventListener('keyframe-interval-change',
+                                  function(keyframe) {
+                                          org.gigapan.Util.log("##################### snaplapse keyframe-interval-change: " + JSON.stringify(keyframe));
 
-					// render the keyframe as selected to show that it's being played
-					$("#"+composerDivId + "_snaplapse_keyframe_" + keyframe['id']).addClass("snaplapse_keyframe_list_item ui-selected");
-					displaySnaplapseFrameAnnotation(keyframe);
-				});
+                                          // render the keyframe as selected to show that it's being played
+                                          $("#"+composerDivId + "_snaplapse_keyframe_" + keyframe['id']).addClass("snaplapse_keyframe_list_item ui-selected");
+                                          displaySnaplapseFrameAnnotation(keyframe);
+                                  });
 
-			// TODO: add videoset listener which listens for the stall event so we can disable the recordKeyframeButton (if not already disabled due to playback)
+                          // TODO: add videoset listener which listens for the stall event so we can disable the recordKeyframeButton (if not already disabled due to playback)
+                          didOnce = true;
+                        }
 
 			setButtonEnabled("#"+composerDivId+" #recordKeyframeButton", true);
 			setButtonEnabled("#"+composerDivId+" #playStopSnaplapseButton", false);
 			setButtonEnabled("#"+composerDivId+" #saveSnaplapseButton", false);
 			setButtonEnabled("#"+composerDivId+" #deleteKeyframeButton", false);
 			$("#"+composerDivId+" .snaplapse_keyframe_list").empty();
-			if (saveSnaplapseWindow) {
-				saveSnaplapseWindow.close();
-			}
+                        if (saveSnaplapseWindow) {
+                          saveSnaplapseWindow.close();
+                        }
 
 			if (typeof json != 'undefined' && json != null) {
 				return snaplapse.loadFromJSON(json);
@@ -645,22 +669,6 @@ function doLoadSnaplapse(json) {
 			}
 		}
 
-		var playCachedSnaplapse = function(snaplapseId) {
-			org.gigapan.Util.log("playCachedSnaplapse(" + snaplapseId + ")");
-			var s = cachedSnaplapses[snaplapseId];
-			if (typeof s != 'undefined' && s) {
-				if (snaplapse && snaplapse.isPlaying()) {
-					snaplapse.stop();
-				}
-
-				if (newSnaplapse(JSON.stringify(s))) {
-					playStopSnaplapse();
-				} else {
-					alert("ERROR: Invalid time warp file.");
-				}
-			}
-		}
-
 		var cacheSnaplapse = function(snaplapseJsonUrl, callback) {
 			$.ajax({
 				dataType:'json',
@@ -722,7 +730,7 @@ function doLoadSnaplapse(json) {
 			});
 		}
 
-		var playStopSnaplapse = function() {
+		var _playStopSnaplapse = function() {
 			if (snaplapse.isPlaying()) {
 				snaplapse.stop();
 			} else {
@@ -730,6 +738,7 @@ function doLoadSnaplapse(json) {
 				snaplapse.play();
 			}
 		}
+                this.playStopSnaplapse = _playStopSnaplapse;
 
 /*		var saveSnaplapse = function() {
 			if (snaplapse && (snaplapse.getNumKeyframes() > 1)) {

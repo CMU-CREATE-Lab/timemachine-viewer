@@ -194,7 +194,7 @@ if (!org.gigapan) {
       $.ajax({
         dataType: dataType,
         url: url,
-        timeout: 1000, // 1 second timeout; part of deprecated code
+        timeout: 100, // 100 ms timeout; part of deprecated code
         success: function (data) {
           if (data) callback(data);
         }, error: function () {

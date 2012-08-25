@@ -124,6 +124,7 @@ if (!Math.uuid) {
           pauseTimeCounterInterval();
         } else {
           UTIL.log("videoset stall-status-change listener: resuming time warp time counter interval");
+          stopTimeCounterInterval();
           resumeTimeCounterInterval();
         }
       }
@@ -172,6 +173,7 @@ if (!Math.uuid) {
     this.loadFromJSON = function(json) {
       try {
         var obj = JSON.parse(json);
+        keyframes.length = 0;
 
         if (typeof obj['snaplapse'] != 'undefined' && typeof obj['snaplapse']['keyframes'] != 'undefined') {
           UTIL.log("Found [" + obj['snaplapse']['keyframes'].length + "] keyframes in the json:\n\n" + json);
@@ -268,7 +270,7 @@ if (!Math.uuid) {
       }
     };
 
-		this.setTextAnnotationForKeyframe = function(keyframeId, description, isDescriptionVisible) {
+      this.setTextAnnotationForKeyframe = function(keyframeId, description, isDescriptionVisible) {
       if (keyframeId && keyframesById[keyframeId]) {
         keyframesById[keyframeId]['description'] = description;
         keyframesById[keyframeId]['is-description-visible'] = isDescriptionVisible;
@@ -406,6 +408,18 @@ if (!Math.uuid) {
      }
    };
 
+    var changeTimelapsePlaybackRateUI = function(rate) {
+      var speedChoice;
+      var timelapseViewerDivId = timelapse.getViewerDivId();
+      $("#"+timelapseViewerDivId+" .playbackSpeedChoices li a").each(function() {
+        speedChoice = $(this);
+        if ((speedChoice.attr("data-speed")-0) == rate) return false;
+      });
+      $("#"+timelapseViewerDivId+" .playbackSpeedChoices li a").removeClass("current");
+      speedChoice.addClass("current");
+      $("#"+timelapseViewerDivId+" .playbackSpeedText").text(speedChoice.text());
+    }
+
     var _stop = function(willJumpToLastKeyframe) {
       if (isCurrentlyPlaying) {
         isCurrentlyPlaying = false;
@@ -420,6 +434,10 @@ if (!Math.uuid) {
           timelapse.seek(keyframes[keyframes.length - 1]['time']);
           timelapse.warpToBoundingBox(keyframes[keyframes.length - 1]['bounds']);
         }
+
+        // the rate changes as a warp plays so reset to the default rate once we stop playback
+        timelapse.setPlaybackRate(1)
+        changeTimelapsePlaybackRateUI(1);
 
         var listeners = eventListeners['stop'];
         if (listeners) {
@@ -510,15 +528,7 @@ if (!Math.uuid) {
         else if (rate < 0.55) rate = .5;
         else rate = 1;
 
-	var speedChoice;
-        var timelapseViewerDivId = timelapse.getViewerDivId();
-	$("#"+timelapseViewerDivId+" .playbackSpeedChoices li a").each(function() {
-	  speedChoice = $(this);
-	  if ((speedChoice.attr("data-speed")-0) == rate) return false;
-	});
-	$("#"+timelapseViewerDivId+" .playbackSpeedChoices li a").removeClass("current");
-	speedChoice.addClass("current");
-	$("#"+timelapseViewerDivId+" .playbackSpeedText").text(speedChoice.text());
+        changeTimelapsePlaybackRateUI(rate);
 
         var keyframeStartingTime = currentKeyframeInterval.getStartingTime();
         timelapse.seek(keyframeStartingTime);              // make sure we're on track
@@ -615,7 +625,7 @@ if (!Math.uuid) {
 
     org.gigapan.Util.ajax("html","time_warp_composer.html",function(html){
       $composerDivObj.html(html);
-      viewer = org.gigapan.timelapse.snaplapse.SnaplapseViewer(thisObj,timelapse);
+      viewer = new org.gigapan.timelapse.snaplapse.SnaplapseViewer(thisObj,timelapse);
     });
 
     /*$composerDivObj.load('time_warp_composer.html', function(response, status, xhr) {
