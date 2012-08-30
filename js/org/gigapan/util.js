@@ -222,6 +222,7 @@ if (!org.gigapan) {
   }
 
   org.gigapan.Util.htmlForTextWithEmbeddedNewlines = function(text) {
+    if (text === undefined) return;
     var htmls = [];
     var lines = text.split(/\n/);
     var className = "";

@@ -113,6 +113,16 @@ if (!Math.uuid) {
     var thisObj = this;
     var $composerDivObj = $("#"+composerDivId);
 
+    var _clearSnaplapse = function() {
+      keyframes.length=0;
+      keyframesById = {};
+      keyframeIntervals.length=0;
+      currentKeyframeInterval = null;
+      warpStartingTime = null;
+      timeCounterIntervalHandle = null;
+    };
+    this.clearSnaplapse = _clearSnaplapse;
+
     this.getComposerDivId = function() {
     	return composerDivId;
     }

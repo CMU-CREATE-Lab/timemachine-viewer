@@ -99,13 +99,10 @@ function playCachedSnaplapse(snaplapseId) {
   var s = cachedSnaplapses[snaplapseId];
   var snaplapse = timelapse.getSnaplapse();
   var snaplapseViewer = snaplapse.getSnaplapseViewer();
-  console.log("Num keyframes: " + snaplapse.getNumKeyframes());
   if (typeof s != 'undefined' && s) {
     if (snaplapse && snaplapse.isPlaying()) {
       snaplapse.stop();
     }
-    console.log(s);
-    console.log(snaplapseId);
     if (snaplapseViewer.loadNewSnaplapse(JSON.stringify(s))) {
       snaplapseViewer.playStopSnaplapse();
     } else {
@@ -242,8 +239,7 @@ function playCachedSnaplapse(snaplapseId) {
 
 			if (numSelected == 1) {
 				var id = selectedItems.get(0).id;
-				//TODO
-				var keyframeId = composerDivId + "_" + id.substring("snaplapse_keyframe_".length);
+                                var keyframeId = id.substring((composerDivId + "_snaplapse_keyframe_").length);
 				var frame = snaplapse.getKeyframeById(keyframeId);
 
 				displaySnaplapseFrameAnnotation(frame);
@@ -301,6 +297,7 @@ function playCachedSnaplapse(snaplapseId) {
 		}
 
 		var newSnaplapse = function(json) {
+                        snaplapse.clearSnaplapse();
 			//snaplapse = new org.gigapan.timelapse.Snaplapse(composerDivId,timelapse);
 
 			if (!didOnce) {
