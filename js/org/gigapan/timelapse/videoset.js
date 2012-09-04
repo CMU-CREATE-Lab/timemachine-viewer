@@ -1052,7 +1052,9 @@ if (!window['$']) {
             //UTIL.log("current time " + video.getCurrentTime());
             //UTIL.log("leader " + leader);
             UTIL.log("video(" + videoId + ") time correction: seeking from " + (video.getCurrentTime() - leader) + " to " + t + " (error=" + error + ", state=" + video.readyState + ")");
-            stall(true);
+            // Since new stalling code seems to break timewarp playback where we emulate playback to handle going backwards or do lots of tweaking to handle different play rates, enter Mr. Hack-a-rooney.
+            if (!advancing)
+              stall(true);
             var desiredTime = leader + t + (advancing ? playbackRate * errorThreshold * .5 : 0);  // seek ahead slightly if advancing
             try {
               var newVideo = isSplitVideo ? _loadNewFragmentForDesiredTime(video, desiredTime) : null;
