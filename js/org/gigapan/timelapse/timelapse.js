@@ -1073,9 +1073,9 @@ if (!window['$']) {
       $("#" + div + " .timelineSlider .ui-slider-handle").attr("title", "Drag to go to a different point in time");
     }
 
-    function createPlaybackSpeedSlider(div) {
+    function createPlaybackSpeedSlider(div, timelapseObj) {
       //populate playback speed dropdown
-      populateSpeedPlaybackChoices(div);
+      populateSpeedPlaybackChoices(div, timelapseObj);
       var speedChoice;
       // set the playback speed dropdown
       $("#" + div + " .playbackSpeedChoices li a").each(function () {
@@ -1410,7 +1410,7 @@ if (!window['$']) {
       //hasLayers = timelapseMetadataJSON["has_layers"] || false;
       createTimelineSlider(viewerDivId);
       createZoomSlider(viewerDivId, thisObj);
-      createPlaybackSpeedSlider(viewerDivId);
+      createPlaybackSpeedSlider(viewerDivId, thisObj);
       setupSliderHandlers(viewerDivId);
       setupUIHandlers(viewerDivId, thisObj);
       //handlePluginVideoTagOverride(); //TODO

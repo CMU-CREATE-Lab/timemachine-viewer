@@ -80,13 +80,23 @@ function zoomOut(viewerDivId,obj) {
   obj.setScaleFromSlider(val);
 }
 
-function populateSpeedPlaybackChoices(div) {
+function populateSpeedPlaybackChoices(div, timelapseObj) {
   var choices = [];
 
-  if(!org.gigapan.Util.isSafari())
-    choices.push({"name":"Forward, &#188; Speed", "value": 0.25});
+  // Only show backward playback options for non-split video datasets
+  // Backward playback - emulated since Chrome/Safari doesn't properly handle it
+  if (typeof(timelapseObj.getDatasetJSON()['frames_per_fragment']) == "undefined") {
+    choices.push({"name":"Backward, Full Speed", "value": -1.0},
+      {"name":"Backward, &#188; Speed", "value": -0.25},
+      {"name":"Backward, &#189; Speed", "value": -0.5});
+  }
 
-  choices.push({"name":"Forward, &#189; Speed", "value": 0.5},
+  //if(!org.gigapan.Util.isSafari())
+  //  choices.push({"name":"Forward, &#188; Speed", "value": 0.25});
+
+  // Forward playback - 1/4 speed is emulated on Safari but we still give the option
+  choices.push({"name":"Forward, &#188; Speed", "value": 0.25},
+    {"name":"Forward, &#189; Speed", "value": 0.5},
     {"name":"Forward, Full Speed", "value": 1.0});
   var html = "";
   var numChoices = choices.length;
