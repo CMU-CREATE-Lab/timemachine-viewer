@@ -222,8 +222,11 @@ if (!window['$']) {
 
     var handleKeydownEvent = function (event) {
 
-      // if we are focused on a text field, do not run any player specific controls
-      if (document.activeElement == "[object HTMLInputElement]" || document.activeElement == "[object HTMLTextAreaElement]") return;
+      // if we are focused on a text field or the slider handlers, do not run any player specific controls
+      if ($(".timelineSlider .ui-slider-handle:focus").length ||
+          $(".zoomSlider .ui-slider-handle:focus").length ||
+          document.activeElement == "[object HTMLInputElement]" ||
+          document.activeElement == "[object HTMLTextAreaElement]") return;
 
       var translationSpeedConstant = 20;
       var moveFn;
@@ -1071,10 +1074,6 @@ if (!window['$']) {
       });
 
       $("#" + div + " .timelineSlider .ui-slider-handle").attr("title", "Drag to go to a different point in time");
-
-      $("#" + div + " .timelineSlider .ui-slider-handle").bind("click", function () {
-        $(document).unbind('keydown.tm_keydown keyup.tm_keyup');
-      });
     }
 
     function createPlaybackSpeedSlider(div, timelapseObj) {
