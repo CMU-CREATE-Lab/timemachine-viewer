@@ -45,6 +45,10 @@ function createZoomSlider(viewerDivId,obj) {
   });
 
   $("#"+viewerDivId+" .zoomSlider .ui-slider-handle").attr("title", "Drag to zoom");
+
+  $("#" + viewerDivId + " .zoomSlider .ui-slider-handle").bind("click", function () {
+    $(document).unbind('keydown.tm_keydown keyup.tm_keyup');
+  });
 }
 
 function setupSliderHandlers(viewerDivId) {

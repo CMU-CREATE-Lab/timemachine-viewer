@@ -1071,6 +1071,10 @@ if (!window['$']) {
       });
 
       $("#" + div + " .timelineSlider .ui-slider-handle").attr("title", "Drag to go to a different point in time");
+
+      $("#" + div + " .timelineSlider .ui-slider-handle").bind("click", function () {
+        $(document).unbind('keydown.tm_keydown keyup.tm_keyup');
+      });
     }
 
     function createPlaybackSpeedSlider(div, timelapseObj) {
