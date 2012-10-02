@@ -183,7 +183,7 @@ if (!Math.uuid) {
     this.loadFromJSON = function(json) {
       try {
         var obj = JSON.parse(json);
-        keyframes.length = 0;
+        _clearSnaplapse();
 
         if (typeof obj['snaplapse'] != 'undefined' && typeof obj['snaplapse']['keyframes'] != 'undefined') {
           UTIL.log("Found [" + obj['snaplapse']['keyframes'].length + "] keyframes in the json:\n\n" + json);
