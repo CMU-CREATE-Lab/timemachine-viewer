@@ -1163,7 +1163,7 @@ if (!window['$']) {
       datasetPath = settings["url"] + tmJSON["datasets"][datasetIndex]['id'] + "/";
       showSpinner(viewerDivId);
       //org.gigapan.Util.log("Attempting to fetch videoset JSON from URL [" + datasetPath + "]...");
-      org.gigapan.Util.ajax("script",datasetPath + 'r.js',loadVideoSet);
+      org.gigapan.Util.ajax("json",datasetPath + 'r.json',loadVideoSet);
     }
 
     function loadVideoSet(data) {
@@ -1443,7 +1443,7 @@ if (!window['$']) {
       }
       validateAndSetDatasetIndex(datasetLayer * tmJSON["sizes"].length + playerSize); //layer + size = index of dataset
       datasetPath = settings["url"] + tmJSON["datasets"][datasetIndex]['id'] + "/";
-      org.gigapan.Util.ajax("script",datasetPath + 'r.js',_loadInitialVideoSet);
+      org.gigapan.Util.ajax("json",datasetPath + 'r.json',_loadInitialVideoSet);
     }
     this.loadTimelapseJSON = _loadTimelapseJSON;
 
@@ -1514,7 +1514,7 @@ if (!window['$']) {
         $(document).bind("keyup.tm_keyup", handleKeyupEvent);
       });
 
-      org.gigapan.Util.ajax("script",settings["url"] + "tm.js",_loadTimelapseJSON);
+      org.gigapan.Util.ajax("json",settings["url"] + "tm.json",_loadTimelapseJSON);
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////

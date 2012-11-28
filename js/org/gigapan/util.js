@@ -181,7 +181,7 @@ if (!org.gigapan) {
       if (typeof(cached_ajax[url]) == "undefined") {
         // TODO: deprecate *.json for *.js
         // left here for backwards compatibility
-        url = url.replace(".js",".json")
+        url = url.replace(/js$/,".json")
         if (typeof(cached_ajax[url]) == "undefined") {
           org.gigapan.Util.error("Error loading file from file URL [" + url + "]");
           return;
