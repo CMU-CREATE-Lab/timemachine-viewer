@@ -105,7 +105,7 @@ function init() {
   $("#earthTimePlayer .size").hide();
   $("#earthTimePlayer .videoTime").hide();
 
-  $('<li><a href="javascript:void(0);" title="Return to tour" class="tourToggle"><span class="returnToTourText">Return to Tour</span></a></li>').insertAfter($('#earthTimePlayer .playbackspeed').parent());        
+  $('<li><a href="javascript:void(0);" title="Return to tour" class="tourToggle"><span class="returnToTourText">Return to Tour</span></a></li>').insertAfter($('#earthTimePlayer .playbackspeed').parent());
   $('<div class="helpmsg"><p>Get quick tips on how to explore this map.</p></div>').insertAfter($('#earthTimePlayer .controls'));
 
   $("#youtubePlayer").append('<div id="switchView" class="overlay" style="display: none"><a href="javascript:void(0);" class="flashToggleMap" ></a></div>');
@@ -168,6 +168,8 @@ function doYouTube(doAutoPlay) {
 }
 
 function doTimeMachine(warpAndSeek, autoPlay) {
+  if (timelapse == null) setTimeout(doTimeMachine, 100);
+
   view = "earthtime";
   ytPause();
   var currentTime = ytplayer.getCurrentTime();
