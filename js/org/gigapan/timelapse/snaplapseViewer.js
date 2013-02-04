@@ -1,15 +1,15 @@
 // Copyright 2011 Carnegie Mellon University. All rights reserved.
-// 
+//
 // Redistribution and use in source and binary forms, with or without modification, are
 // permitted provided that the following conditions are met:
-// 
+//
 // 1. Redistributions of source code must retain the above copyright notice, this list of
 //    conditions and the following disclaimer.
-// 
+//
 // 2. Redistributions in binary form must reproduce the above copyright notice, this list
 //    of conditions and the following disclaimer in the documentation and/or other materials
 //    provided with the distribution.
-// 
+//
 // THIS SOFTWARE IS PROVIDED BY CARNEGIE MELLON UNIVERSITY ''AS IS'' AND ANY EXPRESS OR IMPLIED
 // WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND
 // FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL CARNEGIE MELLON UNIVERSITY OR
@@ -19,7 +19,7 @@
 // ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
 // NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
 // ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-// 
+//
 // The views and conclusions contained in the software and documentation are those of the
 // authors and should not be interpreted as representing official policies, either expressed
 // or implied, of Carnegie Mellon University.
@@ -118,7 +118,7 @@ function playCachedSnaplapse(snaplapseId) {
 		var thisObj = this;
 		var composerDivId = snaplapse.getComposerDivId();
 		var timelapseViewerDivId = timelapse.getViewerDivId();
-		
+
 		var initializeSnaplapseUI = function() {
 			// hide the annotation bubble
 			hideAnnotationBubble();
@@ -453,7 +453,7 @@ function playCachedSnaplapse(snaplapseId) {
 				org.gigapan.Util.log("Exception while trying to create thumbnail: " + e + "  Video: " + theCanvas);
 			}
 		}
-		
+
 		var toggleSnaplapseButtons = function(text) {
 			var numKeyframes = snaplapse.getNumKeyframes();
 			if (numKeyframes > 1) {
@@ -658,7 +658,7 @@ function playCachedSnaplapse(snaplapseId) {
 
 				if (numSelected == 1) {
 					var id = selectedItems.get(0).id;
-					var keyframeId = composerDivId + "_" + id.substring("snaplapse_keyframe_".length);
+          var keyframeId = id.split("_")[3];
 					snaplapse.recordKeyframe(keyframeId);
 				} else {
 					snaplapse.recordKeyframe();
@@ -757,7 +757,7 @@ function playCachedSnaplapse(snaplapseId) {
 					if (!/.warp$/.test(lowerCaseFilename)) {
 						filename += ".warp";
 					}
-					
+
 					// submit the hidden form so that we can bounce it back to the user with an attachment content-disposition
 					$("#save_snaplapse_form_json").val(snaplapse.getAsJSON());
 					$("#save_snaplapse_form_filename").val(filename);
@@ -768,7 +768,7 @@ function playCachedSnaplapse(snaplapseId) {
 				alert("ERROR: No time warp to save--please create a time warp and add at least two keyframes to it.")
 			}
 		}*/
-		
+
 		var saveSnaplapse = function() {
 			if (snaplapse && (snaplapse.getNumKeyframes() > 1)) {
 				$("#save_snaplapse_form_json").val(snaplapse.getAsJSON());
@@ -776,10 +776,10 @@ function playCachedSnaplapse(snaplapseId) {
 			} else {
 				alert("ERROR: No time warp to save--please create a time warp and add at least two keyframes to it.")
 			}
-		}		
-		
+		}
+
                 var getSnaplapseJSON = function() {
-                  return snaplapse.getAsJSON();    
+                  return snaplapse.getAsJSON();
                 }
 
                 var showLoadSnaplapseWindow = function() {
@@ -813,7 +813,7 @@ function playCachedSnaplapse(snaplapseId) {
 				for (var i = 0; i < numSelected; i++) {
 					var keyframeElement = selectedKeyframeElements[i];
 					var id = keyframeElement['id'];
-					var keyframeId = composerDivId + "_" + id.substring("snaplapse_keyframe_".length);
+          var keyframeId = id.split("_")[3];
 
 					snaplapse.deleteKeyframeById(keyframeId);
 					$("#" + id).detach();
@@ -855,7 +855,7 @@ function playCachedSnaplapse(snaplapseId) {
 			}
 			return newWindow;
 		}
-		
+
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////
     //
     // Constructor code
