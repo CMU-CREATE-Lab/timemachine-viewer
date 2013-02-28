@@ -8,11 +8,12 @@ body, html {
 
 .tiledContentHolder {
   position: relative;
-  width: 512px;
-  height: 288px;
+  width: 816px;
+  height: 468px;
   background: black;
   overflow: hidden;
   border: 1px solid black;
+  cursor: move;
   cursor: url("cursors/openhand.png") 10 10, move;
 }
 
@@ -298,7 +299,7 @@ a.help.on {
 
 .controls {
   display:block;
-  width:512px;
+  width:816px;
   height:56px;
   background:url(../images/bar_background_stretch_noborder.png) repeat-x left;
   border:1px #838383 solid;
