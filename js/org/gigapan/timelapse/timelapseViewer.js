@@ -1,15 +1,15 @@
 // Copyright 2011 Carnegie Mellon University. All rights reserved.
-// 
+//
 // Redistribution and use in source and binary forms, with or without modification, are
 // permitted provided that the following conditions are met:
-// 
+//
 // 1. Redistributions of source code must retain the above copyright notice, this list of
 //    conditions and the following disclaimer.
-// 
+//
 // 2. Redistributions in binary form must reproduce the above copyright notice, this list
 //    of conditions and the following disclaimer in the documentation and/or other materials
 //    provided with the distribution.
-// 
+//
 // THIS SOFTWARE IS PROVIDED BY CARNEGIE MELLON UNIVERSITY ''AS IS'' AND ANY EXPRESS OR IMPLIED
 // WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND
 // FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL CARNEGIE MELLON UNIVERSITY OR
@@ -19,7 +19,7 @@
 // ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
 // NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
 // ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-// 
+//
 // The views and conclusions contained in the software and documentation are those of the
 // authors and should not be interpreted as representing official policies, either expressed
 // or implied, of Carnegie Mellon University.
@@ -42,15 +42,15 @@ function createZoomSlider(viewerDivId,obj) {
     slide: function(e, ui) {
       obj.setScaleFromSlider(ui.value);
     }
-  });
+  }).removeClass("ui-corner-all");
 
   $("#"+viewerDivId+" .zoomSlider .ui-slider-handle").attr("title", "Drag to zoom");
 }
 
 function setupSliderHandlers(viewerDivId) {
-  $("#"+viewerDivId+" .ui-slider-handle").bind("mouseover mouseup", function() { 
+  $("#"+viewerDivId+" .ui-slider-handle").bind("mouseover mouseup", function() {
     this.style.cursor = 'url("css/cursors/openhand.png") 10 10, move';
-  }); 
+  });
 
   $("#"+viewerDivId+" .ui-slider").bind({
     slide: function() {
@@ -114,23 +114,28 @@ function handlePluginVideoTagOverride() {
   }
 }
 
-function setViewportSize(newWidth, newHeight, obj) {
-  var timelapseViewerDivId = obj.getViewerDivId();
-  var bounds = obj.getBoundingBoxForCurrentView();
-  $("#"+obj.getVideoDivId()).css({"width": newWidth+"px", "height": newHeight+"px"});
-  $("#"+timelapseViewerDivId+" .controls").width(newWidth+1); //not sure why there is a 1px offset...
-  $("#"+timelapseViewerDivId+" .timelineSliderFiller").width(newWidth+2); //not sure why there is a 2px offset...
-  $("#"+timelapseViewerDivId+" .timelineSlider").width(newWidth+2); //not sure why there is a 2px offset...
+function setViewportSize(newWidth, newHeight, timelapse) {
+  var timelapseViewerDivId = timelapse.getViewerDivId();
+  var bounds = timelapse.getBoundingBoxForCurrentView();
+
+  // viewport
+  $("#"+timelapse.getVideoDivId()).css({"width": newWidth+"px", "height": newHeight+"px"});
+
+  // spinner
   var spinnerCenterHeight = newHeight/2-$("#"+timelapseViewerDivId+" .spinner").height()/2+"px";
   var spinnerCenterWidth = newWidth/2-$("#"+timelapseViewerDivId+" .spinner").width()/2+"px";
+
+  // controls
+  $("#"+timelapseViewerDivId+" .controls").width(newWidth);
+  $("#"+timelapseViewerDivId+" .timelineSlider").width(newWidth+2); // extra 2px for the borders
   $("#"+timelapseViewerDivId+" .spinnerOverlay").css({"margin": spinnerCenterHeight + " " + spinnerCenterWidth});
   $("#"+timelapseViewerDivId+" .snaplapse-annotation-description").css({"left": newWidth+$("#"+timelapseViewerDivId).offset().left+"px","top": $("#"+timelapseViewerDivId).offset().top+"px"});
-  $("#"+timelapseViewerDivId+" .instructions").css({"width": newWidth+2+"px", "height": newHeight+2+"px"}); //not sure why there is a 2px offset...
-  //$("#"+timelapseViewerDivId+" .layerSlider").css({"top": newHeight+2+$(".controls").height()+"px", "right": "28px"}); //not sure why there is a 2px offset...
+  $("#"+timelapseViewerDivId+" .instructions").css({"width": newWidth+2+"px", "height": newHeight+2+"px"}); // extra 2px for the borders
+  //$("#"+timelapseViewerDivId+" .layerSlider").css({"top": newHeight+2+$(".controls").height()+"px", "right": "28px"}); // extra 2px for the borders
 
   //wiki specific css
   if (newWidth == 816) { //large video
-    $("#content").css({"padding": "0px 0px 0px 305px"}); 
+    $("#content").css({"padding": "0px 0px 0px 305px"});
     $("#firstHeading").css({"top": "628px"});
   } else {
     $("#content").css({"padding": "0px 0px 0px 0px"});
@@ -138,18 +143,18 @@ function setViewportSize(newWidth, newHeight, obj) {
   }
   //end wiki specific css
 
-  obj.updateDimensions();
-  obj.warpToBoundingBox(bounds);
+  timelapse.updateDimensions();
+  timelapse.warpToBoundingBox(bounds);
 }
 
 var showSpinner = function(viewerDivId) {
   org.gigapan.Util.log("showSpinner");
-  $("#"+viewerDivId+" .spinnerOverlay").show(); //depends on jquery
+  $("#"+viewerDivId+" .spinnerOverlay").show();
 };
 
 var hideSpinner = function(viewerDivId) {
   org.gigapan.Util.log("hideSpinner");
-  $("#"+viewerDivId+" .spinnerOverlay").hide(); //depends on jquery
+  $("#"+viewerDivId+" .spinnerOverlay").hide();
 };
 
 function getTileHostUrlPrefix() {

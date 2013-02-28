@@ -9,7 +9,7 @@ body, html {
 .tiledContentHolder {
   position: relative;
   width: 816px;
-  height: 468px;
+  height: 288px;
   background: black;
   overflow: hidden;
   border: 1px solid black;
@@ -148,7 +148,7 @@ li.playbackSpeedOptions {
   position:absolute;
   bottom:0px;
   z-index:5;
-  margin: 1px 0px 0px -380px !important;
+  margin: 1px 0px 0px -430px !important;
 }
 
 li.playbackSpeedOptions ul {
@@ -184,7 +184,7 @@ a.playbackspeed {
   display:inline-block;
   padding:8px 0px 0px 0px;
   position: absolute;
-  margin: 6px 0px 0px -380px;
+  margin: 6px 0px 0px -430px;
   width:143px;
   height:21px;
   text-align:center;
@@ -206,7 +206,7 @@ li.sizeoptions {
   position:absolute;
   bottom:0px;
   z-index:5;
-  margin: 1px 0px 0px -85px !important;
+  margin: 1px 0px 0px -135px !important;
 }
 
 li.sizeoptions ul {
@@ -242,7 +242,7 @@ a.size {
   display:inline-block;
   padding:8px 0px 0px 0px;
   position: absolute;
-  margin: 6px 0px 0px -85px;
+  margin: 6px 0px 0px -135px;
   width:81px;
   height:21px;
   text-align:center;
@@ -281,7 +281,7 @@ a.help.on {
   margin:0px;
   padding:0px;
   position:absolute;
-  right:155px;
+  right:205px;
   bottom:12px;
   font-size:13px;
   color:#222;
@@ -291,7 +291,7 @@ a.help.on {
   margin:0px;
   padding:0px;
   position:absolute;
-  right:155px;
+  right:205px;
   bottom:28px;
   font-size:13px;
   color:#222;
@@ -346,7 +346,7 @@ a.pausesnap:active{background-image:url(../images/buttons/pause_snaplapse_down.p
 
 .zoom {
   display:block;
-  width:40px;
+  width:28px;
   height:212px;
   position:absolute;
   margin: 15px 0px 0px 20px;
@@ -404,13 +404,6 @@ a.zoomall:hover{background-image:url(../images/zoom/zoom_viewall_hover.png);}
 a.zoomall:active{background-image:url(../images/zoom/zoom_viewall_down.png);}
 
 .ui-slider-range { background: #6f879c; z-index:3;}
-
-.timelineSliderFiller {
-  height:8px;
-  z-index:5;
-  background:#FFF;
-  position:relative;
-}
 
 .timelineSlider {
   cursor:pointer;
@@ -536,14 +529,35 @@ a.zoomall:active{background-image:url(../images/zoom/zoom_viewall_down.png);}
 
 .jCarouselLite img {cursor: pointer;}
 
+.fullScreen {
+  height: 25px;
+  width: 25px;
+  position: absolute;
+  margin: 7px 0px 0px -40px;
+}
+
+.fullScreen.active {
+ background-size: 25px 25px;
+  background-image: url("../images/fullscreen_exit.svg");
+  background-repeat:no-repeat;
+}
+
+.fullScreen.inactive {
+  background-size: 25px 25px;
+  background-image: url("../images/fullscreen.svg");
+  background-repeat:no-repeat;
+}
+
+.fullScreen:hover{
+  opacity:0.7;
+}
+
 .repeat {
-  width: 27px;
   height: 24px;
-  display: block;
-  position: relative;
-  right: -53px;
-  bottom: 60px;
-  z-index: 2;
+  width: 27px;
+  bottom: 35px;
+  left: 55px;
+  position: absolute;
 }
 
 .repeat.active {
@@ -601,7 +615,7 @@ a.zoomall:active{background-image:url(../images/zoom/zoom_viewall_down.png);}
 a.share {
   padding:8px 0px 0px 0px;
   position: absolute;
-  margin: 6px 0px 0px -510px;
+  margin: 6px 0px 0px -560px;
   width:120px;
   height:21px;
   text-align:center;

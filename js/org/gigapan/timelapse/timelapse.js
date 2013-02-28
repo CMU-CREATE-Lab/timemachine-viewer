@@ -161,6 +161,7 @@ if (!window['$']) {
     var videoDivId;
     //var hasLayers = settings["hasLayers"] || false;
     var loopPlayback = settings["loopPlayback"] || false;
+    var fullScreen = false;
     var customLoopPlaybackRates = settings["customLoopPlaybackRates"] || null;
     var playOnLoad = settings["playOnLoad"] || false;
     var playbackSpeed = settings["playbackSpeed"] && org.gigapan.Util.isNumber(settings["playbackSpeed"]) ? settings["playbackSpeed"] : 1;
@@ -184,6 +185,10 @@ if (!window['$']) {
     var snaplapse;
     var toursJSON = {};
 
+    var originalWidth;
+    var originalHeight;
+    var resizeTimeout;
+
     // levelThreshold sets the quality of display by deciding what level of tile to show for a given level of zoom:
     //
     //  1.0: select a tile that's shown between 50% and 100% size  (never supersample)
@@ -197,6 +202,7 @@ if (!window['$']) {
     //
     // Public methods
     //
+
     this.getViewerDivId = function () {
       return viewerDivId;
     }
@@ -619,10 +625,55 @@ var _getViewStrAsProjection = function () {
     }
     this.getDatasetJSON = _getDatasetJSON;
 
+    var _fullScreen = function (state) {
+      var newWidth, newHeight;
+
+      if (originalWidth == null) {
+        originalWidth = $("#"+videoDivId).width();
+        originalHeight = $("#"+videoDivId).height();
+      }
+
+      if (state == undefined || state) {
+        $("body").css({'overflow': 'hidden'});
+        fullScreen = true;
+        var extraHeight = showMainControls ? ($("#"+viewerDivId+" .controls").outerHeight() + $("#"+viewerDivId+" .timelineSlider").outerHeight() + 2) : 0;
+        newWidth = window.innerWidth - 2; // extra 2px for the borders
+        newHeight = window.innerHeight - extraHeight; // subtract height of controls and extra 2px for borders
+
+        // ensure minimum dimensions to not break controls
+        if (newWidth < 700)
+          newWidth = 700;
+        if (newHeight < 250)
+          newHeight = 240;
+      } else {
+        fullScreen = false;
+        $("body").css({'overflow': 'auto'});
+        newWidth = originalWidth;
+        newHeight = originalHeight;
+      }
+      setViewportSize(newWidth, newHeight, timelapse);
+    }
+    this.fullScreen = _fullScreen;
+
+    var _toggleMainControls = function (state) {
+      showMainControls = !showMainControls;
+      $("#" + viewerDivId + " .controls").toggle();
+      $("#" + viewerDivId + " .timelineSlider").toggle();
+      _fullScreen(fullScreen);
+    }
+    this.toggleMainControls = _toggleMainControls;
+
+    var _toggleZoomControls = function (state) {
+      showZoomControls = !showZoomControls;
+      $("#" + viewerDivId + " .zoom").toggle();
+    }
+    this.toggleZoomControls = _toggleZoomControls;
+
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////
     //
     // Private methods
     //
+
     var handleMousedownEvent = function (event) {
       if (event.which != 1) return;
       var mouseIsDown = true;
@@ -1045,15 +1096,15 @@ var _getViewStrAsProjection = function () {
         range: "min",
         step: 1,
         slide: function (e, ui) {
-          // $(this).slider('value') 	--> previous value
-          // ui.value 								--> current value
+          // $(this).slider('value')  --> previous value
+          // ui.value                 --> current value
           // If we are manually using the slider and we are pulling it back to the start
           // we wont actually get to time 0 because of how we are snapping.
           // Manually seek to position 0 when this happens.
           if (($(this).slider('value') > ui.value) && ui.value == 0) _seek(0);
           else _seek((ui.value + 0.3) / _getFps());
         }
-      });
+      }).removeClass("ui-corner-all");
 
       $("#" + div + " .timelineSlider .ui-slider-handle").attr("title", "Drag to go to a different point in time");
     }
@@ -1271,6 +1322,21 @@ var _getViewStrAsProjection = function () {
         }
       });
 
+      $("#" + viewerDivId + " .fullScreen").bind("click", function () {
+        if ($(this).hasClass("disabled") || $("#" + viewerDivId + " .zoomSlider").slider("option", "disabled") == true) return;
+
+        if (!fullScreen) {
+          $(this).toggleClass("inactive active");
+          $(this).prop('title', 'Exit full screen');
+          _fullScreen(true);
+        }
+        else {
+          $(this).toggleClass("active inactive");
+          $(this).prop('title', 'Full screen');
+          _fullScreen(false);
+        }
+      });
+
       $("#" + viewerDivId + " .repeat").bind("click", function () {
         if ($(this).hasClass("disabled") || $("#" + viewerDivId + " .zoomSlider").slider("option", "disabled") == true) return;
         loopPlayback = !loopPlayback
@@ -1318,6 +1384,16 @@ var _getViewStrAsProjection = function () {
       }).mouseout(function () {
         clearInterval(intervalId);
       });
+
+      window.onresize = function(event) {
+          clearTimeout(resizeTimeout);
+          if (fullScreen) {
+            console.log("do resize");
+            resizeTimeout = setTimeout(function() {
+              _fullScreen(true);
+            }, 100);
+         }
+      }
     }
 
     function isCurrentTimeAtOrPastDuration() {
@@ -1502,7 +1578,7 @@ var _getViewStrAsProjection = function () {
 
       if (!showMainControls) {
         $("#" + viewerDivId + " .controls").hide();
-        $("#" + viewerDivId + " .timelineSliderFiller").hide();
+        $("#" + viewerDivId + " .timelineSlider").hide();
       }
 
       org.gigapan.Util.ajax("json",settings["url"] + "tm.json",_loadTimelapseJSON);
