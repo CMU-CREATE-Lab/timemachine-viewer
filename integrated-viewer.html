@@ -41,20 +41,19 @@
           if (hashVars.v) var viewParam = hashVars.v.split(",");
           if (hashVars.t) var timeParam = hashVars.t.split(",");
 
-          if (viewParam || timeParam) {
-            // Examples:
-            //myView = {center: {"x": 43928.36538461538, "y": 39175.881410256414}, "zoom": 2};
-            //myView = {center: {"lat": 8.621690, "lng": 0.829690}, "zoom": 3};
-            //myView = {bbox: {"ne": {"lat": 11.138970, "lng": 1.806690}, "sw": {"lat" : 6.104410, "lng": -0.147310}}};
-            //myView = {bbox: {"xmin": 26459.77564102564, "xmax": 61396.955128205125, "ymin": 29157.131410256414, "ymax": 49194.631410256414}};
-            if (viewParam) myView = formatView(viewParam);
-            if (timeParam) myTime = timeParam[0];
-          }
+          if (viewParam) myView = formatView(viewParam);
+          if (timeParam) myTime = timeParam[0];
         }
 
-      	var viewerOptions = {
+        // Examples:
+        //myView = {center: {"x": 43928.36538461538, "y": 39175.881410256414}, "zoom": 2};
+        //myView = {center: {"lat": 8.621690, "lng": 0.829690}, "zoom": 3};
+        //myView = {bbox: {"ne": {"lat": 11.138970, "lng": 1.806690}, "sw": {"lat" : 6.104410, "lng": -0.147310}}};
+        //myView = {bbox: {"xmin": 26459.77564102564, "xmax": 61396.955128205125, "ymin": 29157.131410256414, "ymax": 49194.631410256414}};
+
+        var viewerOptions = {
           url: url, //can be absolute or relative
-          initialTime: myTime, //default to 0; video time
+          initialTime: myTime, //default to 0; in video time
           playerSize: "Large", //[Small, Large] defaults to Large size
           loopPlayback: false, //defaults to false
           initialView: myView, //see above for possible views to use
@@ -62,7 +61,9 @@
           playbackSpeed: 1, //[-1,-.5,-.25,.25,.5,1] available, defaults to 1
           layer: 0, //defaults to first layer. All sets have at least 1 layer starting at index 0
           showShareBtn: true, //defaults to true
-          composerDiv: "composer1" //display the time warp composer; display nothing if param left out
+          composerDiv: "composer1", //display the time warp composer; display nothing if param left out
+          showZoomControls: true, //defaults to true
+          showMainControls: true //defaults to true
         };
 
         timelapse = new org.gigapan.timelapse.Timelapse("player1", viewerOptions);
@@ -76,15 +77,15 @@
 
       function formatView(viewParam){
         var view = null;
-        if (cached_ajax[url+'tm.json']['projection-bounds']) {
-          if (viewParam.length == 3)
+        if (viewParam.indexOf("latLng") != -1) {
+          if (viewParam.length == 4)
             view = {center: {"lat": viewParam[0], "lng": viewParam[1]}, "zoom": viewParam[2]};
-          else if (viewParam.length == 4)
+          else if (viewParam.length == 5)
             view = {bbox: {"ne": {"lat": viewParam[0], "lng": viewParam[1]}, "sw": {"lat" : viewParam[2], "lng": viewParam[3]}}};
-        } else {
-          if (viewParam.length == 3)
+        } else { // Assume points if the user did not specify latLng. Also allow for the omission of 'pts' param for backwards compatibility
+          if ((viewParam.indexOf("pts") == -1 && viewParam.length == 3) || viewParam.length == 4)
             view = {center: {"x": viewParam[0], "y": viewParam[1]}, "zoom": viewParam[2]};
-          else if (viewParam.length == 4)
+          else if ((viewParam.indexOf("pts") == -1 && viewParam.length == 4) || viewParam.length == 5)
             view = {bbox: {"xmin": viewParam[0], "xmax": viewParam[1], "ymin": viewParam[2], "ymax": viewParam[3]}};
         }
         return view;
@@ -92,12 +93,12 @@
 
       // changes current view
       function setView(view) {
-        if (view) timelapse.setNewView(formatView(view.split(",")));
+        if (view) timelapse.setNewView(formatView(view.split(",")),true);
       }
 
       // changes current view and time
       function setViewAndTime(view, time) {
-        if (view) timelapse.setNewView(formatView(view.split(",")));
+        if (view) timelapse.setNewView(formatView(view.split(",")),true);
         if (time) timelapse.seek(time);
       }
 
@@ -110,7 +111,6 @@
 
       $(init);
     </script>
-
   </head>
   <body>
     <div id="player1"></div>
