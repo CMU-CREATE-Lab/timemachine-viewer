@@ -70,6 +70,9 @@ if (!org.gigapan) {
   var isChromeUserAgent = navigator.userAgent.match(/Chrome/) != null;
   var isSafariUserAgent = navigator.userAgent.match(/Safari/) != null  && !isChromeUserAgent;  // the Chrome user agent actually has the word "Safari" in it too!
   var isMSIEUserAgent = navigator.userAgent.match(/MSIE/) != null;
+  var matchIEVersion = navigator.userAgent.match(/MSIE\s([\d]+)/);
+  var isFirefoxUserAgent = navigator.userAgent.match(/Firefox/) != null;
+
   //0 == none
   //1 == errors only
   //2 == verbose (everything)
@@ -78,11 +81,8 @@ if (!org.gigapan) {
   org.gigapan.Util = function() { };
 
   org.gigapan.Util.browserSupported = function() {
-    //always fail for IE, even though 9+ can handle video tags
-    //we do this since playback in IE is glitchy and not good enough for public use
-    if (isMSIEUserAgent) return false;
     var v = document.createElement('video');
-    //check if video tag is supported and the browser supports H.264
+    // Check if video tag is supported and the browser supports H.264
     return !!(v.canPlayType && v.canPlayType('video/mp4; codecs="avc1.42E01E, mp4a.40.2"').replace(/no/, ''));
   };
 
@@ -92,6 +92,18 @@ if (!org.gigapan) {
 
   org.gigapan.Util.isSafari = function() {
     return isSafariUserAgent;
+  };
+
+  org.gigapan.Util.isIE = function() {
+    return isMSIEUserAgent;
+  };
+
+  org.gigapan.Util.isFirefox = function() {
+    return isFirefoxUserAgent;
+  };
+
+  org.gigapan.Util.isIE9 = function() {
+    return (isMSIEUserAgent && matchIEVersion[1] == 9);
   };
 
   org.gigapan.Util.isNumber = function(n) {

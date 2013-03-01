@@ -185,6 +185,11 @@ if (!window['$']) {
     var snaplapse;
     var toursJSON = {};
 
+    var canvas;
+    var canvasTmp;
+    var canvasContext;
+    var canvasTmpContext;
+
     var originalWidth;
     var originalHeight;
     var resizeTimeout;
@@ -213,6 +218,14 @@ if (!window['$']) {
 
     this.getSnaplapse = function () {
       return snaplapse;
+    }
+
+    this.getCanvas = function () {
+      return canvas;
+    }
+
+    this.getCanvasTmp = function () {
+      return canvasTmp;
     }
 
     this.changeDataset = function (data) {
@@ -292,7 +305,7 @@ if (!window['$']) {
       if (keyIntervals[event.which] == undefined) keyIntervals[event.which] = setInterval(moveFn, 50);
       // Don't propagate arrow events -- prevent scrolling of the document
       if (event.which <= 40) {
-        event.preventDefault(); // depends on jQuery
+        event.preventDefault();
       }
     }
 
@@ -386,7 +399,7 @@ if (!window['$']) {
     };
     this.getProjection = _getProjection;
 
-var _getViewStrAsProjection = function () {
+    var _getViewStrAsProjection = function () {
       var latlng = _getProjection().pointToLatlng(view);
       return Math.round(1e5 * latlng.lat) / 1e5 + "," +
              Math.round(1e5 * latlng.lng) / 1e5 + "," +
@@ -984,7 +997,8 @@ var _getViewStrAsProjection = function () {
       //var shardIndex = (getTileidxRow(tileidx) % 2) * 2 + (getTileidxColumn(tileidx) % 2);
       //var urlPrefix = url.replace("//", "//t" + shardIndex + ".");
       var fragmentSpecifier = isSplitVideo ? "_" + videoset.getFragment(videoset.getCurrentTime()) : "";
-      return datasetPath + getTileidxLevel(tileidx) + "/" + getTileidxRow(tileidx) + "/" + getTileidxColumn(tileidx) + fragmentSpecifier + ".mp4";
+      var videoURL = datasetPath + getTileidxLevel(tileidx) + "/" + getTileidxRow(tileidx) + "/" + getTileidxColumn(tileidx) + fragmentSpecifier + ".mp4";
+      return (UTIL.isIE9() ? videoURL+"?time="+new Date().getTime() : videoURL)
     };
 
     var computeBestVideo = function (theView) {
@@ -1388,7 +1402,6 @@ var _getViewStrAsProjection = function () {
       window.onresize = function(event) {
           clearTimeout(resizeTimeout);
           if (fullScreen) {
-            console.log("do resize");
             resizeTimeout = setTimeout(function() {
               _fullScreen(true);
             }, 100);
@@ -1425,13 +1438,9 @@ var _getViewStrAsProjection = function () {
           if (snaplapse != null && snaplapse.isPlaying()) return;
           if (loopPlayback) {
             if ($("#" + viewerDivId + " .playbackButton").hasClass("pause")) {
-              //setTimeout(
-                //function() {
-                  _seek(0);
-                  _pause();
-                  _play();
-                //},
-              //Math.abs((1/thisObj.getPlaybackRate())*300));
+              _seek(0);
+              //_pause();
+              //_play();
             }
           } else {
            _pause();
@@ -1480,7 +1489,7 @@ var _getViewStrAsProjection = function () {
       // time is zero (the video seeked event is never fired, so videoset never gets the cue that the video
       // should be displayed).  The fix is to simply seek half a frame in.  Yeah, the video won't be starting at
       // *zero*, but the displayed frame will still be the right one, so...good enough.  :-)
-      if (videoset.getLeader() <= 0 && UTIL.isSafari()) {
+      if (videoset.getLeader() <= 0 && (UTIL.isSafari() || UTIL.isIE())) {
         var halfOfAFrame = 1 / _getFps() / 2;
         _seek(halfOfAFrame);
       }
@@ -1543,12 +1552,14 @@ var _getViewStrAsProjection = function () {
     this.loadInitialVideoSet = _loadInitialVideoSet;
 
     function loadPlayerControlsTemplate(html) {
-      $("#" + viewerDivId).html(html);
+      var viewerDiv = document.getElementById(viewerDivId);
+      $(viewerDiv).html(html);
       var tmp = document.getElementById("{REPLACE}");
       $(tmp).attr("id", viewerDivId + "_timelapse");
       videoDivId = $(tmp).attr("id");
+      videoDiv = document.getElementById(videoDivId);
 
-      $("#" + viewerDivId).attr('unselectable', 'on').css({
+      $(viewerDiv).attr('unselectable', 'on').css({
         '-moz-user-select': 'none',
         '-o-user-select': 'none',
         '-khtml-user-select': 'none',
@@ -1557,16 +1568,28 @@ var _getViewStrAsProjection = function () {
         'user-select': 'none'
       });
 
-      videoset = new org.gigapan.timelapse.Videoset(viewerDivId, videoDivId);
+      // TODO: Should this be part of player_template.html?
+      canvas = document.createElement('canvas');
+      canvas.id = videoDivId+"_canvas";
+      videoDiv.appendChild(canvas);
+
+      canvasTmp = document.createElement('canvas');
+      canvasTmp.id = videoDivId+"_canvas_tmp";
+      canvasTmp.style.display = "none";
+      videoDiv.appendChild(canvasTmp);
+
+      canvasContext = canvas.getContext('2d');
+      canvasTmpContext = canvasTmp.getContext('2d');
+
+      videoset = new org.gigapan.timelapse.Videoset(viewerDivId, videoDivId, canvas.id, canvasTmp.id);
       videosetStats = new org.gigapan.timelapse.VideosetStats(videoset, settings["videosetStatsDivId"]);
 
-      videoDiv = document.getElementById(videoDivId);
       videoDiv['onmousedown'] = handleMousedownEvent;
       videoDiv['ondblclick'] = handleDoubleClickEvent;
 
-      $("#" + videoDivId).mousewheel(thisObj.handleMousescrollEvent);
+      $(videoDiv).mousewheel(thisObj.handleMousescrollEvent);
 
-      $("#" + videoDivId).bind("click", function () {
+      $(videoDiv).bind("click", function () {
         $(document).unbind('keydown.tm_keydown keyup.tm_keyup');
         $(document).bind("keydown.tm_keydown", handleKeydownEvent);
         $(document).bind("keyup.tm_keyup", handleKeyupEvent);

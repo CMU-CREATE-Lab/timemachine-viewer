@@ -120,6 +120,8 @@ function setViewportSize(newWidth, newHeight, timelapse) {
 
   // viewport
   $("#"+timelapse.getVideoDivId()).css({"width": newWidth+"px", "height": newHeight+"px"});
+  $(timelapse.getCanvas()).attr({ width: newWidth, height: newHeight });
+  $(timelapse.getCanvasTmp()).attr({ width: newWidth, height: newHeight });
 
   // spinner
   var spinnerCenterHeight = newHeight/2-$("#"+timelapseViewerDivId+" .spinner").height()/2+"px";

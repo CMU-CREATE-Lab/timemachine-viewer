@@ -436,16 +436,14 @@ function playCachedSnaplapse(snaplapseId) {
 				} while (videoElement != null && (typeof videoElement.ready == 'undefined' || !videoElement.ready));
 
 				if (videoElement != null) {
-					var vid = $(videoElement);
+					var canvas = timelapse.getCanvas();
 					var scale = KEYFRAME_THUMBNAIL_WIDTH / $("#"+timelapse.getVideoDivId()).width();
-					var vWidth = vid.width();
-					var vHeight = vid.height();
-					var vTopLeftX = vid.position()['left'];
-					var vTopLeftY = vid.position()['top'];
+					var cWidth = canvas.width;
+					var cHeight = canvas.height;
 					var theCanvas = $("#"+composerDivId + "_snaplapse_keyframe_" + keyframe['id'] + "_thumbnail").get(0);
 					var ctx = theCanvas.getContext("2d");
 					ctx.clearRect(0, 0, KEYFRAME_THUMBNAIL_WIDTH, KEYFRAME_THUMBNAIL_HEIGHT);
-					ctx.drawImage(vid.get(0), 0, 0, timelapse.getVideoWidth(), timelapse.getVideoHeight(), vTopLeftX * scale, vTopLeftY * scale, vWidth * scale, vHeight * scale);
+          ctx.drawImage(canvas, 0, 0, cWidth * scale, cHeight * scale);
 				} else {
 					org.gigapan.Util.log("setKeyframeThumbail(): failed to find a good video");
 				}

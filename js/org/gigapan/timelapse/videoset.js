@@ -112,9 +112,13 @@ if (!window['$']) {
   // instead of "new RegExp()" for better performance (see https://developer.mozilla.org/en/JavaScript/Guide/Regular_Expressions)
   var SPLIT_VIDEO_FRAGMENT_URL_PATTERN = /_(\d+).mp4(?:\?time=[0-9]+)?$/i;
 
-  org.gigapan.timelapse.Videoset = function(viewerDivId,videoDivId) {
+  org.gigapan.timelapse.Videoset = function(viewerDivId,videoDivId,canvasId,canvasTmpId) {
     var videoDiv = document.getElementById(videoDivId);
     var viewerDiv = document.getElementById(viewerDivId);
+    var canvas = document.getElementById(canvasId);
+    var canvasTmp = document.getElementById(canvasTmpId);
+    var canvasContext = canvas.getContext('2d');
+    var canvasTmpContext = canvasTmp.getContext('2d');
     var isStatusLoggingEnabled = false;
     var activeVideos = {};
     var inactiveVideos = {};
@@ -322,9 +326,10 @@ if (!window['$']) {
         video.setAttribute('controls', true);
       }
       video.setAttribute('preload', 'auto');
+      video.geometry = {};
       _repositionVideo(video, geometry);
       video.defaultPlaybackRate = video.playbackRate = playbackRate;
-      video.style.display = 'inline';
+      video.style.visibility = 'hidden';
       video.style.position = 'absolute';
       activeVideos[video.id] = video;
       videoDiv.appendChild(video);
@@ -347,6 +352,9 @@ if (!window['$']) {
           UTIL.log("Chrome bug detected, adding cache buster");
           video.setAttribute('src', src+"?time="+(new Date().getTime()));
           video.load();
+          if (advancing) {
+            video.play();
+          }
         }
       };
       setTimeout(check, timeout);
@@ -356,18 +364,29 @@ if (!window['$']) {
 
       mostRecentlyAddedVideo = video;
 
+      video.addEventListener('playing', function(){
+        if (video.drawIntervalId == null) video.drawIntervalId = setInterval(function() {drawToCanvas(video);}, 30);
+      },false);
+
+      video.addEventListener('pause', function(){
+        clearInterval(video.drawIntervalId);
+        video.drawIntervalId = null;
+      },false);
+
+      video.addEventListener('ended', function(){
+        clearInterval(video.drawIntervalId);
+        video.drawIntervalId = null;
+      },false);
+
       return video;
+
     };
     this.addVideo = _addVideo;
 
     var _repositionVideo = function(video, geometry) {
       //UTIL.log("video(" + video.id + ") reposition to left=" + geometry.left + ",top=" + geometry.top + ", w=" + geometry.width + ",h=" + geometry.height + "; ready="+video.ready);
-      // toFixed prevents going to scientific notation when close to zero;  this confuses the DOM
-      video.style.left = geometry.left.toFixed(4) - (video.ready ? 0 : 100000) + "px";
-      video.style.top = geometry.top.toFixed(4) + "px";
-
-      video.style.width = geometry.width + "px";
-      video.style.height = geometry.height + "px";
+      video.geometry = geometry;
+      drawToCanvas(video);
     };
     this.repositionVideo = _repositionVideo;
 
@@ -405,19 +424,19 @@ if (!window['$']) {
           if (videoElement) {
             // try to force browser to stop streaming the video
             stopStreaming(videoElement);
-						// TODO: Should we check that the video actually stopped streaming?
+	          // TODO: Should we check that the video actually stopped streaming?
             videoDiv.removeChild(inactiveVideos[id]);
           }
-
           delete inactiveVideos[id];
           UTIL.log("video(" + id + ") garbage collected");
-
           publishVideoEvent(id, 'video-garbage-collected', new Date());
         }
-      }
+     }
     };
 
     var _deleteVideo = function(video) {
+      clearInterval(video.drawIntervalId);
+      video.drawIntervalId = null;
       var msg = "video(" + video.id + ") deleted";
       var videoWhichCausedTheDelete = null;
       if (arguments.length > 1) {
@@ -426,12 +445,13 @@ if (!window['$']) {
       }
       UTIL.log(msg);
       video.active = false;
-      video.pause();
-
+      try {
+        video.pause();
+      } catch(e) {
+        UTIL.error(e.name + " while pausing " + video + " in deleteVideo(). Most likely you are running IE 9.");
+      }
       stopStreaming(video);
 
-      //UTIL.log(getVideoSummaryAsString(video));
-      video.style.display = 'none';
       //UTIL.log(getVideoSummaryAsString(video));
       delete activeVideos[video.id];
       inactiveVideos[video.id] = video;
@@ -489,7 +509,11 @@ if (!window['$']) {
 
         for (var videoId in activeVideos) {
           UTIL.log("video(" + videoId + ") pause");
-          activeVideos[videoId].pause();
+          try {
+            activeVideos[videoId].pause();
+          } catch(e) {
+            UTIL.error(e.name + " while pausing " + activeVideos[videoId] + " in updateVideoAdvance(). Most likely you are running IE 9.");
+          }
         }
         _seek(time);
       } else {
@@ -674,6 +698,9 @@ if (!window['$']) {
         // and replace the current one with the new one.
         if (desiredFragmentNumber != video.fragmentNumber) {
           var fragmentSpecifier = "_" + desiredFragmentNumber + ".mp4";
+
+          if (UTIL.isIE9()) fragmentSpecifier += "?time="+new Date().getTime();
+
           var url = video.src.replace(SPLIT_VIDEO_FRAGMENT_URL_PATTERN, fragmentSpecifier);
           var geometry = {
             left   : parseFloat(video.style.left) + (video.ready ? 0 : 100000),
@@ -795,16 +822,17 @@ if (!window['$']) {
       }
 
       video.ready = true;
-      video.style.left = parseFloat(video.style.left) + 100000 + "px";
 
       var error = video.getCurrentTime() - leader - _getCurrentTime();
       publishVideoEvent(video.id, 'video-made-visible', new Date());
       UTIL.log("video(" + video.id + ") _makeVideoVisible(" + callingFunction + "): ready=[" + video.ready + "] error=[" + error + "] " + videoStats(video));
 
+      drawToCanvas(video);
+
       // Delete video which is being replaced, following the chain until we get to a null.  We do this in a timeout
       // to give the browser a chance to update the GUI so that it can render the new video positioned above.  This
       // (mostly) fixes the blanking problem we saw in Safari.
-      window.setTimeout(function() {
+      //window.setTimeout(function() {
         var videoToDelete = activeVideos[video.idOfVideoBeingReplaced];
         var chainOfDeletes = "";
         var deletedVideoUrls = [];
@@ -817,14 +845,18 @@ if (!window['$']) {
           videoToDelete = nextVideoToDelete;
         }
         UTIL.log("video(" + video.id + ") _makeVideoVisible(" + callingFunction + "): chain of deletes: " + chainOfDeletes);
-      }, 1);
+      //}, 1);
     };
 
     var videoSeeked = function(event) {
       var video = event.target;
       if(video.active == false)
         return;
+
+      drawToCanvas(video);
+
       var error = video.getCurrentTime() - leader - _getCurrentTime();
+
       if ((_isPaused() || videoStalled) && Math.abs(error) > DEFAULT_ERROR_THRESHOLD) {
         UTIL.log("video(" + video.id + ") videoSeeked():  readyState=[" + video.readyState + "] currentTime=[" + video.getCurrentTime() + "] error=[" + error + "] is too high, must re-seek");
         _setVideoToCurrentTime(video);
@@ -838,8 +870,9 @@ if (!window['$']) {
             video.isWaitingOnReadyState = true;
             if (video.readyState >= 3) {
               video.isWaitingOnReadyState = false;
-
-              _makeVideoVisible(video, "seek");
+              window.setTimeout(function() {
+                _makeVideoVisible(video, "seek");
+            },100);
             } else {
               window.setTimeout(checkVideoReadyState, 10);
             }
@@ -996,6 +1029,7 @@ if (!window['$']) {
       //            "/" + prefetchVideo.fragmentNumber);
       if (prefetchVideo.fragmentNumber <= largestFragment) {
         var fragmentSpecifier = "_" + prefetchVideo.fragmentNumber + ".mp4";
+        if (UTIL.isIE9()) fragmentSpecifier += "?time="+new Date().getTime();
         var url = currentVideo.src.replace(SPLIT_VIDEO_FRAGMENT_URL_PATTERN, fragmentSpecifier);
         UTIL.log("Prefetching fragment [" + prefetchVideo.fragmentNumber + "], idx [" + currentVideo.tileidx + "], URL [" + url + "]");
         prefetchVideo.setAttribute('src', url);
@@ -1083,9 +1117,11 @@ if (!window['$']) {
           if (video.playbackRate != playbackRate) {
             video.playbackRate = playbackRate;
           }
-          //video.playbackRate = playbackRate;
           if (!video.ready && video.readyState >= 3) {
-            _makeVideoVisible(video, "sync");
+            window.setTimeout(function() {
+              _makeVideoVisible(video, "sync");
+            },100);
+
           }
         }
       }
@@ -1101,6 +1137,36 @@ if (!window['$']) {
           } catch(e) {
             UTIL.error(e.name + " while publishing to videoset 'sync' event listener: " + e.message, e);
           }
+        }
+      }
+    };
+
+    var drawToCanvas = function(video) {
+      if (video.active && video.ready) {
+        canvasTmpContext.clearRect(0, 0, canvasTmp.width, canvasTmp.height);
+        canvasTmpContext.drawImage(video,video.geometry.left,video.geometry.top,video.geometry.width,video.geometry.height);
+
+        var imgData = canvasTmpContext.getImageData((canvasTmp.width/2)-5,0,10,canvasTmp.height);
+        var len = imgData.data.length;
+        var blackCounter = 0;
+
+        // Apparently in IE 10 this is REALLY slow (and not to iterate but to actually do the array lookups)
+        // So instead, we just grab a 10xvideoHeight rectangle from the center (code above) and see if that is all black.
+        // If so, it's pretty safe to assume that the whole frame is black.
+        for (var i = 0; i < len; i += 4) {
+          if (imgData.data[i] == 0 && imgData.data[i+1] == 0 && imgData.data[i+2] == 0) {
+            blackCounter++;
+          } else {
+            break;
+          }
+        }
+
+        // Only draw if no black frame was detected
+        if (blackCounter < len/4) {
+          canvasContext.clearRect(0, 0, canvas.width, canvas.height);
+          canvasContext.drawImage(video,video.geometry.left,video.geometry.top,video.geometry.width,video.geometry.height);
+        } else {
+          UTIL.log("Black video frame detected. Not drawing to canvas.");
         }
       }
     };
