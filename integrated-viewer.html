@@ -29,7 +29,7 @@
     <script src="ajax_includes.js" type="text/javascript"></script>
 
     <script type="text/javascript">
-      var url = "./"
+      var url = "./";
 
       function init() {
         var myView = null;
@@ -93,12 +93,12 @@
 
       // changes current view
       function setView(view) {
-        if (view) timelapse.setNewView(formatView(view.split(",")),true);
+        if (view) timelapse.setNewView(formatView(view.split(",")),false);
       }
 
       // changes current view and time
       function setViewAndTime(view, time) {
-        if (view) timelapse.setNewView(formatView(view.split(",")),true);
+        if (view) timelapse.setNewView(formatView(view.split(",")),false);
         if (time) timelapse.seek(time);
       }
 
