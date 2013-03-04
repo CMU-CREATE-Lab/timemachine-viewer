@@ -998,7 +998,7 @@ if (!window['$']) {
       //var urlPrefix = url.replace("//", "//t" + shardIndex + ".");
       var fragmentSpecifier = isSplitVideo ? "_" + videoset.getFragment(videoset.getCurrentTime()) : "";
       var videoURL = datasetPath + getTileidxLevel(tileidx) + "/" + getTileidxRow(tileidx) + "/" + getTileidxColumn(tileidx) + fragmentSpecifier + ".mp4";
-      return (UTIL.isIE9() ? videoURL+"?time="+new Date().getTime() : videoURL)
+      return (UTIL.isIE9() ? videoURL+"?time="+new Date().getTime() : videoURL);
     };
 
     var computeBestVideo = function (theView) {
@@ -1216,7 +1216,8 @@ if (!window['$']) {
     function loadVideoSet(data) {
       datasetJSON = data;
       thisObj.changeDataset(data);
-      setViewportSize(data["video_width"] - data["tile_width"], data["video_height"] - data["tile_height"], thisObj);
+      if (!fullScreen)
+        setViewportSize(data["video_width"] - data["tile_width"], data["video_height"] - data["tile_height"], thisObj);
       hideSpinner(viewerDivId);
     }
 

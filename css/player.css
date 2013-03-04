@@ -36,14 +36,14 @@ body, html {
 }
 
 .instructions span {
-  font-size:13px;
+  font-size:12px;
   color:#fff;
   position:absolute;
   display:block;
   line-height:18px;
 }
 
-.instructions p{font-size:13px;}
+.instructions p{font-size:12px;}
 
 .instructions span.loophelp {
   width:135px;
