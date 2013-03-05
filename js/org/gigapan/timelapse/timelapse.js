@@ -386,6 +386,11 @@ if (!window['$']) {
     };
     this.addVideoPlayListener = _addVideoPlayListener;
 
+    var _makeVideoVisibleListener = function(listener) {
+      videoset.addEventListener('video-made-visible', listener);
+    };
+    this.makeVideoVisibleListener = _makeVideoVisibleListener;
+
     var _getProjection = function (projectionType) {
       projectionType = typeof(projectionType) != 'undefined' ? projectionType : "mercator";
       if (projectionType == "mercator") {
@@ -1475,6 +1480,15 @@ if (!window['$']) {
         $("#" + viewerDivId + " .playbackButton").attr({"title": "Pause"});
       });
 
+      _makeVideoVisibleListener(function(videoId, theTime) {
+        if (videoId == videoDivId + "_1") {
+          // Fire onTimeMachinePlayerReady when the first video is ready
+          if ( typeof (onTimeMachinePlayerReady) === "function") {
+            onTimeMachinePlayerReady(viewerDivId);
+          }
+        }
+      });
+
       if (settings["composerDiv"]) snaplapse = new org.gigapan.timelapse.Snaplapse(settings["composerDiv"], thisObj);
 
       populateSizes(viewerDivId);
@@ -1546,9 +1560,6 @@ if (!window['$']) {
         "user-select": "none"
       });
 
-      if (typeof(onTimeMachinePlayerReady) === "function") {
-        onTimeMachinePlayerReady(viewerDivId);
-      }
     }
     this.loadInitialVideoSet = _loadInitialVideoSet;
 
