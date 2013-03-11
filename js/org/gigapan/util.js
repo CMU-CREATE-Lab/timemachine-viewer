@@ -108,7 +108,8 @@ if (!org.gigapan) {
 
   org.gigapan.Util.isNumber = function(n) {
     // code taken from http://stackoverflow.com/questions/18082/validate-numbers-in-javascript-isnumeric
-    return !isNaN(parseFloat(n)) && isFinite(n);
+    // added check to ensure that the value being checked is defined
+    return (typeof(n) !== 'undefined') && !isNaN(parseFloat(n)) && isFinite(n);
   };
 
   org.gigapan.Util.log = function(str, logType) {

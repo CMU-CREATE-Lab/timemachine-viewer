@@ -155,6 +155,7 @@ if (!window['$']) {
     var zoomFractionPerSecond = 3.0; // in log2
     var keyIntervals = [];
     var targetViewChangeListeners = [];
+    var viewChangeListeners = [];
     var thisObj = this;
     var tmJSON;
     var datasetJSON = null;
@@ -169,7 +170,7 @@ if (!window['$']) {
     var playerSize;
     var datasetIndex;
     var initialTime = settings["initialTime"] && org.gigapan.Util.isNumber(settings["initialTime"]) ? settings["initialTime"] : 0;
-    var initialView = settings["initialView"] || null
+    var initialView = settings["initialView"] || null;
     var showShareBtn = (typeof(settings["showShareBtn"]) == "undefined") ? true : settings["showShareBtn"];
     var showMainControls = (typeof(settings["showMainControls"]) == "undefined") ? true : settings["showMainControls"];
     var showZoomControls = (typeof(settings["showZoomControls"]) == "undefined") ? true : settings["showZoomControls"];
@@ -376,6 +377,11 @@ if (!window['$']) {
     };
     this.addTargetViewChangeListener = _addTargetViewChangeListener;
 
+    var _addViewChangeListener = function (listener) {
+      viewChangeListeners.push(listener);
+    };
+    this.addViewChangeListener = _addViewChangeListener;
+
     var _addVideoPauseListener = function (listener) {
       videoset.addEventListener('videoset-pause', listener);
     };
@@ -404,56 +410,53 @@ if (!window['$']) {
     };
     this.getProjection = _getProjection;
 
-    var _getViewStrAsProjection = function () {
+    var getViewStrAsProjection = function () {
       var latlng = _getProjection().pointToLatlng(view);
       return Math.round(1e5 * latlng.lat) / 1e5 + "," +
              Math.round(1e5 * latlng.lng) / 1e5 + "," +
              Math.round(1e3 * Math.log(view.scale / _homeView().scale) / Math.log(2))/ 1e3 + "," +
              "latLng";
     };
-    this.getViewStrAsProjection = _getViewStrAsProjection;
 
-    var _getViewStrAsPoints = function () {
+    var getViewStrAsPoints = function () {
       return Math.round(1e5 * view.x) / 1e5 + "," +
              Math.round(1e5 * view.y) / 1e5 + "," +
              Math.round(1e3 * Math.log(view.scale / _homeView().scale) / Math.log(2))/ 1e3 + "," +
              "pts";
     };
-    this.getViewStrAsPoints = _getViewStrAsPoints;
 
     var _getViewStr  = function () {
       // TODO: let the user choose lat/lng or points for a dataset with projection info
       if (typeof(tmJSON['projection-bounds']) != 'undefined') {
-        return _getViewStrAsProjection();
+        return getViewStrAsProjection();
       } else {
-        return _getViewStrAsPoints();
+        return getViewStrAsPoints();
       }
-    }
+    };
     this.getViewStr = _getViewStr;
 
-    var _setNewView  = function (view, doWarp) {
-      var newView = view;
-      if (view == null) return;
+    var _setNewView  = function (newView, doWarp) {
+      if (typeof(newView) === 'undefined' || newView == null) return;
 
-      if (view['center']) { // Center view
-        if ((typeof(tmJSON['projection-bounds']) != 'undefined') && view['center']['lat'] && view['center']['lng'] && view['zoom']
-            && org.gigapan.Util.isNumber(view['center']['lat']) && org.gigapan.Util.isNumber(view['center']['lng']) && org.gigapan.Util.isNumber(view['zoom'])) {
-          newView = computeViewLatLngCenter(view);
-        } else if (view['center']['x'] && view['center']['y'] && view['zoom']
-            && org.gigapan.Util.isNumber(view['center']['x']) && org.gigapan.Util.isNumber(view['center']['y']) && org.gigapan.Util.isNumber(view['zoom'])) {
-          newView = computeViewPointCenter(view);
+      if (newView['center']) { // Center view
+        if ((typeof(tmJSON['projection-bounds']) !== 'undefined') &&
+            org.gigapan.Util.isNumber(newView['center']['lat']) && org.gigapan.Util.isNumber(newView['center']['lng']) && org.gigapan.Util.isNumber(newView['zoom'])) {
+          newView = computeViewLatLngCenter(newView);
+        } else if (org.gigapan.Util.isNumber(newView['center']['x']) && org.gigapan.Util.isNumber(newView['center']['y']) && org.gigapan.Util.isNumber(newView['zoom'])) {
+          newView = computeViewPointCenter(newView);
+        } else {
+          newView = view;
         }
-      } else if (view['bbox']) { // Bounding box view
-        if ((typeof(tmJSON['projection-bounds']) != 'undefined') && view['bbox']['ne'] && view['bbox']['sw'] &&
-            view['bbox']['ne']['lat'] && view['bbox']['ne']['lng'] &&
-            view['bbox']['sw']['lat'] && view['bbox']['sw']['lng'] &&
-            org.gigapan.Util.isNumber(view['bbox']['ne']) && org.gigapan.Util.isNumber(view['bbox']['sw']) &&
-            org.gigapan.Util.isNumber(view['bbox']['ne']['lat']) && org.gigapan.Util.isNumber(view['bbox']['ne']['lng']) &&
-            org.gigapan.Util.isNumber(view['bbox']['sw']['lat']) && org.gigapan.Util.isNumber(view['bbox']['sw']['lng'])) {
-          newView = computeViewLatLngFit(view);
-        } else if (view['bbox']['xmin'] && view['bbox']['xmax'] && view['bbox']['ymin'] && view['bbox']['ymax']
-            && org.gigapan.Util.isNumber(view['bbox']['xmin']) && org.gigapan.Util.isNumber(view['bbox']['xmax']) && org.gigapan.Util.isNumber(view['bbox']['ymin']) && org.gigapan.Util.isNumber(view['bbox']['ymax'])) {
-          newView = computeViewFit(view);
+      } else if (newView['bbox']) { // Bounding box view
+        if ((typeof(tmJSON['projection-bounds']) !== 'undefined') &&
+            org.gigapan.Util.isNumber(newView['bbox']['ne']) && org.gigapan.Util.isNumber(newView['bbox']['sw']) &&
+            org.gigapan.Util.isNumber(newView['bbox']['ne']['lat']) && org.gigapan.Util.isNumber(newView['bbox']['ne']['lng']) &&
+            org.gigapan.Util.isNumber(newView['bbox']['sw']['lat']) && org.gigapan.Util.isNumber(newView['bbox']['sw']['lng'])) {
+          newView = computeViewLatLngFit(newView);
+        } else if (org.gigapan.Util.isNumber(newView['bbox']['xmin']) && org.gigapan.Util.isNumber(newView['bbox']['xmax']) && org.gigapan.Util.isNumber(newView['bbox']['ymin']) && org.gigapan.Util.isNumber(newView['bbox']['ymax'])) {
+          newView = computeViewFit(newView);
+        } else {
+          newView = view;
         }
       }
 
@@ -461,7 +464,7 @@ if (!window['$']) {
         _warpTo(newView);
       else
         setTargetView(newView);
-    }
+    };
     this.setNewView = _setNewView;
 
     var _shareView = function () {
@@ -843,6 +846,7 @@ if (!window['$']) {
         animateInterval = null;
       } else {
         refresh();
+        for (var i = 0; i < viewChangeListeners.length; i++) viewChangeListeners[i](view);
       }
     };
 
