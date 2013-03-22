@@ -195,6 +195,8 @@ if (!window['$']) {
     var originalHeight;
     var resizeTimeout;
 
+    var originalPlaybackRate = playbackSpeed;
+
     // levelThreshold sets the quality of display by deciding what level of tile to show for a given level of zoom:
     //
     //  1.0: select a tile that's shown between 50% and 100% size  (never supersample)
@@ -499,7 +501,8 @@ if (!window['$']) {
     };
     this.seek = _seek;
 
-    this.setPlaybackRate = function (rate) {
+    this.setPlaybackRate = function (rate,preserveOriginalRate) {
+      if (!preserveOriginalRate) originalPlaybackRate = rate;
       videoset.setPlaybackRate(rate);
     };
 
@@ -528,14 +531,14 @@ if (!window['$']) {
           }
         }
         if(nextSegment === null) { /* Make sure playback rate matches selection */
-          thisObj.setPlaybackRate(playbackRate);
+          thisObj.setPlaybackRate(originalPlaybackRate,true);
         }
         else {
           var difference = nextSegment.start - timelapseCurrentTimeInSeconds;
           if(difference > 0)
             customPlaybackTimeout = window.setTimeout(updateCustomPlayback, difference);
           else {
-            thisObj.setPlaybackRate(nextSegment.rate);
+            thisObj.setPlaybackRate(nextSegment.rate,true);
             customPlaybackTimeout = window.setTimeout(updateCustomPlayback, difference);
           }
         }
@@ -1364,7 +1367,6 @@ if (!window['$']) {
       $("#" + viewerDivId + " .repeat").bind("click", function () {
         if ($(this).hasClass("disabled") || $("#" + viewerDivId + " .zoomSlider").slider("option", "disabled") == true) return;
         loopPlayback = !loopPlayback
-        updateCustomPlayback();
         if (loopPlayback) {
           $(this).toggleClass("inactive active");
         }
@@ -1449,6 +1451,7 @@ if (!window['$']) {
           if (loopPlayback) {
             if ($("#" + viewerDivId + " .playbackButton").hasClass("pause")) {
               _seek(0);
+              updateCustomPlayback();
               //_pause();
               //_play();
             }
