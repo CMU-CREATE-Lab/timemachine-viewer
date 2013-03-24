@@ -29,8 +29,6 @@
 // Paul Dille (pdille@andrew.cmu.edu)
 // Randy Sargent (randy.sargent@cs.cmu.edu)
 
-var saveSnaplapseWindow = null;
-var loadSnaplapseWindow = null;
 var cachedSnaplapses = {};
 var currentlyDisplayedVideoId = 1;
 var KEYFRAME_THUMBNAIL_WIDTH = 100;
@@ -89,11 +87,6 @@ if (!org.gigapan.timelapse.snaplapse) {
 
 var activeSnaplapse;
 
-//accessed by load_snaplapse popup window
-function doLoadSnaplapse(json) {
-  activeSnaplapse.loadSnaplapse(json);
-}
-
 function playCachedSnaplapse(snaplapseId) {
   org.gigapan.Util.log("playCachedSnaplapse(" + snaplapseId + ")");
   var s = cachedSnaplapses[snaplapseId];
@@ -122,6 +115,37 @@ function playCachedSnaplapse(snaplapseId) {
 		var initializeSnaplapseUI = function() {
 			// hide the annotation bubble
 			hideAnnotationBubble();
+
+      //load window
+      $("#" + composerDivId + " .loadTimewarpWindow").dialog({
+        resizable : false,
+        autoOpen : false,
+        width : 400,
+        height : 700,
+        create : function(event, ui) {
+          $(this).parents(".ui-dialog").css({
+            'border' : '1px solid #000'
+          });
+        }
+      }).parent().appendTo($("#" + composerDivId));
+      $("#loadSnaplapseButton").button({
+        text : true
+      }).click(function() {
+        thisObj.loadSnaplapse($(".loadTimewarpWindow_JSON").val());
+      });
+
+      //Save window
+      $("#" + composerDivId + " .saveTimewarpWindow").dialog({
+        resizable : false,
+        autoOpen : false,
+        width : 400,
+        height : 700,
+        create : function(event, ui) {
+          $(this).parents(".ui-dialog").css({
+            'border' : '1px solid #000'
+          });
+        }
+      }).parent().appendTo($("#" + composerDivId));
 
 			// add an event listener to the videoset so we can keep track of which video is currently visible, so that we can
 			// create the keyframe thumbnails
@@ -162,7 +186,7 @@ function playCachedSnaplapse(snaplapseId) {
 				});
 
 			// add mouse event handlers to the Load Snaplapse button
-			addMouseEventHandlersToButton('#'+composerDivId+' #loadSnaplapseButton',
+			addMouseEventHandlersToButton('#'+composerDivId+' #loadSnaplapseWindow',
 				function() {
 					activeSnaplapse = thisObj;
 					showLoadSnaplapseWindow();
@@ -180,17 +204,16 @@ function playCachedSnaplapse(snaplapseId) {
 					recordKeyframe();
 				});
 
-			// add mouse event handlers to the Record Keyframe button
+			// add mouse event handlers to the Delete Keyframe button
 			addMouseEventHandlersToButton('#'+composerDivId+' #deleteKeyframeButton',
 				function() {
 					deleteSelectedKeyframes();
 				});
 
-			// add mouse event handlers to the Record Keyframe button
+			// add mouse event handlers to the Save Snaplapse button
 			addMouseEventHandlersToButton('#'+composerDivId+' #saveSnaplapseButton',
 				function() {
-					saveSnaplapse();
-					//showSaveSnaplapseWindow();
+					showSaveSnaplapseWindow();
 				});
 
 			// add mouse event handlers to the Play/Stop button in the viewer
@@ -405,9 +428,6 @@ function playCachedSnaplapse(snaplapseId) {
 			setButtonEnabled("#"+composerDivId+" #saveSnaplapseButton", false);
 			setButtonEnabled("#"+composerDivId+" #deleteKeyframeButton", false);
 			$("#"+composerDivId+" .snaplapse_keyframe_list").empty();
-                        if (saveSnaplapseWindow) {
-                          saveSnaplapseWindow.close();
-                        }
 
 			if (typeof json != 'undefined' && json != null) {
 				return snaplapse.loadFromJSON(json);
@@ -733,74 +753,42 @@ function playCachedSnaplapse(snaplapseId) {
 				snaplapse.play();
 			}
 		}
-                this.playStopSnaplapse = _playStopSnaplapse;
-
-/*		var saveSnaplapse = function() {
-			if (snaplapse && (snaplapse.getNumKeyframes() > 1)) {
-				// prompt the user for a filename for their snaplapse
-				var filename = prompt("Filename for your time warp:", "untitled.warp");
-
-				// filename is null if the user hit Cancel
-				if (filename != null) {
-					// trim it
-					filename = $.trim(filename);
-
-					// if it's empty, give it a default name
-					if (filename.length == 0) {
-						filename = "untitled";
-					}
-
-					// add a .warp extension if necessary
-					var lowerCaseFilename = filename.toLowerCase();
-					if (!/.warp$/.test(lowerCaseFilename)) {
-						filename += ".warp";
-					}
-
-					// submit the hidden form so that we can bounce it back to the user with an attachment content-disposition
-					$("#save_snaplapse_form_json").val(snaplapse.getAsJSON());
-					$("#save_snaplapse_form_filename").val(filename);
-					showSaveSnaplapseWindow();
-					//$("#save_snaplapse_form").get(0).submit();
-				}
-			} else {
-				alert("ERROR: No time warp to save--please create a time warp and add at least two keyframes to it.")
-			}
-		}*/
+    this.playStopSnaplapse = _playStopSnaplapse;
 
 		var saveSnaplapse = function() {
-			if (snaplapse && (snaplapse.getNumKeyframes() > 1)) {
-				$("#save_snaplapse_form_json").val(snaplapse.getAsJSON());
-				showSaveSnaplapseWindow();
-			} else {
-				alert("ERROR: No time warp to save--please create a time warp and add at least two keyframes to it.")
-			}
+      if (snaplapse) {
+        $("#" + composerDivId + " .saveTimewarpWindow_JSON").val(snaplapse.getAsJSON()).focus().select().click(function() { $(this).focus().select(); });
+      } else {
+        alert("ERROR: No time warp to save--please create a time warp and add at least two keyframes to it.")
+      }
 		}
 
-                var getSnaplapseJSON = function() {
-                  return snaplapse.getAsJSON();
-                }
+    var getSnaplapseJSON = function() {
+      return snaplapse.getAsJSON();
+    }
 
-                var showLoadSnaplapseWindow = function() {
-                  loadSnaplapseWindow = popup('load_snaplapse.html', 'loadSnaplapseWindow');
-		}
+    var showLoadSnaplapseWindow = function() {
+      $("#" + composerDivId + " .loadTimewarpWindow").dialog("open");
+      $("#" + composerDivId + " .loadTimewarpWindow_JSON").val("");
+    }
 
-                var showSaveSnaplapseWindow = function() {
-                  saveSnaplapseWindow = popup('save_snaplapse.html', 'saveSnaplapseWindow');
-                }
+    var showSaveSnaplapseWindow = function() {
+      $("#" + composerDivId + " .saveTimewarpWindow").dialog("open");
+      $("#" + composerDivId + " .saveTimewarpWindow_JSON").val("");
+      saveSnaplapse();
+    }
 
 		var _loadSnaplapse = function(json) {
-			if (loadSnaplapseWindow) {
-				if (newSnaplapse(json)) {
-					$('#'+composerDivId+" .snaplapse_composer_controls").show();
-					loadSnaplapseWindow.close();
-					clearKeyframeSelection();
-					hideAnnotationBubble();
-				} else {
-					alert("ERROR: Invalid time warp file.");
-				}
-			}
+        if (newSnaplapse(json)) {
+          $('#' + composerDivId + " .snaplapse_composer_controls").show();
+          $("#" + composerDivId + " .loadTimewarpWindow").dialog("close");
+          clearKeyframeSelection();
+          hideAnnotationBubble();
+        } else {
+          alert("ERROR: Invalid time warp file.");
+        }
 		}
-                this.loadSnaplapse = _loadSnaplapse;
+    this.loadSnaplapse = _loadSnaplapse;
 
 		var deleteSelectedKeyframes = function() {
 			var selectedItems = $("#"+composerDivId+" .snaplapse_keyframe_list > .ui-selected");
@@ -822,36 +810,6 @@ function playCachedSnaplapse(snaplapseId) {
 			}
 
 			$("#"+composerDivId+" #deleteKeyframeButton").attr("disabled", "disabled");
-		}
-
-		// Code from:
-		//    http://javascript-array.com/scripts/window_open/
-		//    http://www.webdeveloper.com/forum/showthread.php?t=15735
-		var popup = function(url, windowName) {
-			// get dimensions of parent window so we can center the new window within the parent
-			var parentWidth = $(window).width();
-			var parentHeight = $(window).height();
-			var parentX = (document.all) ? window.screenLeft : window['screenX'];
-			var parentY = (document.all) ? window.screenTop : window['screenY'];
-
-			var width = 500;
-			var height = 580;
-			var left = parentX + (parentWidth - width) / 2;
-			var top = parentY + (parentHeight - height) / 2;
-			var params = 'width=' + width + ', height=' + height;
-			params += ', top=' + top + ', left=' + left;
-			params += ', directories=no';
-			params += ', location=no';
-			params += ', menubar=no';
-			params += ', resizable=yes';
-			params += ', scrollbars=auto';
-			params += ', status=no';
-			params += ', toolbar=no';
-			var newWindow = window.open(url, windowName, params);
-			if (window.focus) {
-				newWindow.focus()
-			}
-			return newWindow;
 		}
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////

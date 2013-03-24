@@ -4,7 +4,7 @@
   </span>
 </h2>
 <p>
-  Create a time warp by selecting keyframes and inserting annotations.
+  Create a time warp by selecting keyframes and entering descriptions.
 </p>
 <table style="border-spacing:0;">
   <tr>
@@ -13,7 +13,7 @@
         <button id="newSnaplapseButton" type="button" style="float:left;margin-left:0;" class="ui-state-default ui-corner-all button text-button" title="Create a new time warp">
           New
         </button>
-        <button id="loadSnaplapseButton" type="button" style="float:right;margin-right:0;" class="ui-state-default ui-corner-all button text-button" title="Load a time warp">
+        <button id="loadSnaplapseWindow" type="button" style="float:right;margin-right:0;" class="ui-state-default ui-corner-all button text-button" title="Load a time warp">
           Load
         </button>
       </div>
@@ -51,7 +51,16 @@
     </td>
   </tr>
 </table>
-<form id="save_snaplapse_form" method="post" action="../timelapse/save_time_warp.php" style="display:none" onsubmit="return false;">
-  <textarea id="save_snaplapse_form_json" name="json" rows="10" cols="40">
-  </textarea>
-</form>
+
+<div class="loadTimewarpWindow" title="Load a Timewarp">
+  <button id="loadSnaplapseButton" title="Load a Timewarp">
+    Load
+  </button>
+  <div class="loadTimewarpWindow_txt">To load a time warp, paste the code into the text box below and then click the Load button.</div>
+  <textarea class="loadTimewarpWindow_JSON"></textarea>
+</div>
+
+<div class="saveTimewarpWindow" title="Save a Timewarp">
+  <div class="saveTimewarpWindow_txt">To save this time warp, copy the code contained in the text box below and paste it into a new file in your favorite text editor.</div>
+  <textarea class="saveTimewarpWindow_JSON"></textarea>
+</div>
