@@ -191,11 +191,30 @@ if (!window['$']) {
     var canvasContext;
     var canvasTmpContext;
 
-    var originalWidth;
-    var originalHeight;
+    var originalViewportWidth;
+    var originalViewportHeight;
     var resizeTimeout;
 
+    /* Yen-Chia's Code Start */
+    var homeView;
+    var videoStretchRatio = 1;
+    var scaleRatio = 1;
+    var paraBeforeFullScreen = {
+      homeViewX : undefined,
+      homeViewY : undefined,
+      homeViewScale : undefined,
+      panoWidth : undefined,
+      panoHeight : undefined,
+      videoWidth : undefined,
+      videoHeight : undefined,
+      tileWidth : undefined,
+      tileHeight : undefined
+    };
+    /* Yen-Chia's Code End */
+
     var originalPlaybackRate = playbackSpeed;
+
+    var annotator;
 
     // levelThreshold sets the quality of display by deciding what level of tile to show for a given level of zoom:
     //
@@ -230,6 +249,35 @@ if (!window['$']) {
     this.getCanvasTmp = function () {
       return canvasTmp;
     }
+
+    this.getVideoStretchRatio = function () {
+      return videoStretchRatio;
+    }
+
+    this.getAnnotator = function () {
+      return annotator;
+    }
+
+    var convertViewportToTimeMachine = function(point) {
+      var boundingBox = thisObj.getBoundingBoxForCurrentView();
+      var newPoint = {x: boundingBox.xmin + point.x*((boundingBox.xmax - boundingBox.xmin)/viewportWidth) ,
+                      y: boundingBox.ymin + point.y*((boundingBox.ymax - boundingBox.ymin)/viewportHeight) };
+      return newPoint;
+    }
+    this.convertViewportToTimeMachine = convertViewportToTimeMachine;
+
+    var convertTimeMachineToViewport = function(point) {
+      var boundingBox = thisObj.getBoundingBoxForCurrentView();
+      var newPoint = {x: (point.x - boundingBox.xmin)*(viewportWidth/(boundingBox.xmax - boundingBox.xmin)) ,
+                      y: (point.y - boundingBox.ymin)*(viewportHeight/(boundingBox.ymax - boundingBox.ymin)) };
+      return newPoint;
+    }
+    this.convertTimeMachineToViewport = convertTimeMachineToViewport;
+
+    var getCurrentZoom = function() {
+      return Math.round(1e3 * Math.log(view.scale / _homeView().scale) / Math.log(2))/ 1e3;
+    }
+    this.getCurrentZoom = getCurrentZoom;
 
     this.changeDataset = function (data) {
       //datasetPath = gigapanUrl;
@@ -335,17 +383,26 @@ if (!window['$']) {
       view.y = targetView.y;
       view.scale = targetView.scale;
       refresh();
+      for (var i = 0; i < viewChangeListeners.length; i++) viewChangeListeners[i](view);
     };
     this.warpTo = _warpTo;
 
-    var _homeView = function () {
-      var ret = computeViewFit({
-        xmin: 0,
-        ymin: 0,
-        xmax: panoWidth,
-        ymax: panoHeight
-      });
-      return ret;
+    var _homeView = function() {
+      /* Yen-Chia's Code Start */
+      if (homeView == undefined || !UTIL.isNumber(homeView.scale)) {
+        if (settings["newHomeView"] != undefined) {
+          homeView = computeViewFit(computeBoundingBox(settings["newHomeView"]));
+        } else {
+          homeView = computeViewFit({
+            xmin : 0,
+            ymin : 0,
+            xmax : panoWidth,
+            ymax : panoHeight
+          });
+        }
+      }
+      return homeView;
+      /* Yen-Chia's Code End */
     };
     this.homeView = _homeView;
 
@@ -514,6 +571,10 @@ if (!window['$']) {
       return videoset.getVideoPosition();
     };
 
+    this.getDuration = function() {
+      return timelapseDurationInSeconds;
+    }
+
     function updateCustomPlayback() {
       /* Startup custom playback stuff if possible */
       if(loopPlayback && customLoopPlaybackRates) {
@@ -577,17 +638,25 @@ if (!window['$']) {
       return videoHeight;
     };
 
-    this.getWidth = function () {
+    this.getPanoWidth = function () {
       return panoWidth;
     };
 
-    this.getHeight = function () {
+    this.getPanoHeight = function () {
       return panoHeight;
+    };
+
+    this.getViewportWidth = function () {
+      return viewportWidth;
+    };
+
+    this.getViewportHeight = function () {
+      return viewportHeight;
     };
 
     this.getMetadata = function () {
       return metadata;
-    }
+    };
 
     var _addTimeChangeListener = function (listener) {
       videoset.addEventListener('sync', listener);
@@ -629,8 +698,10 @@ if (!window['$']) {
       return _homeView().scale;
     };
 
-    this.updateDimensions = function () {
-      readVideoDivSize();
+    this.updateDimensions = function(newViewportWidth, newViewportHeight) {
+      viewportWidth = newViewportWidth;
+      viewportHeight = newViewportHeight;
+      //readVideoDivSize();
     };
 
     var _viewScaleToZoomSlider = function (value) {
@@ -650,32 +721,49 @@ if (!window['$']) {
     this.getDatasetJSON = _getDatasetJSON;
 
     var _fullScreen = function (state) {
-      var newWidth, newHeight;
+      var newViewportWidth, newViewportHeight;
 
-      if (originalWidth == null) {
-        originalWidth = $("#"+videoDivId).width();
-        originalHeight = $("#"+videoDivId).height();
+      if (originalViewportWidth == null) {
+        originalViewportWidth = $("#"+videoDivId).width();
+        originalViewportHeight = $("#"+videoDivId).height();
       }
 
       if (state == undefined || state) {
         $("body").css({'overflow': 'hidden'});
         fullScreen = true;
-        var extraHeight = showMainControls ? ($("#"+viewerDivId+" .controls").outerHeight() + $("#"+viewerDivId+" .timelineSlider").outerHeight() + 2) : 0;
-        newWidth = window.innerWidth - 2; // extra 2px for the borders
-        newHeight = window.innerHeight - extraHeight; // subtract height of controls and extra 2px for borders
+        var extraViewportHeight = showMainControls ? ($("#"+viewerDivId+" .controls").outerHeight() + $("#"+viewerDivId+" .timelineSlider").outerHeight() + 2) : 0;
+        newViewportWidth = window.innerWidth - 2; // extra 2px for the borders
+        newViewportHeight = window.innerHeight - extraViewportHeight; // subtract height of controls and extra 2px for borders
 
         // ensure minimum dimensions to not break controls
-        if (newWidth < 700)
-          newWidth = 700;
-        if (newHeight < 250)
-          newHeight = 240;
+        if (newViewportWidth < 700)
+          newViewportWidth = 700;
+        if (newViewportHeight < 250)
+          newViewportHeight = 240;
+        /* Yen-Chia's Code Start */
+        resetParaBeforeFullScreen();
+        var originalVideoWidth = datasetJSON["video_width"] - datasetJSON["tile_width"];
+        var originalVideoHeight = datasetJSON["video_height"] - datasetJSON["tile_height"];
+        var newVideoStretchRatio;
+        var newScaleRatio = Math.max(newViewportWidth / originalViewportWidth, newViewportHeight / originalViewportHeight);
+        if (newViewportWidth > originalVideoWidth || newViewportHeight > originalVideoHeight) {
+          newVideoStretchRatio = Math.max(newViewportWidth / originalVideoWidth, newViewportHeight / originalVideoHeight);
+        } else {
+          newVideoStretchRatio = 1;
+        }
+        newScaleRatio = newScaleRatio / newVideoStretchRatio;
+        setParaBeforeFullScreen(newVideoStretchRatio, newScaleRatio);
+        /* Yen-Chia's Code End */
       } else {
         fullScreen = false;
         $("body").css({'overflow': 'auto'});
-        newWidth = originalWidth;
-        newHeight = originalHeight;
+        newViewportWidth = originalViewportWidth;
+        newViewportHeight = originalViewportHeight;
+        /* Yen-Chia's Code Start */
+        resetParaBeforeFullScreen();
+        /* Yen-Chia's Code End */
       }
-      setViewportSize(newWidth, newHeight, timelapse);
+      setViewportSize(newViewportWidth, newViewportHeight, timelapse);
     }
     this.fullScreen = _fullScreen;
 
@@ -698,8 +786,59 @@ if (!window['$']) {
     // Private methods
     //
 
+    /* Yen-Chia's Code Start */
+    var saveParaBeforeFullScreen = function() {
+      paraBeforeFullScreen.homeViewX = homeView.x;
+      paraBeforeFullScreen.homeViewY = homeView.y;
+      paraBeforeFullScreen.homeViewScale = homeView.scale;
+      paraBeforeFullScreen.panoWidth = panoWidth;
+      paraBeforeFullScreen.panoHeight = panoHeight;
+      paraBeforeFullScreen.tileWidth = tileWidth;
+      paraBeforeFullScreen.tileHeight = tileHeight;
+      paraBeforeFullScreen.videoWidth = videoWidth;
+      paraBeforeFullScreen.videoHeight = videoHeight;
+    };
+
+    var setParaBeforeFullScreen = function(newVideoStretchRatio, newScaleRatio) {
+      saveParaBeforeFullScreen();
+      videoStretchRatio = newVideoStretchRatio;
+      scaleRatio = newScaleRatio;
+      view.x *= videoStretchRatio;
+      view.y *= videoStretchRatio;
+      view.scale *= scaleRatio;
+      homeView.x *= videoStretchRatio;
+      homeView.y *= videoStretchRatio;
+      homeView.scale *= scaleRatio;
+      panoWidth *= videoStretchRatio;
+      panoHeight *= videoStretchRatio;
+      videoWidth *= videoStretchRatio;
+      videoHeight *= videoStretchRatio;
+      tileWidth *= videoStretchRatio;
+      tileHeight *= videoStretchRatio;
+    };
+
+    var resetParaBeforeFullScreen = function() {
+      if (paraBeforeFullScreen.homeViewX != undefined) {
+        view.x /= videoStretchRatio;
+        view.y /= videoStretchRatio;
+        view.scale /= scaleRatio;
+        videoStretchRatio = 1;
+        scaleRatio = 1;
+        homeView.x = paraBeforeFullScreen.homeViewX;
+        homeView.y = paraBeforeFullScreen.homeViewY;
+        homeView.scale = paraBeforeFullScreen.homeViewScale;
+        panoWidth = paraBeforeFullScreen.panoWidth;
+        panoHeight = paraBeforeFullScreen.panoHeight;
+        tileWidth = paraBeforeFullScreen.tileWidth;
+        tileHeight = paraBeforeFullScreen.tileHeight;
+        videoWidth = paraBeforeFullScreen.videoWidth;
+        videoHeight = paraBeforeFullScreen.videoHeight;
+      }
+    };
+    /* Yen-Chia's Code End */
+
     var handleMousedownEvent = function (event) {
-      if (event.which != 1) return;
+      if (event.which != 1 || (annotator && (event.shiftKey || event.altKey))) return;
       var mouseIsDown = true;
       var lastEvent = event;
       var saveMouseMove = document.onmousemove;
@@ -707,6 +846,8 @@ if (!window['$']) {
       videoDiv.style.cursor = 'url("css/cursors/closedhand.png") 10 10, move';
       document.onmousemove = function (event) {
         if (mouseIsDown) {
+          if (videoset.isStalled()) return;
+
           targetView.x += (lastEvent.pageX - event.pageX) / view.scale;
           targetView.y += (lastEvent.pageY - event.pageY) / view.scale;
           setTargetView(targetView);
@@ -724,6 +865,8 @@ if (!window['$']) {
     };
 
     var zoomAbout = function (zoom, x, y) {
+      if (videoset.isStalled()) return;
+
       var newScale = limitScale(targetView.scale * zoom);
       var actualZoom = newScale / targetView.scale;
       targetView.x += 1 * (1 - 1 / actualZoom) * (x - $(videoDiv).offset().left - viewportWidth * .5) / targetView.scale;
@@ -1430,6 +1573,7 @@ if (!window['$']) {
 
     function setupTimelapse(){
       _addTimeChangeListener(function (t) {
+        if (annotator) annotator.updateAnnotationPositions();
         timelapseCurrentTimeInSeconds = t;
         timelapseCurrentCaptureTimeIndex = Math.floor(t * _getFps());
         if(t == timelapseDurationInSeconds)
@@ -1471,6 +1615,10 @@ if (!window['$']) {
         $("#" + viewerDivId + " .zoomSlider").slider("value", _viewScaleToZoomSlider(view.scale));
       });
 
+      _addViewChangeListener(function (view) {
+        if (annotator) annotator.updateAnnotationPositions();
+      });
+
       _addVideoPauseListener(function() {
         // the videoset might cause playback to pause, such as when it decides
         // it's hit the end (even though the current time might not be >= duration),
@@ -1497,6 +1645,7 @@ if (!window['$']) {
       });
 
       if (settings["composerDiv"]) snaplapse = new org.gigapan.timelapse.Snaplapse(settings["composerDiv"], thisObj);
+      if (settings["annotatorDiv"]) annotator = new org.gigapan.timelapse.Annotator(settings["annotatorDiv"], thisObj);
 
       populateSizes(viewerDivId);
       //hasLayers = timelapseMetadataJSON["has_layers"] || false;
@@ -1625,6 +1774,7 @@ if (!window['$']) {
 
       org.gigapan.Util.ajax("json",settings["url"] + "tm.json",_loadTimelapseJSON);
     }
+
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////
     //

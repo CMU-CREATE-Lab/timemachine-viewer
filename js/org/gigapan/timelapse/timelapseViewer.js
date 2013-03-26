@@ -115,6 +115,8 @@ function handlePluginVideoTagOverride() {
 }
 
 function setViewportSize(newWidth, newHeight, timelapse) {
+  timelapse.updateDimensions(newWidth, newHeight);
+
   var timelapseViewerDivId = timelapse.getViewerDivId();
   var bounds = timelapse.getBoundingBoxForCurrentView();
 
@@ -122,6 +124,17 @@ function setViewportSize(newWidth, newHeight, timelapse) {
   $("#"+timelapse.getVideoDivId()).css({"width": newWidth+"px", "height": newHeight+"px"});
   $(timelapse.getCanvas()).attr({ width: newWidth, height: newHeight });
   $(timelapse.getCanvasTmp()).attr({ width: newWidth, height: newHeight });
+
+  // annotation stage (kineticjs)
+  var annotator = timelapse.getAnnotator();
+  if (annotator) {
+    var annotationStage = annotator.getAnnotationStage();
+    if (annotationStage) {
+      var annotationLayer = annotator.getAnnotationLayer();
+      annotationStage.setSize(newWidth,newHeight);
+      annotationLayer.draw();
+    }
+  }
 
   // spinner
   var spinnerCenterHeight = newHeight/2-$("#"+timelapseViewerDivId+" .spinner").height()/2+"px";
@@ -145,7 +158,6 @@ function setViewportSize(newWidth, newHeight, timelapse) {
   }
   //end wiki specific css
 
-  timelapse.updateDimensions();
   timelapse.warpToBoundingBox(bounds);
 }
 

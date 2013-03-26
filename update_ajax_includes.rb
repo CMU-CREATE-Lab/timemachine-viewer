@@ -1,5 +1,8 @@
 #!/usr/bin/ruby
 
+current_script_dir = File.dirname(__FILE__);
+Dir.chdir(current_script_dir)
+
 outfile = "ajax_includes.js"
 
 puts "Creating #{outfile}";
