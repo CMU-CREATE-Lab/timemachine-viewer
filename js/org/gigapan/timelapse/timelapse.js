@@ -689,7 +689,7 @@ if (!window['$']) {
     this.getMinScale = _getMinScale;
 
     var _getMaxScale = function () {
-      return 2;
+      return 2 * scaleRatio;
     };
 
     this.getMaxScale = _getMaxScale;
