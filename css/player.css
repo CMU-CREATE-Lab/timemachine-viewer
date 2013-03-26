@@ -502,7 +502,7 @@ a.zoomall:active{background-image:url(../images/zoom/zoom_viewall_down.png);}
 
 .carousel a.next {
   height: 50px;
-  */float: right;
+  /*float: right;
   right: -25px;*/
   position: absolute;
   margin: -78px 0px 0px 218px;
