@@ -1,126 +1,3 @@
-.snaplapse_composer_controls {
-   display: none;
-}
-
-button {
-   cursor: pointer;
-}
-
-span.ui-icon {
-   float: left;
-   margin: 0 2px;
-}
-
-.button-container div {
-   margin: 2px 0 2px 0;
-   padding: 1px 0 2px 0;
-   cursor: pointer;
-   float: left;
-}
-
-.snaplapse_keyframe_list_item_table {
-   padding: 0 3px 0 5px;
-}
-
-.keyframe-button-container div {
-   margin: 0;
-   padding: 1px 0 0 0;
-}
-
-.keyframe-button-container {
-   margin-left: 0;
-}
-
-/* ------------------------------------------------------------------------------------------------------------------ */
-
-.snaplapse_keyframe_container {
-   min-height: 75px;
-   max-height: 550px;
-   display: block;
-   padding: 0;
-   margin: 0;
-   overflow-x: auto;
-   overflow-y: scroll;
-   border: solid 1px black;
-   background-color: #eeeeee;
-}
-
-.snaplapse_keyframe_list .ui-selecting {
-   background: #eeeeff;
-}
-
-.snaplapse_keyframe_list .ui-selected {
-   background: #ddddff;
-   color: black;
-}
-
-.snaplapse_keyframe_list_item {
-   display: block;
-   padding: 5px;
-   margin: 0;
-   cursor: pointer;
-   border: solid 1px black;
-   background-color: white;
-}
-
-.snaplapse_keyframe_list_item_timestamp {
-   font-family: Arial, Helvetica, sans-serif;
-   font-size: 8pt;
-}
-
-.snaplapse_keyframe_list_item_thumbnail {
-   width: 100px;
-   height: 56px;
-   border: solid 1px black;
-   background-color: black;
-}
-
-.snaplapse_keyframe_list_item_description_label {
-   text-align: left;
-   font-family: Arial, Helvetica, sans-serif;
-   font-size: 8pt;
-}
-
-.snaplapse_keyframe_list_item_description {
-   min-width: 200px;
-   min-height: 56px;
-   margin: 0;
-   padding: 0;
-   font-family: Arial, Helvetica, sans-serif;
-   font-size: 8pt;
-}
-
-.snaplapse_keyframe_list_item_duration_label {
-   font-family: Arial, Helvetica, sans-serif;
-   font-size: 8pt;
-}
-
-.snaplapse_keyframe_list_item_duration {
-   font-family: Arial, Helvetica, sans-serif;
-   font-size: 8pt;
-   width: 50px;
-   margin-bottom:5px;
-}
-
-.snaplapse_keyframe_list_item_cell_padding {
-   width: 5px;
-   height: 5px;
-}
-
-.snaplapse_keyframe_list_item_play_button {
-
-}
-
-.validation-fault {
-   background-color: #ffeeee;
-   color: #990000;
-}
-
-.textarea_disabled {
-   background-color: #cccccc;
-   color: #666666;
-}
-
 #loadSnaplapseButton {
   left: 9px;
   top: 9px;
@@ -129,34 +6,521 @@ span.ui-icon {
   position: absolute;
 }
 
+#setPauseStartBtn {
+	display: table-cell;
+	float: left;
+	vertical-align: middle;
+	height: 45px;
+	width: 270px;
+	text-align: center;
+}
+
+#setPauseEndBtn {
+	display: table-cell;
+	float: left;
+	vertical-align: middle;
+	height: 45px;
+	width: 270px;
+	text-align: center;
+}
+
+#setPauseStartInput {
+	display: table-cell;
+	float: left;
+	vertical-align: middle;
+	height: 39px;
+	width: 60px;
+	text-align: center;
+}
+
+#setPauseEndInput {
+	display: table-cell;
+	float: left;
+	vertical-align: middle;
+	height: 39px;
+	width: 60px;
+	text-align: center;
+}
+
 .loadTimewarpWindow_txt {
   position: absolute;
   top: 11px;
   left: 120px;
-  right: 5px; 
+  right: 5px;
 }
 
 .saveTimewarpWindow_txt {
   position: absolute;
-  top: 11px;
+  top: 60px;
   left: 10px;
   right: 5px;
+}
+
+.saveTimewarpWindow_txt2 {
+  position: absolute; 
+  top: 230px; 
+  left: 10px;
 }
 
 .loadTimewarpWindow_JSON {
   position: absolute;
   left: 5px;
   top: 50px;
-  right: 5px;
-  bottom: 5px;
+  width: 383px;
+  height: 100px;
   resize: none;
 }
 
 .saveTimewarpWindow_JSON {
   position: absolute;
-  left: 5px;
-  top: 50px;
-  right: 5px;
-  bottom: 5px;
+  left: 10px;
+  top: 100px;
+  width: 383px;
+  height: 100px;
   resize: none;
+}
+
+.saveTimewarpWindow_JSON2 {
+  resize: none; 
+  position: absolute; 
+  top: 270px; 
+  left: 10px; 
+  height: 100px; 
+  width: 383px;
+}
+
+.saveTimewarpWindow_JSON2_sizesContainer {
+  position: absolute;
+  top: 380px;
+  left: 10px;
+}
+
+.transition_table_mask {
+  width: 100px;
+  height: 150px;
+  z-index: 999;
+  background-color: white;
+  font-size: 10px;
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+.subtitle_textarea {
+  height: 90px;
+  width: 300px;
+  resize: none;
+}
+
+.transition_table {
+  text-align: left;
+  padding: 0px;
+  overflow: hidden;
+}
+
+.keyframe_table {
+  border-bottom: 1px solid #656565;
+  border-right: 1px solid #656565;
+  border-left: 1px solid #656565;
+  padding: 10px 15px;
+}
+
+.snaplapse_composer_controls {
+  display: none;
+}
+
+.keyframe-button-container {
+  margin-top: 0px;
+  margin-bottom: 0px;
+  margin-left: 0px;
+  margin-right: 0px;
+  display: block;
+}
+
+.keyframe-button-container .ui-state-active {
+  border: 1px solid #525252;
+  background: #525252 !important;
+  color: white;
+}
+
+.keyframe-button-container .ui-state-active .ui-icon {
+  background-image: url(../images/ui-icons_custom_256x240.png);
+}
+
+.keyframe-button-container .ui-button {
+  width: 32px;
+  border-radius: 0px;
+}
+.keyframe-button-container .ui-icon {
+  margin-top: -9px;
+  margin-left: 1px;
+}
+
+.keyframe-button-container .ui-state-default {
+  background: white;
+}
+
+.snaplapse_keyframe_container {
+  width: 1079px;
+  min-height: 175px;
+  padding: 0;
+  margin: 0;
+  border-left: solid 1px #656565;
+  border-right: solid 1px #656565;
+  border-bottom: solid 1px #656565;
+  background-color: white;
+  overflow-x: scroll;
+  overflow-y: hidden;
+  -webkit-user-select: none;
+  -khtml-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  -o-user-select: none;
+  user-select: none;
+}
+
+.snaplapse_keyframe_list {
+  /* do not remove, this is used for the scrollTop function */
+  position: relative;
+  white-space: nowrap;
+}
+
+.snaplapse_keyframe_list .ui-selecting {
+  color: black;
+}
+
+.snaplapse_keyframe_list .ui-selected {
+  color: black;
+}
+
+.snaplapse_keyframe_list_item {
+  display: inline-block;
+  padding: 0px 0px;
+  cursor: pointer;
+  font-size: 8pt;
+  margin-right: 0px;
+  margin-bottom: 0px;
+  margin-top: 0px;
+  margin-left: 0px;
+}
+
+.snaplapse_keyframe_list_item_table {
+}
+
+.snaplapse_keyframe_list_item_timestamp {
+  font-family: Arial, Helvetica, sans-serif;
+  margin-left: 0px;
+  display: block;
+  font-size: 10pt;
+}
+
+.snaplapse_keyframe_list_item_description_label {
+  font-family: Arial, Helvetica, sans-serif;
+  display: block;
+}
+
+.snaplapse_keyframe_list_item_thumbnail {
+  width: 126px;
+  height: 73px;
+  margin-bottom: 0px;
+  border: solid 1px black;
+  background-color: black;
+  display: block;
+}
+
+.snaplapse_keyframe_list_item_description {
+  width: 126px;
+  height: 40px;
+  /* resize: none; */
+  margin: 0;
+  padding: 0;
+  font-family: Arial, Helvetica, sans-serif;
+  resize: none;
+}
+
+.snaplapse_keyframe_list_item_duration_container {
+  margin-right: 20px;
+  margin-left: 20px;
+  position: absolute;
+  top: 95px;
+}
+
+.snaplapse_keyframe_list_item_duration_label_1 {
+  display: block;
+  width: 20px;
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+.snaplapse_keyframe_list_item_duration_label_2 {
+  width: 20px;
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+.snaplapse_keyframe_list_item_duration {
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 10px;
+  width: 35px;
+  height: 12px;
+}
+
+.snaplapse_keyframe_list_item_speed_container {
+  margin-right: 20px;
+  margin-left: 20px;
+  position: absolute;
+  top: 25px;
+}
+
+.snaplapse_keyframe_list_item_speed_label_2 {
+  width: 20px;
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+.snaplapse_keyframe_list_item_speed_label_1 {
+  display: block;
+  width: 20px;
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+.snaplapse_keyframe_list_item_speed {
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 10px;
+  width: 40px;
+  height: 12px;
+}
+
+.snaplapse_keyframe_list_item_loop_checkbox {
+  position: absolute;
+  top: 0px !important;
+  left: 0px !important;
+  margin: 0px !important;
+  padding: 0px !important;
+  width: 12px;
+  height: 12px;
+}
+
+.snaplapse_keyframe_list_item_loop_label_1 {
+  position: absolute;
+  top: 0px;
+  left: 15px;
+  margin: 0px !important;
+  padding: 0px !important;
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+.snaplapse_keyframe_list_item_loop_label_2 {
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+.snaplapse_keyframe_list_item_loop_label_3 {
+  display: block;
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+.snaplapse_keyframe_list_item_loop_label_4 {
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+.snaplapse_keyframe_list_item_loop_pauseStart {
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 10px;
+  width: 15px;
+  height: 12px;
+}
+
+.snaplapse_keyframe_list_item_loop_pauseEnd {
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 10px;
+  width: 15px;
+  height: 12px;
+}
+
+.snaplapse_keyframe_list_item_loop {
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 10px;
+  width: 35px;
+  height: 12px;
+}
+
+.snaplapse_keyframe_list_item_loop_container {
+  margin-right: 20px;
+  margin-left: 20px;
+  position: absolute;
+  top: -10px;
+}
+
+.snaplapse_keyframe_list_item_loop_container .ui-state-active {
+  border: 1px solid #525252;
+  background: #525252 !important;
+  color: white;
+}
+
+.snaplapse_keyframe_list_item_loop_container .ui-state-active .ui-icon {
+  background-image: url(../images/ui-icons_custom_256x240.png);
+}
+
+.snaplapse_keyframe_list_item_loop_container .ui-button {
+  border-radius: 0px;
+  width: 38px;
+  height: 16px;
+}
+
+.snaplapse_keyframe_list_item_loop_container .ui-icon {
+  margin-top: -9px;
+  margin-left: 1px;
+}
+
+.snaplapse_keyframe_list_item_loop_container .ui-state-default {
+  background: white;
+}
+
+.snaplapse_keyframe_list_item_cell_padding {
+  width: 5px;
+  height: 5px;
+}
+
+.validation-fault {
+  background-color: #ffeeee;
+  color: #990000;
+}
+
+.textarea_disabled {
+  background-color: #cccccc;
+  color: #666666;
+}
+
+.snaplapse-annotation-description {
+  display: table;
+  overflow: hidden;
+  border: 0px solid #000000;
+  position: absolute;
+  width: 100%;
+  height: 65px;
+  bottom: 10px;
+  left: 0px;
+  color: #ffffff;
+  background-color: rgba(0,0,0,0);
+  z-index: 10;
+  word-wrap: break-word;
+  text-align: center;
+  vertical-align: middle;
+}
+
+.snaplapse-annotation-description div {
+  display: table-cell;
+  font-family: Arial, Helvetica, sans-serif;
+  padding-left: 20%;
+  padding-right: 20%;
+  width: 60%;
+  height: 100%;
+  text-align: center;
+  font-size: 14pt;
+  word-wrap: break-word;
+  text-shadow: -1px 0 1px black, 0 1px 1px black, 1px 0 1px black, 0 -1px 1px black;
+  vertical-align: middle;
+}
+
+.snaplapsePlayingMask {
+  position: absolute;
+  opacity: 0.01;
+  width: 100%;
+  height: 100%;
+  z-index: 19;
+  top: 0px;
+  background: white;
+}
+
+.snaplapseTourPlayBack {
+  position: absolute; 
+  top: 10px; 
+  z-index: 99; 
+  color: white; 
+  font-size: 22px;
+  text-shadow: -1px 0 1px black, 0 1px 1px black, 1px 0 1px black, 0 -1px 1px black;
+  cursor: pointer;
+  height: 48px;
+  display: none;
+  width: 100%;
+}
+
+.clapperBoard {
+  cursor: pointer;
+  float: left;
+  background-image: url(../images/video.png);
+  background-repeat: no-repeat;
+  padding-right: 5px;
+  width: 40px;
+  height: 40px;
+  margin-top: 10px;
+}
+
+.tourLoadOverlay {
+  position: absolute;
+  opacity: .8;
+  width: 100%;
+  height: 100%;
+  z-index: 19;
+  top: 0px;
+  background: black;  
+  cursor: pointer;
+  z-index: 99;
+  display: none;
+}
+
+.tourLoadOverlayPlay {
+  opacity: .8;
+  width: 200px;
+  height: 200px;
+  position: absolute;
+  left: 50%;
+  top: 50%; 
+  margin-left: -100px;
+  margin-top: -100px;    
+  z-index: 99;
+}
+
+.saveTimewarpWindow_tourTitle {
+  position: absolute;
+  top: 11px;
+  left: 10px;
+  width: 400px;
+  font-weight: bold;
+}
+
+.saveTimewarpWindow_tourTitleInput{
+  width: 316px;
+}
+
+.saveTimewarpWindow_GetJSON {
+  position: absolute;
+  top: 80px;
+  left: 10px;
+}
+
+.tourLoadOverlayTitle {
+  text-shadow: -1px 0 1px black, 0 1px 1px black, 1px 0 1px black, 0 -1px 1px black;
+}
+
+.tourLoadOverlayTitleContainer {
+  display: table;
+  overflow: hidden;
+  border: 0px solid #000000;
+  position: absolute;
+  width: 100%;
+  top: 31%;
+  left: 0px;
+  color: #ffffff;
+  background-color: rgba(0,0,0,0);
+  z-index: 10;
+  word-wrap: break-word;
+  text-align: center;
+  vertical-align: middle;
+  z-index: 99;
+}
+
+.tourLoadOverlayTitleContainer div {
+  display: table-cell;
+  font-family: Arial, Helvetica, sans-serif;
+  padding-left: 20%;
+  padding-right: 20%;
+  width: 60%;
+  height: 100%;
+  font-size: 14pt;
 }

@@ -1,0 +1,174 @@
+@charset "UTF-8";
+
+.toggleMapLabel {
+  position: absolute;
+  z-index: 100;
+  box-shadow: 2px 2px 3px rgba(0,0,0,0.3);
+  right: 41px;
+  top: 20px;
+}
+
+.toggleMapLabel.ui-state-default {
+  background: white;
+}
+
+.toggleMapLabel.ui-button {
+  width: 20px;
+  margin-right: 0px;
+  margin-left: 1px;
+  border-radius: 0px !important;
+  vertical-align: middle;
+  border: 1px solid #656565;
+  height: 20px;
+}
+
+.hideMapLabel {
+  position: absolute;
+  z-index: 100;
+  box-shadow: 2px 2px 3px rgba(0,0,0,0.3);
+  right: 20px;
+  top: 20px;
+}
+
+.hideMapLabel.ui-state-default {
+  background: white;
+}
+
+.hideMapLabel.ui-button {
+  width: 20px;
+  margin-right: 0px;
+  margin-left: 1px;
+  border-radius: 0px !important;
+  vertical-align: middle;
+  border: 1px solid #656565;
+  height: 20px;
+}
+
+.timewarpMap_container {
+  position: absolute;
+  top: 0px;
+  left: 0px;
+  border: 1px solid #656565;
+  opacity: 0;
+  visibility: hidden;
+}
+
+.timeTag {
+  z-index: 20;
+}
+
+.tagsTimewarp {
+  z-index: 13;
+  position: inherit;
+  width: inherit;
+  height: inherit;
+  border: 0px;
+  overflow: hidden;
+  cursor: move;
+  opacity: 0;
+  visibility: hidden;
+}
+
+.tagsNavigation {
+  z-index: 13;
+  position: relative;
+  border: 0px;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+
+.timewarpMap {
+  position: inherit;
+  width: inherit;
+  height: inherit;
+  background: black;
+  overflow: hidden;
+  border: 0px;
+  z-index: 12;
+  background-color: transparent;
+  -moz-user-select: none;
+  -khtml-user-select: none;
+  -webkit-user-select: none;
+  -o-user-select: none;
+}
+
+.timewarpMap_panoVideo {
+  position: inherit;
+  width: inherit;
+  height: inherit;
+  background: black;
+  overflow: hidden;
+  border: 0px;
+  z-index: 11;
+  -moz-user-select: none;
+  -khtml-user-select: none;
+  -webkit-user-select: none;
+  -o-user-select: none;
+}
+
+.circleBase {
+  -webkit-border-radius: 999px;
+  -moz-border-radius: 999px;
+  border-radius: 999px;
+}
+
+.enableTagMapButton {
+  position: absolute;
+  left: 253px;
+  top: 483px;
+  width: 70px;
+  height: 30px;
+  z-index: 10;
+}
+
+.enableTagMapButton:active {
+  background-color: black;
+}
+
+.navigationMap_container {
+  border: 1px solid #656565;
+  position: absolute;
+  -moz-user-select: none;
+  -khtml-user-select: none;
+  -webkit-user-select: none;
+  -o-user-select: none;
+  overflow: hidden;
+  z-index: 99;
+  box-shadow: 2px 2px 3px rgba(0,0,0,0.3);
+}
+
+.navigationMap {
+  position: inherit;
+  width: inherit;
+  height: inherit;
+  border: 0px;
+  background-color: black;
+  -moz-user-select: none;
+  -khtml-user-select: none;
+  -webkit-user-select: none;
+  -o-user-select: none;
+  z-index: 2;
+}
+
+.navigationMap_box {
+  position: absolute;
+  border: 1px solid rgba(255,0,0,0.7);
+  background-color: transparent;
+  width: 10px;
+  height: 10px;
+  top: -50px;
+  left: -50px;
+  z-index: 3;
+}
+
+.navigationMap_circle {
+  position: absolute;
+  border: 2px solid rgba(255,0,0,0.7);
+  background-color: rgba(255,0,0,0.4);
+  width: 6px;
+  height: 6px;
+  top: -50px;
+  left: -50px;
+  z-index: 3;
+}

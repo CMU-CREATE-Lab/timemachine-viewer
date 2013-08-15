@@ -1,36 +1,60 @@
+#annotationStage {
+  z-index: 10;
+  position: absolute !important;
+  left: 0px !important;
+  top: 0px !important;
+}
+
 .annotation_container {
-   min-height: 75px;
-   max-height: 550px;
-   display: block;
-   padding: 0;
-   margin: 0;
-   overflow-x: auto;
-   overflow-y: scroll;
-   border: solid 1px black;
-   background-color: #eeeeee;
-   font-size: 12px;
+  width: 1079px;
+  min-height: 168px;
+  display: block;
+  padding: 0;
+  margin: 0;
+  overflow-x: auto;
+  overflow-y: scroll;
+  border-left: solid 1px #656565;
+  border-right: solid 1px #656565;
+  border-bottom: solid 1px #656565;
+  background-color: white;
+  font-size: 12px;
+  overflow-x: scroll;
+  overflow-y: hidden;
+  position: absolute;
+  -moz-user-select: none;
+  -khtml-user-select: none;
+  -webkit-user-select: none;
+  -o-user-select: none;
 }
 
 .annotation_list {
-  min-width: 365px
+  /*	min-width: 365px;*/
+  position: relative;
+  white-space: nowrap;
 }
 
 .annotation_list .ui-selecting {
-   background: #eeeeff;
+  /*	background: #eeeeff;*/
 }
 
 .annotation_list .ui-selected {
+  /*
    background: #ddddff;
-   color: black;
+   color: black;*/
+
 }
 
 .annotation_list_item {
-   display: block;
-   padding: 5px;
-   margin: 0;
-   cursor: pointer;
-   border: solid 1px black;
-   background-color: white;
+  display: table-cell;
+  padding: 10px;
+  cursor: pointer;
+  border-right: solid 1px #656565;
+  border-bottom: solid 1px #656565;
+  border-left: solid 0px #656565;
+  border-top: solid 0px #656565;
+  background-color: white;
+  min-width: 100px;
+  height: 100%;
 }
 
 .loadAnnotatorButton {
@@ -45,7 +69,7 @@
   position: absolute;
   top: 11px;
   left: 120px;
-  right: 5px; 
+  right: 5px;
 }
 
 .saveAnnotatorWindow_txt {
@@ -75,4 +99,8 @@
 
 .annotation_instructions {
   font-size: 12px;
+}
+
+.hideAnnotationLabel .ui-button-text {
+  height: 0px;
 }

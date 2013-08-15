@@ -1,0 +1,49 @@
+@charset "UTF-8";
+
+.toggleGoogleMapBtn.ui-state-default {
+  background: white;
+}
+
+.toggleGoogleMapBtn.ui-button {
+  width: 20px;
+  height: 20px;
+  margin-right: 0px;
+  margin-left: 0px;
+  border-radius: 0px !important;
+  vertical-align: middle;
+  box-shadow: 2px 2px 3px rgba(0,0,0,0.3);
+}
+
+.toggleGoogleMapBtn .ui-icon {
+  margin-left: -8px;
+}
+
+.smallMapContainer {
+  border-top: 0px solid #000000;
+  border-left: 0px solid #000000;
+  border-right: 0px solid #000000;
+  border-bottom: 0px solid #000000;
+  position: absolute;
+  z-index: 12;
+}
+
+.smallGoogleMap {
+  border: 0px solid #000000;
+  position: inherit;
+  width: 100%;
+  height: 100%;
+  color: #FFFFFF;
+  text-align: center;
+}
+
+.smallMapResizer {
+  position: absolute;
+  bottom: 0px;
+  left: 0px;
+  border: 0px solid #000000;
+  background-repeat: no-repeat;
+  background-image: url('../images/resize.png');
+  width: 20px;
+  height: 20px;
+  cursor: sw-resize;
+}

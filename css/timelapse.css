@@ -1,29 +1,31 @@
 @charset "UTF-8";
 
-h1#firstHeading{top:450px;}
+h1#firstHeading {
+  top: 450px;
+}
 
 a.time_warp_link {
-  width:auto !important;
-  padding:0px 16px 0px 0px !important;
-  text-decoration:underline !important; 
-  background:url('../images/snaplink.png') right center no-repeat !important; 
+  width: auto !important;
+  padding: 0px 16px 0px 0px !important;
+  text-decoration: underline !important;
+  background: url('../images/snaplink.png') right center no-repeat !important;
 }
 
-a.time_warp_link:hover{
-  text-decoration:none !important;
+a.time_warp_link:hover {
+  text-decoration: none !important;
 }
 
-#bodyContent{
-  margin:10px 30px 0px 548px !important;
-  padding:10px 34px 50px ;
-  background:#fff;
-  min-height:400px;
-  max-width:100%;
-  min-width:200px;
-  position:relative;
-  top:100px;
-  bottom:100px;
-  left:0px;
+#bodyContent {
+  margin: 10px 30px 0px 548px !important;
+  padding: 10px 34px 50px;
+  background: #fff;
+  min-height: 400px;
+  max-width: 100%;
+  min-width: 200px;
+  position: relative;
+  top: 100px;
+  bottom: 100px;
+  left: 0px;
 }
 
 #flash_video_controls {
@@ -31,7 +33,7 @@ a.time_warp_link:hover{
   position: fixed;
   left: 395px;
   top: 400px;
-  color:#ffffff;
+  color: #ffffff;
 }
 
 #browser_not_supported {
@@ -44,33 +46,33 @@ a.time_warp_link:hover{
 }
 
 #html5_overridden_message {
-  height: 348px;   
+  height: 348px;
   left: 34px;
-  position: fixed;      
+  position: fixed;
   top: 65px;
   width: 514px;
-  z-index:1000;
+  z-index: 1000;
 }
 
 .warning, .error {
   border: 1px solid;
-  width: 400px ;
-  margin-left: auto ;
-  margin-right: auto ;
-  margin-top: 50px ;
-  padding: 15px 10px 15px 60px; 
+  width: 400px;
+  margin-left: auto;
+  margin-right: auto;
+  margin-top: 50px;
+  padding: 15px 10px 15px 60px;
   background-repeat: no-repeat;
   background-position: 10px center;
 }
 
 .warning {
-   color: #9F6000;
-   background-color: #FEEFB3;
-   background-image: url('../images/alert.png');
+  color: #9F6000;
+  background-color: #FEEFB3;
+  background-image: url('../images/alert.png');
 }
 
 .error {
-   color: #D8000C;
-   background-color: #FFBABA;
-   background-image: url('../images/error.png');
+  color: #D8000C;
+  background-color: #FFBABA;
+  background-image: url('../images/error.png');
 }

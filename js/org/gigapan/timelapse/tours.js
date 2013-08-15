@@ -1,3 +1,6 @@
+// @license
+// Redistribution and use in source and binary forms ...
+
 var view = "youtube"
 var timelapse;
 var doHelpPrompt = true;
@@ -6,8 +9,7 @@ var timeWarp;
 var earthTimeUrl;
 
 function onytplayerStateChange(newState) {
-  if (newState == 0 && (Math.ceil(ytplayer.getCurrentTime()) >= ytplayer.getDuration())
-      && org.gigapan.Util.browserSupported())
+  if (newState == 0 && (Math.ceil(ytplayer.getCurrentTime()) >= ytplayer.getDuration()) && org.gigapan.Util.browserSupported())
     doTimeMachine(true, false);
 }
 
@@ -33,7 +35,7 @@ function loadNewVideo(newTimeWarpName) {
   if (ytplayer) {
     //ytplayer.loadVideoById(id, startSeconds);
     ytplayer.stopVideo();
-    timeWarp = cached_ajax[earthTimeUrl+newTimeWarpName];
+    timeWarp = cached_ajax[earthTimeUrl + newTimeWarpName];
     ytplayer.cueVideoById(timeWarp["youtube_url"], 0);
     autoPlay = false;
     doYouTube(autoPlay);
@@ -43,23 +45,37 @@ function loadNewVideo(newTimeWarpName) {
 function onYouTubePlayerReady(playerId) {
   ytplayer = document.getElementById("myytplayer");
 
-  $('.flashToggleMap').hover( function() {
-    $(this).stop().animate({'background-color':'#c4c4c4'}, 300);
-  }, function () {
-    $(this).stop().animate({'background-color':'#6b6b6b'}, 100);
+  $('.flashToggleMap').hover(function() {
+    $(this).stop().animate({
+      'background-color': '#c4c4c4'
+    }, 300);
+  }, function() {
+    $(this).stop().animate({
+      'background-color': '#6b6b6b'
+    }, 100);
   });
 
   ytplayer.addEventListener("onStateChange", "onytplayerStateChange");
 
   $('.overlay').show();
-  $(".flashToggleMap").delay(500).animate({'background-color':'#ffffff'}, 2000);
-  $(".flashToggleMap").animate({'background-color':'#6b6b6b'}, 2000);
+  $(".flashToggleMap").delay(500).animate({
+    'background-color': '#ffffff'
+  }, 2000);
+  $(".flashToggleMap").animate({
+    'background-color': '#6b6b6b'
+  }, 2000);
 }
 
 function init() {
   //YouTube init
-  var params = { allowScriptAccess: "always", allowFullScreen: "true", wmode: "opaque" };
-  var atts = { id: "myytplayer" };
+  var params = {
+    allowScriptAccess: "always",
+    allowFullScreen: "true",
+    wmode: "opaque"
+  };
+  var atts = {
+    id: "myytplayer"
+  };
   //##### This is where you will use the data pulled from your own json blob you use for the gallery
   // earthTimeUrl and timeWarp are global so that other functions can make use of them
   earthTimeUrl = "http://mw1.google.com/et/annual30m.timemachine/"
@@ -67,8 +83,7 @@ function init() {
   //##### End
   timeWarp = cached_ajax[timelapsetour];
 
-  swfobject.embedSWF("http://www.youtube.com/v/"+timeWarp["youtube_url"]+"?enablejsapi=1&playerapiid=ytplayer&modestbranding=1&showinfo=0&version=3&rel=0",
-                     "ytapiplayer", "818", "495", "8", null, null, params, atts);
+  swfobject.embedSWF("http://www.youtube.com/v/" + timeWarp["youtube_url"] + "?enablejsapi=1&playerapiid=ytplayer&modestbranding=1&showinfo=0&version=3&rel=0", "ytapiplayer", "818", "495", "8", null, null, params, atts);
 
   //EarthTime init
   var myView = null;
@@ -76,12 +91,16 @@ function init() {
   var hashVars = org.gigapan.Util.getHashVars();
 
   if (hashVars) {
-    if (hashVars.v) var viewParam = hashVars.v.split(",");
-    if (hashVars.t) var timeParam = hashVars.t.split(",");
+    if (hashVars.v)
+      var viewParam = hashVars.v.split(",");
+    if (hashVars.t)
+      var timeParam = hashVars.t.split(",");
 
     if (viewParam || timeParam) {
-      if (viewParam) myView = formatView(viewParam);
-      if (timeParam) myTime = timeParam[0];
+      if (viewParam)
+        myView = formatView(viewParam);
+      if (timeParam)
+        myTime = timeParam[0];
     }
   }
 
@@ -113,25 +132,29 @@ function init() {
   // Change the toggle button depending upon the browser the page is being viewed with
   if (org.gigapan.Util.browserSupported()) {
     $(".flashToggleMap").html("Explore Map");
-    $("#switchView").bind("click", function () {
+    $("#switchView").bind("click", function() {
       switchViews();
     });
-    $("#switchView").attr({"title":"Click to explore the map"});
+    $("#switchView").attr({
+      "title": "Click to explore the map"
+    });
   } else {
     $(".flashToggleMap").html("Time-explorable Earth available only on Chrome and Safari");
     $("#switchView").width(280);
-    $("#switchView").bind("click", function () {
-      window.open('http://www.google.com/chrome/','external');
+    $("#switchView").bind("click", function() {
+      window.open('http://www.google.com/chrome/', 'external');
       return false;
     });
-    $("#switchView").attr({"title":"Click to download Chrome"});
+    $("#switchView").attr({
+      "title": "Click to download Chrome"
+    });
   }
 
-  $("#earthTimePlayer .tourToggle").bind("click", function () {
+  $("#earthTimePlayer .tourToggle").bind("click", function() {
     switchViews();
   });
 
-  $("#earthTimePlayer .helpmsg").bind("click", function () {
+  $("#earthTimePlayer .helpmsg").bind("click", function() {
     $('#earthTimePlayer .helpmsg').hide();
   });
 
@@ -142,9 +165,10 @@ function computeBoundsToWarpTo(currentTime) {
   var keyframes = timeWarp.snaplapse.keyframes;
   var i;
 
-  for (i = 0; i < keyframes.length - 1; i++) {
+  for ( i = 0; i < keyframes.length - 1; i++) {
     var keyframe = keyframes[i];
-    if (keyframe_time + keyframe.duration >= currentTime) break;
+    if (keyframe_time + keyframe.duration >= currentTime)
+      break;
     keyframe_time += keyframe.duration;
   }
 
@@ -156,7 +180,8 @@ function computeBoundsToWarpTo(currentTime) {
 
 function doYouTube(doAutoPlay) {
   view = "youtube";
-  if (org.gigapan.Util.browserSupported()) timelapse.pause();
+  if (org.gigapan.Util.browserSupported())
+    timelapse.pause();
   $("#earthTimePlayer").hide();
   $("#youtubePlayer").width("818px");
   $("#youtubePlayer").height("495px");
@@ -168,7 +193,8 @@ function doYouTube(doAutoPlay) {
 }
 
 function doTimeMachine(warpAndSeek, autoPlay) {
-  if (timelapse == null) setTimeout(doTimeMachine, 100);
+  if (timelapse == null)
+    setTimeout(doTimeMachine, 100);
 
   view = "earthtime";
   ytPause();
@@ -183,7 +209,8 @@ function doTimeMachine(warpAndSeek, autoPlay) {
       timelapse.setTargetView(timelapse.homeView());
       timelapse.seek(0);
     }
-    if (autoPlay) timelapse.play();
+    if (autoPlay)
+      timelapse.play();
   }
   $("#youtubePlayer").width(0);
   $("#youtubePlayer").height(0);
@@ -200,7 +227,8 @@ function doTimeMachine(warpAndSeek, autoPlay) {
 }
 
 function switchViews() {
-  if ($("#earthTimePlayer .help").hasClass("on")) return;
+  if ($("#earthTimePlayer .help").hasClass("on"))
+    return;
   if (view == "youtube") {
     doTimeMachine(true, true);
   } else {
@@ -208,33 +236,55 @@ function switchViews() {
   }
 }
 
-function onTimeMachinePlayerReady(viewerDivId) {}
+function onTimeMachinePlayerReady(viewerDivId) {
+}
 
 // Share url specific functions
 
-function formatView(viewParam){
+function formatView(viewParam) {
   var view = null;
   if (viewParam.length == 3)
-    view = {center: {"lat": viewParam[0], "lng": viewParam[1]}, "zoom": viewParam[2]};
+    view = {
+      center: {
+        "lat": viewParam[0],
+        "lng": viewParam[1]
+      },
+      "zoom": viewParam[2]
+    };
   else if (viewParam.length == 4)
-    view = {bbox: {"ne": {"lat": viewParam[0], "lng": viewParam[1]}, "sw": {"lat" : viewParam[2], "lng": viewParam[3]}}};
+    view = {
+      bbox: {
+        "ne": {
+          "lat": viewParam[0],
+          "lng": viewParam[1]
+        },
+        "sw": {
+          "lat": viewParam[2],
+          "lng": viewParam[3]
+        }
+      }
+    };
   return view;
 }
 
 // changes current view
 function setView(view) {
-  if (view) timelapse.setNewView(formatView(view.split(",")));
+  if (view)
+    timelapse.setNewView(formatView(view.split(",")));
 }
 
 // changes current view and time
 function setViewAndTime(view, time) {
-  if (view) timelapse.setNewView(formatView(view.split(",")));
-  if (time) timelapse.seek(time);
+  if (view)
+    timelapse.setNewView(formatView(view.split(",")));
+  if (time)
+    timelapse.seek(time);
 }
 
 // changes the current time
 function setTime(time) {
-  if (time) timelapse.seek(time);
+  if (time)
+    timelapse.seek(time);
 }
 
 // End share url specific functions

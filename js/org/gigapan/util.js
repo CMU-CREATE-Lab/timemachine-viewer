@@ -33,6 +33,8 @@
 // Paul Dille (pdille@andrew.cmu.edu)
 // Randy Sargent (randy.sargent@cs.cmu.edu)
 
+"use strict";
+
 //
 // VERIFY NAMESPACE
 //
@@ -42,7 +44,7 @@ var org;
 if (!org) {
   org = {};
 } else {
-  if (typeof org != "object") {
+  if ( typeof org != "object") {
     var orgExistsMessage = "Error: failed to create org namespace: org already exists and is not an object";
     alert(orgExistsMessage);
     throw new Error(orgExistsMessage);
@@ -53,7 +55,7 @@ if (!org) {
 if (!org.gigapan) {
   org.gigapan = {};
 } else {
-  if (typeof org.gigapan != "object") {
+  if ( typeof org.gigapan != "object") {
     var orgGigapanExistsMessage = "Error: failed to create org.gigapan namespace: org.gigapan already exists and is not an object";
     alert(orgGigapanExistsMessage);
     throw new Error(orgGigapanExistsMessage);
@@ -65,25 +67,54 @@ if (!org.gigapan) {
 // CODE
 //
 (function() {
-  var isChromeCached;
-  var areLogging = true;
   var isChromeUserAgent = navigator.userAgent.match(/Chrome/) != null;
-  var isSafariUserAgent = navigator.userAgent.match(/Safari/) != null  && !isChromeUserAgent;  // the Chrome user agent actually has the word "Safari" in it too!
+  var isSafariUserAgent = navigator.userAgent.match(/Safari/) != null && !isChromeUserAgent;
+  // The Chrome user agent actually has the word "Safari" in it too!
   var isMSIEUserAgent = navigator.userAgent.match(/MSIE/) != null;
   var matchIEVersion = navigator.userAgent.match(/MSIE\s([\d]+)/);
   var isFirefoxUserAgent = navigator.userAgent.match(/Firefox/) != null;
+  var isChromeOS = navigator.userAgent.match(/CrOS/) != null;
+  var mediaType = ".mp4";
+  var viewerType = (isSafariUserAgent || isChromeOS) ? "video" : "canvas";
 
   //0 == none
   //1 == errors only
   //2 == verbose (everything)
   var loggingLevel = 1;
 
-  org.gigapan.Util = function() { };
+  org.gigapan.Util = function() {
+  };
+
+  org.gigapan.Util.isMobile = function() {
+    return (navigator.userAgent.match(/Android/i) ||
+            navigator.userAgent.match(/webOS/i) ||
+            navigator.userAgent.match(/iPhone/i) ||
+            navigator.userAgent.match(/iPad/i) ||
+            navigator.userAgent.match(/iPod/i) ||
+            navigator.userAgent.match(/BlackBerry/i) ||
+            navigator.userAgent.match(/Windows Phone/i));
+  };
 
   org.gigapan.Util.browserSupported = function() {
     var v = document.createElement('video');
-    // Check if video tag is supported and the browser supports H.264
-    return !!(v.canPlayType && v.canPlayType('video/mp4; codecs="avc1.42E01E, mp4a.40.2"').replace(/no/, ''));
+    var canPlay = false;
+    // We do not support mobile devices (Android, iOS, etc) due to OS limitations
+    if (org.gigapan.Util.isMobile())
+      return canPlay;
+    // Check if video tag is supported and that the browser supports WebM
+    canPlay = !!(v.canPlayType && v.canPlayType('video/webm; codecs="vp8"').replace(/no/, ''));
+    if (canPlay) {
+      canPlay = true;
+      mediaType = ".webm";
+    } else {
+      // Check if video tag is supported and that the browser supports H.264
+      canPlay = !!(v.canPlayType && v.canPlayType('video/mp4; codecs="avc1.42E01E, mp4a.40.2"').replace(/no/, ''));
+      if (canPlay) {
+        canPlay = true;
+        mediaType = ".mp4";
+      }
+    }
+    return canPlay;
   };
 
   org.gigapan.Util.isChrome = function() {
@@ -106,14 +137,44 @@ if (!org.gigapan) {
     return (isMSIEUserAgent && matchIEVersion[1] == 9);
   };
 
+  org.gigapan.Util.isOpera = function() {
+    return typeof (window.opera) !== "undefined";
+  };
+
+  org.gigapan.Util.getMediaType = function() {
+    return mediaType;
+  };
+
+  org.gigapan.Util.setMediaType = function(type) {
+    if (type != ".mp4" && type != ".webm")
+      return;
+    mediaType = type;
+  };
+
+  org.gigapan.Util.getViewerType = function() {
+    return viewerType;
+  };
+
+  org.gigapan.Util.setViewerType = function(type) {
+    if (type != "canvas" && type != "video")
+      return;
+    viewerType = type;
+  };
+
+  org.gigapan.Util.playbackRateSupported = function() {
+    var video = document.createElement("video");
+    return !!video.playbackRate;
+  };
+
   org.gigapan.Util.isNumber = function(n) {
-    // code taken from http://stackoverflow.com/questions/18082/validate-numbers-in-javascript-isnumeric
-    // added check to ensure that the value being checked is defined
-    return (typeof(n) !== 'undefined') && !isNaN(parseFloat(n)) && isFinite(n);
+    // Code taken from http://stackoverflow.com/questions/18082/validate-numbers-in-javascript-isnumeric
+    // Added check to ensure that the value being checked is defined
+    return ( typeof (n) !== 'undefined') && !isNaN(parseFloat(n)) && isFinite(n);
   };
 
   org.gigapan.Util.log = function(str, logType) {
-    if (typeof(console) == 'undefined' || console == null) return;
+    if ( typeof (console) == 'undefined' || console == null)
+      return;
     var now = (new Date()).getTime();
     if (loggingLevel >= 2 || (loggingLevel == 1 && logType && logType == 1)) {
       console.log(org.gigapan.Util.convertTimeToMinsSecsString(now) + ": " + str);
@@ -131,7 +192,7 @@ if (!org.gigapan) {
   };
 
   org.gigapan.Util.dumpObject = function(obj) {
-    if (typeof obj != 'object') {
+    if ( typeof obj != 'object') {
       return obj;
     }
     var ret = '{';
@@ -146,7 +207,7 @@ if (!org.gigapan) {
   };
 
   org.gigapan.Util.getCurrentTimeInSecs = function() {
-    return .001 * (new Date()).getTime();
+    return 0.001 * (new Date()).getTime();
   };
 
   org.gigapan.Util.formatTime = function(theTime, willShowMillis, willShowHours) {
@@ -173,131 +234,93 @@ if (!org.gigapan) {
       millisStr = "0" + millisStr;
     }
 
-    return (willShowHours ? hoursStr + ':' : '') +
-            minutesStr + ":" +
-            secondsStr +
-            (willShowMillis ? "." + millisStr : '');
+    return ( willShowHours ? hoursStr + ':' : '') + minutesStr + ":" + secondsStr + ( willShowMillis ? "." + millisStr : '');
   };
 
-  org.gigapan.Util.isChrome = function() {
-    if (isChromeCached != undefined) {
-      return isChromeCached;
-    }
-    return isChromeCached = (navigator.userAgent.indexOf("Chrome") >= 0);
-  };
-
-  // wrapper for ajax calls
-  org.gigapan.Util.ajax = function(dataType, url, callback) {
-    if (typeof(cached_ajax) != "undefined") {
+  // Wrapper for ajax calls
+  org.gigapan.Util.ajax = function(dataType, rootPath, path, callback) {
+    var ajaxUrl;
+    if ( typeof (cached_ajax) != "undefined") {
       // We are on file url or using cached ajax to get around
       // cross domain security policies
-      if (typeof(cached_ajax[url]) == "undefined") {
-        // TODO: deprecate *.json for *.js
-        // left here for backwards compatibility
-        url = url.replace(/js$/,".json")
-        if (typeof(cached_ajax[url]) == "undefined") {
-          org.gigapan.Util.error("Error loading file from file URL [" + url + "]");
-          return;
-        }
+      ajaxUrl = rootPath + path;
+      // If the key does not include the absolute dataset URL,
+      // assume the key is relative and in the form of "./foo.blah"
+      if ( typeof (cached_ajax[ajaxUrl]) == "undefined")
+        ajaxUrl = "./" + path;
+      if ( typeof (cached_ajax[ajaxUrl]) == "undefined") {
+        org.gigapan.Util.error("Error loading key from ajax_includes [" + ajaxUrl + "]");
+        return;
       }
-      callback(cached_ajax[url]);
+      callback(cached_ajax[ajaxUrl]);
     } else {
       // We are not on file url or we are utilizing the Chrome
       // --allow-file-access-from-files param and can do normal ajax calls
+      ajaxUrl = rootPath + path;
       $.ajax({
         dataType: dataType,
-        url: url,
-        success: function (data) {
-          if (data) callback(data);
-        }, error: function () {
-          // TODO: deprecate *.json for *.js
-          // left here for backwards compatibility
-          if (dataType == "script") {
-            url = url.replace(".js",".json");
-            $.ajax({
-              dataType: "json",
-              url: url,
-              success: function (data) {
-                if (data) callback(data);
-              }, error: function () {
-                org.gigapan.Util.error("Error loading file from URL [" + url + "]");
-                return;
-              }
-            });
-          } else {
-            org.gigapan.Util.error("Error loading file from URL [" + url + "]");
-            return;
-          }
+        url: ajaxUrl,
+        success: function(data) {
+          if (data)
+            callback(data);
+        },
+        error: function() {
+          org.gigapan.Util.error("Error loading file from URL [" + ajaxUrl + "]");
+          return;
         }
       });
     }
-  }
+  };
 
   org.gigapan.Util.htmlForTextWithEmbeddedNewlines = function(text) {
-    if (text === undefined) return;
+    if (text === undefined)
+      return;
     var htmls = [];
     var lines = text.split(/\n/);
     var className = "";
-    for (var i = 0 ; i < lines.length ; i++) {
-      if (i == 0) className = "captureTimeMain";
-      else className = "captureTimeSub"+i;
-      htmls.push(
-        jQuery(document.createElement('div')).html("<div class=\""+className+"\">"+lines[i]).html()+"</div>"
-      );
+    for (var i = 0; i < lines.length; i++) {
+      if (i == 0)
+        className = "captureTimeMain";
+      else
+        className = "captureTimeSub" + i;
+      htmls.push(jQuery(document.createElement('div')).html("<div class=\"" + className + "\">" + lines[i]).html() + "</div>");
     }
     return htmls.join("");
-  }
+  };
 
   org.gigapan.Util.unpackVars = function(str) {
     var keyvals = str.split('&');
     var vars = {};
 
-    if (keyvals.length == 1 && keyvals[0] == "") return null;
+    if (keyvals.length == 1 && keyvals[0] == "")
+      return null;
 
     for (var i = 0; i < keyvals.length; i++) {
       var keyval = keyvals[i].split('=');
       vars[keyval[0]] = keyval[1];
     }
     return vars;
-  }
+  };
 
-  org.gigapan.Util.getQueryVars = function() {
-    return org.gigapan.Util.unpackVars(window.location.search.slice(1));
-  }
-
+  // Hash variables may contain potentially unsafe user inputted data.
+  // Caution must be taken when working with these values.
   org.gigapan.Util.getHashVars = function() {
     return org.gigapan.Util.unpackVars(window.location.hash.slice(1));
-  }
-
-  org.gigapan.Util.onQueryChange = function() {
-    if (org.gigapan.Util.getQueryVars().v != undefined) {
-      if (org.gigapan.Util.getQueryVars().t != undefined) {
-        setViewAndTime(org.gigapan.Util.getQueryVars().v, org.gigapan.Util.getQueryVars().t);
-      } else {
-        setView(org.gigapan.Util.getQueryVars().v);
-      }
-    }
   };
 
-  org.gigapan.Util.onHashChange = function() {
-    if ((org.gigapan.Util.getHashVars().v != undefined) &&
-       (org.gigapan.Util.getHashVars().t != undefined)) {
-      setViewAndTime(org.gigapan.Util.getHashVars().v, org.gigapan.Util.getHashVars().t);
-    } else if (org.gigapan.Util.getHashVars().v != undefined) {
-      setView(org.gigapan.Util.getHashVars().v);
-    } else if (org.gigapan.Util.getHashVars().t != undefined) {
-      setTime(org.gigapan.Util.getHashVars().t);
-    }
-  };
-
-  org.gigapan.Util.queryAndHash = function(query, hash) {
-    if (window.location.search != query) {
-      window.location.href =
-        window.location.href.slice(0, window.location.href.indexOf('?')) + query + hash;
-    } else {
-      window.location.hash = hash;
-      org.gigapan.Util.onHashChange();
-    }
+  // Select an element in jQuery selectable
+  org.gigapan.Util.selectSelectableElements = function($selectableContainer, $elementsToSelect) {
+    // Add unselecting class to all elements in the styleboard canvas except the ones to select
+    $(".ui-selected", $selectableContainer).not($elementsToSelect).removeClass("ui-selected").addClass("ui-unselecting");
+    // Add ui-selecting class to the elements to select
+    $elementsToSelect.not(".ui-selected").addClass("ui-selecting");
+    // Refresh the selectable to prevent errors
+    $selectableContainer.selectable('refresh');
+    // Trigger the mouse stop event (this will select all .ui-selecting elements, and deselect all .ui-unselecting elements)
+    $selectableContainer.data("uiSelectable")._mouseStop(null);
+    // Scroll to the position
+    var $selectableContainerParent = $selectableContainer.parent();
+    $selectableContainerParent.scrollLeft(Math.round($elementsToSelect.position().left - $selectableContainerParent.width() / 3));
   };
 
 })();

@@ -1,53 +1,20 @@
-<div style="float:left; padding-right: 100px; padding-bottom: 10px">
-  <h2>
-    <span class="mw-headline">
-      Annotation Markers
-    </span>
-  </h2>
-  <p>
-    Create annotation markers for the above time machine.
-  </p>
-  <div class="annotation_instructions">
-    <b><u>Instructions:</u></b><br>
-    <b>Place Marker: </b>Hold SHIFT, Left mouse click.<br>
-    <b>Move Marker: </b>Hold ALT, Left mouse click a marker, Drag.<br>
-    <b>Select Marker: </b>Hold ALT, Left mouse click a marker OR Click an entry from the list below.<br>
-    <b>Run Event: </b>Left click a marker.
-    <br>
-  </div>
-  <br>
-  <div>
-    <button type="button" class="clearAnnotatorButton ui-state-disabled ui-state-active ui-corner-all button text-button" title="Clear all annotations">
-      Clear
-    </button>
-    <button type="button" class="saveAnnotatorButton ui-state-disabled ui-state-active ui-corner-all button text-button" title="Save annotations">
-      Save
-    </button>
-    <button type="button" class="loadAnnotationWindow ui-state-default ui-corner-all button text-button" title="Load annotations">
-      Load
-    </button>
-  </div>
-  <table>
-    <tr>
-      <td>
-        <div class="annotation_container">
-          <div class="annotation_list">
-          </div>
-        </div>
-      </td>
-    </tr>
-  </table>
+<div class="annotation_container">
+  <div class="annotation_list"></div>
 </div>
 
 <div class="loadAnnotatorWindow" title="Load annotations">
   <button class="loadAnnotatorButton" title="Load annotations">
     Load
   </button>
-  <div class="loadAnnotatorWindow_txt">To load annotations, paste the code into the text box below and then click the Load button.</div>
+  <div class="loadAnnotatorWindow_txt">
+    To load annotations, paste the code into the text box below and then click the Load button.
+  </div>
   <textarea class="loadAnnotatorWindow_JSON"></textarea>
 </div>
 
 <div class="saveAnnotatorWindow" title="Save annotations">
-  <div class="saveAnnotatorWindow_txt">To save these annotations, copy the code contained in the text box below and paste it into a new file in your favorite text editor.</div>
+  <div class="saveAnnotatorWindow_txt">
+    To save these annotations, copy the code contained in the text box below and paste it into a new file in your favorite text editor.
+  </div>
   <textarea class="saveAnnotatorWindow_JSON"></textarea>
 </div>

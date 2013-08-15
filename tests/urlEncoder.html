@@ -1,0 +1,264 @@
+﻿<html>
+<head>
+<script src="../js/org/gigapan/timelapse/urlencoder.js"></script>
+<script>
+
+var errors = 0;
+
+function assert_equal(a, b) {
+  if (a != b) {
+    console.log("Assertion failed because '" + a + "' != '" + b + "'");
+    errors++;
+    debugger;
+  }
+}
+
+function assert_approx_equal(a, b) {
+  if (Math.abs(a - b) > 1e-10) {
+    console.log("Assertion failed because '" + a + "' != '" + b + "'");
+    errors++;
+    debugger;
+  }
+}
+
+function assert_not_equal(a, b) {
+  if (a == b) {
+    console.log("Assertion failed because '" + a + "' == '" + b + "'");
+    errors++;
+    debugger;
+  }
+}
+
+function assert_base64(encoder) {
+  var valid = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_";
+  for (var i = 0; i < encoder.encoded.length; i++) {
+    if (valid.indexOf(encoder.encoded[i]) < 0) {
+      console.log("Invalid char '" + encoder.encoded[i] +"' in encoder");
+      errors++;
+      debugger;
+    }
+  }
+}
+
+function assert_base64_or_pct(encoder) {
+  var valid = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_%";
+  for (var i = 0; i < encoder.encoded.length; i++) {
+    if (valid.indexOf(encoder.encoded[i]) < 0) {
+      console.log("Invalid char '" + encoder.encoded[i] +"' in encoder");
+      errors++;
+      debugger;
+    }
+  }
+}
+
+function test_variable() {
+  var encoder = new org.gigapan.timelapse.UrlEncoder();
+  assert_equal(encoder.encoded, "");
+
+  encoder.write_uint(0);
+  assert_base64(encoder);
+  assert_equal(encoder.encoded, "A");
+  assert_equal(encoder.read_uint(), 0);
+  assert_equal(encoder.encoded, "");
+
+  encoder.write_uint(31);
+  assert_base64(encoder);
+  assert_equal(encoder.encoded, "f");
+  assert_equal(encoder.read_uint(), 31);
+
+  encoder.write_uint(32);
+  assert_base64(encoder);
+  assert_equal(encoder.encoded, "gB");
+  assert_equal(encoder.read_uint(), 32);
+
+  encoder.write_uint(32 * 32 - 1);
+  assert_base64(encoder);
+  assert_equal(encoder.encoded, "_f");
+  assert_equal(encoder.read_uint(), 32 * 32 - 1);
+
+  for (i = 0; i < 75*75*3; i++) {
+    encoder.write_uint(i);
+    assert_base64(encoder);
+    assert_equal(encoder.read_uint(), i);
+  }
+}
+
+function test_decimals() {
+  var encoder = new org.gigapan.timelapse.UrlEncoder();
+  assert_equal(encoder.encoded, "");
+
+  encoder.write_udecimal(0, 0);
+  assert_base64(encoder);
+  assert_equal(encoder.encoded, "A");
+  assert_approx_equal(encoder.read_udecimal(0), 0);
+  
+  encoder.write_udecimal(123.456, 3);
+  assert_base64(encoder);
+  assert_approx_equal(encoder.read_udecimal(3), 123.456);
+  
+  encoder.write_udecimal(123.456, 2);
+  assert_approx_equal(encoder.read_udecimal(2), 123.46);
+}
+
+function test_fixed() {
+  var encoder = new org.gigapan.timelapse.UrlEncoder();
+  assert_equal(encoder.encoded, "");
+  encoder.write_uint_fixed(1, 0);
+  assert_base64(encoder);
+  assert_equal(encoder.encoded, "A");
+  encoder.write_uint_fixed(1, 63);
+  assert_base64(encoder);
+  assert_equal(encoder.encoded, "A_");
+  assert_equal(encoder.read_uint_fixed(1), 0);
+  assert_equal(encoder.read_uint_fixed(1), 63);
+
+  encoder.write_uint_fixed(2, 0);
+  assert_base64(encoder);
+  assert_equal(encoder.encoded, "AA");
+  assert_equal(encoder.read_uint_fixed(2), 0);
+
+  encoder.write_uint_fixed(2, 1);
+  assert_base64(encoder);
+  assert_equal(encoder.encoded, "BA");
+  assert_equal(encoder.read_uint_fixed(2), 1);
+
+  encoder.write_uint_fixed(2, 64);
+  assert_base64(encoder);
+  assert_equal(encoder.encoded, "AB");
+  assert_equal(encoder.read_uint_fixed(2), 64);
+
+  encoder.write_uint_fixed(2, 65);
+  assert_base64(encoder);
+  assert_equal(encoder.encoded, "BB");
+  assert_equal(encoder.read_uint_fixed(2), 65);
+
+  for (var i = 0; i < 64; i++) {
+    encoder.write_uint_fixed(1, i);
+    assert_base64(encoder);
+    assert_equal(encoder.read_uint_fixed(1), i);
+  }
+
+  for (i = 0; i < 64 * 64; i++) {
+    encoder.write_uint_fixed(2, i);
+    assert_base64(encoder);
+    assert_equal(encoder.read_uint_fixed(2), i);
+  }
+
+  for (i = 0; i < 64 * 64 * 3; i++) {
+    encoder.write_uint_fixed(3, i);
+    assert_base64(encoder);
+    assert_equal(encoder.read_uint_fixed(3), i);
+  }
+}
+
+function test_latlon() {
+  var encoder = new org.gigapan.timelapse.UrlEncoder();
+  assert_equal(encoder.encoded, "");
+
+  encoder.write_lat(0);
+  assert_base64(encoder);
+  assert_equal(encoder.read_lat(), 0);
+  assert_equal(encoder.encoded, "");
+
+  encoder.write_lat(-90);
+  assert_base64(encoder);
+  assert_equal(encoder.read_lat(), -90);
+
+  encoder.write_lat(90);
+  assert_base64(encoder);
+  assert_equal(encoder.read_lat(), 90);
+
+  encoder.write_lat(89.7654125);
+  assert_base64(encoder);
+  assert_approx_equal(encoder.read_lat(), 89.7654125);
+
+  encoder.write_lat(-89.7654125);
+  assert_base64(encoder);
+  assert_approx_equal(encoder.read_lat(), -89.7654125);
+
+  encoder.write_lat(270);
+  assert_base64(encoder);
+  assert_not_equal(encoder.read_lat(), 270);
+
+
+  encoder.write_lon(0);
+  assert_base64(encoder);
+  assert_equal(encoder.read_lon(), 0);
+  assert_equal(encoder.encoded, "");
+
+  encoder.write_lon(-180);
+  assert_base64(encoder);
+  assert_equal(encoder.read_lon(), -180);
+
+  encoder.write_lon(180);
+  assert_base64(encoder);
+  assert_equal(encoder.read_lon(), 180);
+
+  encoder.write_lon(179.654325);
+  assert_base64(encoder);
+  assert_approx_equal(encoder.read_lon(), 179.654325);
+
+  encoder.write_lon(-179.654325);
+  assert_base64(encoder);
+  assert_approx_equal(encoder.read_lon(), -179.654325);
+
+  encoder.write_lon(360+180);
+  assert_base64(encoder);
+  assert_not_equal(encoder.read_lon(), 360+180);
+}
+
+function test_string() {
+  var encoder = new org.gigapan.timelapse.UrlEncoder();
+  assert_equal(encoder.encoded, "");
+
+  encoder.write_string("");
+  assert_base64_or_pct(encoder);
+  assert_equal(encoder.encoded, "_");
+  assert_equal(encoder.read_unsafe_string(), "");
+  assert_equal(encoder.encoded, "");
+                  
+  encoder.write_string("a");
+  assert_base64_or_pct(encoder);
+  assert_equal(encoder.encoded, "a_");
+  assert_equal(encoder.read_unsafe_string(), "a");
+
+  encoder.write_string("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-");
+  assert_base64_or_pct(encoder);
+  assert_equal(encoder.encoded, "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_");
+  assert_equal(encoder.read_unsafe_string(), "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-");
+                  
+  encoder.write_string("~!&=$_ ");
+  assert_base64_or_pct(encoder);
+  assert_equal(encoder.encoded, "%7E%21%26%3D%24%5F%20_");
+  assert_equal(encoder.read_unsafe_string(), "~!&=$_ ");
+
+  encoder.write_string("abc さ藤½");
+  assert_base64_or_pct(encoder);
+  assert_equal(encoder.encoded, "abc%20%C3%A3%C2%81%E2%80%A2%C3%A8%E2%80%94%C2%A4%C3%82%C2%BD_");
+  assert_equal(encoder.read_unsafe_string(), "abc さ藤½");
+
+  all_ascii = " !\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~";
+  assert_base64_or_pct(encoder);
+  encoder.write_string(all_ascii);
+  assert_equal(encoder.encoded, "%20%21%22%23%24%25%26%27%28%29%2A%2B%2C-%2E%2F0123456789%3A%3B%3C%3D%3E%3F%40ABCDEFGHIJKLMNOPQRSTUVWXYZ%5B%5C%5D%5E%5F%60abcdefghijklmnopqrstuvwxyz%7B%7C%7D%7E_");
+  assert_equal(encoder.read_unsafe_string(), all_ascii);
+}
+
+test_fixed();
+test_variable();
+test_decimals();
+test_latlon();
+test_string();
+
+if (errors) {
+  console.log("Found " + errors + " errors");
+} else {
+  console.log("Success!");
+}
+
+</script>
+
+</head>
+<body>
+</body>
+</html>
