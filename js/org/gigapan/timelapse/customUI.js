@@ -180,21 +180,23 @@ if (!org.gigapan.timelapse.Timelapse) {
       var $playStopTour = $("#" + viewerDivId + " .snaplapseTourPlayBack");
       // Set event listeners
       var snaplapse = timelapse.getSnaplapse();
-      snaplapse.addEventListener('play', function() {
-        $("#" + viewerDivId + " .tourLoadOverlayPlay").attr("src", "images/tour_stop_outline.png").css("opacity", "1.0");
-        if ($speedControl.is(':visible'))
-          timelapse.getSnaplapse().getSnaplapseViewer().hideViewerUI();
-        $playStopTour.css({
-          "left":"0px"
-        }).toggleClass("playTour stopTour").attr("title", "Click to stop this tour");
-      });
-      snaplapse.addEventListener('stop', function() {
-        $("#" + viewerDivId + " .tourLoadOverlayPlay").attr("src", "images/tour_replay_outline.png").css("opacity", "1.0");
-        timelapse.getSnaplapse().getSnaplapseViewer().showViewerUI();
-        $playStopTour.css({
-          "left":"60px"
-        }).toggleClass("stopTour playTour").attr("title", "Click to play this tour");
-      });
+      if (snaplapse) {
+        snaplapse.addEventListener('play', function() {
+          $("#" + viewerDivId + " .tourLoadOverlayPlay").attr("src", "images/tour_stop_outline.png").css("opacity", "1.0");
+          if ($speedControl.is(':visible'))
+            timelapse.getSnaplapse().getSnaplapseViewer().hideViewerUI();
+          $playStopTour.css({
+            "left":"0px"
+          }).toggleClass("playTour stopTour").attr("title", "Click to stop this tour");
+        });
+        snaplapse.addEventListener('stop', function() {
+          $("#" + viewerDivId + " .tourLoadOverlayPlay").attr("src", "images/tour_replay_outline.png").css("opacity", "1.0");
+          timelapse.getSnaplapse().getSnaplapseViewer().showViewerUI();
+          $playStopTour.css({
+            "left":"60px"
+          }).toggleClass("stopTour playTour").attr("title", "Click to play this tour");
+        });
+     }
     };
 
     var updateVariableDimensions = function() {

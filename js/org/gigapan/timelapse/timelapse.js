@@ -457,7 +457,7 @@ if (!window['$']) {
     this.handlePlayPause = function() {
       if (timelapseCurrentTimeInSeconds <= 0 && thisObj.getPlaybackRate() <= 0)
         return;
-      if (doingLoopingDwell && !snaplapse.isPlaying()) {
+      if (doingLoopingDwell && (snaplapse && !snaplapse.isPlaying())) {
         doingLoopingDwell = false;
         _pause();
         // Need to manually do this because of the looping dwell code
