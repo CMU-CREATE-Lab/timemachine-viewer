@@ -64,7 +64,6 @@ body, html {
   border-left: 1px solid #656565;
   border-top: 1px solid #656565;
   border-bottom: 1px solid #656565;
-  cursor: move;
 }
 
 .ui-button .ui-icon.ui-icon-custom-stop {
@@ -696,10 +695,7 @@ body, html {
 }
 
 .layerSlider {
-  /*margin-left: 260px;
-   position: absolute;
-   top: 340px;*/
-  margin-left: auto;
+  margin-left: 560px;
 }
 
 .carousel a.prev, .carousel a.next {
@@ -760,4 +756,11 @@ body, html {
   margin-left: auto;
   margin-right: auto;
   z-index: 10;
+}
+
+.addressLookup {
+  position: absolute; 
+  top: 609px; 
+  left: 9px; 
+  z-index: 99;
 }

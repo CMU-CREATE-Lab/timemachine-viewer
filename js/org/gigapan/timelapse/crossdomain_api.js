@@ -81,7 +81,7 @@ function setupPostMessageHandlers() {
       var viewArray = data.v.split(",");
       var view;
       var doWarp = true;
-      if (viewArray) view = timelapse.shareViewToView(viewArray);
+      if (viewArray) view = timelapse.unsafeViewToView(viewArray);
       if (view) timelapse.setNewView(view, doWarp);
       var time = data.t;
       if (time) timelapse.seek(time);

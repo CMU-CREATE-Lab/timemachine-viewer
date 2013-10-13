@@ -141,6 +141,7 @@ if (!org.gigapan.timelapse.Timelapse) {
     var originalIsPaused;
     var isOpera = org.gigapan.Util.isOpera();
     var isSafari = org.gigapan.Util.isSafari();
+    var editorEnabled = settings["composerDiv"] && $("#" + settings["composerDiv"]).length;
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////
     //
@@ -168,9 +169,9 @@ if (!org.gigapan.timelapse.Timelapse) {
 
       // TODO
       // Update certain properties on window resize
-      $(window).resize(function() {
-        updateVariableDimensions();
-      });
+      //$(window).resize(function() {
+      //  updateVariableDimensions();
+      //});
       updateVariableDimensions();
 
       var $speedControl = $("#" + viewerDivId + " .toggleSpeed");
@@ -194,14 +195,14 @@ if (!org.gigapan.timelapse.Timelapse) {
           timelapse.getSnaplapse().getSnaplapseViewer().showViewerUI();
           $playStopTour.css({
             "left":"60px"
-          }).toggleClass("stopTour playTour").attr("title", "Click to play this tour");
+          }).toggleClass("stopTour playTour").attr("title", "Click to replay this tour");
         });
-     }
+      }
     };
 
     var updateVariableDimensions = function() {
       // TODO
-      timelapse.fitVideoToViewport(window.innerWidth, window.innerHeight);
+      //timelapse.fitVideoToViewport(window.innerWidth, window.innerHeight);
       viewerWidth = $viewer.width();
       sliderLeftMargin_pct = (sliderLeftMargin / viewerWidth) * 100;
       sliderRightMargin_pct = (sliderRightMargin / viewerWidth) * 100;
@@ -286,9 +287,9 @@ if (!org.gigapan.timelapse.Timelapse) {
       // Instruction mask
       var content_instruction = "";
       content_instruction += '<div class="customInstructions">';
-      content_instruction += '<span class="customZoomhelp"><p>Zoom in and out to explore in greater detail. Click or use the mouse scroll wheel.</p></span>';
-      content_instruction += '<span class="customMovehelp"><p>Click and drag to explore.</p></span>';
-      content_instruction += '<span class="customSpeedhelp"><p>Click to toggle the playback speed.</p></span>';
+      content_instruction += '  <span class="customZoomhelp"><p>Zoom in and out to explore in greater detail. Click or use the mouse scroll wheel.</p></span>';
+      content_instruction += '  <span class="customMovehelp"><p>Click and drag to explore.</p></span>';
+      content_instruction += '  <span class="customSpeedhelp"><p>Click to toggle the playback speed.</p></span>';
       content_instruction += '</div>';
       $viewer.append(content_instruction);
       // Play and stop button
@@ -629,7 +630,39 @@ if (!org.gigapan.timelapse.Timelapse) {
       var $googleLogo = $("#" + viewerDivId + " .googleLogo");
       var $googleMapToggle = $("#" + viewerDivId + " .toggleGoogleMapBtn");
       var $contextMapResizer = $("#" + viewerDivId + " .smallMapResizer");
-   };
+    };
+
+    var handleAddressLookup = function() {
+      if (typeof google === "undefined") return;
+
+      var $addressLookupElem = $('<input>').attr({id : viewerDivId + "_addressLookup", size: 35, type: "textbox", "placeholder": "Enter the name of a place to zoom to..."}).addClass("addressLookup");
+      var addressLookupElem = $addressLookupElem.get(0);
+      $("#" + viewerDivId).append($addressLookupElem);
+
+      var autocomplete = new google.maps.places.Autocomplete($addressLookupElem.get(0));
+      var didLocationChange = false;
+      var geocoder = new google.maps.Geocoder();
+
+      google.maps.event.addListener(autocomplete, 'place_changed', function() {
+        var place = autocomplete.getPlace();
+        if (!place.geometry) {
+          var address = $addressLookupElem.val();
+          geocoder.geocode({'address': address}, function(results, status) {
+           if (status == google.maps.GeocoderStatus.OK) {
+             var lat = results[0].geometry.location.lat();
+             var lng = results[0].geometry.location.lng();
+             newView = {center: {"lat": lat, "lng": lng}, "zoom": 0};
+             setViewGracefully(newView, false, true);
+           } else {
+             console.log("Geocode failed: " + status);
+           }
+          });
+        } else {
+          var newView = {center: {"lat": place.geometry.location.lat(), "lng": place.geometry.location.lng()}, "zoom": 0};
+          setViewGracefully(newView, false, true);
+        }
+      });
+    };
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////
     //
@@ -653,6 +686,10 @@ if (!org.gigapan.timelapse.Timelapse) {
     // Constructor code
     //
     createCustomControl();
+    if (settings["showAddressLookup"] && editorEnabled) {
+      handleAddressLookup();
+    }
+
     if (settings["composerDiv"]) {
       createCustomEditorModeToolBar();
     }

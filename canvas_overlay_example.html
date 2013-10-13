@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8"/>
+
+    <link href="css/timelapse.css" rel="stylesheet" type="text/css"/>
+    <link href="css/snaplapse.css" rel="stylesheet" type="text/css"/>
+    <link href="css/jquery-ui/smoothness/jquery-ui.custom.css" rel="stylesheet" type="text/css"/>
+    <link href="css/player.css" rel="stylesheet" type="text/css"/>
+    <link href="css/smallGoogleMap.css" rel="stylesheet" type="text/css"/>
+    <link href="css/scaleBar.css" rel="stylesheet" type="text/css"/>
+    <link href="css/visualizer.css" rel="stylesheet" type="text/css"/>
+    <link href="css/annotator.css" rel="stylesheet" type="text/css"/>
+    <link href="css/customUI.css" rel="stylesheet" type="text/css"/>
+
+    <script src="js/jquery/jquery.min.js" type="text/javascript"></script>
+    <script src="js/jquery/jquery-ui.custom.min.js" type="text/javascript"></script>
+    <script src="js/jquery/plugins/mouse/jquery.mousewheel.min.js" type="text/javascript"></script>
+    <script src="js/jquery/plugins/carousel/jcarousellite.min.js" type="text/javascript"></script>
+    <script src="js/kinetic/kinetic.min.js" type="text/javascript"></script>
+    <script src="js/org/gigapan/util.js" type="text/javascript"></script>
+    <script src="js/org/gigapan/timelapse/videoset.js" type="text/javascript"></script>
+    <script src="js/org/gigapan/timelapse/timelapse.js" type="text/javascript"></script>
+    <script src="js/Math.uuid.js" type="text/javascript"></script>
+    <script src="js/org/gigapan/timelapse/snaplapse.js" type="text/javascript"></script>
+    <script src="js/org/gigapan/timelapse/snaplapseViewer.js" type="text/javascript"></script>
+    <script src="js/org/gigapan/timelapse/mercator.js" type="text/javascript"></script>
+    <script src="js/org/gigapan/timelapse/scaleBar.js" type="text/javascript"></script>
+    <script src="js/org/gigapan/timelapse/smallGoogleMap.js" type="text/javascript"></script>
+    <script src="js/org/gigapan/timelapse/visualizer.js" type="text/javascript"></script>
+    <script src="js/org/gigapan/timelapse/annotator.js" type="text/javascript"></script>
+    <script src="js/org/gigapan/timelapse/customUI.js" type="text/javascript"></script>
+    <script src="js/org/gigapan/timelapse/defaultUI.js" type="text/javascript"></script>
+    <script src="js/org/gigapan/timelapse/urlEncoder.js" type="text/javascript"></script>
+    <script src="js/org/gigapan/timelapse/crossdomain_api.js" type="text/javascript"></script>
+    <script src="js/org/gigapan/timelapse/canvasLayerRenderer.js" type="text/javascript"></script>
+    <script type="text/javascript" src="https://maps.google.com/maps/api/js?sensor=false&libraries=places"></script>
+
+    <script type="text/javascript">
+      jQuery.support.cors = true;
+      // Landsat
+      //var url = "http://earthengine.google.org/timelapse/data";
+      var url = "https://earthengine.google.org/timelapse/data/20130507/";
+      var timelapse;
+      var frackingLayer;
+
+      function init() {
+        var myView = null;
+        var myTime = 0;
+
+        // For Landsat dataset
+        //myHomeView = {center: {"lat": 35.35957, "lng": -91.8649}, "zoom": 0.002};
+
+        var viewerOptions = {
+          url: url, //can be absolute or relative
+          initialTime: myTime, //default to 0; in video time
+          loopPlayback: true, //defaults to false
+          initialView: myView, //see above for possible views to use
+          playOnLoad: false, //defaults to false
+          playbackSpeed: 0.5, //[-1,-.5,-.25,.25,.5,1] available, defaults to 1
+          showMainControls: false, //defaults to true
+          enableCustomUI: true, //defaults to false
+          loopDwell: {
+            startDwell: 0.5, //defaults to 0
+            endDwell: 0.5 //defaults to 0
+          },
+          skippedFramesAtStart: 0,
+          skippedFramesAtEnd: 0,
+          visualizerScale: 1, //defaults to 1
+          viewportGeometry: {
+            width: 1068, //defaults to the size in tm.json, the default min value is 816, 1068
+            height: 600, //defaults to the size in tm.json, the default min value is 468, 600
+          }, //use the size in tm.json if both width and height params left out
+          scaleBarOptions: {
+            scaleBarDiv: "scaleBar1",
+            geometry: {
+              barLength: 113, //defaults to 113, min value = 113
+              offsetX: 0, //defaults to 0
+              offsetY: 67 //defaults to 0
+            }
+          }, //display scale bar; display nothing if param left out
+          smallGoogleMapOptions: {
+            smallGoogleMapDiv: "smallGoogleMap1",
+            geometry: {
+              width: 160, //defaults to 160, (min ,max) value = (160, 330)
+              height: 120, //defaults to 120, (min ,max) value = (120, 220)
+              offsetX: 20, //defaults to 0
+              offsetY: 20 //defaults to 0
+            }
+          } /*, //display small google map; display nothing if param left out
+          newHomeView: myHomeView //override the home view */
+        };
+
+        timelapse = new org.gigapan.timelapse.Timelapse("player1", viewerOptions);
+      }
+
+      function onTimeMachinePlayerReady(viewerDivId) {
+        // Create a canvas renderer that inserts into the DOM a div "stage" with an id specified below.
+        // All canvases created with this renderer will be inserted into this div.
+        // It will be placed in the DOM heiarchy so that mouse events are properly captured by base layer specified
+        // in the second parameter. In this case, the time machine.
+        var canvasLayerRenderer = new org.gigapan.timelapse.CanvasLayerRenderer("dataLayers", "player1_timelapse");
+
+        // Get the current zoom level of the time machine
+        var currentZoom = timelapse.getCurrentZoom();
+
+        // Load the fracking json file
+        $.getJSON('fracked-ar2.json', function (data) {
+          var previousYear = 1983;
+
+          // Create a canvas element on the stage with an id specified below
+          frackingLayer = new canvasLayerRenderer.Layer("fracking");
+
+          // Create a shape that can be drawn on the canvas (API currently only supports circles or rectangles)
+          // This shape will be added to a display list so that we can in effect pre-render it
+          // and then make use of canvas's drawImage method to just copy pixels over and not
+          // redraw the shape every time
+          var shape = new canvasLayerRenderer.Shape({
+            type: "circle",
+            radius: 4,
+            color: "red"
+          });
+
+          var group;
+
+          // Loop through the fracking json
+          for (var key in data) {
+            // Convert the lat/lng of the fracking site to time machine coordinates
+            var view = timelapse.computeViewLatLngCenter({
+              center: {
+                lat: data[key]['Lat'],
+                lng: data[key]['Lon']
+              },
+              zoom: currentZoom
+            });
+
+            // Convert the time machine view to screen coordinates
+            var viewportView = timelapse.convertTimeMachineToViewport(view);
+
+            //var mouseClick = (function() {
+            //  alert(this.attrs.api);
+            //});
+
+            // Create an element that will be drawn
+            var elem = new frackingLayer.Element({
+              x: viewportView.x,
+              y: viewportView.y,
+              originalX: view.x,
+              originalY: view.y,
+              api: data[key]['API'],
+              shape: shape // the element will be drawn using the shape specified above
+            });
+
+            elem.on('click', function() {
+              alert(this.attrs.api);
+            })
+
+            elem.on("mouseover", function() {
+              console.log("mouseover");
+              $("#player1_timelapse").removeClass("openHand closedHand").css("cursor", "pointer");
+            });
+
+            elem.on("mousemove", function() {
+              console.log("mousemove");
+            })
+
+            elem.on("mouseout", function() {
+              console.log("mouseout");
+              $("#player1_timelapse").css("cursor","").addClass("openHand");
+            });
+
+            // Place the elements that will be drawn into groups based on their dates
+            if (previousYear < parseInt(data[key]['Date'])) {
+              // We might not have data for every frame of the time machine, so create empty groups in this case
+              while (previousYear < parseInt(data[key]['Date']) - 1) {
+                previousYear++;
+                group = new frackingLayer.Group({
+                  name: data[key]['Date'],
+                  visible: false
+                });
+              }
+              previousYear = parseInt(data[key]['Date']);
+              group = new frackingLayer.Group({
+                name: data[key]['Date'],
+                visible: false
+              });
+            }
+
+            // Add the element to the list of items to be drawn on the canvas
+            group.addElement(elem);
+          }
+          // Show the first group, since we created every group with an initial display of none
+          frackingLayer.groups[0].show();
+
+          // Draw the canvas
+          frackingLayer.draw();
+        });
+
+        // Add a listener that runs every time the time machine view changes (e.g. we pan/zoom)
+        timelapse.addTimeChangeListener(function () {
+          if (frackingLayer) {
+            // Get all the groups associated with this canvas
+            var frackingGroups = frackingLayer.groups;
+            var timelapseCurrentCaptureTimeIndex = timelapse.getTimelapseCurrentCaptureTimeIndex();
+
+            // For each frame of the time machine, we set what groups of elements we want to have drawn
+            // So if we are at 2008 in the time machine, only show points that occurred <= 2008
+            for (var i = 0; i < frackingGroups.length; i++) {
+              if (timelapseCurrentCaptureTimeIndex >= i) {
+                frackingGroups[i].show();
+              } else {
+                frackingGroups[i].hide();
+              }
+            }
+
+            // Draw the canvas
+            frackingLayer.draw();
+          }
+        });
+
+        // Add a listener that runs every time the time changes in the time machine (e.g. seek with the time scrubber/normal playback)
+        timelapse.addViewChangeListener(function () {
+          if (frackingLayer) {
+            var frackings = frackingLayer.elements;
+            // Go through every element on our canvas
+            for (var i = 0; i < frackings.length; i++) {
+              // Recompute the new screen coordinates for the element
+              var newLoc = timelapse.convertTimeMachineToViewport({
+                x: frackings[i].attrs.originalX,
+                y: frackings[i].attrs.originalY
+              });
+              // Modify and store the new x,y of the element
+              frackingLayer.rePositionElement(i, newLoc);
+            }
+
+            // Draw the canvas
+            frackingLayer.draw();
+          }
+        });
+
+        // Reposition the time machine to a user specific location. In this case, zoomed in on Arkansas
+        window.location.hash = '#v=35.43014,-91.67287,6.536,latLng&t=0.03';
+      }
+      $(init);
+    </script>
+
+  </head>
+  <body>
+    <div id="player1" style="position: absolute; top:10px; left:10px;"></div>
+    <div id="annotator1"></div>
+    <div id="composer1"></div>
+    <button style="position: absolute; top: 630px" onclick="window.location.hash='#v=35.29112,-92.25176,10.64,latLng&t=2.63'">2010 - 74 quakes</button>
+    <button style="position: absolute; top: 630px; left: 120px" onclick="window.location.hash='#v=35.29112,-92.25176,10.64,latLng&t=2.73'">2011 - 177 quakes</button>
+  </body>
+</html>

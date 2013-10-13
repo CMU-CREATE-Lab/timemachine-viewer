@@ -378,10 +378,11 @@ if (!window['$']) {
       }
       activeVideos[video.id] = video;
       video.addEventListener('loadedmetadata', videoLoadedMetadata, false);
-      if (video.readyState >= 1)
+      if (video.readyState >= 1) {
         videoLoadedMetadata({
           target: video
         });
+      }
       if (isOpera) {
         // Opera seems to queue too many videos and then gets stuck in the stalling state.
         // This ensures that we remove old videos that are no longer necessary, specifically
@@ -1269,8 +1270,6 @@ if (!window['$']) {
             UTIL.log("video(" + videoId + ") time correction: seeking from " + (video.getCurrentTime() - leader) + " to " + t + " (error=" + error + ", state=" + video.readyState + ")");
             // DEBUG 3
             if ((!advancing) || (advancing && !emulatingPlaybackRate))
-            //if ((!advancing && video.seeking && video.currentTime < duration))
-            //if (!advancing)
               stall(true);
             var desiredTime = leader + t + ( advancing ? playbackRate * errorThreshold * 0.5 : 0);
             // Seek ahead slightly if advancing
@@ -1358,11 +1357,6 @@ if (!window['$']) {
           try {
             canvasContext.clearRect(0, 0, canvas.width, canvas.height);
             canvasContext.drawImage(video, videoGeometry.left, videoGeometry.top, videoGeometry.width, videoGeometry.height);
-            // TODO: Test transition between two different frames while playing in slow speed
-            //canvasContext.save();
-            //canvasContext.globalAlpha = 0.4;
-            //canvasContext.drawImage(video, video.geometry.left, video.geometry.top, video.geometry.width, video.geometry.height);
-            //canvasContext.restore();
           } catch(e) {
             UTIL.error(e.message);
           }

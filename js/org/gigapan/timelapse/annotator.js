@@ -107,6 +107,7 @@ if (!window['$']) {
     var videoDivId = timelapse.getVideoDivId();
     var videoDiv = document.getElementById(videoDivId);
     var viewerDivId = timelapse.getViewerDivId();
+    var dataPanesId = timelapse.getDataPanesId();
     var annotationCounter = 0;
     var annotationStage;
     var annotationLayer;
@@ -821,7 +822,7 @@ if (!window['$']) {
       });
 
       annotationStage = new Kinetic.Stage({
-        container: videoDivId,
+        container: dataPanesId,
         width: viewportWidth,
         height: viewportHeight
       });
@@ -841,7 +842,6 @@ if (!window['$']) {
         addKineticObj(e.pageX - $playerOffset.left, e.pageY - $playerOffset.top);
       });
 
-      $("#" + viewerDivId + " #annotationStage").appendTo("#player1_timelapse");
       $("#" + annotatorDivId).hide();
 
       var newTop = $("#" + viewerDivId + " .timelineSliderFiller").outerHeight() + $("#" + viewerDivId + " .controls").outerHeight() + $tiledContentHolder.outerHeight() + $playerOffset.top - 1;

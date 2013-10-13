@@ -47,8 +47,8 @@
 "use strict";
 var org;
 var availableTimelapses = [];
-var timelapseMetadata;
 var browserSupported;
+var timelapseMetadata;
 
 if (!org) {
   org = {};
@@ -157,6 +157,7 @@ if (!window['$']) {
     var skippedFramesAtEnd = ( typeof (settings["skippedFramesAtEnd"]) == "undefined" || settings["skippedFramesAtEnd"] < 0) ? 0 : settings["skippedFramesAtEnd"];
     var skippedFramesAtStart = ( typeof (settings["skippedFramesAtStart"]) == "undefined" || settings["skippedFramesAtStart"] < 0) ? 0 : settings["skippedFramesAtStart"];
     var mediaType = ( typeof (settings["mediaType"]) == "undefined") ? null : settings["mediaType"];
+    var showAddressLookup = ( typeof (settings["showAddressLookup"]) == "undefined") ? false : settings["showAddressLookup"];
     var visualizerScale = ( typeof (settings["visualizerScale"]) == "undefined") ? 1 : settings["visualizerScale"];
     var defaultVisualizerGeometry = {
       width: viewportGeometry.width / 4.3,
@@ -188,6 +189,7 @@ if (!window['$']) {
     var $subtitle_DOM;
     var subtitle_DOM;
     var subtitle_DOM_child;
+    var dataPanesId;
 
     // Canvas version
     var canvas;
@@ -432,6 +434,10 @@ if (!window['$']) {
 
     this.getAnnotator = function() {
       return annotator;
+    };
+
+    this.getDataPanesId = function() {
+      return dataPanesId;
     };
 
     this.getLoopPlayback = function() {
@@ -854,7 +860,8 @@ if (!window['$']) {
     };
     this.getShareView = getShareView;
 
-    var shareViewToView = function(viewParam) {
+    // Extract a safe view object from an unsafe view string.
+    var unsafeViewToView = function(viewParam) {
       var view = null;
       if (viewParam.indexOf("latLng") != -1) {
         if (viewParam.length == 4)
@@ -899,7 +906,7 @@ if (!window['$']) {
       }
       return view;
     };
-    this.shareViewToView = shareViewToView;
+    this.unsafeViewToView = unsafeViewToView;
 
     ///////////////////////////
     // Timelapse video control
@@ -917,7 +924,7 @@ if (!window['$']) {
       window.clearTimeout(customPlaybackTimeout);
       window.clearTimeout(loopStartTimeoutId);
       window.clearTimeout(loopEndTimeoutId);
-      thisObj.setPlaybackRate(originalPlaybackRate);
+      //thisObj.setPlaybackRate(originalPlaybackRate);
       videoset.pause();
 
       // Pano video is used for the timewarp map in editor
@@ -1270,9 +1277,10 @@ if (!window['$']) {
 
     // Handle any hash variables related to time machines
     var handleHashChange = function() {
-      var newView = getViewFromHash();
-      var newTime = getTimeFromHash();
-      var tourJSON = getTourFromHash();
+      var unsafeHashVars = UTIL.getUnsafeHashVars();
+      var newView = getViewFromHash(unsafeHashVars);
+      var newTime = getTimeFromHash(unsafeHashVars);
+      var tourJSON = getTourFromHash(unsafeHashVars);
       if (newView || newTime || tourJSON) {
         if (newView) {
           _setNewView(newView, true);
@@ -1296,30 +1304,30 @@ if (!window['$']) {
       }
     };
 
-    var getViewFromHash = function() {
-      var hashVars = UTIL.getHashVars();
-      if (hashVars && hashVars.v) {
-        var newView = shareViewToView(hashVars.v.split(","));
+    // Gets safe view values from an unsafe hash string.
+    var getViewFromHash = function(unsafeHashVars) {
+      if (unsafeHashVars && unsafeHashVars.v) {
+        var newView = unsafeViewToView(unsafeHashVars.v.split(","));
         return newView;
       }
       return null;
     };
 
-    var getTimeFromHash = function() {
-      var hashVars = UTIL.getHashVars();
-      if (hashVars && hashVars.t) {
-        var newTime = parseFloat(hashVars.t);
+    // Gets a safe time value from an unsafe hash string.
+    var getTimeFromHash = function(unsafeHashVars) {
+      if (unsafeHashVars && unsafeHashVars.t) {
+        var newTime = parseFloat(unsafeHashVars.t);
         return newTime;
       }
       return null;
     };
 
-    var getTourFromHash = function() {
-      var hashVars = UTIL.getHashVars();
-      if (hashVars && hashVars.tour) {
+    // Gets safe tour JSON from an unsafe hash string.
+    var getTourFromHash = function(unsafeHashVars) {
+      if (unsafeHashVars && unsafeHashVars.tour) {
         var snaplapse = thisObj.getSnaplapse();
         if (snaplapse) {
-          var tourJSON = snaplapse.urlStringToJSON(hashVars.tour);
+          var tourJSON = snaplapse.urlStringToJSON(unsafeHashVars.tour);
           return tourJSON;
         }
       }
@@ -2177,8 +2185,9 @@ if (!window['$']) {
       _addTimeChangeListener(function(t) {
         if (annotator)
           annotator.updateAnnotationPositions();
+
         timelapseCurrentTimeInSeconds = t;
-        timelapseCurrentCaptureTimeIndex = Math.min(frames-1,Math.floor(t * _getFps()));
+        timelapseCurrentCaptureTimeIndex = Math.min(frames - 1,Math.floor(t * _getFps()));
         if (timelapseCurrentTimeInSeconds.toFixed(3) < 0 || (timelapseCurrentTimeInSeconds.toFixed(3) == 0 && thisObj.getPlaybackRate() < 0)) {
           timelapseCurrentTimeInSeconds = 0;
           _pause();
@@ -2225,7 +2234,7 @@ if (!window['$']) {
         $("#" + viewerDivId + " .zoomSlider").slider("value", _viewScaleToZoomSlider(view.scale));
       });
 
-      _addViewChangeListener(function() {
+      _addViewChangeListener(function(view) {
         if (annotator)
           annotator.updateAnnotationPositions();
         updateTagInfo_locationData();
@@ -2334,7 +2343,7 @@ if (!window['$']) {
       if (settings["scaleBarOptions"] && tmJSON['projection-bounds'])
         scaleBar = new org.gigapan.timelapse.ScaleBar(settings["scaleBarOptions"], thisObj);
       // Must be placed after TimelineSlider is created
-      if (settings["smallGoogleMapOptions"] && tmJSON['projection-bounds'])
+      if (settings["smallGoogleMapOptions"] && tmJSON['projection-bounds'] && typeof google !== "undefined")
         smallGoogleMap = new org.gigapan.timelapse.SmallGoogleMap(settings["smallGoogleMapOptions"], thisObj);
 
       thisObj.setPlaybackRate(playbackSpeed);
@@ -2496,6 +2505,9 @@ if (!window['$']) {
         '-ms-user-select': 'none',
         'user-select': 'none'
       });
+
+      dataPanesId = tmp.id + "_dataPanes";
+      $("#" + videoDivId).append("<div id=" + dataPanesId + "></div>");
 
       if (viewerType == "canvas") {
         canvas = document.createElement('canvas');

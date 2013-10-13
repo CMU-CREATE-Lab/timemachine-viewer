@@ -1,3 +1,6 @@
+// @license
+// Redistribution and use in source and binary forms ...
+
 // Class containing various (static) generic utility methods.
 //
 // Dependencies: None
@@ -44,7 +47,7 @@ var org;
 if (!org) {
   org = {};
 } else {
-  if ( typeof org != "object") {
+  if (typeof org != "object") {
     var orgExistsMessage = "Error: failed to create org namespace: org already exists and is not an object";
     alert(orgExistsMessage);
     throw new Error(orgExistsMessage);
@@ -55,7 +58,7 @@ if (!org) {
 if (!org.gigapan) {
   org.gigapan = {};
 } else {
-  if ( typeof org.gigapan != "object") {
+  if (typeof org.gigapan != "object") {
     var orgGigapanExistsMessage = "Error: failed to create org.gigapan namespace: org.gigapan already exists and is not an object";
     alert(orgGigapanExistsMessage);
     throw new Error(orgGigapanExistsMessage);
@@ -68,8 +71,8 @@ if (!org.gigapan) {
 //
 (function() {
   var isChromeUserAgent = navigator.userAgent.match(/Chrome/) != null;
-  var isSafariUserAgent = navigator.userAgent.match(/Safari/) != null && !isChromeUserAgent;
   // The Chrome user agent actually has the word "Safari" in it too!
+  var isSafariUserAgent = navigator.userAgent.match(/Safari/) != null && !isChromeUserAgent;
   var isMSIEUserAgent = navigator.userAgent.match(/MSIE/) != null;
   var matchIEVersion = navigator.userAgent.match(/MSIE\s([\d]+)/);
   var isFirefoxUserAgent = navigator.userAgent.match(/Firefox/) != null;
@@ -82,7 +85,11 @@ if (!org.gigapan) {
   //2 == verbose (everything)
   var loggingLevel = 1;
 
-  org.gigapan.Util = function() {
+  org.gigapan.Util = function() { };
+
+  org.gigapan.Util.setLoggingLevel = function(newLevel) {
+    if (newLevel < 0 || newLevel > 2) newLevel = 1;
+    loggingLevel = newLevel;
   };
 
   org.gigapan.Util.isMobile = function() {
@@ -138,7 +145,7 @@ if (!org.gigapan) {
   };
 
   org.gigapan.Util.isOpera = function() {
-    return typeof (window.opera) !== "undefined";
+    return typeof(window.opera) !== "undefined";
   };
 
   org.gigapan.Util.getMediaType = function() {
@@ -169,11 +176,11 @@ if (!org.gigapan) {
   org.gigapan.Util.isNumber = function(n) {
     // Code taken from http://stackoverflow.com/questions/18082/validate-numbers-in-javascript-isnumeric
     // Added check to ensure that the value being checked is defined
-    return ( typeof (n) !== 'undefined') && !isNaN(parseFloat(n)) && isFinite(n);
+    return (typeof(n) !== 'undefined') && !isNaN(parseFloat(n)) && isFinite(n);
   };
 
   org.gigapan.Util.log = function(str, logType) {
-    if ( typeof (console) == 'undefined' || console == null)
+    if (typeof(console) == 'undefined' || console == null)
       return;
     var now = (new Date()).getTime();
     if (loggingLevel >= 2 || (loggingLevel == 1 && logType && logType == 1)) {
@@ -192,7 +199,7 @@ if (!org.gigapan) {
   };
 
   org.gigapan.Util.dumpObject = function(obj) {
-    if ( typeof obj != 'object') {
+    if (typeof obj != 'object') {
       return obj;
     }
     var ret = '{';
@@ -240,15 +247,15 @@ if (!org.gigapan) {
   // Wrapper for ajax calls
   org.gigapan.Util.ajax = function(dataType, rootPath, path, callback) {
     var ajaxUrl;
-    if ( typeof (cached_ajax) != "undefined") {
+    if (typeof(cached_ajax) != "undefined") {
       // We are on file url or using cached ajax to get around
       // cross domain security policies
       ajaxUrl = rootPath + path;
       // If the key does not include the absolute dataset URL,
       // assume the key is relative and in the form of "./foo.blah"
-      if ( typeof (cached_ajax[ajaxUrl]) == "undefined")
+      if (typeof(cached_ajax[ajaxUrl]) == "undefined")
         ajaxUrl = "./" + path;
-      if ( typeof (cached_ajax[ajaxUrl]) == "undefined") {
+      if (typeof(cached_ajax[ajaxUrl]) == "undefined") {
         org.gigapan.Util.error("Error loading key from ajax_includes [" + ajaxUrl + "]");
         return;
       }
@@ -302,14 +309,15 @@ if (!org.gigapan) {
     return vars;
   };
 
-  // Hash variables may contain potentially unsafe user inputted data.
+  // Note: Hash variables may contain potentially unsafe user-inputted data.
   // Caution must be taken when working with these values.
-  org.gigapan.Util.getHashVars = function() {
+  org.gigapan.Util.getUnsafeHashVars = function() {
     return org.gigapan.Util.unpackVars(window.location.hash.slice(1));
   };
 
   // Select an element in jQuery selectable
   org.gigapan.Util.selectSelectableElements = function($selectableContainer, $elementsToSelect) {
+    if ($selectableContainer.length == 0) return;
     // Add unselecting class to all elements in the styleboard canvas except the ones to select
     $(".ui-selected", $selectableContainer).not($elementsToSelect).removeClass("ui-selected").addClass("ui-unselecting");
     // Add ui-selecting class to the elements to select

@@ -306,6 +306,9 @@ if (!org.gigapan.timelapse.Timelapse) {
       $(ratioBarRight).addClass("ratioBarRight");
       $(ratioBarLeft).addClass("ratioBarLeft");
       $(videoQualityContainer).addClass("videoQualityContainer");
+      if ($("#" + viewerDivId + " .addressLookup").length > 0) {
+        $(videoQualityContainer).css("left", 278);
+      }
       var $videoQualitySelectorForm_DOM = $(videoQualitySelectorForm_DOM);
       $videoQualitySelectorForm_DOM.addClass("videoQualitySelectorForm");
       $(videoQualitySelector).addClass("videoQualitySelector");

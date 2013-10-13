@@ -16,7 +16,6 @@
   top: 8px;
   font-size: 9pt;
   text-shadow: -1px 0 #656565, 0 1px #656565, 1px 0 #656565, 0 -1px #656565;
-  cursor: default;
 }
 
 .scaleBarBot_txt {
@@ -25,7 +24,6 @@
   top: 27px;
   font-size: 9pt;
   text-shadow: -1px 0 #656565, 0 1px #656565, 1px 0 #656565, 0 -1px #656565;
-  cursor: default;
 }
 
 .scaleBar_canvas {

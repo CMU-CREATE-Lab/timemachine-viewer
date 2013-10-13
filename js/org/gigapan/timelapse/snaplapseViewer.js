@@ -101,7 +101,11 @@ function playCachedSnaplapse(snaplapseId) {
       snaplapse.stop();
     }
     if (snaplapseViewer.loadNewSnaplapse(JSON.stringify(s))) {
-      snaplapseViewer.playStopSnaplapse();
+      var onLoad = function() {
+        snaplapseViewer.playStopSnaplapse();
+        snaplapseViewer.removeEventListener('snaplapse-loaded', onLoad);
+      };
+      snaplapseViewer.addEventListener('snaplapse-loaded', onLoad);
     } else {
       alert("ERROR: Invalid tour file.");
     }
@@ -123,6 +127,12 @@ function playCachedSnaplapse(snaplapseId) {
     var defaultStartDwellTime = 0.5; // in sec
     var defaultEndDwellTime = 0.5; // in sec
     var eventListeners = {};
+    // If the user requested a tour editor AND has a div in the DOM for the editor,
+    // then do all related edtior stuff (pull thumbnails for keyframes, etc.)
+    // Otherwise, we will still handle tours but no editor will be displayed.
+    // (No thumbnails for keyframes pulled and loading a tour will display a load
+    // button with the tour name on the center of the viewport.)
+    var editorEnabled = settings["composerDiv"] && $("#" + settings["composerDiv"]).length;
 
     this.addEventListener = function(eventName, listener) {
       if (eventName && listener && typeof (listener) == "function") {
@@ -250,8 +260,8 @@ function playCachedSnaplapse(snaplapseId) {
           $("#" + timelapseViewerDivId + " .tourLoadOverlayPlay").appendTo($("#" + timelapseViewerDivId + " .snaplapseTourPlayBack"));
           $("#" + timelapseViewerDivId + " .tourLoadOverlayTitleContainer").appendTo($("#" + timelapseViewerDivId + " .snaplapseTourPlayBack"));
           $("#" + timelapseViewerDivId + " .tourLoadOverlay").hide();
-          $(this).attr("src", "images/tour_stop_outline.png");
-          $(this).text("Stop Tour").attr("title", "Click to stop tour playback");
+          $(this).attr({"src": "images/tour_stop_outline.png", "title" : ""});
+          $("#" + timelapseViewerDivId + " .snaplapseTourPlayBack").attr("title", "Click to stop tour playback");
           snaplapse.play();
         });
 
@@ -282,7 +292,6 @@ function playCachedSnaplapse(snaplapseId) {
         if ($(this).val() == "") {
           $(this).val("Untitled");
         }
-        // TODO
         $("#" + composerDivId + " .saveTimewarpWindow_JSON").val("http://earthengine.google.org/#timelapse/tour=" + snaplapse.getAsUrlString());
         $("#" + composerDivId + " .saveTimewarpWindow_JSON2").val('<iframe width="854" height="480" src="http://earthengine.google.org/timelapse/player?c=http%3A%2F%2Fearthengine.google.org%2Ftimelapse%2Fdata#tour=' + snaplapse.getAsUrlString() + '" frameborder="0"></iframe>');
         $("#" + composerDivId + " .saveTimewarpWindow_JSON2_sizes").trigger("change");
@@ -303,10 +312,10 @@ function playCachedSnaplapse(snaplapseId) {
         height: 200
       }).parent().appendTo($("#" + composerDivId));
 
-      $("#loadSnaplapseButton").button({
+      $("#" + composerDivId + " #loadSnaplapseButton").button({
         text: true
       }).click(function() {
-        var fullURL = $(".loadTimewarpWindow_JSON").val();
+        var fullURL = $("#" + composerDivId + " .loadTimewarpWindow_JSON").val();
         var match = fullURL.match(/tour=[^#?&]*/);
         if (match) {
           var tour = match[0].substring(5);
@@ -486,12 +495,12 @@ function playCachedSnaplapse(snaplapseId) {
         "left": newLeft + "px",
         "width": newWidth + "px"
       });
-      if (settings["enableCustomUI"] != true) {
+      if (!editorEnabled) {
         $("#" + composerDivId).hide();
       } else {
         var customEditorControlHeight = $("#" + timelapseViewerDivId + " .customEditorControl").outerHeight();
         $("#" + composerDivId + " .snaplapse_keyframe_container").css({
-          "top": $tiledContentHolder.outerHeight() + playerOffset.top + customEditorControlHeight + "px",
+          "top": $tiledContentHolder.outerHeight() + playerOffset.top + customEditorControlHeight + ($("#" + composerDivId + " .controls").outerHeight() + $("#" + composerDivId + " .timelineSliderFiller").outerHeight()) * +settings["enableCustomUI"] + "px",
         });
         moveDescriptionBox("up");
       }
@@ -625,6 +634,7 @@ function playCachedSnaplapse(snaplapseId) {
           $("#" + timelapseViewerDivId + ' .repeatCheckbox').button("disable");
           $playbackButton.hide();
           $("#" + timelapseViewerDivId + ' .stopTimeWarp').show();
+          $("#" + timelapseViewerDivId + ' .addressLookup').attr("disabled", "disabled");
         });
 
         snaplapse.addEventListener('stop', function() {
@@ -663,6 +673,7 @@ function playCachedSnaplapse(snaplapseId) {
           $playbackButton.show();
           $("#" + timelapseViewerDivId + ' .repeatCheckbox').button("enable");
           $("#" + timelapseViewerDivId + ' .help').removeClass("disabled").addClass("enabled");
+          $("#" + timelapseViewerDivId + ' .addressLookup').removeAttr("disabled");
           hideAnnotationBubble();
         });
 
@@ -689,12 +700,18 @@ function playCachedSnaplapse(snaplapseId) {
         // TODO: add videoset listener which listens for the stall event so we can disable the recordKeyframeButton (if not already disabled due to playback)
         didOnce = true;
       }
-      //timelapse.pause();
       $("#" + composerDivId + " .snaplapse_keyframe_list").empty();
       $("#" + timelapseViewerDivId + " .snaplapse-annotation-description > div").text("");
 
       if ( typeof json != 'undefined' && json != null) {
         timelapse.pause();
+        if (!editorEnabled) {
+          $("#" + timelapseViewerDivId + " .tourLoadOverlay").show();
+          $("#" + timelapseViewerDivId + " .tourLoadOverlayPlay").show();
+          if ($("#" + timelapseViewerDivId + "_customTimeline").is(':visible')) {
+            timelapse.getSnaplapse().getSnaplapseViewer().hideViewerUI();
+          }
+        }
         return snaplapse.loadFromJSON(json, 0);
       }
 
@@ -703,7 +720,7 @@ function playCachedSnaplapse(snaplapseId) {
     this.loadNewSnaplapse = newSnaplapse;
 
     var setKeyframeThumbail = function(keyframe) {
-      if (!settings["enableCustomUI"]) return;
+      if (!editorEnabled) return;
       try {
         // Find max video id
         var videoElement = videoset.getCurrentActiveVideo();
@@ -1003,7 +1020,7 @@ function playCachedSnaplapse(snaplapseId) {
         var loadNextKeyframe = function() {
           // Timeout since the seeked event hasn't actually fired yet, so delay a bit
           var waitTime = 700;
-          if (!settings["enableCustomUI"]) waitTime = 0;
+          if (!editorEnabled) waitTime = 0;
           setTimeout(function() {
             if (timelapse.getVisualizer())
               timelapse.getVisualizer().addTimeTag(keyframes, insertionIndex);
@@ -1030,10 +1047,10 @@ function playCachedSnaplapse(snaplapseId) {
               snaplapse.loadFromJSON(undefined, insertionIndex + 1);
             }
           }, waitTime);
-          if (settings["enableCustomUI"])
+          if (editorEnabled)
             videoset.removeEventListener('video-seeked', loadNextKeyframe);
         };
-        if (settings["enableCustomUI"])
+        if (editorEnabled)
           videoset.addEventListener('video-seeked', loadNextKeyframe);
         else
           loadNextKeyframe();
@@ -1191,7 +1208,6 @@ function playCachedSnaplapse(snaplapseId) {
     var saveSnaplapse = function() {
       if (snaplapse && (snaplapse.getNumKeyframes() >= 1)) {
         $("#" + composerDivId + " .saveTimewarpWindow").dialog("open");
-        // TODO
         $("#" + composerDivId + " .saveTimewarpWindow_JSON").val("http://earthengine.google.org/#timelapse/tour=" + snaplapse.getAsUrlString()).focus().select().click(function() {
           $(this).focus().select();
         });
