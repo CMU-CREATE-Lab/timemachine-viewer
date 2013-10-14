@@ -128,15 +128,21 @@ if (!window['$']) {
     }
 
     function inCircleHitArea(mouseX, mouseY, element) {
+      var elementAttributes = element.attrs;
+      var radius = elementAttributes.shape.width / 2;
+      var elemXPosPlusRadius = elementAttributes.x + radius;
+      var elemYPosPlusRadius = elementAttributes.y + radius;
       // Distance formula: sqrt((x1-x2)^2+(y1-y2)^2)
-      var radius = element.attrs.shape.width / 2;
-      var distance = Math.sqrt(Math.pow(mouseX - (element.attrs.x + radius), 2) + Math.pow(mouseY - (element.attrs.y + radius), 2));
-      return distance <= radius;
+      // Use only multiplication for better performance.
+      return ((mouseX - elemXPosPlusRadius) * (mouseX - elemXPosPlusRadius) + (mouseY - elemYPosPlusRadius) * (mouseY - elemYPosPlusRadius) < radius*radius)
+      //var distance = Math.sqrt(Math.pow(mouseX - (element.attrs.x + radius), 2) + Math.pow(mouseY - (element.attrs.y + radius), 2));
+      //return distance <= radius;
     }
 
     function inRectangleHitArea(mouseX, mouseY, element) {
-      var shape = element.attrs.shape;
-      return (mouseY > element.attrs.y && mouseY < element.attrs.y + shape.height && mouseX > element.attrs.x && mouseX < element.attrs.x + shape.width);
+      var elementAttributes = element.attrs;
+      var shape = elementAttributes.shape;
+      return (mouseY > elementAttributes.y && mouseY < elementAttributes.y + shape.height && mouseX > elementAttributes.x && mouseX < elementAttributes.x + shape.width);
     }
 
     function inHitArea(mouseX, mouseY, element) {
