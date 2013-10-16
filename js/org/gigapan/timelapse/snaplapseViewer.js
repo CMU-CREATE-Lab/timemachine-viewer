@@ -813,7 +813,8 @@ function playCachedSnaplapse(snaplapseId) {
       content += '    </td>';
       content += '    <td valign="center" class="transition_table">';
       content += '      <div class="transition_table_mask">';
-      content += '        <div class="snaplapse_keyframe_list_item_duration_container"><input type="radio" name="'+ transitionSelection + '" id="'+ durationBlockId + '" value="duration" style="position: absolute; left: -20px">';
+      content += '        <div class="snaplapse_keyframe_list_item_duration_container">';
+      content += '					<input type="radio" name="'+ transitionSelection + '" id="'+ durationBlockId + '" value="duration" style="position: absolute; left: -23px; top: -3px;">';
       content += '          <span class="snaplapse_keyframe_list_item_duration_label_1">Duration:</span>';
       content += '          <input type="text" id="' + durationId + '" class="snaplapse_keyframe_list_item_duration" value="' + duration + '">';
       content += '          <span class="snaplapse_keyframe_list_item_duration_label_2">secs</span>';
@@ -823,7 +824,8 @@ function playCachedSnaplapse(snaplapseId) {
       content += '          <input type="text" id="' + speedId + '" class="snaplapse_keyframe_list_item_speed" value="' + speed + '">';
       content += '          <span class="snaplapse_keyframe_list_item_speed_label_2">%</span>';
       content += '        </div>';
-      content += '        <div class="snaplapse_keyframe_list_item_loop_container"><input type="radio" name="'+ transitionSelection + '" id="'+ speedBlockId + '"  value="speed" style="position: absolute; left: -20px">';
+      content += '        <div class="snaplapse_keyframe_list_item_loop_container">';
+      content += '					<input type="radio" name="'+ transitionSelection + '" id="'+ speedBlockId + '"  value="speed" style="position: absolute; left: -23px;  top: -3px;">';
       content += '          <div style="height: 15px; display: none">';
       content += '            <input class="snaplapse_keyframe_list_item_loop_checkbox" id="' + loopCheckboxId + '" type="checkbox" ' + ( isLoop ? 'checked="checked"' : '') + '/>';
       content += '            <span class="snaplapse_keyframe_list_item_loop_label_1">Loop:</span>';

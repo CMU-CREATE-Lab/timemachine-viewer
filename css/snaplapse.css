@@ -96,7 +96,7 @@
 }
 
 .transition_table_mask {
-  width: 100px;
+  width: 103px;
   height: 150px;
   z-index: 999;
   background-color: white;
@@ -238,9 +238,9 @@
 
 .snaplapse_keyframe_list_item_duration_container {
   margin-right: 20px;
-  margin-left: 20px;
+  margin-left: 29px;
   position: absolute;
-  top: 95px;
+  top: 100px;
 }
 
 .snaplapse_keyframe_list_item_duration_label_1 {
@@ -263,9 +263,9 @@
 
 .snaplapse_keyframe_list_item_speed_container {
   margin-right: 20px;
-  margin-left: 20px;
+  margin-left: 29px;
   position: absolute;
-  top: 25px;
+  top: 33px;
 }
 
 .snaplapse_keyframe_list_item_speed_label_2 {
@@ -341,9 +341,9 @@
 
 .snaplapse_keyframe_list_item_loop_container {
   margin-right: 20px;
-  margin-left: 20px;
+  margin-left: 29px;
   position: absolute;
-  top: -10px;
+  top: -2px;
 }
 
 .snaplapse_keyframe_list_item_loop_container .ui-state-active {

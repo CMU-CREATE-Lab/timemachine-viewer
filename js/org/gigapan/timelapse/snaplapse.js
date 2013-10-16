@@ -316,11 +316,11 @@ if (!Math.uuid) {
         var projection = timelapse.getProjection();
         for (var i = 0; i < keyframes.length; i++) {
           // Number of loops
-          var loopTimes = keyframes[i]['loopTimes'] ? keyframes[i]['loopTimes']+1 : 1;
+          var loopTimes = keyframes[i]['loopTimes'] ? keyframes[i]['loopTimes'] + 1 : 1;
           encoder.write_uint(loopTimes);
           // Duration OR speed
           if (loopTimes == 1)
-            encoder.write_udecimal(keyframes[i]['duration'],2);
+            encoder.write_udecimal(keyframes[i]['duration'], 2);
           else
             encoder.write_uint(keyframes[i]['speed']);
           // Frame Number
@@ -334,7 +334,7 @@ if (!Math.uuid) {
           var zoom = timelapse.scaleToZoom(viewCenter.scale);
           encoder.write_lat(latLng.lat);
           encoder.write_lon(latLng.lng);
-          encoder.write_udecimal(zoom,2);
+          encoder.write_udecimal(zoom, 2);
           // Keyframe description
           encoder.write_string(keyframes[i]['unsafe_string_description']);
         }
@@ -410,7 +410,11 @@ if (!Math.uuid) {
           });
           // Decode zoom
           var zoom = encoder.read_udecimal(2);
-          var centerView = {"x": pointCenter.x, "y": pointCenter.y, "scale": timelapse.zoomToScale(zoom)};
+          var centerView = {
+            "x": pointCenter.x,
+            "y": pointCenter.y,
+            "scale": timelapse.zoomToScale(zoom)
+          };
           var bbox = timelapse.computeBoundingBox(centerView);
           frame["bounds"] = {};
           frame["bounds"]["xmin"] = bbox.xmin;
@@ -1104,10 +1108,10 @@ if (!Math.uuid) {
               // In looping mode, the speed must be greater than 0
               desiredSpeed = 100;
             }
-            if (loopTimes == 0) {
-              // In looping mode, the minimum times for looping is 1
-              loopTimes = 1;
-            }
+          }
+          if (loopTimes == 0) {
+            // In looping mode, the minimum times for looping is 1
+            loopTimes = 1;
           }
           if (desiredSpeed == 0)
             desiredSpeed = 100;
@@ -1191,11 +1195,14 @@ if (!Math.uuid) {
       }
       // Update the UI and keyframe parameters
       startingFrame['speed'] = desiredSpeed;
-      if (!$("#" + itemIdHead + "_speed").prop("disabled")) $("#" + itemIdHead + "_speed").val(desiredSpeed);
+      if (!$("#" + itemIdHead + "_speed").prop("disabled"))
+        $("#" + itemIdHead + "_speed").val(desiredSpeed);
       startingFrame['loopTimes'] = loopTimes;
-      if (!$("#" + itemIdHead + "_loopTimes").prop("disabled")) $("#" + itemIdHead + "_loopTimes").val(loopTimes);
+      if (!$("#" + itemIdHead + "_loopTimes").prop("disabled"))
+        $("#" + itemIdHead + "_loopTimes").val(loopTimes);
       startingFrame['duration'] = desiredDuration;
-      if (!$("#" + itemIdHead + "_duration").prop("disabled")) $("#" + itemIdHead + "_duration").val(desiredDuration.toFixed(2));
+      if (!$("#" + itemIdHead + "_duration").prop("disabled"))
+        $("#" + itemIdHead + "_duration").val(desiredDuration.toFixed(2));
     } else {
       /////////////////////////////////////////////
       // Playing mode: playing the timewarp
@@ -1225,6 +1232,8 @@ if (!Math.uuid) {
       if (desiredDuration == 0 || actualDuration == 0) {
         playbackRate = 0;
       } else {
+        if (actualDuration != 0 && desiredSpeed == 0)
+          desiredSpeed = 100 / desiredDuration;
         playbackRate = timeDirection * desiredSpeed / 100;
       }
     }

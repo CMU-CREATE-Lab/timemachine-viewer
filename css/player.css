@@ -759,8 +759,8 @@ body, html {
 }
 
 .addressLookup {
-  position: absolute; 
-  top: 609px; 
-  left: 9px; 
+  position: absolute;
+  top: 609px;
+  left: 18px;
   z-index: 99;
 }
