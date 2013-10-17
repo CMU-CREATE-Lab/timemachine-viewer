@@ -392,7 +392,7 @@ if (!Math.uuid) {
           // Decode duration OR speed
           if (numLoops == 0) {
             frame["duration"] = encoder.read_udecimal(2);
-            frame["speed"] = 0;
+            frame["speed"] = null;
           } else {
             frame["speed"] = encoder.read_uint();
             frame["duration"] = null;
@@ -570,7 +570,7 @@ if (!Math.uuid) {
       // We build the keyframe and compute all parameters
       var buildConstaint;
       // Backwards compatibility of timewarps where we didn't specify this
-      if (keyframe['duration'] && keyframe['speed'] == undefined)
+      if (keyframe['duration'])
         buildConstaint = "duration";
       else
         buildConstaint = "speed";
@@ -1051,6 +1051,9 @@ if (!Math.uuid) {
     var nextKeyframeInterval = null;
     var playbackRate = null;
     var itemIdHead = composerDivId + "_snaplapse_keyframe_" + startingFrame.id;
+    //TODO bad!! this overrides the math
+    if (startingFrame['speed'] == null)
+      constraintParaName = "duration";
     var desiredSpeed = startingFrame['speed'] == null ? 100 : startingFrame['speed'];
     var timeDirection = (startingFrame['time'] <= endingFrame['time']) ? 1 : -1;
     var isLoop = startingFrame['is-loop'];
@@ -1085,7 +1088,6 @@ if (!Math.uuid) {
         end: 0
       };
     }
-
     if (constraintParaName) {
       /////////////////////////////////////////////
       // Updating mode: update parameters and UI
@@ -1095,8 +1097,8 @@ if (!Math.uuid) {
       actualDuration = Math.abs(parseFloat(Math.abs(endingFrame['time'] - startingFrame['time'])));
       // Compute the duration of playback time (include looping)
       desiredDuration = startingFrame['duration'] == null ? actualDuration : startingFrame['duration'];
-      if (isLoop) {
 
+      if (isLoop) {
         /////////////////////////////////////////////
         // If the user want to loop the video
         if (constraintParaName == "speed") {
@@ -1232,8 +1234,6 @@ if (!Math.uuid) {
       if (desiredDuration == 0 || actualDuration == 0) {
         playbackRate = 0;
       } else {
-        if (actualDuration != 0 && desiredSpeed == 0)
-          desiredSpeed = 100 / desiredDuration;
         playbackRate = timeDirection * desiredSpeed / 100;
       }
     }

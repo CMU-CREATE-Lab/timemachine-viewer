@@ -38,7 +38,8 @@
 var cachedSnaplapses = {};
 var currentlyDisplayedVideoId = 1;
 var KEYFRAME_THUMBNAIL_WIDTH = 100;
-var KEYFRAME_THUMBNAIL_HEIGHT = 56; // should really be 56.25
+// should really be 56.25
+var KEYFRAME_THUMBNAIL_HEIGHT = 56;
 
 // Create the global symbol "org" if it doesn't exist.  Throw an error if it does exist but is not an object.
 var org;
@@ -124,8 +125,11 @@ function playCachedSnaplapse(snaplapseId) {
     var timelapseViewerDivId = timelapse.getViewerDivId();
     var maxSubtitleLength = 120;
     var defaultLoopTimes = 2;
-    var defaultStartDwellTime = 0.5; // in sec
-    var defaultEndDwellTime = 0.5; // in sec
+    // in sec
+    var defaultStartDwellTime = 0.5;
+    // in sec
+    var defaultEndDwellTime = 0.5;
+
     var eventListeners = {};
     // If the user requested a tour editor AND has a div in the DOM for the editor,
     // then do all related edtior stuff (pull thumbnails for keyframes, etc.)
@@ -160,7 +164,7 @@ function playCachedSnaplapse(snaplapseId) {
       var $googleLogo = $("#" + timelapseViewerDivId + " .googleLogo");
       var $googleMapToggle = $("#" + timelapseViewerDivId + " .toggleGoogleMapBtn");
       var $contextMapResizer = $("#" + timelapseViewerDivId + " .smallMapResizer");
-      var $customTimeline =  $("#" + timelapseViewerDivId + "_customTimeline");
+      var $customTimeline = $("#" + timelapseViewerDivId + "_customTimeline");
       var $customHelpLabel = $(".customHelpLabel");
       var $customPlay = $(".customPlay");
       var $timeText = $("#" + timelapseViewerDivId + "_customTimeline_timeText");
@@ -187,7 +191,7 @@ function playCachedSnaplapse(snaplapseId) {
       var $googleLogo = $("#" + timelapseViewerDivId + " .googleLogo");
       var $googleMapToggle = $("#" + timelapseViewerDivId + " .toggleGoogleMapBtn");
       var $contextMapResizer = $("#" + timelapseViewerDivId + " .smallMapResizer");
-      var $customTimeline =  $("#" + timelapseViewerDivId + "_customTimeline");
+      var $customTimeline = $("#" + timelapseViewerDivId + "_customTimeline");
       var $customHelpLabel = $(".customHelpLabel");
       var $customPlay = $(".customPlay");
       var $timeText = $("#" + timelapseViewerDivId + "_customTimeline_timeText");
@@ -212,32 +216,29 @@ function playCachedSnaplapse(snaplapseId) {
     var initializeTourOverlyUI = function() {
 
       $("#" + timelapseViewerDivId + " .tourLoadOverlayTitleContainer").css({
-        'width':'100%'
+        'width': '100%'
       });
 
-      $("#" + timelapseViewerDivId + " .tourLoadOverlay").hover(
-        function () {
-          if (!snaplapse.isPlaying())
-            $("#" + timelapseViewerDivId + " .tourLoadOverlayPlay").css("opacity", 1.0);
-        },
-        function () {
-          if (!snaplapse.isPlaying())
-            $("#" + timelapseViewerDivId + " .tourLoadOverlayPlay").css("opacity", 0.8);
-        }
-      ).click(function(){
+      $("#" + timelapseViewerDivId + " .tourLoadOverlay").hover(function() {
+        if (!snaplapse.isPlaying())
+          $("#" + timelapseViewerDivId + " .tourLoadOverlayPlay").css("opacity", 1.0);
+      }, function() {
+        if (!snaplapse.isPlaying())
+          $("#" + timelapseViewerDivId + " .tourLoadOverlayPlay").css("opacity", 0.8);
+      }).click(function() {
         $("#" + timelapseViewerDivId + " .snaplapseTourPlayBack").show();
         $("#" + timelapseViewerDivId + " .tourLoadOverlayTitleContainer").animate({
           top: "20px",
           left: "-440px",
         }, 500, function() {
           $(this).css({
-            'text-align':'left',
-            'left':'70px',
-            'width':''
+            'text-align': 'left',
+            'left': '70px',
+            'width': ''
           });
           $("#" + timelapseViewerDivId + " .tourLoadOverlayTitle").css({
-            'padding-left':'0px',
-            'padding-right':'0px'
+            'padding-left': '0px',
+            'padding-right': '0px'
           });
         });
 
@@ -252,15 +253,18 @@ function playCachedSnaplapse(snaplapseId) {
         }, 500, function() {
 
           $("#" + timelapseViewerDivId + " .tourLoadOverlayTitleContainer").css({
-            'position':'static',
-            'margin-left':'70px',
-            'margin-top':'19px'
+            'position': 'static',
+            'margin-left': '70px',
+            'margin-top': '19px'
           });
 
           $("#" + timelapseViewerDivId + " .tourLoadOverlayPlay").appendTo($("#" + timelapseViewerDivId + " .snaplapseTourPlayBack"));
           $("#" + timelapseViewerDivId + " .tourLoadOverlayTitleContainer").appendTo($("#" + timelapseViewerDivId + " .snaplapseTourPlayBack"));
           $("#" + timelapseViewerDivId + " .tourLoadOverlay").hide();
-          $(this).attr({"src": "images/tour_stop_outline.png", "title" : ""});
+          $(this).attr({
+            "src": "images/tour_stop_outline.png",
+            "title": ""
+          });
           $("#" + timelapseViewerDivId + " .snaplapseTourPlayBack").attr("title", "Click to stop tour playback");
           snaplapse.play();
         });
@@ -275,7 +279,7 @@ function playCachedSnaplapse(snaplapseId) {
       initializeTourOverlyUI();
 
       // Stop tour button if in viewing only mode
-      $("#" + timelapseViewerDivId + " .snaplapseTourPlayBack").click(function(){
+      $("#" + timelapseViewerDivId + " .snaplapseTourPlayBack").click(function() {
         if ($(this).hasClass("playTour")) {
           snaplapse.play();
         } else {
@@ -332,58 +336,6 @@ function playCachedSnaplapse(snaplapseId) {
         width: 410,
         height: 460
       }).parent().appendTo($("#" + composerDivId));
-
-      // Global setting window
-      /*$("#" + composerDivId + " .setTimewarpWindow").dialog({
-        resizable: false,
-        autoOpen: false,
-        width: 365,
-        height: 160
-      }).parent().appendTo($("#" + composerDivId));
-
-      $("#setPauseStartBtn").button({
-        text: true
-      }).click(function() {
-        $(this).button("disable");
-        var thisValue = $("#setPauseStartInput").val();
-        if (UTIL.isNumber(thisValue)) {
-          thisValue = parseFloat(thisValue);
-          defaultStartDwellTime = thisValue;
-        } else {
-          thisValue = defaultStartDwellTime;
-          $("#setPauseStartInput").val(thisValue);
-        }
-        var keyframes = snaplapse.getKeyframes();
-        for (var i = 0; i < keyframes.length; i++) {
-          var thisKeyframeId = keyframes[i].id;
-          var thisDOM_Id = composerDivId + "_snaplapse_keyframe_" + thisKeyframeId;
-          snaplapse.setWaitDurationForKeyframe(thisKeyframeId, thisValue, "start");
-          $("#" + thisDOM_Id + " .snaplapse_keyframe_list_item_loop_pauseStart").val(thisValue);
-        }
-        $(this).button("enable");
-      });
-
-      $("#setPauseEndBtn").button({
-        text: true
-      }).click(function() {
-        $(this).button("disable");
-        var thisValue = $("#setPauseEndInput").val();
-        if (UTIL.isNumber(thisValue)) {
-          thisValue = parseFloat(thisValue);
-          defaultEndDwellTime = thisValue;
-        } else {
-          thisValue = defaultEndDwellTime;
-          $("#setPauseEndInput").val(thisValue);
-        }
-        var keyframes = snaplapse.getKeyframes();
-        for (var i = 0; i < keyframes.length; i++) {
-          var thisKeyframeId = keyframes[i].id;
-          var thisDOM_Id = composerDivId + "_snaplapse_keyframe_" + thisKeyframeId;
-          snaplapse.setWaitDurationForKeyframe(thisKeyframeId, thisValue, "end");
-          $("#" + thisDOM_Id + " .snaplapse_keyframe_list_item_loop_pauseEnd").val(thisValue);
-        }
-        $(this).button("enable");
-      });*/
 
       // Add an event listener to the videoset so we can keep track of which video is currently visible, so that we can
       // Create the keyframe thumbnails
@@ -474,12 +426,12 @@ function playCachedSnaplapse(snaplapseId) {
         var thisKeyframeId = $(event.target.parentNode).dialog("option", "keyframeId");
         displaySnaplapseFrameAnnotation(snaplapse.getKeyframeById(thisKeyframeId));
         checkTextareaMaxlength(this, maxSubtitleLength);
-      }).on("keyup", function(event) { // Save the text annotation on keyup, so that we don't need a save button
+      }).on("keyup", function(event) {// Save the text annotation on keyup, so that we don't need a save button
         var thisKeyframeId = $(event.target.parentNode).dialog("option", "keyframeId");
         snaplapse.setTextAnnotationForKeyframe(thisKeyframeId, $(this).val(), true);
         displaySnaplapseFrameAnnotation(snaplapse.getKeyframeById(thisKeyframeId));
         checkTextareaMaxlength(this, maxSubtitleLength);
-      }).on("paste", function() { // Set text limit
+      }).on("paste", function() {// Set text limit
         checkTextareaMaxlength(this, maxSubtitleLength);
       });
 
@@ -495,7 +447,7 @@ function playCachedSnaplapse(snaplapseId) {
         "left": newLeft + "px",
         "width": newWidth + "px"
       });
-      if (!editorEnabled) {
+      if (!editorEnabled || !settings["enableCustomUI"]) {
         $("#" + composerDivId).hide();
       } else {
         var customEditorControlHeight = $("#" + timelapseViewerDivId + " .customEditorControl").outerHeight();
@@ -720,7 +672,8 @@ function playCachedSnaplapse(snaplapseId) {
     this.loadNewSnaplapse = newSnaplapse;
 
     var setKeyframeThumbail = function(keyframe) {
-      if (!editorEnabled) return;
+      if (!editorEnabled)
+        return;
       try {
         // Find max video id
         var videoElement = videoset.getCurrentActiveVideo();
@@ -814,7 +767,7 @@ function playCachedSnaplapse(snaplapseId) {
       content += '    <td valign="center" class="transition_table">';
       content += '      <div class="transition_table_mask">';
       content += '        <div class="snaplapse_keyframe_list_item_duration_container">';
-      content += '					<input type="radio" name="'+ transitionSelection + '" id="'+ durationBlockId + '" value="duration" style="position: absolute; left: -23px; top: -3px;">';
+      content += '					<input type="radio" name="' + transitionSelection + '" id="' + durationBlockId + '" value="duration" style="position: absolute; left: -23px; top: -3px;">';
       content += '          <span class="snaplapse_keyframe_list_item_duration_label_1">Duration:</span>';
       content += '          <input type="text" id="' + durationId + '" class="snaplapse_keyframe_list_item_duration" value="' + duration + '">';
       content += '          <span class="snaplapse_keyframe_list_item_duration_label_2">secs</span>';
@@ -825,7 +778,7 @@ function playCachedSnaplapse(snaplapseId) {
       content += '          <span class="snaplapse_keyframe_list_item_speed_label_2">%</span>';
       content += '        </div>';
       content += '        <div class="snaplapse_keyframe_list_item_loop_container">';
-      content += '					<input type="radio" name="'+ transitionSelection + '" id="'+ speedBlockId + '"  value="speed" style="position: absolute; left: -23px;  top: -3px;">';
+      content += '					<input type="radio" name="' + transitionSelection + '" id="' + speedBlockId + '"  value="speed" style="position: absolute; left: -23px;  top: -3px;">';
       content += '          <div style="height: 15px; display: none">';
       content += '            <input class="snaplapse_keyframe_list_item_loop_checkbox" id="' + loopCheckboxId + '" type="checkbox" ' + ( isLoop ? 'checked="checked"' : '') + '/>';
       content += '            <span class="snaplapse_keyframe_list_item_loop_label_1">Loop:</span>';
@@ -847,7 +800,9 @@ function playCachedSnaplapse(snaplapseId) {
       $('input[name=' + transitionSelection + ']').change(function() {
         var elem = $(this);
         var id = elem.prop("id");
+        var thisKeyframeId = this.id.split("_")[3];
         if (id.indexOf("speedBlock") !== -1) {
+          snaplapse.setIsLoopForKeyframe(thisKeyframeId, true);
           var newSpeed = isKeyframeFromLoad ? $("#" + keyframeListItem.id + "_speed").val() : 100;
           var newLoopTimes = isKeyframeFromLoad ? $("#" + keyframeListItem.id + "_loopTimes").val() : 2;
           $("#" + keyframeListItem.id + "_duration").prop('disabled', true).val(0).trigger("change").val("");
@@ -855,8 +810,14 @@ function playCachedSnaplapse(snaplapseId) {
           $("#" + keyframeListItem.id + "_loopTimes").prop('disabled', false).val(newLoopTimes).trigger("change");
           $("#" + keyframeListItem.id + "_duration").val("");
         } else {
-          var newDuration = isKeyframeFromLoad ? $("#" + keyframeListItem.id + "_duration").val() : 2.0;
-          $("#" + keyframeListItem.id + "_speed").prop('disabled', true).val(0).trigger("change").val("");
+          snaplapse.setIsLoopForKeyframe(thisKeyframeId, false);
+          var defaultDuration;
+          if (settings["enableCustomUI"])
+            defaultDuration = 2;
+          else
+            defaultDuration = null;
+          var newDuration = isKeyframeFromLoad ? duration : defaultDuration;
+          $("#" + keyframeListItem.id + "_speed").prop('disabled', true).val("");
           $("#" + keyframeListItem.id + "_duration").prop('disabled', false).val(newDuration).trigger("change");
           $("#" + keyframeListItem.id + "_loopTimes").prop('disabled', true).val("");
         }
@@ -959,13 +920,13 @@ function playCachedSnaplapse(snaplapseId) {
         }
         var thisKeyframeId = this.id.split("_")[3];
         if (newSpeed == 0) {
-          $("#composer1_snaplapse_keyframe_"+thisKeyframeId+"_loop").prop('checked', false);
+          $("#composer1_snaplapse_keyframe_" + thisKeyframeId + "_loop").prop('checked', false);
           snaplapse.setIsLoopForKeyframe(thisKeyframeId, false);
-          $("#composer1_snaplapse_keyframe_"+thisKeyframeId+"_loopTimes").prop('disabled', true);
+          $("#composer1_snaplapse_keyframe_" + thisKeyframeId + "_loopTimes").prop('disabled', true);
         } else {
-          $("#composer1_snaplapse_keyframe_"+thisKeyframeId+"_loop").prop('checked', false);
+          $("#composer1_snaplapse_keyframe_" + thisKeyframeId + "_loop").prop('checked', false);
           snaplapse.setIsLoopForKeyframe(thisKeyframeId, true);
-          $("#composer1_snaplapse_keyframe_"+thisKeyframeId+"_loopTimes").prop('disabled', false);
+          $("#composer1_snaplapse_keyframe_" + thisKeyframeId + "_loopTimes").prop('disabled', false);
         }
         var keyframe = snaplapse.setSpeedForKeyframe(thisKeyframeId, newSpeed);
         if (timelapse.getVisualizer())
@@ -1022,7 +983,8 @@ function playCachedSnaplapse(snaplapseId) {
         var loadNextKeyframe = function() {
           // Timeout since the seeked event hasn't actually fired yet, so delay a bit
           var waitTime = 700;
-          if (!editorEnabled) waitTime = 0;
+          if (!editorEnabled)
+            waitTime = 0;
           setTimeout(function() {
             if (timelapse.getVisualizer())
               timelapse.getVisualizer().addTimeTag(keyframes, insertionIndex);
@@ -1084,7 +1046,7 @@ function playCachedSnaplapse(snaplapseId) {
         //$("#" + thisDOM_Id + " .snaplapse_keyframe_list_item_loop").prop('disabled', false).val(defaultLoopTimes);
         $("#" + thisDOM_Id + " .snaplapse_keyframe_list_item_loop_pauseStart").prop('disabled', false).val(defaultStartDwellTime);
         $("#" + thisDOM_Id + " .snaplapse_keyframe_list_item_loop_pauseEnd").prop('disabled', false).val(defaultEndDwellTime);
-        var doLoop = ($('input[name='+thisDOM_Id + "_transitionSelection"+']:checked').val() == "speed") ? true : false;
+        var doLoop = ($('input[name=' + thisDOM_Id + "_transitionSelection" + ']:checked').val() == "speed") ? true : false;
         snaplapse.setIsLoopForKeyframe(lastKeyframe.id, doLoop);
         //snaplapse.setLoopTimesForKeyframe(lastKeyframe.id, defaultLoopTimes);
         snaplapse.setWaitDurationForKeyframe(lastKeyframe.id, defaultStartDwellTime, "start");
@@ -1093,9 +1055,9 @@ function playCachedSnaplapse(snaplapseId) {
           timelapse.getVisualizer().updateTagPaths(thisDOM_Id, lastKeyframe);
       }
       if (loopTimes == 0)
-        $("#"+keyframeListItem.id+"_durationBlock").trigger("click");
+        $("#" + keyframeListItem.id + "_durationBlock").trigger("click");
       else
-        $("#"+keyframeListItem.id+"_speedBlock").trigger("click");
+        $("#" + keyframeListItem.id + "_speedBlock").trigger("click");
 
     };
 

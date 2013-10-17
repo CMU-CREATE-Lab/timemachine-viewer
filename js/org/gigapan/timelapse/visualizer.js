@@ -41,9 +41,7 @@
  VERIFY NAMESPACE
 
  Create the global symbol "org" if it doesn't exist.  Throw an error if it does exist but is not an object.
- */
-
-"use strict";
+ */"use strict";
 
 // Create the global symbol "org" if it doesn't exist.  Throw an error if it does exist but is not an object.
 var org;
@@ -501,10 +499,12 @@ if (!org.gigapan.timelapse.Timelapse) {
     // Update a line on the canvas
     var updateLine = function(kineticLayer, tagId, keyframe) {
       var line = kineticLayer.get("." + tagId)[0];
-      var points = line.getPoints();
-      var lineW = line.getStrokeWidth();
-      var lineLength = Math.sqrt(Math.pow(points[0].x - points[1].x, 2) + Math.pow(points[0].y - points[1].y, 2));
-      line.setDashArray([lineW, computeDashSpan(keyframe, lineW, lineLength)]);
+      if (line) {
+        var points = line.getPoints();
+        var lineW = line.getStrokeWidth();
+        var lineLength = Math.sqrt(Math.pow(points[0].x - points[1].x, 2) + Math.pow(points[0].y - points[1].y, 2));
+        line.setDashArray([lineW, computeDashSpan(keyframe, lineW, lineLength)]);
+      }
     };
 
     // Delete the lines coming out of a tag on the canvas
@@ -854,14 +854,14 @@ if (!org.gigapan.timelapse.Timelapse) {
       }
       // The setTimeout is a hack for chrome video bug
       //setTimeout(function() {
-        //navigationMap_background.setAttrs({
-        //  image: video,
-        //  x: navigationMap_drawImage.x,
-        //  y: navigationMap_drawImage.y,
-        //  width: navigationMap_drawImage.width,
-        //  height: navigationMap_drawImage.height
-        //});
-        //navigationMap_layer_background.draw();
+      //navigationMap_background.setAttrs({
+      //  image: video,
+      //  x: navigationMap_drawImage.x,
+      //  y: navigationMap_drawImage.y,
+      //  width: navigationMap_drawImage.width,
+      //  height: navigationMap_drawImage.height
+      //});
+      //navigationMap_layer_background.draw();
       //}, 100);
     };
     this.loadNavigationMap = loadNavigationMap;
