@@ -743,7 +743,7 @@ function playCachedSnaplapse(snaplapseId) {
       var transitionSelection = keyframeListItem.id + "_transitionSelection";
 
       var duration = typeof frame['duration'] != 'undefined' && frame['duration'] != null ? frame['duration'] : '';
-      var speed = typeof frame['duration'] != 'undefined' && frame['duration'] != null ? frame['speed'] : 100;
+      var speed = typeof frame['speed'] != 'undefined' && frame['speed'] != null ? frame['speed'] : 100;
       var isDescriptionVisible = typeof frame['is-description-visible'] == 'undefined' ? true : frame['is-description-visible'];
       var isLoop = typeof frame['is-loop'] == 'undefined' ? false : frame['is-loop'];
       var loopTimes = typeof frame['loopTimes'] == 'undefined' ? defaultLoopTimes : frame['loopTimes'];
