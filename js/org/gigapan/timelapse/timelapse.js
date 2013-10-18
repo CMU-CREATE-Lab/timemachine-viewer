@@ -2321,8 +2321,8 @@ if (!window['$']) {
       });
 
       if (settings["composerDiv"]) {
-        snaplapse = new org.gigapan.timelapse.Snaplapse(settings["composerDiv"], thisObj, settings);
         $("#" + videoDivId).append('<div class="snaplapse-annotation-description"><div></div></div>');
+        snaplapse = new org.gigapan.timelapse.Snaplapse(settings["composerDiv"], thisObj, settings);
 
         initColorSelector();
         // Timewarp visualizer that shows the location of the current view and transitions between keyframes

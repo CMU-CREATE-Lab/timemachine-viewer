@@ -181,7 +181,6 @@ function playCachedSnaplapse(snaplapseId) {
         "left": "-=" + 14 + "px",
         "padding-left": "12px"
       });
-      thisObj.moveDescriptionBox("down");
       $googleMapToggle.fadeOut(100);
       $contextMapResizer.fadeOut(100);
     };
@@ -206,7 +205,6 @@ function playCachedSnaplapse(snaplapseId) {
         "left": "+=" + 14 + "px",
         "padding-left": "0px"
       });
-      thisObj.moveDescriptionBox("up");
       $googleMapToggle.fadeIn(100);
       $contextMapResizer.fadeIn(100);
       $sideToolBar.stop(true, true).fadeIn(100);
@@ -438,7 +436,8 @@ function playCachedSnaplapse(snaplapseId) {
       // Set the position
       var $tiledContentHolder = $("#" + timelapseViewerDivId + " .tiledContentHolder");
       var playerOffset = $tiledContentHolder.offset();
-      var newTop = $("#" + timelapseViewerDivId + " .timelineSliderFiller").outerHeight() + $("#" + timelapseViewerDivId + " .controls").outerHeight() + $tiledContentHolder.outerHeight() + playerOffset.top - 1;
+      var timelineSliderFillerHeight = $("#" + composerDivId + " .timelineSliderFiller").outerHeight() || 12;
+      var newTop = $("#" + timelapseViewerDivId + " .timelineSliderFiller").outerHeight() + $("#" + timelapseViewerDivId + " .controls").outerHeight() + $tiledContentHolder.outerHeight() + playerOffset.top - 1 - (timelineSliderFillerHeight * +!!settings["enableCustomUI"]);
       var newLeft = playerOffset.left;
       var newWidth = $tiledContentHolder.width();
       $("#" + composerDivId + " .snaplapse_keyframe_container").css({
@@ -450,11 +449,9 @@ function playCachedSnaplapse(snaplapseId) {
       if (!editorEnabled || !settings["enableCustomUI"]) {
         $("#" + composerDivId).hide();
       } else {
-        var customEditorControlHeight = $("#" + timelapseViewerDivId + " .customEditorControl").outerHeight();
-        $("#" + composerDivId + " .snaplapse_keyframe_container").css({
-          "top": $tiledContentHolder.outerHeight() + playerOffset.top + customEditorControlHeight + ($("#" + composerDivId + " .controls").outerHeight() + $("#" + composerDivId + " .timelineSliderFiller").outerHeight()) * +settings["enableCustomUI"] + "px",
-        });
-        moveDescriptionBox("up");
+        if (settings["enableCustomUI"]) {
+          moveDescriptionBox("up");
+        }
       }
 
       $("#setPauseStartInput").val(defaultStartDwellTime);
@@ -471,7 +468,7 @@ function playCachedSnaplapse(snaplapseId) {
     };
 
     var moveDescriptionBox = function(direction) {
-      var customEditorControlOuterHeight = $("#" + timelapseViewerDivId + " .customEditorControl").outerHeight();
+      var customEditorControlOuterHeight = $("#" + timelapseViewerDivId + " .customEditorControl").outerHeight() || 41;
       var descriptionOffset = customEditorControlOuterHeight ? customEditorControlOuterHeight + 20 : 0;
       if (direction == "up") {
         $("#" + timelapseViewerDivId + " .snaplapse-annotation-description").css({

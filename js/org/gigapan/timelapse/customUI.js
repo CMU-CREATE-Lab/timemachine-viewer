@@ -690,7 +690,7 @@ if (!org.gigapan.timelapse.Timelapse) {
       handleAddressLookup();
     }
 
-    if (settings["composerDiv"]) {
+    if (settings["composerDiv"] && editorEnabled) {
       createCustomEditorModeToolBar();
     }
   };
