@@ -1051,7 +1051,7 @@ if (!Math.uuid) {
     var nextKeyframeInterval = null;
     var playbackRate = null;
     var itemIdHead = composerDivId + "_snaplapse_keyframe_" + startingFrame.id;
-    //TODO bad!! this overrides the math
+    //TODO: This overrides the math. Need to refactor all this.
     if (startingFrame['speed'] == null)
       constraintParaName = "duration";
     var desiredSpeed = startingFrame['speed'] == null ? 100 : startingFrame['speed'];
