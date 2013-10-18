@@ -6,42 +6,6 @@
   position: absolute;
 }
 
-#setPauseStartBtn {
-	display: table-cell;
-	float: left;
-	vertical-align: middle;
-	height: 45px;
-	width: 270px;
-	text-align: center;
-}
-
-#setPauseEndBtn {
-	display: table-cell;
-	float: left;
-	vertical-align: middle;
-	height: 45px;
-	width: 270px;
-	text-align: center;
-}
-
-#setPauseStartInput {
-	display: table-cell;
-	float: left;
-	vertical-align: middle;
-	height: 39px;
-	width: 60px;
-	text-align: center;
-}
-
-#setPauseEndInput {
-	display: table-cell;
-	float: left;
-	vertical-align: middle;
-	height: 39px;
-	width: 60px;
-	text-align: center;
-}
-
 .loadTimewarpWindow_txt {
   position: absolute;
   top: 11px;
@@ -286,50 +250,8 @@
   height: 12px;
 }
 
-.snaplapse_keyframe_list_item_loop_checkbox {
-  position: absolute;
-  top: 0px !important;
-  left: 0px !important;
-  margin: 0px !important;
-  padding: 0px !important;
-  width: 12px;
-  height: 12px;
-}
-
-.snaplapse_keyframe_list_item_loop_label_1 {
-  position: absolute;
-  top: 0px;
-  left: 15px;
-  margin: 0px !important;
-  padding: 0px !important;
-  font-family: Arial, Helvetica, sans-serif;
-}
-
-.snaplapse_keyframe_list_item_loop_label_2 {
-  font-family: Arial, Helvetica, sans-serif;
-}
-
-.snaplapse_keyframe_list_item_loop_label_3 {
-  display: block;
-  font-family: Arial, Helvetica, sans-serif;
-}
-
 .snaplapse_keyframe_list_item_loop_label_4 {
   font-family: Arial, Helvetica, sans-serif;
-}
-
-.snaplapse_keyframe_list_item_loop_pauseStart {
-  font-family: Arial, Helvetica, sans-serif;
-  font-size: 10px;
-  width: 15px;
-  height: 12px;
-}
-
-.snaplapse_keyframe_list_item_loop_pauseEnd {
-  font-family: Arial, Helvetica, sans-serif;
-  font-size: 10px;
-  width: 15px;
-  height: 12px;
 }
 
 .snaplapse_keyframe_list_item_loop {
@@ -369,21 +291,6 @@
 
 .snaplapse_keyframe_list_item_loop_container .ui-state-default {
   background: white;
-}
-
-.snaplapse_keyframe_list_item_cell_padding {
-  width: 5px;
-  height: 5px;
-}
-
-.validation-fault {
-  background-color: #ffeeee;
-  color: #990000;
-}
-
-.textarea_disabled {
-  background-color: #cccccc;
-  color: #666666;
 }
 
 .snaplapse-annotation-description {
@@ -437,17 +344,6 @@
   cursor: pointer;
   height: 48px;
   display: none;
-}
-
-.clapperBoard {
-  cursor: pointer;
-  float: left;
-  background-image: url(../images/video.png);
-  background-repeat: no-repeat;
-  padding-right: 5px;
-  width: 40px;
-  height: 40px;
-  margin-top: 10px;
 }
 
 .tourLoadOverlay {

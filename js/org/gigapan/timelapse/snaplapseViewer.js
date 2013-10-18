@@ -124,11 +124,6 @@ function playCachedSnaplapse(snaplapseId) {
     var composerDivId = snaplapse.getComposerDivId();
     var timelapseViewerDivId = timelapse.getViewerDivId();
     var maxSubtitleLength = 120;
-    var defaultLoopTimes = 2;
-    // in sec
-    var defaultStartDwellTime = 0.5;
-    // in sec
-    var defaultEndDwellTime = 0.5;
 
     var eventListeners = {};
     // If the user requested a tour editor AND has a div in the DOM for the editor,
@@ -268,7 +263,7 @@ function playCachedSnaplapse(snaplapseId) {
         });
 
       });
-    }
+    };
     this.initializeTourOverlyUI = initializeTourOverlyUI;
 
     var initializeSnaplapseUI = function() {
@@ -453,18 +448,6 @@ function playCachedSnaplapse(snaplapseId) {
           moveDescriptionBox("up");
         }
       }
-
-      $("#setPauseStartInput").val(defaultStartDwellTime);
-      $("#setPauseEndInput").val(defaultEndDwellTime);
-
-      $("#setPauseStartInput").click(function() {
-        $(this).select();
-      });
-
-      $("#setPauseEndInput").click(function() {
-        $(this).select();
-      });
-
     };
 
     var moveDescriptionBox = function(direction) {
@@ -725,12 +708,9 @@ function playCachedSnaplapse(snaplapseId) {
       var thumbnailId = keyframeListItem.id + "_thumbnail";
       var timestampId = keyframeListItem.id + "_timestamp";
       var descriptionVisibleCheckboxId = keyframeListItem.id + "_description_visible";
-      var loopCheckboxId = keyframeListItem.id + "_loop";
       var durationId = keyframeListItem.id + "_duration";
       var speedId = keyframeListItem.id + "_speed";
       var loopTimesId = keyframeListItem.id + "_loopTimes";
-      var pauseStartId = keyframeListItem.id + "_pauseStart";
-      var pauseEndId = keyframeListItem.id + "_pauseEnd";
       var buttonContainerId = keyframeListItem.id + "_buttons";
       var updateButtonId = keyframeListItem.id + "_update";
       var duplicateButtonId = keyframeListItem.id + "_duplicate";
@@ -742,10 +722,8 @@ function playCachedSnaplapse(snaplapseId) {
       var duration = typeof frame['duration'] != 'undefined' && frame['duration'] != null ? frame['duration'] : '';
       var speed = typeof frame['speed'] != 'undefined' && frame['speed'] != null ? frame['speed'] : 100;
       var isDescriptionVisible = typeof frame['is-description-visible'] == 'undefined' ? true : frame['is-description-visible'];
-      var isLoop = typeof frame['is-loop'] == 'undefined' ? false : frame['is-loop'];
-      var loopTimes = typeof frame['loopTimes'] == 'undefined' ? defaultLoopTimes : frame['loopTimes'];
-      var pauseStart = typeof frame['waitStart'] == 'undefined' ? defaultStartDwellTime : frame['waitStart'];
-      var pauseEnd = typeof frame['waitEnd'] == 'undefined' ? defaultEndDwellTime : frame['waitEnd'];
+      var buildConstraint = typeof frame['buildConstraint'] == 'undefined' ? "speed" : frame['buildConstraint'];
+      var loopTimes = typeof frame['loopTimes'] == 'undefined' ? null : frame['loopTimes'];
 
       var content = '';
       content += '<table border="0" cellspacing="0" cellpadding="0" class="snaplapse_keyframe_list_item_table">';
@@ -776,15 +754,8 @@ function playCachedSnaplapse(snaplapseId) {
       content += '        </div>';
       content += '        <div class="snaplapse_keyframe_list_item_loop_container">';
       content += '					<input type="radio" name="' + transitionSelection + '" id="' + speedBlockId + '"  value="speed" style="position: absolute; left: -23px;  top: -3px;">';
-      content += '          <div style="height: 15px; display: none">';
-      content += '            <input class="snaplapse_keyframe_list_item_loop_checkbox" id="' + loopCheckboxId + '" type="checkbox" ' + ( isLoop ? 'checked="checked"' : '') + '/>';
-      content += '            <span class="snaplapse_keyframe_list_item_loop_label_1">Loop:</span>';
-      content += '          </div>';
       content += '          <span class="snaplapse_keyframe_list_item_duration_label_1">Loops:</span>';
-      content += '          <input type="text" id="' + loopTimesId + '" class="snaplapse_keyframe_list_item_loop" title="Times for looping the entire video" value="' + loopTimes + '"' + (!isLoop ? 'disabled' : '') + '>';
-      content += '          <span class="snaplapse_keyframe_list_item_loop_label_3" style="display: none">Pause:</span>';
-      content += '          <input type="text" id="' + pauseStartId + '" class="snaplapse_keyframe_list_item_loop_pauseStart" title="Loop dwell time at the beginning" style="display: none" value="' + pauseStart + '"' + (!isLoop ? 'disabled' : '') + '>';
-      content += '          <input type="text" id="' + pauseEndId + '" class="snaplapse_keyframe_list_item_loop_pauseEnd" title="Loop dwell time at the end" style="visibility: hidden" value="' + pauseEnd + '"' + (!isLoop ? 'disabled' : '') + '>';
+      content += '          <input type="text" id="' + loopTimesId + '" class="snaplapse_keyframe_list_item_loop" title="Times for looping the entire video" value="' + loopTimes + '">';
       content += '          <span class="snaplapse_keyframe_list_item_loop_label_4" style="display: none">secs</span>';
       content += '        </div></div>';
       content += '      </div>';
@@ -799,15 +770,17 @@ function playCachedSnaplapse(snaplapseId) {
         var id = elem.prop("id");
         var thisKeyframeId = this.id.split("_")[3];
         if (id.indexOf("speedBlock") !== -1) {
-          snaplapse.setIsLoopForKeyframe(thisKeyframeId, true);
-          var newSpeed = isKeyframeFromLoad ? $("#" + keyframeListItem.id + "_speed").val() : 100;
-          var newLoopTimes = isKeyframeFromLoad ? $("#" + keyframeListItem.id + "_loopTimes").val() : 2;
-          $("#" + keyframeListItem.id + "_duration").prop('disabled', true).val(0).trigger("change").val("");
+          // Using speed as the main constraint
+          snaplapse.setBuildConstraintForKeyframe(thisKeyframeId, "speed");
+          var newSpeed = isKeyframeFromLoad ? speed : 100;
+          var newLoopTimes = isKeyframeFromLoad ? loopTimes : 2;
           $("#" + keyframeListItem.id + "_speed").prop('disabled', false).val(newSpeed).trigger("change");
           $("#" + keyframeListItem.id + "_loopTimes").prop('disabled', false).val(newLoopTimes).trigger("change");
-          $("#" + keyframeListItem.id + "_duration").val("");
+          $("#" + keyframeListItem.id + "_duration").prop('disabled', true).val("");
+          snaplapse.setLoopDwellTimeForKeyframe(thisKeyframeId, 0.5, 0.5);
         } else {
-          snaplapse.setIsLoopForKeyframe(thisKeyframeId, false);
+          // Using duration as the main constraint
+          snaplapse.setBuildConstraintForKeyframe(thisKeyframeId, "duration");
           var defaultDuration;
           if (settings["enableCustomUI"])
             defaultDuration = 2;
@@ -817,6 +790,7 @@ function playCachedSnaplapse(snaplapseId) {
           $("#" + keyframeListItem.id + "_speed").prop('disabled', true).val("");
           $("#" + keyframeListItem.id + "_duration").prop('disabled', false).val(newDuration).trigger("change");
           $("#" + keyframeListItem.id + "_loopTimes").prop('disabled', true).val("");
+          snaplapse.setLoopDwellTimeForKeyframe(thisKeyframeId, 0.5, 0.5);
         }
         isKeyframeFromLoad = false;
       });
@@ -916,30 +890,9 @@ function playCachedSnaplapse(snaplapseId) {
           newSpeed = min;
         }
         var thisKeyframeId = this.id.split("_")[3];
-        if (newSpeed == 0) {
-          $("#composer1_snaplapse_keyframe_" + thisKeyframeId + "_loop").prop('checked', false);
-          snaplapse.setIsLoopForKeyframe(thisKeyframeId, false);
-          $("#composer1_snaplapse_keyframe_" + thisKeyframeId + "_loopTimes").prop('disabled', true);
-        } else {
-          $("#composer1_snaplapse_keyframe_" + thisKeyframeId + "_loop").prop('checked', false);
-          snaplapse.setIsLoopForKeyframe(thisKeyframeId, true);
-          $("#composer1_snaplapse_keyframe_" + thisKeyframeId + "_loopTimes").prop('disabled', false);
-        }
         var keyframe = snaplapse.setSpeedForKeyframe(thisKeyframeId, newSpeed);
         if (timelapse.getVisualizer())
           timelapse.getVisualizer().updateTagPaths(keyframeListItem.id, keyframe);
-      });
-
-      $("#" + loopCheckboxId).change(function() {
-        var thisKeyframeId = this.id.split("_")[3];
-        var keyframe = snaplapse.setIsLoopForKeyframe(thisKeyframeId, this.checked);
-        if (timelapse.getVisualizer())
-          timelapse.getVisualizer().updateTagPaths(keyframeListItem.id, keyframe);
-        $("#" + loopTimesId).prop('disabled', !this.checked);
-        $("#" + pauseStartId).prop('disabled', !this.checked).val(defaultStartDwellTime);
-        $("#" + pauseEndId).prop('disabled', !this.checked).val(defaultEndDwellTime);
-        snaplapse.setWaitDurationForKeyframe(thisKeyframeId, defaultStartDwellTime, "start");
-        snaplapse.setWaitDurationForKeyframe(thisKeyframeId, defaultEndDwellTime, "end");
       });
 
       $("#" + loopTimesId).change(function() {
@@ -951,22 +904,6 @@ function playCachedSnaplapse(snaplapseId) {
         var keyframe = snaplapse.setLoopTimesForKeyframe(thisKeyframeId, newLoopTimes);
         if (timelapse.getVisualizer())
           timelapse.getVisualizer().updateTagPaths(keyframeListItem.id, keyframe);
-      });
-
-      $("#" + pauseStartId).change(function() {
-        if (this.value == "" || !UTIL.isNumber(this.value))
-          this.value = 0;
-        var newPauseStart = parseFloat(this.value);
-        var thisKeyframeId = this.id.split("_")[3];
-        snaplapse.setWaitDurationForKeyframe(thisKeyframeId, newPauseStart, "start");
-      });
-
-      $("#" + pauseEndId).change(function() {
-        if (this.value == "" || !UTIL.isNumber(this.value))
-          this.value = 0;
-        var newPauseEnd = parseFloat(this.value);
-        var thisKeyframeId = this.id.split("_")[3];
-        snaplapse.setWaitDurationForKeyframe(thisKeyframeId, newPauseEnd, "end");
       });
 
       // Grab the current video frame and store it as the thumbnail in the canvas
@@ -1034,28 +971,18 @@ function playCachedSnaplapse(snaplapseId) {
       $(".snaplapse_keyframe_container").hide().show(0);
 
       // When the video is in looping mode, the keyframes created should be also in looping mode
-      //TODO
       if (!isKeyframeFromLoad && timelapse.getLoopPlayback() && insertionIndex > 0) {
         var allKeyframes = snaplapse.getKeyframes();
         var lastKeyframe = allKeyframes[insertionIndex - 1];
         var thisDOM_Id = composerDivId + "_snaplapse_keyframe_" + lastKeyframe.id;
-        $("#" + thisDOM_Id + " .snaplapse_keyframe_list_item_loop_checkbox").prop('checked', true);
-        //$("#" + thisDOM_Id + " .snaplapse_keyframe_list_item_loop").prop('disabled', false).val(defaultLoopTimes);
-        $("#" + thisDOM_Id + " .snaplapse_keyframe_list_item_loop_pauseStart").prop('disabled', false).val(defaultStartDwellTime);
-        $("#" + thisDOM_Id + " .snaplapse_keyframe_list_item_loop_pauseEnd").prop('disabled', false).val(defaultEndDwellTime);
-        var doLoop = ($('input[name=' + thisDOM_Id + "_transitionSelection" + ']:checked').val() == "speed") ? true : false;
-        snaplapse.setIsLoopForKeyframe(lastKeyframe.id, doLoop);
-        //snaplapse.setLoopTimesForKeyframe(lastKeyframe.id, defaultLoopTimes);
-        snaplapse.setWaitDurationForKeyframe(lastKeyframe.id, defaultStartDwellTime, "start");
-        snaplapse.setWaitDurationForKeyframe(lastKeyframe.id, defaultEndDwellTime, "end");
+        snaplapse.setBuildConstraintForKeyframe(lastKeyframe.id, buildConstraint);
         if (timelapse.getVisualizer())
           timelapse.getVisualizer().updateTagPaths(thisDOM_Id, lastKeyframe);
       }
-      if (loopTimes == 0)
+      if (buildConstraint == "duration")
         $("#" + keyframeListItem.id + "_durationBlock").trigger("click");
       else
         $("#" + keyframeListItem.id + "_speedBlock").trigger("click");
-
     };
 
     var checkTextareaMaxlength = function(thisTextarea, maxlength) {
