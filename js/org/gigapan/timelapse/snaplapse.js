@@ -199,30 +199,6 @@ if (!Math.uuid) {
     };
     this.hideLastKeyframeTransition = hideLastKeyframeTransition;
 
-    var updateKeyframeAndUI = function(keyframe, $keyframeItem) {
-      // TODO
-      //if (keyframe != undefined) {
-      //  keyframe['duration'] = null;
-      //}
-      //if ($keyframeItem != undefined) {
-      //  $keyframeItem.find(".snaplapse_keyframe_list_item_duration").val("");
-      //}
-    };
-
-    var resetKeyframeAndUI = function(keyframe, $keyframeItem) {
-      // TODO
-      //if (keyframe != undefined) {
-      //  keyframe['duration'] = null;
-      //  keyframe['speed'] = null;
-      //  keyframe['loopTimes'] = null;
-      //}
-      //if ($keyframeItem != undefined) {
-      //  $keyframeItem.find(".snaplapse_keyframe_list_item_duration").val("");
-      //  $keyframeItem.find(".snaplapse_keyframe_list_item_speed").val("");
-      //  $keyframeItem.find(".snaplapse_keyframe_list_item_loop").val("").prop('disabled', true);
-      //}
-    };
-
     // Every time user updates a parameter, try to build the interval
     // TODO: change the function of buildPreviousFlag to buildCurrentAndPreviousFlag
     var tryBuildKeyframeInterval_refreshKeyframeParas = function(keyframeId, buildPreviousFlag) {
@@ -288,6 +264,152 @@ if (!Math.uuid) {
       tryBuildKeyframeInterval_refreshKeyframeParas(keyframeId);
     };
 
+    this.setTextAnnotationForKeyframe = function(keyframeId, description, isDescriptionVisible) {
+      if (keyframeId && keyframesById[keyframeId]) {
+        if (description != undefined) {
+          keyframesById[keyframeId]['unsafe_string_description'] = description;
+        }
+        keyframesById[keyframeId]['is-description-visible'] = isDescriptionVisible;
+        return true;
+      }
+      return false;
+    };
+
+    var sanitizeDuration = function(rawDuration) {
+      if ( typeof rawDuration != 'undefined' && rawDuration != null) {
+        var rawDurationStr = rawDuration + '';
+        if (rawDurationStr.length > 0) {
+          var num = parseFloat(rawDurationStr);
+          if (!isNaN(num) && (num >= 0)) {
+            return num.toFixed(1) - 0;
+          }
+        }
+      }
+      return null;
+    };
+
+    this.setDurationForKeyframe = function(keyframeId, duration) {
+      if (keyframeId && keyframesById[keyframeId]) {
+        keyframesById[keyframeId]['duration'] = sanitizeDuration(duration);
+      }
+      tryBuildKeyframeInterval_refreshKeyframeParas(keyframeId);
+      return keyframesById[keyframeId];
+    };
+
+    this.resetDurationBlockForKeyframe = function(keyframeId, duration) {
+      if (keyframeId && keyframesById[keyframeId]) {
+        keyframesById[keyframeId]['buildConstraint'] = "duration";
+        keyframesById[keyframeId]['waitStart'] = 0.5;
+        keyframesById[keyframeId]['waitEnd'] = 0.5;
+        keyframesById[keyframeId]['speed'] = null;
+        keyframesById[keyframeId]['loopTimes'] = 0;
+        if (settings["enableCustomUI"])
+          keyframesById[keyframeId]['duration'] = 2;
+        else
+          keyframesById[keyframeId]['duration'] = null;
+      }
+      tryBuildKeyframeInterval_refreshKeyframeParas(keyframeId);
+      return keyframesById[keyframeId];
+    };
+
+    this.resetSpeedBlockForKeyframe = function(keyframeId, duration) {
+      if (keyframeId && keyframesById[keyframeId]) {
+        keyframesById[keyframeId]['buildConstraint'] = "speed";
+        keyframesById[keyframeId]['waitStart'] = 0.5;
+        keyframesById[keyframeId]['waitEnd'] = 0.5;
+        keyframesById[keyframeId]['duration'] = null;
+        keyframesById[keyframeId]['speed'] = 100;
+        if (settings["enableCustomUI"])
+          keyframesById[keyframeId]['loopTimes'] = 2;
+        else
+          keyframesById[keyframeId]['loopTimes'] = 0;
+      }
+      tryBuildKeyframeInterval_refreshKeyframeParas(keyframeId);
+      return keyframesById[keyframeId];
+    };
+
+    this.updateTimeAndPositionForKeyframe = function(keyframeId) {
+      if (keyframeId && keyframesById[keyframeId]) {
+        var bounds = timelapse.getBoundingBoxForCurrentView();
+        var keyframe = keyframesById[keyframeId];
+        keyframe['time'] = org.gigapan.timelapse.Snaplapse.normalizeTime(timelapse.getCurrentTime());
+        keyframe['captureTime'] = timelapse.getCurrentCaptureTime();
+        keyframe['bounds'] = {};
+        keyframe['bounds'].xmin = bounds.xmin;
+        keyframe['bounds'].ymin = bounds.ymin;
+        keyframe['bounds'].xmax = bounds.xmax;
+        keyframe['bounds'].ymax = bounds.ymax;
+
+        var index = keyframes.length;
+        for (var j = 0; j < keyframes.length; j++) {
+          if (keyframeId == keyframes[j]['id']) {
+            index = j;
+            break;
+          }
+        }
+        var $keyframeItems = $("#" + composerDivId + " .snaplapse_keyframe_list > .ui-selectee");
+
+        // Build current keyframe
+        resetKeyframe(keyframe);
+        tryBuildKeyframeInterval_refreshKeyframeParas(keyframeId);
+
+        // Build previous keyframe
+        if (keyframes[index - 1]) {
+          resetKeyframe(keyframes[index - 1]);
+          tryBuildKeyframeInterval_refreshKeyframeParas(keyframeId, true);
+        }
+
+        if (timelapse.getVisualizer()) {
+          timelapse.getVisualizer().deleteTimeTag(keyframeId, keyframes[index - 1]);
+          timelapse.getVisualizer().addTimeTag(keyframes, index);
+        }
+        var tagColor = timelapse.getTagColor();
+        var color_head = "rgba(" + tagColor[0] + "," + tagColor[1] + "," + tagColor[2] + ",";
+
+        // Events should be fired at the end of this function
+        var listeners = eventListeners['keyframe-modified'];
+        if (listeners) {
+          for (var i = 0; i < listeners.length; i++) {
+            try {
+              listeners[i](cloneFrame(keyframe));
+            } catch(e) {
+              UTIL.error(e.name + " while calling snaplapse 'keyframe-modified' event listener: " + e.message, e);
+            }
+          }
+        }
+
+        return color_head;
+      }
+    };
+
+    this.deleteKeyframeById = function(keyframeId) {
+      if (keyframeId && keyframesById[keyframeId]) {
+        var indexToDelete = -1;
+        for (var i = 0; i < keyframes.length; i++) {
+          if (keyframeId == keyframes[i]['id']) {
+            indexToDelete = i;
+            break;
+          }
+        }
+        keyframes.splice(indexToDelete, 1);
+        delete keyframesById[keyframeId];
+
+        if (keyframes[indexToDelete - 1]) {
+          var previousKeyframe = keyframes[indexToDelete - 1];
+          if (previousKeyframe['buildConstraint'] == "duration")
+            previousKeyframe['speed'] = null;
+          else if (previousKeyframe['buildConstraint'] == "speed")
+            previousKeyframe['duration'] = null;
+          tryBuildKeyframeInterval_refreshKeyframeParas(previousKeyframe['id']);
+        }
+        hideLastKeyframeTransition();
+        if (timelapse.getVisualizer())
+          timelapse.getVisualizer().deleteTimeTag(keyframeId, keyframes[indexToDelete - 1]);
+        return true;
+      }
+      return false;
+    };
+
     timelapse.getVideoset().addEventListener('stall-status-change', function(isStalled) {
       if (isCurrentlyPlaying) {
         if (isStalled) {
@@ -322,10 +444,13 @@ if (!Math.uuid) {
           }
           encoder.write_uint(loopTimes);
           // Duration OR speed
-          if (buildConstraint == "duration")
-            encoder.write_udecimal(keyframes[i]['duration'], 2);
-          else if (buildConstraint == "speed")
-            encoder.write_uint(keyframes[i]['speed']);
+          if (buildConstraint == "duration") {
+						var duration = (typeof keyframes[i]['duration'] == 'undefined') ? 0 : keyframes[i]['duration'];
+            encoder.write_udecimal(duration, 2);
+          } else if (buildConstraint == "speed") {
+						var speed = (typeof keyframes[i]['speed'] == 'undefined') ? 100 : keyframes[i]['speed'];
+            encoder.write_uint(speed);
+          }
           // Frame Number
           encoder.write_uint(Math.floor(keyframes[i]['time'] * timelapse.getFps()));
           // Lat/Lng center view
@@ -538,7 +663,7 @@ if (!Math.uuid) {
       var keyframeId = Math.uuid(20);
       var keyframe = {};
       keyframe['id'] = keyframeId;
-      keyframe['buildConstraint'] = buildConstraint;
+      keyframe['buildConstraint'] = ( typeof buildConstraint == 'undefined') ? "speed" : buildConstraint;
       keyframe['loopTimes'] = loopTimes;
       keyframe['speed'] = speed;
       keyframe['waitStart'] = waitStart;
@@ -569,19 +694,19 @@ if (!Math.uuid) {
       keyframes[insertionIndex] = keyframe;
       keyframesById[keyframeId] = keyframe;
 
-      if (!isKeyframeFromLoad) {
-        var $keyframeItems = $("#" + composerDivId + " .snaplapse_keyframe_list > .ui-selectee");
-        resetKeyframeAndUI(keyframes[insertionIndex - 1], $keyframeItems.eq(insertionIndex - 1));
-      }
-
       // We build the keyframe and compute all parameters
 
       // Builds the current keyframe interval
+      if (!isKeyframeFromLoad)
+        resetKeyframe(keyframe);
       tryBuildKeyframeInterval_refreshKeyframeParas(keyframeId);
 
       // Builds the previous keyframe interval
-      if (keyframes[insertionIndex - 1])
+      if (keyframes[insertionIndex - 1]) {
+        if (!isKeyframeFromLoad)
+          resetKeyframe(keyframes[insertionIndex - 1]);
         tryBuildKeyframeInterval_refreshKeyframeParas(keyframeId, true);
+      }
 
       if (!isKeyframeFromLoad) {
         if (timelapse.getVisualizer())
@@ -602,108 +727,13 @@ if (!Math.uuid) {
       }
     };
 
-    this.setTextAnnotationForKeyframe = function(keyframeId, description, isDescriptionVisible) {
-      if (keyframeId && keyframesById[keyframeId]) {
-        if (description != undefined) {
-          keyframesById[keyframeId]['unsafe_string_description'] = description;
-        }
-        keyframesById[keyframeId]['is-description-visible'] = isDescriptionVisible;
-        return true;
+    var resetKeyframe = function(keyframe) {
+      if (keyframe['buildConstraint'] == "duration") {
+        keyframe['speed'] = null;
+        keyframe['loopTimes'] = 0;
+      } else if (keyframe['buildConstraint'] == "speed") {
+        keyframe['duration'] = null;
       }
-      return false;
-    };
-
-    var sanitizeDuration = function(rawDuration) {
-      if ( typeof rawDuration != 'undefined' && rawDuration != null) {
-        var rawDurationStr = rawDuration + '';
-        if (rawDurationStr.length > 0) {
-          var num = parseFloat(rawDurationStr);
-          if (!isNaN(num) && (num >= 0)) {
-            return num.toFixed(1) - 0;
-          }
-        }
-      }
-      return null;
-    };
-
-    this.setDurationForKeyframe = function(keyframeId, duration) {
-      if (keyframeId && keyframesById[keyframeId]) {
-        keyframesById[keyframeId]['duration'] = sanitizeDuration(duration);
-      }
-      tryBuildKeyframeInterval_refreshKeyframeParas(keyframeId);
-      return keyframesById[keyframeId];
-    };
-
-    this.updateTimeAndPositionForKeyframe = function(keyframeId) {
-      if (keyframeId && keyframesById[keyframeId]) {
-        var bounds = timelapse.getBoundingBoxForCurrentView();
-        var keyframe = keyframesById[keyframeId];
-        keyframe['time'] = org.gigapan.timelapse.Snaplapse.normalizeTime(timelapse.getCurrentTime());
-        keyframe['captureTime'] = timelapse.getCurrentCaptureTime();
-        keyframe['bounds'] = {};
-        keyframe['bounds'].xmin = bounds.xmin;
-        keyframe['bounds'].ymin = bounds.ymin;
-        keyframe['bounds'].xmax = bounds.xmax;
-        keyframe['bounds'].ymax = bounds.ymax;
-
-        var index = keyframes.length;
-        for (var j = 0; j < keyframes.length; j++) {
-          if (keyframeId == keyframes[j]['id']) {
-            index = j;
-            break;
-          }
-        }
-        var $keyframeItems = $("#" + composerDivId + " .snaplapse_keyframe_list > .ui-selectee");
-        updateKeyframeAndUI(keyframes[index], $keyframeItems.eq(index));
-        updateKeyframeAndUI(keyframes[index - 1], $keyframeItems.eq(index - 1));
-        tryBuildKeyframeInterval_refreshKeyframeParas(keyframeId);
-        tryBuildKeyframeInterval_refreshKeyframeParas(keyframeId, true);
-        if (timelapse.getVisualizer()) {
-          timelapse.getVisualizer().deleteTimeTag(keyframeId, keyframes[index - 1]);
-          timelapse.getVisualizer().addTimeTag(keyframes, index);
-        }
-        var tagColor = timelapse.getTagColor();
-        var color_head = "rgba(" + tagColor[0] + "," + tagColor[1] + "," + tagColor[2] + ",";
-
-        // Events should be fired at the end of this function
-        var listeners = eventListeners['keyframe-modified'];
-        if (listeners) {
-          for (var i = 0; i < listeners.length; i++) {
-            try {
-              listeners[i](cloneFrame(keyframe));
-            } catch(e) {
-              UTIL.error(e.name + " while calling snaplapse 'keyframe-modified' event listener: " + e.message, e);
-            }
-          }
-        }
-
-        return color_head;
-      }
-    };
-
-    this.deleteKeyframeById = function(keyframeId) {
-      if (keyframeId && keyframesById[keyframeId]) {
-        var indexToDelete = -1;
-        for (var i = 0; i < keyframes.length; i++) {
-          if (keyframeId == keyframes[i]['id']) {
-            indexToDelete = i;
-            break;
-          }
-        }
-        keyframes.splice(indexToDelete, 1);
-        delete keyframesById[keyframeId];
-
-        if (keyframes[indexToDelete - 1]) {
-          var $keyframeItems = $("#" + composerDivId + " .snaplapse_keyframe_list > .ui-selectee");
-          resetKeyframeAndUI(keyframes[indexToDelete - 1], $keyframeItems.eq(indexToDelete - 1));
-          tryBuildKeyframeInterval_refreshKeyframeParas(keyframes[indexToDelete-1]['id']);
-        }
-        hideLastKeyframeTransition();
-        if (timelapse.getVisualizer())
-          timelapse.getVisualizer().deleteTimeTag(keyframeId, keyframes[indexToDelete - 1]);
-        return true;
-      }
-      return false;
     };
 
     this.getKeyframes = function() {
@@ -1179,14 +1209,11 @@ if (!Math.uuid) {
       }
       // Update the UI and keyframe parameters
       startingFrame['speed'] = desiredSpeed;
-      if (!$("#" + itemIdHead + "_speed").prop("disabled"))
-        $("#" + itemIdHead + "_speed").val(desiredSpeed);
+      $("#" + itemIdHead + "_speed").val(desiredSpeed);
       startingFrame['loopTimes'] = loopTimes;
-      if (!$("#" + itemIdHead + "_loopTimes").prop("disabled"))
-        $("#" + itemIdHead + "_loopTimes").val(loopTimes);
+      $("#" + itemIdHead + "_loopTimes").val(loopTimes);
       startingFrame['duration'] = desiredDuration;
-      if (!$("#" + itemIdHead + "_duration").prop("disabled"))
-        $("#" + itemIdHead + "_duration").val(desiredDuration.toFixed(2));
+      $("#" + itemIdHead + "_duration").val(desiredDuration.toFixed(2));
     } else {
       /////////////////////////////////////////////
       // Playing mode: playing the timewarp

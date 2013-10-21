@@ -611,16 +611,6 @@ if (!org.gigapan.timelapse.Timelapse) {
         timelapse.getSnaplapse().getSnaplapseViewer().loadNewSnaplapse(null);
         timelapse.handleEditorModeToolbarChange();
       });
-      // Create global setting button
-      //customEditorModeToolbar.append('<button class="setTimewarp" title="Global settings">Settings</button>');
-      //$("#" + viewerDivId + " .setTimewarp").button({
-      //  icons: {
-      //    primary: "ui-icon-wrench"
-      //  },
-      //  text: true
-      //}).click(function() {
-      //  timelapse.getSnaplapse().getSnaplapseViewer().showSetSnaplapseWindow();
-      //});
       // Create buttonset
       customEditorModeToolbar.buttonset();
       var customEditorModeToolbar_height = customEditorModeToolbar.height() + 5;

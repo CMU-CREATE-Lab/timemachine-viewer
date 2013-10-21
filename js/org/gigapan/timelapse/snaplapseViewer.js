@@ -178,6 +178,8 @@ function playCachedSnaplapse(snaplapseId) {
       });
       $googleMapToggle.fadeOut(100);
       $contextMapResizer.fadeOut(100);
+      if (editorEnabled)
+        moveDescriptionBox("down");
     };
     this.hideViewerUI = hideViewerUI;
 
@@ -203,6 +205,8 @@ function playCachedSnaplapse(snaplapseId) {
       $googleMapToggle.fadeIn(100);
       $contextMapResizer.fadeIn(100);
       $sideToolBar.stop(true, true).fadeIn(100);
+      if (editorEnabled)
+        moveDescriptionBox("up");
     };
     this.showViewerUI = showViewerUI;
 
@@ -742,7 +746,7 @@ function playCachedSnaplapse(snaplapseId) {
       content += '    <td valign="center" class="transition_table">';
       content += '      <div class="transition_table_mask">';
       content += '        <div class="snaplapse_keyframe_list_item_duration_container">';
-      content += '					<input type="radio" name="' + transitionSelection + '" id="' + durationBlockId + '" value="duration" style="position: absolute; left: -23px; top: -3px;">';
+      content += '					<input type="radio" name="' + transitionSelection + '" id="' + durationBlockId + '" value="duration" style="position: absolute; left: -23px; top: -3px;" ' + (buildConstraint == "duration" ? 'checked="checked"' : '') + '/>';
       content += '          <span class="snaplapse_keyframe_list_item_duration_label_1">Duration:</span>';
       content += '          <input type="text" id="' + durationId + '" class="snaplapse_keyframe_list_item_duration" value="' + duration + '">';
       content += '          <span class="snaplapse_keyframe_list_item_duration_label_2">secs</span>';
@@ -753,7 +757,7 @@ function playCachedSnaplapse(snaplapseId) {
       content += '          <span class="snaplapse_keyframe_list_item_speed_label_2">%</span>';
       content += '        </div>';
       content += '        <div class="snaplapse_keyframe_list_item_loop_container">';
-      content += '					<input type="radio" name="' + transitionSelection + '" id="' + speedBlockId + '"  value="speed" style="position: absolute; left: -23px;  top: -3px;">';
+      content += '					<input type="radio" name="' + transitionSelection + '" id="' + speedBlockId + '"  value="speed" style="position: absolute; left: -23px;  top: -3px;" ' + (buildConstraint == "speed" ? 'checked="checked"' : '') + '/>';
       content += '          <span class="snaplapse_keyframe_list_item_duration_label_1">Loops:</span>';
       content += '          <input type="text" id="' + loopTimesId + '" class="snaplapse_keyframe_list_item_loop" title="Times for looping the entire video" value="' + loopTimes + '">';
       content += '          <span class="snaplapse_keyframe_list_item_loop_label_4" style="display: none">secs</span>';
@@ -771,28 +775,12 @@ function playCachedSnaplapse(snaplapseId) {
         var thisKeyframeId = this.id.split("_")[3];
         if (id.indexOf("speedBlock") !== -1) {
           // Using speed as the main constraint
-          snaplapse.setBuildConstraintForKeyframe(thisKeyframeId, "speed");
-          var newSpeed = isKeyframeFromLoad ? speed : 100;
-          var newLoopTimes = isKeyframeFromLoad ? loopTimes : 2;
-          $("#" + keyframeListItem.id + "_speed").prop('disabled', false).val(newSpeed).trigger("change");
-          $("#" + keyframeListItem.id + "_loopTimes").prop('disabled', false).val(newLoopTimes).trigger("change");
-          $("#" + keyframeListItem.id + "_duration").prop('disabled', true).val("");
-          snaplapse.setLoopDwellTimeForKeyframe(thisKeyframeId, 0.5, 0.5);
+          snaplapse.resetSpeedBlockForKeyframe(thisKeyframeId);
         } else {
           // Using duration as the main constraint
-          snaplapse.setBuildConstraintForKeyframe(thisKeyframeId, "duration");
-          var defaultDuration;
-          if (settings["enableCustomUI"])
-            defaultDuration = 2;
-          else
-            defaultDuration = null;
-          var newDuration = isKeyframeFromLoad ? duration : defaultDuration;
-          $("#" + keyframeListItem.id + "_speed").prop('disabled', true).val("");
-          $("#" + keyframeListItem.id + "_duration").prop('disabled', false).val(newDuration).trigger("change");
-          $("#" + keyframeListItem.id + "_loopTimes").prop('disabled', true).val("");
-          snaplapse.setLoopDwellTimeForKeyframe(thisKeyframeId, 0.5, 0.5);
+          snaplapse.resetDurationBlockForKeyframe(thisKeyframeId);
         }
-        isKeyframeFromLoad = false;
+        resetKeyframeTransitionUI(this.value, composerDivId + "_snaplapse_keyframe_" + thisKeyframeId);
       });
 
       // Toggle the description field enabled/disabled
@@ -970,19 +958,19 @@ function playCachedSnaplapse(snaplapseId) {
       // The reason to hide and show the elements is the workaround for a webkit refresh bug
       $(".snaplapse_keyframe_container").hide().show(0);
 
-      // When the video is in looping mode, the keyframes created should be also in looping mode
-      if (!isKeyframeFromLoad && timelapse.getLoopPlayback() && insertionIndex > 0) {
-        var allKeyframes = snaplapse.getKeyframes();
-        var lastKeyframe = allKeyframes[insertionIndex - 1];
-        var thisDOM_Id = composerDivId + "_snaplapse_keyframe_" + lastKeyframe.id;
-        snaplapse.setBuildConstraintForKeyframe(lastKeyframe.id, buildConstraint);
-        if (timelapse.getVisualizer())
-          timelapse.getVisualizer().updateTagPaths(thisDOM_Id, lastKeyframe);
+      resetKeyframeTransitionUI(buildConstraint, keyframeListItem.id);
+    };
+
+    var resetKeyframeTransitionUI = function(buildConstraint, keyframeElementId) {
+      if (buildConstraint == "duration") {
+        $("#" + keyframeElementId + "_duration").prop('disabled', false);
+        $("#" + keyframeElementId + "_speed").prop('disabled', true);
+        $("#" + keyframeElementId + "_loopTimes").prop('disabled', true);
+      } else if (buildConstraint == "speed") {
+        $("#" + keyframeElementId + "_duration").prop('disabled', true);
+        $("#" + keyframeElementId + "_speed").prop('disabled', false);
+        $("#" + keyframeElementId + "_loopTimes").prop('disabled', false);
       }
-      if (buildConstraint == "duration")
-        $("#" + keyframeListItem.id + "_durationBlock").trigger("click");
-      else
-        $("#" + keyframeListItem.id + "_speedBlock").trigger("click");
     };
 
     var checkTextareaMaxlength = function(thisTextarea, maxlength) {
