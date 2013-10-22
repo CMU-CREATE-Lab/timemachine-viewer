@@ -722,12 +722,14 @@ function playCachedSnaplapse(snaplapseId) {
       var durationBlockId = keyframeListItem.id + "_durationBlock";
       var speedBlockId = keyframeListItem.id + "_speedBlock";
       var transitionSelection = keyframeListItem.id + "_transitionSelection";
+      var loopTextId = keyframeListItem.id + "_loopText";
 
       var duration = typeof frame['duration'] != 'undefined' && frame['duration'] != null ? frame['duration'] : '';
       var speed = typeof frame['speed'] != 'undefined' && frame['speed'] != null ? frame['speed'] : 100;
       var isDescriptionVisible = typeof frame['is-description-visible'] == 'undefined' ? true : frame['is-description-visible'];
       var buildConstraint = typeof frame['buildConstraint'] == 'undefined' ? "speed" : frame['buildConstraint'];
       var loopTimes = typeof frame['loopTimes'] == 'undefined' ? null : frame['loopTimes'];
+      var disableTourLooping = ( typeof settings['disableTourLooping'] == "undefined") ? false : settings['disableTourLooping'];
 
       var content = '';
       content += '<table border="0" cellspacing="0" cellpadding="0" class="snaplapse_keyframe_list_item_table">';
@@ -758,9 +760,8 @@ function playCachedSnaplapse(snaplapseId) {
       content += '        </div>';
       content += '        <div class="snaplapse_keyframe_list_item_loop_container">';
       content += '					<input type="radio" name="' + transitionSelection + '" id="' + speedBlockId + '"  value="speed" style="position: absolute; left: -23px;  top: -3px;" ' + (buildConstraint == "speed" ? 'checked="checked"' : '') + '/>';
-      content += '          <span class="snaplapse_keyframe_list_item_duration_label_1">Loops:</span>';
+      content += '          <span class="snaplapse_keyframe_list_item_duration_label_1" id="' + loopTextId + '">Loops:</span>';
       content += '          <input type="text" id="' + loopTimesId + '" class="snaplapse_keyframe_list_item_loop" title="Times for looping the entire video" value="' + loopTimes + '">';
-      content += '          <span class="snaplapse_keyframe_list_item_loop_label_4" style="display: none">secs</span>';
       content += '        </div></div>';
       content += '      </div>';
       content += '    </td>';
@@ -768,6 +769,20 @@ function playCachedSnaplapse(snaplapseId) {
       content += '</table>';
 
       $("#" + keyframeListItem.id).html(content).addClass("snaplapse_keyframe_list_item");
+
+      if (disableTourLooping) {
+        $("#" + loopTimesId).hide();
+        $("#" + loopTextId).hide();
+        $("#" + speedBlockId).css({
+          "top": "14px"
+        });
+        $("#" + composerDivId + " .snaplapse_keyframe_list_item_speed_container").css({
+          "top": "15px"
+        });
+        $("#" + composerDivId + " .snaplapse_keyframe_list_item_duration_container").css({
+          "top": "90px"
+        });
+      }
 
       $('input[name=' + transitionSelection + ']').change(function() {
         var elem = $(this);

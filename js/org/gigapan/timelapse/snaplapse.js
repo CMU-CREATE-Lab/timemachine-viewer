@@ -217,7 +217,7 @@ if (!Math.uuid) {
         }
         keyframeToBuild = keyframes[idx - 1];
         if ( typeof (keyframeToBuild) != "undefined" && keyframeToBuild != null && typeof (keyframes[idx]) != "undefined" && keyframes[idx] != null) {
-          keyframeInterval = new org.gigapan.timelapse.KeyframeInterval(keyframeToBuild, keyframes[idx], null, timelapse.getDuration(), composerDivId, keyframeToBuild['buildConstraint'], isFirstKeyframe, timelapse);
+          keyframeInterval = new org.gigapan.timelapse.KeyframeInterval(keyframeToBuild, keyframes[idx], null, timelapse.getDuration(), composerDivId, keyframeToBuild['buildConstraint'], isFirstKeyframe, timelapse, settings);
         }
       } else {
         if (idx == 0) {
@@ -225,7 +225,7 @@ if (!Math.uuid) {
         }
         keyframeToBuild = keyframes[idx];
         if ( typeof (keyframeToBuild) != "undefined" && keyframeToBuild != null && typeof (keyframes[idx + 1]) != "undefined" && keyframes[idx + 1] != null) {
-          keyframeInterval = new org.gigapan.timelapse.KeyframeInterval(keyframeToBuild, keyframes[idx + 1], null, timelapse.getDuration(), composerDivId, keyframeToBuild['buildConstraint'], isFirstKeyframe, timelapse);
+          keyframeInterval = new org.gigapan.timelapse.KeyframeInterval(keyframeToBuild, keyframes[idx + 1], null, timelapse.getDuration(), composerDivId, keyframeToBuild['buildConstraint'], isFirstKeyframe, timelapse, settings);
         }
       }
     };
@@ -444,10 +444,10 @@ if (!Math.uuid) {
           encoder.write_uint(loopTimes);
           // Duration OR speed
           if (buildConstraint == "duration") {
-						var duration = (typeof keyframes[i]['duration'] == 'undefined') ? 0 : keyframes[i]['duration'];
+            var duration = ( typeof keyframes[i]['duration'] == 'undefined') ? 0 : keyframes[i]['duration'];
             encoder.write_udecimal(duration, 2);
           } else if (buildConstraint == "speed") {
-						var speed = (typeof keyframes[i]['speed'] == 'undefined') ? 100 : keyframes[i]['speed'];
+            var speed = ( typeof keyframes[i]['speed'] == 'undefined') ? 100 : keyframes[i]['speed'];
             encoder.write_uint(speed);
           }
           // Frame Number
@@ -752,7 +752,7 @@ if (!Math.uuid) {
         if (k == startingKeyframeIndex + 1) {
           isFirstKeyframe = true;
         }
-        var keyframeInterval = new org.gigapan.timelapse.KeyframeInterval(keyframes[k - 1], keyframes[k], previousKeyframeInterval, timelapse.getDuration(), composerDivId, undefined, isFirstKeyframe, timelapse);
+        var keyframeInterval = new org.gigapan.timelapse.KeyframeInterval(keyframes[k - 1], keyframes[k], previousKeyframeInterval, timelapse.getDuration(), composerDivId, undefined, isFirstKeyframe, timelapse, settings);
         intervals[intervals.length] = keyframeInterval;
         UTIL.log("   buildKeyframeIntervals(): created keyframe interval (" + (intervals.length - 1) + "): between time [" + keyframes[k - 1]['time'] + "] and [" + keyframes[k]['time'] + "]: " + keyframeInterval);
       }
@@ -1080,7 +1080,7 @@ if (!Math.uuid) {
     return parseFloat(t.toFixed(6));
   };
 
-  org.gigapan.timelapse.KeyframeInterval = function(startingFrame, endingFrame, previousKeyframeInterval, videoDuration, composerDivId, constraintParaName, isFirstKeyframe, timelapse) {
+  org.gigapan.timelapse.KeyframeInterval = function(startingFrame, endingFrame, previousKeyframeInterval, videoDuration, composerDivId, constraintParaName, isFirstKeyframe, timelapse, settings) {
     var nextKeyframeInterval = null;
     var playbackRate = null;
     var itemIdHead = composerDivId + "_snaplapse_keyframe_" + startingFrame.id;
@@ -1098,6 +1098,7 @@ if (!Math.uuid) {
     var actualDuration;
     var desiredDuration;
     var defaultLoopDwellTime = 0.5;
+    var disableTourLooping = ( typeof settings['disableTourLooping'] == "undefined") ? false : settings['disableTourLooping'];
     var defaultLoopTimes = 2;
 
     // Determine loop dwell time and validate loop times
@@ -1106,6 +1107,8 @@ if (!Math.uuid) {
       // Updating mode:
       if (constraintParaName == "speed") {
         // looping is allowed in speed mode
+        if (disableTourLooping)
+          loopTimes = 0;
         if (loopTimes == null)
           loopTimes = defaultLoopTimes;
         else if (loopTimes < 0)
@@ -1165,10 +1168,12 @@ if (!Math.uuid) {
           loopTimes = 0;
         // If the actual duration is zero, loop times and speed cannot be zero
         if (actualDuration == 0) {
-          if (loopTimes <= 0)
+          if (loopTimes <= 0 && !disableTourLooping)
             loopTimes = 1;
-          if (desiredSpeed == 0)
+          if (desiredSpeed == 0 && !disableTourLooping)
             desiredSpeed = 100;
+          if (disableTourLooping)
+            desiredSpeed = 0;
         }
         // Compute other parameters
         playbackRate = desiredSpeed / 100;
@@ -1184,6 +1189,8 @@ if (!Math.uuid) {
           else
             desiredDuration = playbackTime_withoutLooping;
         }
+        if (isNaN(desiredDuration) || desiredSpeed == 0)
+          desiredDuration = 0;
       } else if (constraintParaName == "duration") {
         // The primary constraint is duration
         // This means we want to fix the duration and compute other parameters

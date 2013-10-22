@@ -15,14 +15,16 @@
 
 .saveTimewarpWindow_txt {
   position: absolute;
-  top: 60px;
+  width: 383px;
+  top: 57px;
   left: 10px;
   right: 5px;
 }
 
 .saveTimewarpWindow_txt2 {
   position: absolute;
-  top: 230px;
+  width: 383px;
+  top: 220px;
   left: 10px;
 }
 
@@ -38,7 +40,7 @@
 .saveTimewarpWindow_JSON {
   position: absolute;
   left: 10px;
-  top: 100px;
+  top: 97px;
   width: 383px;
   height: 100px;
   resize: none;
@@ -47,7 +49,7 @@
 .saveTimewarpWindow_JSON2 {
   resize: none;
   position: absolute;
-  top: 270px;
+  top: 260px;
   left: 10px;
   height: 100px;
   width: 383px;
@@ -55,7 +57,7 @@
 
 .saveTimewarpWindow_JSON2_sizesContainer {
   position: absolute;
-  top: 380px;
+  top: 382px;
   left: 10px;
 }
 
@@ -250,10 +252,6 @@
   height: 12px;
 }
 
-.snaplapse_keyframe_list_item_loop_label_4 {
-  font-family: Arial, Helvetica, sans-serif;
-}
-
 .snaplapse_keyframe_list_item_loop {
   font-family: Arial, Helvetica, sans-serif;
   font-size: 10px;
@@ -373,7 +371,7 @@
 
 .saveTimewarpWindow_tourTitle {
   position: absolute;
-  top: 11px;
+  top: 18px;
   left: 10px;
   width: 400px;
   font-weight: bold;
