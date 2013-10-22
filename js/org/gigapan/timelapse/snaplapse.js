@@ -105,57 +105,60 @@ if (!Math.uuid) {
 
 (function() {
   var UTIL = org.gigapan.Util;
-  org.gigapan.timelapse.Snaplapse = function(composerDivId, timelapse, settings) {
+  org.gigapan.timelapse.Snaplapse = function(timelapse, settings, mode) {
 
-    var viewer;
+    // Objects
+    var thisObj = this;
+    var snaplapseViewer;
     var eventListeners = {};
     var keyframes = [];
     var keyframesById = {};
     var keyframeIntervals = [];
     var currentKeyframeInterval = null;
-    var isCurrentlyPlaying = false;
-    var warpStartingTime = null;
     var timeCounterIntervalHandle = null;
-    var thisObj = this;
-    var $composerDivObj = $("#" + composerDivId);
-    var viewerDivId = timelapse.getViewerDivId();
-    var captureTimes = timelapse.getCaptureTimes();
 
+    // Settings
+    var useCustomUI = timelapse.useCustomUI();
+    var usePresentationSlider = (mode == "presentation") ? true : false;
+    var disableKeyframeTitle = ( typeof (settings["disableKeyframeTitle"]) == "undefined") ? false : settings["disableKeyframeTitle"];
+    var uiEnabled = (mode == "noUI") ? false : true;
+
+    // Flags
+    var isCurrentlyPlaying = false;
+
+    // DOM elements
+    var timeMachineDivId = timelapse.getTimeMachineDivId();
+    var composerDivClass = usePresentationSlider ? "presentationSlider" : "composer";
+    var composerDivId = timeMachineDivId + " ." + composerDivClass;
+
+    // Parameters
+    var warpStartingTime = null;
+    var captureTimes = timelapse.getCaptureTimes();
     var loadJSON;
     var loadKeyframesLength;
-    var waitFor_timeout;
-    var waitForSeek_timeout;
-    var waitForStart = false;
-    var waitForEnd = true;
-    var currentWaitDuration = {
+    var rootAppURL = org.gigapan.Util.getRootAppURL();
+
+    // Because the viewer on Google Earth Engine is not updated yet,
+    // we need to use disableKeyframeTitle flag for backward compatibility.
+    var TOUR_SHARING_VERSION = disableKeyframeTitle ? 3 : 4;
+
+    // Loop Dwell
+    var doLoopDwellTimeout;
+    var waitForSeekTimeout;
+    var doStartDwell = false;
+    var doEndDwell = true;
+    var currentLoopDwell = {
       start: 0,
       end: 0
     };
-    var currentWaitForExtraStart = false;
-    var extraWaitForStartDuration = 0;
+    var defaultLoopTimes = 2;
+    var doExtraStartDwell = false;
+    var extraStartDwell = 0;
     var startingPlaybackRate = 1;
 
-    var TOUR_SHARING_VERSION = 3;
-
     var _clearSnaplapse = function() {
-
       if (thisObj.isPlaying) {
         thisObj.stop();
-      }
-
-      if (keyframes.length > 0) {
-        $("#" + viewerDivId + " .tourLoadOverlay").hide();
-        if ($("#" + viewerDivId + " .snaplapseTourPlayBack").children().length > 1) {
-          $("#" + viewerDivId + " .snaplapseTourPlayBack").empty();
-        }
-        $("#" + viewerDivId + " .snaplapseTourPlayBack").hide();
-
-        if ($("#" + viewerDivId + "_customTimeline").is(':hidden')) {
-          viewer.showViewerUI();
-        }
-        $("#" + viewerDivId + " .tourLoadOverlay").remove();
-        $("#" + viewerDivId).append('<div class="tourLoadOverlay"><div class="tourLoadOverlayTitleContainer"><div class="tourLoadOverlayTitle"></div></div><img class="tourLoadOverlayPlay" title="Click to start the tour" src="images/tour_play_outline.png"></div></div>');
-        viewer.initializeTourOverlyUI();
       }
 
       keyframes.length = 0;
@@ -166,7 +169,6 @@ if (!Math.uuid) {
       timeCounterIntervalHandle = null;
       if (timelapse.getVisualizer())
         timelapse.getVisualizer().deleteAllTags();
-
     };
     this.clearSnaplapse = _clearSnaplapse;
 
@@ -176,34 +178,18 @@ if (!Math.uuid) {
 
     // This is used for pausing the video at the beginning or end
     var resetWaitFlags = function() {
-      clearTimeout(waitFor_timeout);
-      clearTimeout(waitForSeek_timeout);
-      waitForStart = false;
-      waitForEnd = true;
+      clearTimeout(doLoopDwellTimeout);
+      clearTimeout(waitForSeekTimeout);
+      doStartDwell = false;
+      doEndDwell = true;
     };
-
-    // Hide the transition area for the last key frame on the UI
-    var hideLastKeyframeTransition = function() {
-      var $keyframeItems = $("#" + composerDivId + " .snaplapse_keyframe_list > .ui-selectee");
-      var numItems = $keyframeItems.size();
-      // Unhide the transition options
-      var $keyframeItems_show = $keyframeItems.eq(numItems - 2);
-      if ($keyframeItems_show) {
-        $keyframeItems_show.find(".transition_table_mask").children().show();
-        $keyframeItems_show.find(".snaplapse_keyframe_list_item_play_button").button("option", "disabled", false);
-      }
-      // Hide the transition options and reset the keyframe
-      var $keyframeItems_hide = $keyframeItems.eq(numItems - 1);
-      $keyframeItems_hide.find(".snaplapse_keyframe_list_item_play_button").button("option", "disabled", true);
-      $keyframeItems_hide.find(".transition_table_mask").children().hide();
-    };
-    this.hideLastKeyframeTransition = hideLastKeyframeTransition;
 
     // Every time user updates a parameter, try to build the interval
     // TODO: change the function of buildPreviousFlag to buildCurrentAndPreviousFlag
     var tryBuildKeyframeInterval_refreshKeyframeParas = function(keyframeId, buildPreviousFlag) {
+      if (usePresentationSlider)
+        return;
       var idx;
-      var isFirstKeyframe = false;
       for (var i = 0; i < keyframes.length; i++) {
         if (keyframeId == keyframes[i]['id']) {
           idx = i;
@@ -212,20 +198,14 @@ if (!Math.uuid) {
       }
       var keyframeInterval, keyframeToBuild;
       if (buildPreviousFlag) {
-        if (idx == 1) {
-          isFirstKeyframe = true;
-        }
         keyframeToBuild = keyframes[idx - 1];
         if ( typeof (keyframeToBuild) != "undefined" && keyframeToBuild != null && typeof (keyframes[idx]) != "undefined" && keyframes[idx] != null) {
-          keyframeInterval = new org.gigapan.timelapse.KeyframeInterval(keyframeToBuild, keyframes[idx], null, timelapse.getDuration(), composerDivId, keyframeToBuild['buildConstraint'], isFirstKeyframe, timelapse, settings);
+          keyframeInterval = new org.gigapan.timelapse.KeyframeInterval(keyframeToBuild, keyframes[idx], null, timelapse.getDuration(), timeMachineDivId, keyframeToBuild['buildConstraint'], defaultLoopTimes, timelapse, settings);
         }
       } else {
-        if (idx == 0) {
-          isFirstKeyframe = true;
-        }
         keyframeToBuild = keyframes[idx];
         if ( typeof (keyframeToBuild) != "undefined" && keyframeToBuild != null && typeof (keyframes[idx + 1]) != "undefined" && keyframes[idx + 1] != null) {
-          keyframeInterval = new org.gigapan.timelapse.KeyframeInterval(keyframeToBuild, keyframes[idx + 1], null, timelapse.getDuration(), composerDivId, keyframeToBuild['buildConstraint'], isFirstKeyframe, timelapse, settings);
+          keyframeInterval = new org.gigapan.timelapse.KeyframeInterval(keyframeToBuild, keyframes[idx + 1], null, timelapse.getDuration(), timeMachineDivId, keyframeToBuild['buildConstraint'], defaultLoopTimes, timelapse, settings);
         }
       }
     };
@@ -254,21 +234,20 @@ if (!Math.uuid) {
       return keyframesById[keyframeId];
     };
 
-    this.setLoopDwellTimeForKeyframe = function(keyframeId, startDwell, endDwell) {
-      if (keyframeId && keyframesById[keyframeId]) {
-        if (startDwell)
-          keyframesById[keyframeId]['waitStart'] = startDwell;
-        if (endDwell)
-          keyframesById[keyframeId]['waitEnd'] = endDwell;
-      }
-      tryBuildKeyframeInterval_refreshKeyframeParas(keyframeId);
-    };
-
     this.setTextAnnotationForKeyframe = function(keyframeId, description, isDescriptionVisible) {
       if (keyframeId && keyframesById[keyframeId]) {
-        if (description != undefined) {
+        if (description != undefined)
           keyframesById[keyframeId]['unsafe_string_description'] = description;
-        }
+        keyframesById[keyframeId]['is-description-visible'] = isDescriptionVisible;
+        return true;
+      }
+      return false;
+    };
+
+    this.setTitleForKeyframe = function(keyframeId, description, isDescriptionVisible) {
+      if (keyframeId && keyframesById[keyframeId]) {
+        if (description != undefined)
+          keyframesById[keyframeId]['unsafe_string_frameTitle'] = description;
         keyframesById[keyframeId]['is-description-visible'] = isDescriptionVisible;
         return true;
       }
@@ -299,11 +278,9 @@ if (!Math.uuid) {
     this.resetDurationBlockForKeyframe = function(keyframeId) {
       if (keyframeId && keyframesById[keyframeId]) {
         keyframesById[keyframeId]['buildConstraint'] = "duration";
-        keyframesById[keyframeId]['waitStart'] = 0.5;
-        keyframesById[keyframeId]['waitEnd'] = 0.5;
         keyframesById[keyframeId]['speed'] = null;
         keyframesById[keyframeId]['loopTimes'] = 0;
-        if (settings["enableCustomUI"])
+        if (useCustomUI)
           keyframesById[keyframeId]['duration'] = 2;
         else
           keyframesById[keyframeId]['duration'] = null;
@@ -315,12 +292,10 @@ if (!Math.uuid) {
     this.resetSpeedBlockForKeyframe = function(keyframeId) {
       if (keyframeId && keyframesById[keyframeId]) {
         keyframesById[keyframeId]['buildConstraint'] = "speed";
-        keyframesById[keyframeId]['waitStart'] = 0.5;
-        keyframesById[keyframeId]['waitEnd'] = 0.5;
         keyframesById[keyframeId]['duration'] = null;
         keyframesById[keyframeId]['speed'] = 100;
-        if (settings["enableCustomUI"])
-          keyframesById[keyframeId]['loopTimes'] = 2;
+        if (useCustomUI)
+          keyframesById[keyframeId]['loopTimes'] = defaultLoopTimes;
         else
           keyframesById[keyframeId]['loopTimes'] = 0;
       }
@@ -362,8 +337,6 @@ if (!Math.uuid) {
           timelapse.getVisualizer().deleteTimeTag(keyframeId, keyframes[index - 1]);
           timelapse.getVisualizer().addTimeTag(keyframes, index);
         }
-        var tagColor = timelapse.getTagColor();
-        var color_head = "rgba(" + tagColor[0] + "," + tagColor[1] + "," + tagColor[2] + ",";
 
         // Events should be fired at the end of this function
         var listeners = eventListeners['keyframe-modified'];
@@ -376,8 +349,6 @@ if (!Math.uuid) {
             }
           }
         }
-
-        return color_head;
       }
     };
 
@@ -401,7 +372,7 @@ if (!Math.uuid) {
             previousKeyframe['duration'] = null;
           tryBuildKeyframeInterval_refreshKeyframeParas(previousKeyframe['id']);
         }
-        hideLastKeyframeTransition();
+        snaplapseViewer.hideLastKeyframeTransition();
         if (timelapse.getVisualizer())
           timelapse.getVisualizer().deleteTimeTag(keyframeId, keyframes[indexToDelete - 1]);
         return true;
@@ -422,51 +393,68 @@ if (!Math.uuid) {
       }
     });
 
-    this.getAsUrlString = function() {
+    this.getAsUrlString = function(desiredKeyframes) {
+      if (desiredKeyframes == undefined)
+        desiredKeyframes = keyframes;
       try {
         var encoder = new org.gigapan.timelapse.UrlEncoder();
+        var tmJSON = timelapse.getTmJSON();
         // Version
         encoder.write_uint(TOUR_SHARING_VERSION);
         // Number of keyframes
-        encoder.write_uint(keyframes.length);
-        var projection = timelapse.getProjection();
-        for (var i = 0; i < keyframes.length; i++) {
+        encoder.write_uint(desiredKeyframes.length);
+        for (var i = 0; i < desiredKeyframes.length; i++) {
           // Number of loops
           var loopTimes;
-          var buildConstraint = keyframes[i]['buildConstraint'];
+          var buildConstraint = desiredKeyframes[i]['buildConstraint'];
           if (buildConstraint == "speed") {
-            // Use the trick to save the build constraint to speed
-            loopTimes = keyframes[i]['loopTimes'] ? keyframes[i]['loopTimes'] + 1 : 1;
+            // Use the trick to save the build constraint to speed (add one to loopTimes)
+            loopTimes = desiredKeyframes[i]['loopTimes'] ? desiredKeyframes[i]['loopTimes'] + 1 : 1;
           } else if (buildConstraint == "duration") {
             // Use the trick to save the build constraint to duration
             loopTimes = 0;
           }
           encoder.write_uint(loopTimes);
-          // Duration OR speed
+          // Duration or speed
           if (buildConstraint == "duration") {
-            var duration = ( typeof keyframes[i]['duration'] == 'undefined') ? 0 : keyframes[i]['duration'];
+            var duration = ( typeof desiredKeyframes[i]['duration'] == 'undefined') ? 0 : desiredKeyframes[i]['duration'];
             encoder.write_udecimal(duration, 2);
           } else if (buildConstraint == "speed") {
-            var speed = ( typeof keyframes[i]['speed'] == 'undefined') ? 100 : keyframes[i]['speed'];
+            var speed = ( typeof desiredKeyframes[i]['speed'] == 'undefined') ? 100 : desiredKeyframes[i]['speed'];
             encoder.write_uint(speed);
           }
           // Frame Number
-          encoder.write_uint(Math.floor(keyframes[i]['time'] * timelapse.getFps()));
-          // Lat/Lng center view
-          var viewCenter = timelapse.computeViewFit(keyframes[i]['bounds']);
-          var latLng = projection.pointToLatlng({
-            x: viewCenter.x,
-            y: viewCenter.y
-          });
+          encoder.write_uint(Math.floor(desiredKeyframes[i]['time'] * timelapse.getFps()));
+          var viewCenter;
+          if (tmJSON['projection-bounds']) {
+            var projection = timelapse.getProjection();
+            // Lat/Lng center view
+            viewCenter = timelapse.pixelBoundingBoxToPixelCenter(desiredKeyframes[i]['bounds']);
+            var latLng = projection.pointToLatlng({
+              x: viewCenter.x,
+              y: viewCenter.y
+            });
+            encoder.write_lat(latLng.lat);
+            encoder.write_lon(latLng.lng);
+          } else {
+            // x/y center view
+            viewCenter = timelapse.pixelBoundingBoxToPixelCenter(desiredKeyframes[i]['bounds']);
+            encoder.write_udecimal(viewCenter.x.toFixed(5), 5);
+            encoder.write_udecimal(viewCenter.y.toFixed(5), 5);
+          }
           var zoom = timelapse.scaleToZoom(viewCenter.scale);
-          encoder.write_lat(latLng.lat);
-          encoder.write_lon(latLng.lng);
           encoder.write_udecimal(zoom, 2);
           // Keyframe description
-          encoder.write_string(keyframes[i]['unsafe_string_description']);
+          encoder.write_string(desiredKeyframes[i]['unsafe_string_description']);
+          if (!disableKeyframeTitle) {
+            // Keyframe title
+            encoder.write_string(desiredKeyframes[i]['unsafe_string_frameTitle']);
+          }
         }
         // Tour title
         var title = $("#" + composerDivId + " .saveTimewarpWindow_tourTitleInput").val();
+        if (title == undefined)
+          title = "Untitled";
         encoder.write_string(title);
         // Checksum
         encoder.write_uint(1);
@@ -480,10 +468,9 @@ if (!Math.uuid) {
     // of being appended with "unsafe_string_" to ensure awareness that they may contain
     // potentially unsafe user inputted data.
     // It is then up to developer judgment to consider how these strings will be used.
-    this.urlStringToJSON = function(urlString) {
+    var urlStringToJSON = function(urlString) {
       try {
         var encoder = new org.gigapan.timelapse.UrlEncoder(urlString);
-        var projection = timelapse.getProjection();
         // Decode version
         var version = encoder.read_uint();
         // Decode number of keyframes
@@ -495,6 +482,7 @@ if (!Math.uuid) {
           snaplapseJSON['snaplapse']['dataset-name'] = tmJSON['name'];
         }
         if (tmJSON['projection-bounds']) {
+          var projection = timelapse.getProjection();
           snaplapseJSON['snaplapse']['projection'] = timelapse.getProjectionType();
           snaplapseJSON['snaplapse']['projection-bounds'] = tmJSON['projection-bounds'];
         }
@@ -528,17 +516,23 @@ if (!Math.uuid) {
             frame["speed"] = encoder.read_uint();
             frame["duration"] = null;
           }
-          frame["waitStart"] = 0.5;
-          frame["waitEnd"] = 0.5;
           // Decode frame number
           var frameNumber = encoder.read_uint();
           frame["time"] = frameNumber / fps;
           frame["captureTime"] = captureTimes[frameNumber];
           // Decode center
-          var pointCenter = projection.latlngToPoint({
-            lat: encoder.read_lat(),
-            lng: encoder.read_lon()
-          });
+          var pointCenter;
+          if (tmJSON['projection-bounds']) {
+            pointCenter = projection.latlngToPoint({
+              lat: encoder.read_lat(),
+              lng: encoder.read_lon()
+            });
+          } else {
+            pointCenter = {
+              x: encoder.read_udecimal(5),
+              y: encoder.read_udecimal(5)
+            };
+          }
           // Decode zoom
           var zoom = encoder.read_udecimal(2);
           var centerView = {
@@ -546,7 +540,7 @@ if (!Math.uuid) {
             "y": pointCenter.y,
             "scale": timelapse.zoomToScale(zoom)
           };
-          var bbox = timelapse.computeBoundingBox(centerView);
+          var bbox = timelapse.pixelCenterToPixelBoundingBoxView(centerView).bbox;
           frame["bounds"] = {};
           frame["bounds"]["xmin"] = bbox.xmin;
           frame["bounds"]["ymin"] = bbox.ymin;
@@ -554,7 +548,11 @@ if (!Math.uuid) {
           frame["bounds"]["ymax"] = bbox.ymax;
           // Decode keyframe subtitle
           frame["unsafe_string_description"] = encoder.read_unsafe_string();
-          frame["is-description-visible"] = frame["unsafe_string_description"] ? true : false;
+          if (version >= 4) {
+            // Decode keyframe title
+            frame["unsafe_string_frameTitle"] = encoder.read_unsafe_string();
+          }
+          frame["is-description-visible"] = (frame["unsafe_string_description"] || frame["unsafe_string_frameTitle"]) ? true : false;
           keyframes.push(frame);
         }
         var checksum;
@@ -575,6 +573,7 @@ if (!Math.uuid) {
         UTIL.error("Error converting snaplapse URL to JSON: " + e.message, e);
       }
     };
+    this.urlStringToJSON = urlStringToJSON;
 
     this.getAsJSON = function() {
       var snaplapseJSON = {};
@@ -614,11 +613,6 @@ if (!Math.uuid) {
           $(document.body).css("cursor", "wait");
           loadJSON = JSON.parse(json);
           _clearSnaplapse();
-          var tourTitle = loadJSON['snaplapse']['unsafe_string_title'] ? loadJSON['snaplapse']['unsafe_string_title'] : "Untitled";
-          // Add the tour title to the save dialogue
-          $("#" + composerDivId + " .saveTimewarpWindow_tourTitleInput").val(tourTitle);
-          // Add the tour title to be used during tour playback
-          $("#" + viewerDivId + " .tourLoadOverlayTitle").text("Tour: " + tourTitle);
         }
         if ( typeof (loadJSON['snaplapse']) != 'undefined' && typeof (loadJSON['snaplapse']['keyframes']) != 'undefined') {
           UTIL.log("Found [" + loadJSON['snaplapse']['keyframes'].length + "] keyframes in the json:\n\n" + json);
@@ -628,7 +622,7 @@ if (!Math.uuid) {
           if ( typeof keyframe['time'] != 'undefined' && typeof keyframe['bounds'] != 'undefined' && typeof keyframe['bounds']['xmin'] != 'undefined' && typeof keyframe['bounds']['ymin'] != 'undefined' && typeof keyframe['bounds']['xmax'] != 'undefined' && typeof keyframe['bounds']['ymax'] != 'undefined') {
             // NOTE: if is-description-visible is undefined, then we define it as *true* in order to maintain
             // backward compatibility with older time warps which don't have this property.
-            this.recordKeyframe(null, keyframe['time'], keyframe['bounds'], keyframe['unsafe_string_description'], ( typeof keyframe['is-description-visible'] == 'undefined') ? true : keyframe['is-description-visible'], keyframe['duration'], true, keyframe['buildConstraint'], keyframe['speed'], keyframe['loopTimes'], keyframe['waitStart'], keyframe['waitEnd'], loadKeyframesLength);
+            this.recordKeyframe(null, keyframe['time'], keyframe['bounds'], keyframe['unsafe_string_description'], ( typeof keyframe['is-description-visible'] == 'undefined') ? true : keyframe['is-description-visible'], keyframe['duration'], true, keyframe['buildConstraint'], keyframe['speed'], keyframe['loopTimes'], loadKeyframesLength, keyframe['unsafe_string_frameTitle']);
           } else {
             UTIL.error("Ignoring invalid keyframe during snaplapse load.");
           }
@@ -648,11 +642,11 @@ if (!Math.uuid) {
     };
 
     this.duplicateKeyframe = function(idOfSourceKeyframe) {
-      var keyframeCopy = this.getKeyframeById(idOfSourceKeyframe);
-      this.recordKeyframe(idOfSourceKeyframe, keyframeCopy['time'], keyframeCopy['bounds'], keyframeCopy['unsafe_string_description'], keyframeCopy['is-description-visible'], keyframeCopy['duration'], false, keyframeCopy['buildConstraint'], keyframeCopy['speed'], keyframeCopy['loopTimes'], keyframeCopy['waitStart'], keyframeCopy['waitEnd'], undefined);
+      var keyframeCopy = cloneFrame(keyframesById[idOfSourceKeyframe]);
+      this.recordKeyframe(idOfSourceKeyframe, keyframeCopy['time'], keyframeCopy['bounds'], keyframeCopy['unsafe_string_description'], keyframeCopy['is-description-visible'], keyframeCopy['duration'], false, keyframeCopy['buildConstraint'], keyframeCopy['speed'], keyframeCopy['loopTimes'], undefined, keyframeCopy['unsafe_string_frameTitle']);
     };
 
-    this.recordKeyframe = function(idOfKeyframeToAppendAfter, time, bounds, description, isDescriptionVisible, duration, isFromLoad, buildConstraint, speed, loopTimes, waitStart, waitEnd, loadKeyframesLength) {
+    this.recordKeyframe = function(idOfKeyframeToAppendAfter, time, bounds, description, isDescriptionVisible, duration, isFromLoad, buildConstraint, speed, loopTimes, loadKeyframesLength, frameTitle) {
       if ( typeof bounds == 'undefined') {
         bounds = timelapse.getBoundingBoxForCurrentView();
       }
@@ -665,8 +659,6 @@ if (!Math.uuid) {
       keyframe['buildConstraint'] = ( typeof buildConstraint == 'undefined') ? "speed" : buildConstraint;
       keyframe['loopTimes'] = loopTimes;
       keyframe['speed'] = speed;
-      keyframe['waitStart'] = waitStart;
-      keyframe['waitEnd'] = waitEnd;
       keyframe['time'] = org.gigapan.timelapse.Snaplapse.normalizeTime(( typeof time == 'undefined') ? timelapse.getCurrentTime() : time);
       var frameNumber = Math.floor(keyframe['time'] * timelapse.getFps());
       keyframe['captureTime'] = captureTimes[frameNumber];
@@ -677,6 +669,7 @@ if (!Math.uuid) {
       keyframe['bounds'].ymax = bounds.ymax;
       keyframe['duration'] = sanitizeDuration(duration);
       keyframe['unsafe_string_description'] = ( typeof description == 'undefined') ? '' : description;
+      keyframe['unsafe_string_frameTitle'] = ( typeof frameTitle == 'undefined') ? '' : frameTitle;
       keyframe['is-description-visible'] = ( typeof isDescriptionVisible == 'undefined') ? false : isDescriptionVisible;
 
       // Determine where the new keyframe will be inserted
@@ -707,11 +700,6 @@ if (!Math.uuid) {
         tryBuildKeyframeInterval_refreshKeyframeParas(keyframeId, true);
       }
 
-      if (!isKeyframeFromLoad) {
-        if (timelapse.getVisualizer())
-          timelapse.getVisualizer().addTimeTag(keyframes, insertionIndex);
-      }
-
       // Events should be fired at the end of this function
       var eventType = isKeyframeFromLoad ? 'keyframe-loaded' : 'keyframe-added';
       var listeners = eventListeners[eventType];
@@ -724,16 +712,58 @@ if (!Math.uuid) {
           }
         }
       }
+
+      return keyframe;
     };
 
+    var moveOneKeyframe = function(moveIdx) {
+      // Rearrange keyframes
+      var from = moveIdx.from;
+      var to = moveIdx.to;
+      var elementToMove = keyframes[from];
+      var elementToBuild_1 = keyframes[from - 1];
+
+      // Update the visualizer
+      if (timelapse.getVisualizer())
+        timelapse.getVisualizer().deleteTimeTag(keyframes[from]["id"], keyframes[from - 1]);
+
+      keyframes.splice(from, 1);
+      keyframes.splice(to, 0, elementToMove);
+      // Rebuild the keyframe before the "from" index before sorting
+      if (elementToBuild_1 != undefined)
+        tryBuildKeyframeInterval_refreshKeyframeParas(elementToBuild_1.id);
+      // Rebuild itself
+      tryBuildKeyframeInterval_refreshKeyframeParas(elementToMove.id);
+      // Rebuild the keyframe before itself after sorting
+      var elementToBuild_2 = keyframes[to - 1];
+      if (elementToBuild_2 != undefined)
+        tryBuildKeyframeInterval_refreshKeyframeParas(elementToBuild_2.id);
+
+      // Update the visualizer
+      if (timelapse.getVisualizer())
+        timelapse.getVisualizer().addTimeTag(keyframes, to);
+    };
+    this.moveOneKeyframe = moveOneKeyframe;
+
     var resetKeyframe = function(keyframe) {
-      if (keyframe['buildConstraint'] == "duration") {
+      if ( typeof (keyframe) == "undefined") {
+        // Reset the last keyframe if keyframe is undefined
+        keyframe = keyframes[keyframes.length - 1];
         keyframe['speed'] = null;
-        keyframe['loopTimes'] = 0;
-      } else if (keyframe['buildConstraint'] == "speed") {
-        keyframe['duration'] = null;
+        keyframe['loopTimes'] = null;
+        if (useCustomUI)
+          keyframe['duration'] = 2;
+        else
+          keyframe['duration'] = null;
+      } else {
+        if (keyframe['buildConstraint'] == "duration") {
+          keyframe['speed'] = null;
+          keyframe['loopTimes'] = 0;
+        } else if (keyframe['buildConstraint'] == "speed")
+          keyframe['duration'] = null;
       }
     };
+    this.resetKeyframe = resetKeyframe;
 
     this.getKeyframes = function() {
       var keyframesClone = [];
@@ -748,13 +778,9 @@ if (!Math.uuid) {
       var intervals = [];
       for (var k = startingKeyframeIndex + 1; k < keyframes.length; k++) {
         var previousKeyframeInterval = (intervals.length > 0) ? intervals[intervals.length - 1] : null;
-        var isFirstKeyframe = false;
-        if (k == startingKeyframeIndex + 1) {
-          isFirstKeyframe = true;
-        }
-        var keyframeInterval = new org.gigapan.timelapse.KeyframeInterval(keyframes[k - 1], keyframes[k], previousKeyframeInterval, timelapse.getDuration(), composerDivId, undefined, isFirstKeyframe, timelapse, settings);
+        var keyframeInterval = new org.gigapan.timelapse.KeyframeInterval(keyframes[k - 1], keyframes[k], previousKeyframeInterval, timelapse.getDuration(), timeMachineDivId, undefined, defaultLoopTimes, timelapse, settings);
         intervals[intervals.length] = keyframeInterval;
-        UTIL.log("   buildKeyframeIntervals(): created keyframe interval (" + (intervals.length - 1) + "): between time [" + keyframes[k - 1]['time'] + "] and [" + keyframes[k]['time'] + "]: " + keyframeInterval);
+        UTIL.log("buildKeyframeIntervals(): created keyframe interval (" + (intervals.length - 1) + "): between time [" + keyframes[k - 1]['time'] + "] and [" + keyframes[k]['time'] + "]: " + keyframeInterval);
       }
       return intervals;
     };
@@ -780,7 +806,7 @@ if (!Math.uuid) {
           timelapse.seek(keyframes[startingKeyframeIndex].time);
 
           // This is a hack to wait for seeking
-          waitForSeek_timeout = setTimeout(function() {
+          waitForSeekTimeout = setTimeout(function() {
             isCurrentlyPlaying = true;
             // Compute the keyframe intervals
             keyframeIntervals = buildKeyframeIntervals(startingKeyframeIndex);
@@ -823,7 +849,6 @@ if (!Math.uuid) {
         // TODO: Always keep playing after a tour finishes OR return to the previous player state?
         timelapse.handlePlayPause();
         timelapse.pause();
-
         isCurrentlyPlaying = false;
 
         // Clear the time counter interval
@@ -854,9 +879,8 @@ if (!Math.uuid) {
     this.getKeyframeById = function(keyframeId) {
       if (keyframeId) {
         var keyframe = keyframesById[keyframeId];
-        if (keyframe) {
-          return cloneFrame(keyframe);
-        }
+        if (keyframe)
+          return keyframe;
       }
       return null;
     };
@@ -891,7 +915,7 @@ if (!Math.uuid) {
     };
 
     this.getSnaplapseViewer = function() {
-      return viewer;
+      return snaplapseViewer;
     };
 
     var cloneFrame = function(frame) {
@@ -905,22 +929,22 @@ if (!Math.uuid) {
 
       if (currentKeyframeInterval != null) {
         var rate = currentKeyframeInterval.getPlaybackRate();
-        timelapse.setPlaybackRate(rate);
+        timelapse.setPlaybackRate(rate, null, true);
 
         // When we set the current keyframe interval,
-        // ask if we need to do an extra pausing at the beginning of playing the timewarp
-        currentWaitForExtraStart = currentKeyframeInterval.getWaitForExtraStartFlag();
-        if (currentWaitForExtraStart) {
+        // ask if we need to do an extra pausing at the beginning of playing the tour
+        doExtraStartDwell = currentKeyframeInterval.doExtraStartDwell();
+        if (doExtraStartDwell) {
           // If yes, get the duration
-          extraWaitForStartDuration = currentKeyframeInterval.getExtraWaitForStartDuration();
-          waitForStart = false;
-          waitForEnd = false;
+          extraStartDwell = currentKeyframeInterval.getExtraStartDwell();
+          doStartDwell = false;
+          doEndDwell = false;
         }
-        currentWaitDuration = currentKeyframeInterval.getWaitDuration();
+        currentLoopDwell = currentKeyframeInterval.getLoopDwell();
         var currentFrame = currentKeyframeInterval.getStartingFrame();
-        if (currentFrame) {
-          UTIL.selectSelectableElements($("#" + composerDivId + " .snaplapse_keyframe_list"), $("#" + composerDivId + "_snaplapse_keyframe_" + currentFrame.id));
-        }
+
+        if (currentFrame && uiEnabled)
+          UTIL.selectSortableElements($("#" + composerDivId + " .snaplapse_keyframe_list"), $("#" + timeMachineDivId + "_snaplapse_keyframe_" + currentFrame.id), true);
 
         var keyframeStartingTime = currentKeyframeInterval.getStartingTime();
 
@@ -986,32 +1010,32 @@ if (!Math.uuid) {
       var currentTime = timelapse.getCurrentTime();
       var videoDuration = timelapse.getDuration();
 
-      // If we need to do an extra pausing at the beginning of playing the timewarp
-      if (currentWaitForExtraStart) {
+      // If we need to do an extra pausing at the beginning of playing the tour
+      if (doExtraStartDwell) {
         // Set the flag to false to prevent pausing again
-        currentWaitForExtraStart = false;
-        clearTimeout(waitFor_timeout);
-        waitFor_timeout = timelapse.waitFor(extraWaitForStartDuration, function() {
-          waitForEnd = true;
-          waitForStart = false;
+        doExtraStartDwell = false;
+        clearTimeout(doLoopDwellTimeout);
+        doLoopDwellTimeout = timelapse.waitFor(extraStartDwell, function() {
+          doEndDwell = true;
+          doStartDwell = false;
         });
       }
 
       // When the video time is at the end, we pause the video for a user specified duration and loop it
-      // waitForEnd is initially set to true
-      if (currentTime >= videoDuration && waitForEnd == true) {
+      // doEndDwell is initially set to true
+      if (currentTime >= videoDuration && doEndDwell == true) {
         // We are going to pause the video, so we set the "pausing at the end" flag to false to prevent pausing again
-        waitForEnd = false;
+        doEndDwell = false;
         // Calculate the overshooting time
         var desync = currentTime - videoDuration;
         // Pause at the end
-        clearTimeout(waitFor_timeout);
-        var waitTime = currentWaitDuration.end + desync;
-        waitFor_timeout = timelapse.waitFor(waitTime, function() {
+        clearTimeout(doLoopDwellTimeout);
+        var waitTime = currentLoopDwell.end + desync;
+        doLoopDwellTimeout = timelapse.waitFor(waitTime, function() {
           // Now we are going to pause at the beginning when we loop the video
           // so we set the "pausing at the beginning" flag to true
           // TODO: Bug where if a keyframe is at the end and we set a duration, then it seeks back to the beginning before it waits at that keyframe
-          waitForStart = true;
+          doStartDwell = true;
           if (waitTime > 0)
             timelapse.seek(0);
           timelapse.play();
@@ -1019,13 +1043,13 @@ if (!Math.uuid) {
       }
 
       // When the video time is at the beginning when we looped, we want to pause for a user specified duration
-      if (waitForStart == true) {
+      if (doStartDwell == true) {
         // We are going to pause the video, so we set the "pausing at the beginning" flag to false to prevent pausing again
-        waitForStart = false;
-        clearTimeout(waitFor_timeout);
-        waitFor_timeout = timelapse.waitFor(currentWaitDuration.start, function() {
+        doStartDwell = false;
+        clearTimeout(doLoopDwellTimeout);
+        doLoopDwellTimeout = timelapse.waitFor(currentLoopDwell.start, function() {
           // Reset the "pausing at the end" flag after pausing
-          waitForEnd = true;
+          doEndDwell = true;
         });
       }
 
@@ -1060,7 +1084,8 @@ if (!Math.uuid) {
         }
       } else {
         _stop(true);
-        UTIL.selectSelectableElements($("#" + composerDivId + " .snaplapse_keyframe_list"), $("#" + composerDivId + "_snaplapse_keyframe_" + keyframes[keyframes.length - 1].id));
+        if (uiEnabled)
+          UTIL.selectSortableElements($("#" + composerDivId + " .snaplapse_keyframe_list"), $("#" + timeMachineDivId + "_snaplapse_keyframe_" + keyframes[keyframes.length - 1].id));
       }
     };
 
@@ -1068,40 +1093,41 @@ if (!Math.uuid) {
     //
     // Constructor code
     //
-
-    org.gigapan.Util.ajax("html", "", "time_warp_composer.html", function(html) {
-      $composerDivObj.html(html);
-      viewer = new org.gigapan.timelapse.snaplapse.SnaplapseViewer(thisObj, timelapse, settings);
-    });
-
+    if (uiEnabled) {
+      org.gigapan.Util.ajax("html", rootAppURL, "templates/time_warp_composer.html", function(html) {
+        $("#" + timeMachineDivId).append($('<div class="' + composerDivClass + '"></div>').append(html));
+        snaplapseViewer = new org.gigapan.timelapse.snaplapse.SnaplapseViewer(thisObj, timelapse, settings, mode);
+      });
+    } else {
+      snaplapseViewer = new org.gigapan.timelapse.snaplapse.SnaplapseViewer(thisObj, timelapse, settings, mode);
+    }
   };
 
   org.gigapan.timelapse.Snaplapse.normalizeTime = function(t) {
     return parseFloat(t.toFixed(6));
   };
 
-  org.gigapan.timelapse.KeyframeInterval = function(startingFrame, endingFrame, previousKeyframeInterval, videoDuration, composerDivId, constraintParaName, isFirstKeyframe, timelapse, settings) {
+  org.gigapan.timelapse.KeyframeInterval = function(startingFrame, endingFrame, previousKeyframeInterval, videoDuration, timeMachineDivId, constraintParaName, defaultLoopTimes, timelapse, settings) {
     var nextKeyframeInterval = null;
     var playbackRate = null;
-    var itemIdHead = composerDivId + "_snaplapse_keyframe_" + startingFrame.id;
+    var itemIdHead = timeMachineDivId + "_snaplapse_keyframe_" + startingFrame.id;
     var desiredSpeed = startingFrame['speed'] == null ? 100 : startingFrame['speed'];
     var timeDirection = (startingFrame['time'] <= endingFrame['time']) ? 1 : -1;
-    var waitDuration = {
-      start: 0,
-      end: 0
+    // TODO: loopDwell needs to be a setting inside snaplapse json
+    var loopDwell = {
+      start: timelapse.getStartDwell(),
+      end: timelapse.getEndDwell()
     };
-    var waitForExtraStart = false;
-    var extraWaitForStartDuration = 0;
+    var doExtraStartDwell = false;
+    var extraStartDwell = 0;
     var loopTimes = startingFrame['loopTimes'];
     var playbackTime_withoutLooping;
     var playbackTime_eachLoop;
     var actualDuration;
     var desiredDuration;
-    var defaultLoopDwellTime = 0.5;
     var disableTourLooping = ( typeof settings['disableTourLooping'] == "undefined") ? false : settings['disableTourLooping'];
-    var defaultLoopTimes = 2;
 
-    // Determine loop dwell time and validate loop times
+    // Determine and validate loop times and loop dwell time
     // Loop dwell time is the time that users want to pause the video at the begining or end while looping
     if (constraintParaName) {
       // Updating mode:
@@ -1113,39 +1139,20 @@ if (!Math.uuid) {
           loopTimes = defaultLoopTimes;
         else if (loopTimes < 0)
           loopTimes = 0;
-        // Set loop dwell time
-        if (loopTimes > 0) {
-          waitDuration = {
-            start: startingFrame['waitStart'] == null ? defaultLoopDwellTime : startingFrame['waitStart'],
-            end: startingFrame['waitEnd'] == null ? defaultLoopDwellTime : startingFrame['waitEnd']
-          };
-        }
-        startingFrame['waitStart'] = waitDuration.start;
-        startingFrame['waitEnd'] = waitDuration.end;
       } else if (constraintParaName == "duration") {
         // In duration mode, looping is not allowed.
         loopTimes = 0;
-        startingFrame['waitStart'] = 0;
-        startingFrame['waitEnd'] = 0;
       }
-    } else {
-      // Playing mode:
-      waitDuration = {
-        start: startingFrame['waitStart'],
-        end: startingFrame['waitEnd']
-      };
     }
 
     // Determine extra loop dwell time at the beginning
-    if (isFirstKeyframe == true) {
-      if (startingFrame['time'] == 0) {
-        waitForExtraStart = true;
-        // extraWaitForStartDuration is used when users want to pause the keyframe starting at the begining of the video
-        // This is an exception for the loop dwelling math
-        // If the first keyframe starts at source time zero, we still need to pause it (using waitForExtraStart flag)
-        // we compute the duration in KeyframeInterval class and use it in snaplapse
-        extraWaitForStartDuration = startingFrame['waitStart'];
-      }
+    if (startingFrame['time'] == 0 && desiredSpeed != 0 && endingFrame['time'] != startingFrame['time'] && startingFrame['duration'] != 0) {
+      doExtraStartDwell = true;
+      // extraStartDwell is used when users want to pause the keyframe starting at the begining of the video
+      // This is an exception for the loop dwelling math
+      // If the first keyframe starts at source time zero, we still need to pause it (using doExtraStartDwell flag)
+      // we compute the duration in KeyframeInterval class and use it in snaplapse
+      extraStartDwell = timelapse.getStartDwell();
     }
 
     // Main function
@@ -1155,7 +1162,7 @@ if (!Math.uuid) {
       // this mode is for adding, deleting, and refreshing keyframes
 
       // Compute the duration of source time
-      actualDuration = Math.abs(parseFloat(Math.abs(endingFrame['time'] - startingFrame['time'])));
+      actualDuration = parseFloat(Math.abs(endingFrame['time'] - startingFrame['time']));
       // Compute the duration of playback time (include looping)
       desiredDuration = startingFrame['duration'] == null ? actualDuration : startingFrame['duration'];
 
@@ -1169,7 +1176,7 @@ if (!Math.uuid) {
         // If the actual duration is zero, loop times and speed cannot be zero
         if (actualDuration == 0) {
           if (loopTimes <= 0 && !disableTourLooping)
-            loopTimes = 1;
+            loopTimes = defaultLoopTimes;
           if (desiredSpeed == 0 && !disableTourLooping)
             desiredSpeed = 100;
           if (disableTourLooping)
@@ -1178,16 +1185,16 @@ if (!Math.uuid) {
         // Compute other parameters
         playbackRate = desiredSpeed / 100;
         playbackTime_withoutLooping = actualDuration / playbackRate;
-        playbackTime_eachLoop = videoDuration / playbackRate + waitDuration.start + waitDuration.end;
+        playbackTime_eachLoop = videoDuration / playbackRate + loopDwell.start + loopDwell.end;
         if (timeDirection == 1) {
           // This means that the time goes forward
-          desiredDuration = extraWaitForStartDuration + loopTimes * playbackTime_eachLoop + playbackTime_withoutLooping;
+          desiredDuration = extraStartDwell + loopTimes * playbackTime_eachLoop + playbackTime_withoutLooping;
         } else {
           // This means that the time goes backward
           if (loopTimes > 0)
-            desiredDuration = extraWaitForStartDuration + loopTimes * playbackTime_eachLoop - playbackTime_withoutLooping;
+            desiredDuration = extraStartDwell + loopTimes * playbackTime_eachLoop - playbackTime_withoutLooping;
           else
-            desiredDuration = playbackTime_withoutLooping;
+            desiredDuration = extraStartDwell + playbackTime_withoutLooping;
         }
         if (isNaN(desiredDuration) || desiredSpeed == 0)
           desiredDuration = 0;
@@ -1203,10 +1210,11 @@ if (!Math.uuid) {
             } else if (desiredDuration < actualDuration / 100) {
               // Set a threshold for the smallest duration
               // so we don't get extremely high speeds like 9999999%
-              desiredDuration = actualDuration / 100;
+              //desiredDuration = actualDuration / 100;
+              desiredDuration = 0;
             }
-            playbackRate = actualDuration / desiredDuration;
-            desiredSpeed = playbackRate * 100;
+            playbackRate = (desiredDuration == 0) ? 0 : actualDuration / (desiredDuration - extraStartDwell);
+            desiredSpeed = (desiredDuration == 0) ? 10000 : playbackRate * 100;
           }
         } else {
           desiredSpeed = 0;
@@ -1227,7 +1235,7 @@ if (!Math.uuid) {
         timeDirection = 1;
       }
       var startingFrameTimes = startingFrame['time'];
-      var endingFrameTimes = endingFrame['time'] + loopTimes * (videoDuration + waitDuration.start + waitDuration.end) + extraWaitForStartDuration;
+      var endingFrameTimes = endingFrame['time'] + loopTimes * (videoDuration + loopDwell.start + loopDwell.end) + extraStartDwell;
       actualDuration = parseFloat(Math.abs(endingFrameTimes - startingFrameTimes).toFixed(6));
       desiredDuration = startingFrame['duration'] == null ? actualDuration : startingFrame['duration'];
 
@@ -1248,16 +1256,16 @@ if (!Math.uuid) {
       }
     }
 
-    this.getWaitDuration = function() {
-      return waitDuration;
+    this.getLoopDwell = function() {
+      return loopDwell;
     };
 
-    this.getWaitForExtraStartFlag = function() {
-      return waitForExtraStart;
+    this.doExtraStartDwell = function() {
+      return doExtraStartDwell;
     };
 
-    this.getExtraWaitForStartDuration = function() {
-      return extraWaitForStartDuration;
+    this.getExtraStartDwell = function() {
+      return extraStartDwell;
     };
 
     this.getPreviousKeyframeInterval = function() {

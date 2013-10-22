@@ -32,8 +32,6 @@
 // Authors:
 // Paul Dille (pdille@andrew.cmu.edu)
 
-var geocoder, newView, newZoom, doPlay;
-
 function setupPostMessageHandlers() {
   // Handles the cross-domain iframe request to see whether a time machine is supported by the current user.
   pm.bind("timemachine-is-supported", function() {
@@ -42,106 +40,113 @@ function setupPostMessageHandlers() {
 
   // Handles the cross-domain iframe request to send the current view of a time machine.
   pm.bind("timemachine-get-current-view", function() {
-    if (timelapse) post("timemachine-get-current-view", timelapse.getViewStr());
+    if (timelapse)
+      post("timemachine-get-current-view", timelapse.getViewStr());
   });
 
   // Handles the cross-domain iframe request to send information to be used in a time machine share URL.
   pm.bind("timemachine-get-share-view", function() {
-    if (timelapse) post("timemachine-get-share-view", timelapse.getShareView());
+    if (timelapse)
+      post("timemachine-get-share-view", timelapse.getShareView());
   });
 
   // Handles the cross-domain iframe request to start playing a time machine.
   pm.bind("timemachine-play", function() {
-    if (timelapse) timelapse.play();
+    if (timelapse && timelapse.isPaused())
+      timelapse.handlePlayPause();
   });
 
   // Handles the cross-domain iframe request to pause a time machine.
   pm.bind("timemachine-pause", function() {
-    if (timelapse) timelapse.pause();
+    if (timelapse && !timelapse.isPaused())
+      timelapse.handlePlayPause();
   });
 
   // Handles the cross-domain iframe request to seek a time machine to the specified time.
-  pm.bind("timemachine-seek", function(data) {
-    if (timelapse) timelapse.seek(data);
+  pm.bind("timemachine-seek", function(unsafe_data) {
+    if (unsafe_data && typeof (unsafe_data) !== 'undefined' && timelapse) {
+      var time = parseFloat(unsafe_data);
+      timelapse.seek(time);
+    }
   });
 
   // Handles the cross-domain iframe request to change the view of a time machine.
-  // There is logic here to make the change to a new view happen gracefully
-  // and give the user context of where they were and where they are going.
-  pm.bind("timemachine-set-view", function(data) {
-    if (timelapse) {
-      setViewGracefully(data.view, data.doWarp, data.doPlay);
+  pm.bind("timemachine-set-view", function(unsafe_data) {
+    if (unsafe_data && typeof (unsafe_data) !== 'undefined' && timelapse) {
+      // Before we change the view, cancel any tours that may be playing.
+      var snaplapseTour = timelapse.getSnaplapseForSharedTour();
+      if (snaplapseTour)
+        snaplapseTour.clearSnaplapse();
+
+      // Sanitize data
+      var view = timelapse.unsafeViewToView(unsafe_data.view);
+      var doWarp = !!unsafe_data.doWarp;
+      var doPlay = !!unsafe_data.doPlay;
+      timelapse.setNewView(view, doWarp, doPlay);
     }
   });
 
-  // Handles the cross-domain iframe request of changing the view of a time machine based
-  // on a share URL.
-  pm.bind("timemachine-set-share-view", function(data) {
-    if (timelapse) {
-      var viewArray = data.v.split(",");
-      var view;
-      var doWarp = true;
-      if (viewArray) view = timelapse.unsafeViewToView(viewArray);
-      if (view) timelapse.setNewView(view, doWarp);
-      var time = data.t;
-      if (time) timelapse.seek(time);
+  // Handles the cross-domain iframe request of changing the view of a time machine based on a share URL.
+  pm.bind("timemachine-set-share-view", function(unsafe_data) {
+    if (unsafe_data && typeof (unsafe_data) !== 'undefined' && timelapse) {
+      // If a share URL (e.g. #v=44.96185,59.06233,4.5,latLng&t=0.10) is passed in
+      // as a string, then unpack it based on the hash vars.
+      // Otherwise we are dealing with an object of unpacked hash vars, so move on.
+      if ( typeof (unsafe_data) === "string") {
+        if (unsafe_data.substr(0, 1) == "#")
+          unsafe_data = unsafe_data.slice(1);
+        unsafe_data = org.gigapan.Util.unpackVars(unsafe_data);
+      }
+
+      // Before we change the view, cancel any tours that may be playing.
+      var snaplapseTour = timelapse.getSnaplapseForSharedTour();
+      if (snaplapseTour)
+        snaplapseTour.clearSnaplapse();
+
+      if (unsafe_data.v) {
+        var newView = timelapse.unsafeViewToView(unsafe_data.v.split(","));
+        // Always warp to the new view (i.e. pass in true for the second value)
+        timelapse.setNewView(newView, true);
+      }
+      if (unsafe_data.t) {
+        var newTime = parseFloat(unsafe_data.t);
+        timelapse.seek(newTime);
+      }
     }
   });
-}
 
-// Set the view, animating smoothly if doWarp is false.
-function setViewGracefully(toView, doWarp, doPlayParam) {
-  newView = toView;
-  newZoom = toView.zoom;
-  doPlay = doPlayParam ? doPlayParam : false;
+  // Handles the cross-domain iframe request of going to a location on the presentation slider
+  pm.bind("timemachine-goto-presentation-slide", function(unsafe_slideTitle) {
+    if (timelapse && unsafe_slideTitle) {
+      var slideId = unsafe_slideTitle.split(' ').join('_');
+      var $slideContainer = $("#" + slideId).parent();
+      if ($slideContainer) {
+        var keyframeId = $slideContainer.attr("id").split("_")[3];
+        timelapse.getSnaplapseForPresentationSlider().getSnaplapseViewer().selectAndGo($slideContainer, keyframeId, undefined, undefined, true);
+      }
+    }
+  });
 
-  var currentView = timelapse.getViewStr().split(",");
-  var homeView = {center: {"lat": currentView[0], "lng": currentView[1]}, "zoom": currentView[2]};
+  // Handles the cross-domain iframe request of loading a tour
+  pm.bind("timemachine-load-tour", function(unsafe_data) {
+    if (timelapse && unsafe_data)
+      timelapse.loadSharedDataFromUnsafeURL(unsafe_data.tourURL, unsafe_data.playOnLoad);
+  });
 
-  if (doWarp) {
-    timelapse.setNewView(newView,true);
-    if (doPlay) timelapse.play();
-  } else {
-    newView.zoom = 0;
-    if (currentView[0] == "0" && currentView[1] == "0" && currentView[2] == "0")
-      zoomGracefully(newView);
-    else
-      zoomHome(homeView);
-  }
+  // Handles switching layers
+  pm.bind("timemachine-switch-layer", function(unsafe_layerNum) {
+    var layerNum = parseInt(unsafe_layerNum);
+    if (timelapse && !isNaN(layerNum))
+      timelapse.switchLayer(layerNum);
+  });
 }
 
 // Handles the sending of cross-domain iframe requests.
-function post(type,data) {
+function post(type, data) {
   pm({
     target: window.parent,
     type: type,
     data: data,
-    url: document.referrer, // needed for hash fallback in older browsers
     origin: document.referrer // TODO: Change this (and above) to explicity set a domain we'll be receiving requests from
   });
-}
-
-// Zoom out before moving to the new view.
-function zoomHome(view) {
-  if (view.zoom > 0) {
-    var doWarp = false;
-    timelapse.setNewView(view, doWarp);
-    view.zoom -= 0.5;
-    setTimeout(function() { zoomHome(view); }, 150);
-  } else {
-    setTimeout(function() { zoomGracefully(newView); }, 550);
-  }
-}
-
-// This function, combined with zoomHome() above, will change the view of a time machine gracefully, since
-// just calling setNewView(), even with the animation flag set, will update the view too quickly.
-function zoomGracefully(view) {
-  if ((newZoom != 0 && newZoom >= view.zoom) || (newZoom == 0 && view.zoom <= 10)) {
-    var doWarp = false;
-    timelapse.setNewView(view,doWarp);
-    view.zoom += 0.5;
-    setTimeout(function() { zoomGracefully(view); }, 150);
-  } else {
-    if (doPlay) timelapse.play();
-  }
 }

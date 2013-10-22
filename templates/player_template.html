@@ -1,0 +1,58 @@
+<div class="player">
+  <div class="sideToolBar">
+    <div class="pan" title="Click to pan"></div>
+    <div class="zoom"></div>
+  </div>
+
+  <div class="instructions">
+    <span class="zoomhelp">
+      <p>
+        Zoom in and out to explore in greater detail. Click or use the mouse scroll wheel.
+      </p></span>
+    <span class="zoomallhelp">
+      <p>
+        Click to view the whole scene.
+      </p></span>
+    <span class="speedhelp">
+      <p>
+        Click to toggle playback speed.
+      </p></span>
+    <span class="movehelp">
+      <p>
+        Click and drag to explore.
+      </p></span>
+  </div>
+
+  <div class="spinnerOverlay"></div>
+
+  <div id="{REPLACE}" class="tiledContentHolder"></div>
+
+  <div class="captureTime" title="Capture time">
+    <div class="currentCaptureTime"></div>
+  </div>
+
+  <div class="controls">
+    <div class="timelineSliderFiller">
+      <div id="Tslider1" class="timelineSlider"></div>
+    </div>
+    <div title="Play" class="playbackButton"></div>
+    <div class="videoTime" title="Video time">
+      <span class="currentTime">00:00.00</span>/<span class="totalTime">00:00.00</span>
+    </div>
+    <a href="http://timemachine.cmucreatelab.org" target="_blank"><div class="logo timeMachineLogo"></div></a>
+    <input type="checkbox" class="helpPlayerCheckbox"/>
+    <label class="helpPlayerLabel" title="Show instructions">Help</label>
+    <button class="toggleSpeed" id="fastSpeed" title="Toggle playback speed">Fast</button>
+    <button class="toggleSpeed" id="mediumSpeed" title="Toggle playback speed">Medium</button>
+    <button class="toggleSpeed" id="slowSpeed" title="Toggle playback speed">Slow</button>
+    <button class="share" title="Share current view">Share</button>
+    <input type="checkbox" class="editorToggleCheckbox"/>
+    <label class="editorToggle toggleBtn" title="Toggle editor">Editor</label>
+    <input type="checkbox" class="annotatorToggleCheckbox"/>
+    <label class="annotatorToggle toggleBtn" title="Toggle annotator">Marker</label>
+  </div>
+
+  <div class="shareView" title="Share Current View">
+    <textarea class="shareurl"></textarea>
+  </div>
+</div>

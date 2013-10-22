@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8"/>
+
+    <link href="../css/snaplapse.css" rel="stylesheet" type="text/css"/>
+    <link href="../css/jquery-ui/smoothness/jquery-ui.custom.css" rel="stylesheet" type="text/css"/>
+    <link href="../css/defaultUI.css" rel="stylesheet" type="text/css"/>
+    <link href="../css/visualizer.css" rel="stylesheet" type="text/css"/>
+    <link href="../css/annotator.css" rel="stylesheet" type="text/css"/>
+
+    <script src="../js/jquery/jquery.min.js" type="text/javascript"></script>
+    <script src="../js/jquery/jquery-ui.custom.min.js" type="text/javascript"></script>
+    <script src="../js/jquery/plugins/mouse/jquery.mousewheel.min.js" type="text/javascript"></script>
+    <script src="../js/kinetic/kinetic.min.js" type="text/javascript"></script>
+    <script src="../js/org/gigapan/util.js" type="text/javascript"></script>
+    <script src="../js/org/gigapan/timelapse/videoset.js" type="text/javascript"></script>
+    <script src="../js/org/gigapan/timelapse/parabolicMotion.js" type="text/javascript"></script>
+    <script src="../js/org/gigapan/timelapse/timelapse.js" type="text/javascript"></script>
+    <script src="../js/Math.uuid.js" type="text/javascript"></script>
+    <script src="../js/org/gigapan/timelapse/snaplapse.js" type="text/javascript"></script>
+    <script src="../js/org/gigapan/timelapse/snaplapseViewer.js" type="text/javascript"></script>
+    <script src="../js/org/gigapan/timelapse/mercator.js" type="text/javascript"></script>
+    <script src="../js/org/gigapan/timelapse/visualizer.js" type="text/javascript"></script>
+    <script src="../js/org/gigapan/timelapse/annotator.js" type="text/javascript"></script>
+    <script src="../js/org/gigapan/timelapse/defaultUI.js" type="text/javascript"></script>
+    <script src="../js/org/gigapan/timelapse/urlEncoder.js" type="text/javascript"></script>
+
+    <script src="../js/org/gigapan/postmessage.js" type="text/javascript"></script>
+    <script src="../js/org/gigapan/timelapse/crossdomain_api.js" type="text/javascript"></script>
+
+    <script src="../template_includes.js" type="text/javascript"></script>
+
+    <style>
+      #timeMachine {
+        position: relative;
+        margin-top: 10px;
+        margin-left: 10px;
+        width: 843px;
+        height: 702px;
+      }
+    </style>
+
+    <script type="text/javascript">
+      jQuery.support.cors = true;
+
+      // Pittsburgh
+      var url = "http://g7.gigapan.org/timemachines/pittsburgh-v12";
+      // Blue Marble
+      //var url = "http://g7.gigapan.org/timemachines/blue-marble-v2/";
+      // Ocean Chlorophyll
+      //var url = "http://g7.gigapan.org/timemachines/chlorophyll-r32d-crf28-g10-bf0-l/";
+      // Plant Growth
+      //var url = "http://g7.gigapan.org/timemachines/brassica-15m-g10-bf0-l/";
+      // Bees
+      //var url = "http://g7.gigapan.org/timemachines/bees-chalkbrood-45m-2011-07-ap-v9/";
+      // Early Universe
+      //var url = "http://g7.gigapan.org/timemachines/e5-crf28-g10-bf0-l/";
+      // Paddle At The Point
+      //var url = "http://g7.gigapan.org/timemachines/patp-sub4-crf28-g10-bf0-l/";
+      // CMU Carnival 2010
+      //var url = "http://g7.gigapan.org/timemachines/carnival-10m-halfsize-g10-bf0-l30/";
+      // Burning Man 2011
+      //var url = "http://g7.gigapan.org/timemachines/BurningMan2011-v1/";
+      // Arizona Grasslands
+      //var url = "http://g7.gigapan.org/timemachines/usda-crf24-g10-bf0-l/";
+      // Visible Human Female
+      //var url = "http://g7.gigapan.org/timemachines/vhf-crf28-g10-bf0-l/";
+      // Weather Radar
+      //var url = "http://g7.gigapan.org/timemachines/radarmosaic-crf28-g10-bf0-6fps/";
+      // Kraus Winter Garden
+      //var url = "http://g7.gigapan.org/timemachines/ghc1-24h-halfsize-crf32-g10-bf0-l30/";
+      // Solar Dynamics Observatory
+      //var url = "http://g7.gigapan.org/timemachines/sdo-color-crf24-g10-bf0-l/";
+
+      function init() {
+        var settings = {
+          url: url,
+          showFullScreenBtn: false,
+          enableEditor: true,
+          enablePresentationSlider: true,
+          enableAnnotator: true,
+          onTimeMachinePlayerReady: function(viewerDivId) {
+            setupPostMessageHandlers();
+          },
+          enableContextMapOnDefaultUI: true,
+          showEditorOnLoad: true,
+          disableTourLooping: true
+        };
+        timelapse = new org.gigapan.timelapse.Timelapse("timeMachine", settings);
+      }
+
+      $(init);
+    </script>
+  </head>
+  <body>
+    <div id="timeMachine"></div>
+    <div style="position: relative; margin-left: 10px; margin-top: 10px;">
+      <button onclick="timelapse.loadSharedDataFromUnsafeURL('#presentation=EJBAA3wx8oS99_6iIhJGoogle%20Earth%20Timelapse%20uses%20GigaPan%20Time%20Machine%20technology%20for%20viewing%20zoomable%20and%20pannable%20timelapses%20over%20space%20and%20_Pittsburgh%201_BkD0oC0g2o5Wi68whGtLHuman%20moving%20path%20is%20an%20important%20feature%20in%20architecture%20design%2E%20By%20studying%20the%20path%2C%20architects%20know%20where%20to%20arrange_Pittsburgh%202_BAsmJr8__8W0xjukJyNReal-time%20video%20streaming%20has%20been%20widely%20used%20in%20multimedia%20learning%20environments%2E%20As%20production%20of%20online%20videos%20is%20in_Pittsburgh%203_BkDsmJ49r_nR16y12G2BGigaPan%20Time%20Machine%20is%20a%20technology%20for%20creating%20and%20viewing%20zoomable%20and%20pannable%20timelapses%20over%20space%20and%20time%20with%20_Pittsburgh%204_BkD9sFrymwmJ40jh6JtHAttentionBot%E2%80%99s%20purpose%20is%20to%20conduct%20researches%20in%20how%20to%20keep%20human%20attention%2E%20We%20are%20interested%20in%20communication%20incon_Pittsburgh%205_BkDxhLott6zE7xqz_H3KThe%20city%20in%20tropical%20countries%20has%20specific%20requirements%20of%20deep%20eaves%20to%20avoid%20solar%20radiation%20and%20to%20prevent%20direct%20co_Pittsburgh%206_BkDt3Css0xwJz6736HtHSENSEable%20Shoes%20is%20a%20hands-free%20and%20eyes-free%20foot-computer%20interface%20that%20supports%20on-the-go%20interaction%20with%20surroundi_Pittsburgh%207_BkDqgH3xv2pPnoou0H5JDraw-o-lin%20is%20an%20interactive%20robot%20that%20visualizes%20music%2E%20The%20performer%20plays%20an%20electric%20violin%20connected%20to%20a%20computer_Pittsburgh%208_BkDjpKxjyz3Tz12m-F0MEnergy%20harvesting%20playground%20is%20a%20tangible%20interaction%20playground%20for%20kids%20and%20adults%20to%20have%20fun%20together%20and%20to%20harves_Pittsburgh%209_Untitled_B')">Load a presentation</button>
+      <button onclick="timelapse.loadSharedDataFromUnsafeURL('#tour=EGBwCp5C16hh7Q2swziK3F__B8B76Cmv3o2Rh-on6J7O__B8Br7C626l3R57r15JuI__B8B28Cwzv49W3kqp2JuI__B8B5-Cv-p4rau8u19IqL__BkD2hDzu178cj5wptI5L__Boat%20Tour_B')">Load a tour</button>
+      <button onclick="timelapse.loadSharedDataFromUnsafeURL('#tour=EEBkD5C05g6xL74qhxJ-K__BkDjGo2kuqMkp-rqJ-K__BkDwIhn9hoMvq3s4I-K__BkD-Lq-xolM3wylsI2F__Early%20Morning%20Commute_B', true)">Load and play a tour</button>
+    </div>
+  </body>
+</html>

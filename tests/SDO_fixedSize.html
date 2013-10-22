@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8"/>
+
+    <link href="../css/snaplapse.css" rel="stylesheet" type="text/css"/>
+    <link href="../css/jquery-ui/smoothness/jquery-ui.custom.css" rel="stylesheet" type="text/css"/>
+    <link href="../css/defaultUI.css" rel="stylesheet" type="text/css"/>
+    <link href="../css/visualizer.css" rel="stylesheet" type="text/css"/>
+    <link href="../css/annotator.css" rel="stylesheet" type="text/css"/>
+
+    <script src="../js/jquery/jquery.min.js" type="text/javascript"></script>
+    <script src="../js/jquery/jquery-ui.custom.min.js" type="text/javascript"></script>
+    <script src="../js/jquery/plugins/mouse/jquery.mousewheel.min.js" type="text/javascript"></script>
+    <script src="../js/kinetic/kinetic.min.js" type="text/javascript"></script>
+    <script src="../js/org/gigapan/util.js" type="text/javascript"></script>
+    <script src="../js/org/gigapan/timelapse/videoset.js" type="text/javascript"></script>
+    <script src="../js/org/gigapan/timelapse/parabolicMotion.js" type="text/javascript"></script>
+    <script src="../js/org/gigapan/timelapse/timelapse.js" type="text/javascript"></script>
+    <script src="../js/Math.uuid.js" type="text/javascript"></script>
+    <script src="../js/org/gigapan/timelapse/snaplapse.js" type="text/javascript"></script>
+    <script src="../js/org/gigapan/timelapse/snaplapseViewer.js" type="text/javascript"></script>
+    <script src="../js/org/gigapan/timelapse/mercator.js" type="text/javascript"></script>
+    <script src="../js/org/gigapan/timelapse/visualizer.js" type="text/javascript"></script>
+    <script src="../js/org/gigapan/timelapse/annotator.js" type="text/javascript"></script>
+    <script src="../js/org/gigapan/timelapse/defaultUI.js" type="text/javascript"></script>
+    <script src="../js/org/gigapan/timelapse/urlEncoder.js" type="text/javascript"></script>
+
+    <script src="../js/org/gigapan/postmessage.js" type="text/javascript"></script>
+    <script src="../js/org/gigapan/timelapse/crossdomain_api.js" type="text/javascript"></script>
+
+    <script src="../template_includes.js" type="text/javascript"></script>
+
+    <style>
+      #timeMachine {
+        position: relative;
+        margin-top: 10px;
+        margin-left: 10px;
+        width: 843px;
+        height: 702px;
+      }
+    </style>
+
+    <script type="text/javascript">
+      jQuery.support.cors = true;
+
+      //Pittsburgh
+      //var url = "http://g7.gigapan.org/timemachines/pittsburgh-v12";
+      //Blue Marble
+      //var url = "http://g7.gigapan.org/timemachines/blue-marble-v2/";
+      //Ocean Chlorophyll
+      //var url = "http://g7.gigapan.org/timemachines/chlorophyll-r32d-crf28-g10-bf0-l/";
+      //Plant Growth
+      //var url = "http://g7.gigapan.org/timemachines/brassica-15m-g10-bf0-l/";
+      //Bees
+      //var url = "http://g7.gigapan.org/timemachines/bees-chalkbrood-45m-2011-07-ap-v9/";
+      //Early Universe
+      //var url = "http://g7.gigapan.org/timemachines/e5-crf28-g10-bf0-l/";
+      //Paddle At The Point
+      //var url = "http://g7.gigapan.org/timemachines/patp-sub4-crf28-g10-bf0-l/";
+      //CMU Carnival 2010
+      //var url = "http://g7.gigapan.org/timemachines/carnival-10m-halfsize-g10-bf0-l30/";
+      //Burning Man 2011
+      //var url = "http://g7.gigapan.org/timemachines/BurningMan2011-v1/";
+      //Arizona Grasslands
+      //var url = "http://g7.gigapan.org/timemachines/usda-crf24-g10-bf0-l/";
+      //Visible Human Female
+      //var url = "http://g7.gigapan.org/timemachines/vhf-crf28-g10-bf0-l/";
+      //Weather Radar
+      //var url = "http://g7.gigapan.org/timemachines/radarmosaic-crf28-g10-bf0-6fps/";
+      //Kraus Winter Garden
+      //var url = "http://g7.gigapan.org/timemachines/ghc1-24h-halfsize-crf32-g10-bf0-l30/";
+      //Solar Dynamics Observatory
+      var url = "http://g7.gigapan.org/timemachines/sdo-color-crf24-g10-bf0-l/";
+
+      function init() {
+        var settings = {
+          url: url,
+          showFullScreenBtn: false,
+          enableEditor: true,
+          enablePresentationSlider: true,
+          onTimeMachinePlayerReady: function(viewerDivId) {
+            setupPostMessageHandlers();
+          },
+          showEditorOnLoad: true,
+          disableTourLooping: true
+        };
+        timelapse = new org.gigapan.timelapse.Timelapse("timeMachine", settings);
+      }
+
+      $(init);
+    </script>
+  </head>
+  <body>
+    <div id="timeMachine"></div>
+    <div style="position: relative; margin-left: 10px; margin-top: 10px;">
+      <button onclick="timelapse.switchLayer(1)">Switch to layer 1</button>
+      <button onclick="timelapse.switchLayer(2)">Switch to layer 2</button>
+      <button onclick="timelapse.switchLayer(3)">Switch to layer 3</button>
+    </div>
+  </body>
+</html>

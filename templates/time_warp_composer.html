@@ -1,0 +1,54 @@
+<div class="toolbar">
+  <div class="editorModeToolbar"></div>
+  <button class="toggleMode" title="Toggle between tour and presentation mode">Change Mode</button>
+  <ul class="editorModeOptions"></ul>
+</div>
+
+<div class="snaplapse_keyframe_container">
+  <div class="snaplapse_keyframe_list"></div>
+</div>
+
+<div class="createSubtitle_dialog" title="Edit Title and Subtitle">
+	<div class="keyframe_title_container">Keyframe Title: <input type="text" value="" class="keyframe_title_input" maxlength="20"></div>
+  <div class="createSubtitle_dialog_txt">
+    Add a caption to this keyframe.
+  </div>
+  <textarea class="subtitle_textarea"></textarea>
+</div>
+
+<div class="loadTimewarpWindow" title="Load a Tour">
+  <button id="loadSnaplapseButton">
+    Load
+  </button>
+  <div class="loadTimewarpWindow_txt">
+    To load a tour, paste the tour link into the text box below and then click the Load button.
+  </div>
+  <textarea class="loadTimewarpWindow_JSON"></textarea>
+</div>
+
+<div class="saveTimewarpWindow" title="Share a Tour">
+  <div class="saveTimewarpWindow_tourTitle">Tour Title: <input type="text" value="Untitled" class="saveTimewarpWindow_tourTitleInput" maxlength="30"></div>
+  <h2 class="saveTimewarpWindow_title_share">Save and Share</h1>
+  <div class="saveTimewarpWindow_txt">
+    Copy the link below and share it anywhere on the web. Everyone who visits it will see the tour you made.
+  </div>
+  <textarea class="saveTimewarpWindow_JSON"></textarea>
+  <h2 class="saveTimewarpWindow_title_embed">Embed</h1>
+  <div class="saveTimewarpWindow_txt2">
+    You can also copy the iframe code below and embed this tour or presentation on your own website or blog.
+  </div>
+  <textarea class="saveTimewarpWindow_JSON2"></textarea>
+  <div class="saveTimewarpWindow_JSON2_sizesContainer">
+  Video size: <select class="saveTimewarpWindow_JSON2_sizes">
+    <option value="720,394">720 x 394</option>
+    <option value="750,530">750 x 530</option>
+    <option value="854,480" selected="selected">854 x 480</option>
+    <option value="1024,576">1024 x 576</option>
+    <option value="1152,648">1152 x 648</option>
+  </select>
+  </div>
+</div>
+
+<span class="keyframeSubtitleBoxForHovering">
+  <p></p>
+</span>

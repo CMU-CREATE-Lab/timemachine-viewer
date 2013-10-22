@@ -1,4 +1,4 @@
-﻿<html>
+<html>
 <head>
 <script src="../js/org/gigapan/timelapse/urlencoder.js"></script>
 <script>
@@ -91,11 +91,11 @@ function test_decimals() {
   assert_base64(encoder);
   assert_equal(encoder.encoded, "A");
   assert_approx_equal(encoder.read_udecimal(0), 0);
-  
+
   encoder.write_udecimal(123.456, 3);
   assert_base64(encoder);
   assert_approx_equal(encoder.read_udecimal(3), 123.456);
-  
+
   encoder.write_udecimal(123.456, 2);
   assert_approx_equal(encoder.read_udecimal(2), 123.46);
 }
@@ -216,7 +216,7 @@ function test_string() {
   assert_equal(encoder.encoded, "_");
   assert_equal(encoder.read_unsafe_string(), "");
   assert_equal(encoder.encoded, "");
-                  
+
   encoder.write_string("a");
   assert_base64_or_pct(encoder);
   assert_equal(encoder.encoded, "a_");
@@ -226,16 +226,17 @@ function test_string() {
   assert_base64_or_pct(encoder);
   assert_equal(encoder.encoded, "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_");
   assert_equal(encoder.read_unsafe_string(), "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-");
-                  
+
   encoder.write_string("~!&=$_ ");
   assert_base64_or_pct(encoder);
   assert_equal(encoder.encoded, "%7E%21%26%3D%24%5F%20_");
   assert_equal(encoder.read_unsafe_string(), "~!&=$_ ");
 
-  encoder.write_string("abc さ藤½");
-  assert_base64_or_pct(encoder);
-  assert_equal(encoder.encoded, "abc%20%C3%A3%C2%81%E2%80%A2%C3%A8%E2%80%94%C2%A4%C3%82%C2%BD_");
-  assert_equal(encoder.read_unsafe_string(), "abc さ藤½");
+  // This encoding breaks some text editors...
+  //encoder.write_string("abc ??½");
+  //assert_base64_or_pct(encoder);
+  //assert_equal(encoder.encoded, "abc%20%C3%A3%C2%81%E2%80%A2%C3%A8%E2%80%94%C2%A4%C3%82%C2%BD_");
+  //assert_equal(encoder.read_unsafe_string(), "abc ??½");
 
   all_ascii = " !\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~";
   assert_base64_or_pct(encoder);
