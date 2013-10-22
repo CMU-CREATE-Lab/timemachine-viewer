@@ -425,11 +425,11 @@ if (!Math.uuid) {
     this.getAsUrlString = function() {
       try {
         var encoder = new org.gigapan.timelapse.UrlEncoder();
+        var tmJSON = timelapse.getTmJSON();
         // Version
         encoder.write_uint(TOUR_SHARING_VERSION);
         // Number of keyframes
         encoder.write_uint(keyframes.length);
-        var projection = timelapse.getProjection();
         for (var i = 0; i < keyframes.length; i++) {
           // Number of loops
           var loopTimes;
@@ -452,15 +452,24 @@ if (!Math.uuid) {
           }
           // Frame Number
           encoder.write_uint(Math.floor(keyframes[i]['time'] * timelapse.getFps()));
-          // Lat/Lng center view
-          var viewCenter = timelapse.computeViewFit(keyframes[i]['bounds']);
-          var latLng = projection.pointToLatlng({
-            x: viewCenter.x,
-            y: viewCenter.y
-          });
+          var viewCenter;
+          if (tmJSON['projection-bounds']) {
+            var projection = timelapse.getProjection();
+            // Lat/Lng center view
+            viewCenter = timelapse.computeViewFit(keyframes[i]['bounds']);
+            var latLng = projection.pointToLatlng({
+              x: viewCenter.x,
+              y: viewCenter.y
+            });
+            encoder.write_lat(latLng.lat);
+            encoder.write_lon(latLng.lng);
+          } else {
+            // x/y center view
+            viewCenter = timelapse.computeViewFit(keyframes[i]['bounds']);
+            encoder.write_udecimal(viewCenter.x.toFixed(5), 5);
+            encoder.write_udecimal(viewCenter.y.toFixed(5), 5);
+          }
           var zoom = timelapse.scaleToZoom(viewCenter.scale);
-          encoder.write_lat(latLng.lat);
-          encoder.write_lon(latLng.lng);
           encoder.write_udecimal(zoom, 2);
           // Keyframe description
           encoder.write_string(keyframes[i]['unsafe_string_description']);
@@ -483,7 +492,6 @@ if (!Math.uuid) {
     this.urlStringToJSON = function(urlString) {
       try {
         var encoder = new org.gigapan.timelapse.UrlEncoder(urlString);
-        var projection = timelapse.getProjection();
         // Decode version
         var version = encoder.read_uint();
         // Decode number of keyframes
@@ -495,6 +503,7 @@ if (!Math.uuid) {
           snaplapseJSON['snaplapse']['dataset-name'] = tmJSON['name'];
         }
         if (tmJSON['projection-bounds']) {
+          var projection = timelapse.getProjection();
           snaplapseJSON['snaplapse']['projection'] = timelapse.getProjectionType();
           snaplapseJSON['snaplapse']['projection-bounds'] = tmJSON['projection-bounds'];
         }
@@ -535,10 +544,18 @@ if (!Math.uuid) {
           frame["time"] = frameNumber / fps;
           frame["captureTime"] = captureTimes[frameNumber];
           // Decode center
-          var pointCenter = projection.latlngToPoint({
-            lat: encoder.read_lat(),
-            lng: encoder.read_lon()
-          });
+          var pointCenter;
+          if (tmJSON['projection-bounds']) {
+            pointCenter = projection.latlngToPoint({
+              lat: encoder.read_lat(),
+              lng: encoder.read_lon()
+            });
+          } else {
+            pointCenter = {
+              x: encoder.read_udecimal(5),
+              y: encoder.read_udecimal(5)
+            };
+          }
           // Decode zoom
           var zoom = encoder.read_udecimal(2);
           var centerView = {
