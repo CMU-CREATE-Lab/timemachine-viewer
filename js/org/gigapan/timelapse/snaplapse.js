@@ -210,12 +210,12 @@ if (!Math.uuid) {
           break;
         }
       }
-      var keyframeInterval;
+      var keyframeInterval, keyframeToBuild;
       if (buildPreviousFlag) {
         if (idx == 1) {
           isFirstKeyframe = true;
         }
-        var keyframeToBuild = keyframes[idx - 1];
+        keyframeToBuild = keyframes[idx - 1];
         if ( typeof (keyframeToBuild) != "undefined" && keyframeToBuild != null && typeof (keyframes[idx]) != "undefined" && keyframes[idx] != null) {
           keyframeInterval = new org.gigapan.timelapse.KeyframeInterval(keyframeToBuild, keyframes[idx], null, timelapse.getDuration(), composerDivId, keyframeToBuild['buildConstraint'], isFirstKeyframe, timelapse);
         }
@@ -223,7 +223,7 @@ if (!Math.uuid) {
         if (idx == 0) {
           isFirstKeyframe = true;
         }
-        var keyframeToBuild = keyframes[idx];
+        keyframeToBuild = keyframes[idx];
         if ( typeof (keyframeToBuild) != "undefined" && keyframeToBuild != null && typeof (keyframes[idx + 1]) != "undefined" && keyframes[idx + 1] != null) {
           keyframeInterval = new org.gigapan.timelapse.KeyframeInterval(keyframeToBuild, keyframes[idx + 1], null, timelapse.getDuration(), composerDivId, keyframeToBuild['buildConstraint'], isFirstKeyframe, timelapse);
         }
@@ -296,7 +296,7 @@ if (!Math.uuid) {
       return keyframesById[keyframeId];
     };
 
-    this.resetDurationBlockForKeyframe = function(keyframeId, duration) {
+    this.resetDurationBlockForKeyframe = function(keyframeId) {
       if (keyframeId && keyframesById[keyframeId]) {
         keyframesById[keyframeId]['buildConstraint'] = "duration";
         keyframesById[keyframeId]['waitStart'] = 0.5;
@@ -312,7 +312,7 @@ if (!Math.uuid) {
       return keyframesById[keyframeId];
     };
 
-    this.resetSpeedBlockForKeyframe = function(keyframeId, duration) {
+    this.resetSpeedBlockForKeyframe = function(keyframeId) {
       if (keyframeId && keyframesById[keyframeId]) {
         keyframesById[keyframeId]['buildConstraint'] = "speed";
         keyframesById[keyframeId]['waitStart'] = 0.5;
@@ -347,7 +347,6 @@ if (!Math.uuid) {
             break;
           }
         }
-        var $keyframeItems = $("#" + composerDivId + " .snaplapse_keyframe_list > .ui-selectee");
 
         // Build current keyframe
         resetKeyframe(keyframe);
@@ -1060,7 +1059,6 @@ if (!Math.uuid) {
           _stop(true);
         }
       } else {
-        UTIL.error("Failed to compute current keyframe interval for time [" + elapsedTimeInMillis + "]");
         _stop(true);
         UTIL.selectSelectableElements($("#" + composerDivId + " .snaplapse_keyframe_list"), $("#" + composerDivId + "_snaplapse_keyframe_" + keyframes[keyframes.length - 1].id));
       }
