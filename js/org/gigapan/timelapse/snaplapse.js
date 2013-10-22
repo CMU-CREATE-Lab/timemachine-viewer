@@ -1214,7 +1214,7 @@ if (!Math.uuid) {
       }
       // Update the UI and keyframe parameters
       startingFrame['speed'] = desiredSpeed;
-      $("#" + itemIdHead + "_speed").val(desiredSpeed);
+      $("#" + itemIdHead + "_speed").val(desiredSpeed.toFixed(2));
       startingFrame['loopTimes'] = loopTimes;
       $("#" + itemIdHead + "_loopTimes").val(loopTimes);
       startingFrame['duration'] = desiredDuration;
