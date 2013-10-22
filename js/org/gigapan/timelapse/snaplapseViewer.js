@@ -293,8 +293,9 @@ function playCachedSnaplapse(snaplapseId) {
         if ($(this).val() == "") {
           $(this).val("Untitled");
         }
-        $("#" + composerDivId + " .saveTimewarpWindow_JSON").val("http://earthengine.google.org/#timelapse/tour=" + snaplapse.getAsUrlString());
-        $("#" + composerDivId + " .saveTimewarpWindow_JSON2").val('<iframe width="854" height="480" src="http://earthengine.google.org/timelapse/player?c=http%3A%2F%2Fearthengine.google.org%2Ftimelapse%2Fdata#tour=' + snaplapse.getAsUrlString() + '" frameborder="0"></iframe>');
+        var tourUrl = snaplapse.getAsUrlString();
+        $("#" + composerDivId + " .saveTimewarpWindow_JSON").val("http://earthengine.google.org/#timelapse/tour=" + tourUrl);
+        $("#" + composerDivId + " .saveTimewarpWindow_JSON2").val('<iframe width="854" height="480" src="http://earthengine.google.org/timelapse/player?c=http%3A%2F%2Fearthengine.google.org%2Ftimelapse%2Fdata#tour=' + tourUrl + '" frameborder="0"></iframe>');
         $("#" + composerDivId + " .saveTimewarpWindow_JSON2_sizes").trigger("change");
       });
 
@@ -1098,11 +1099,12 @@ function playCachedSnaplapse(snaplapseId) {
 
     var saveSnaplapse = function() {
       if (snaplapse && (snaplapse.getNumKeyframes() >= 1)) {
+        var tourUrl = snaplapse.getAsUrlString();
         $("#" + composerDivId + " .saveTimewarpWindow").dialog("open");
-        $("#" + composerDivId + " .saveTimewarpWindow_JSON").val("http://earthengine.google.org/#timelapse/tour=" + snaplapse.getAsUrlString()).focus().select().click(function() {
+        $("#" + composerDivId + " .saveTimewarpWindow_JSON").val("http://earthengine.google.org/#timelapse/tour=" + tourUrl).focus().select().click(function() {
           $(this).focus().select();
         });
-        $("#" + composerDivId + " .saveTimewarpWindow_JSON2").val('<iframe width="854" height="480" src="http://earthengine.google.org/timelapse/player?c=http%3A%2F%2Fearthengine.google.org%2Ftimelapse%2Fdata#tour=' + snaplapse.getAsUrlString() + '" frameborder="0"></iframe>').click(function() {
+        $("#" + composerDivId + " .saveTimewarpWindow_JSON2").val('<iframe width="854" height="480" src="http://earthengine.google.org/timelapse/player?c=http%3A%2F%2Fearthengine.google.org%2Ftimelapse%2Fdata#tour=' + tourUrl + '" frameborder="0"></iframe>').click(function() {
           $(this).focus().select();
         });
       } else {
