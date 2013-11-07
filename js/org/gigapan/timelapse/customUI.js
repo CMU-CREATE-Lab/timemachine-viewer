@@ -36,9 +36,7 @@
 
  Authors:
  Yen-Chia Hsu (legenddolphin@gmail.com)
-*/
-
-"use strict";
+ */"use strict";
 
 //
 // VERIFY NAMESPACE
@@ -169,16 +167,17 @@ if (!org.gigapan.timelapse.Timelapse) {
 
       // TODO
       // Update certain properties on window resize
-      //$(window).resize(function() {
-      //  updateVariableDimensions();
-      //});
-      updateVariableDimensions();
+      if (settings["viewportGeometry"]["max"]) {
+        $(window).resize(function() {
+          fitToWindow();
+        });
+      }
+      fitToWindow();
 
       var $speedControl = $("#" + viewerDivId + " .toggleSpeed");
       var $googleLogo = $("#" + viewerDivId + " .googleLogo");
       var $googleMapToggle = $("#" + viewerDivId + " .toggleGoogleMapBtn");
       var $contextMapResizer = $("#" + viewerDivId + " .smallMapResizer");
-      var $playStopTour = $("#" + viewerDivId + " .snaplapseTourPlayBack");
       // Set event listeners
       var snaplapse = timelapse.getSnaplapse();
       if (snaplapse) {
@@ -186,23 +185,26 @@ if (!org.gigapan.timelapse.Timelapse) {
           $("#" + viewerDivId + " .tourLoadOverlayPlay").attr("src", "images/tour_stop_outline.png").css("opacity", "1.0");
           if ($speedControl.is(':visible'))
             timelapse.getSnaplapse().getSnaplapseViewer().hideViewerUI();
+          var $playStopTour = $("#" + viewerDivId + " .snaplapseTourPlayBack");
           $playStopTour.css({
-            "left":"0px"
+            "left": "0px"
           }).toggleClass("playTour stopTour").attr("title", "Click to stop this tour");
         });
         snaplapse.addEventListener('stop', function() {
           $("#" + viewerDivId + " .tourLoadOverlayPlay").attr("src", "images/tour_replay_outline.png").css("opacity", "1.0");
           timelapse.getSnaplapse().getSnaplapseViewer().showViewerUI();
+          var $playStopTour = $("#" + viewerDivId + " .snaplapseTourPlayBack");
           $playStopTour.css({
-            "left":"60px"
+            "left": "60px"
           }).toggleClass("stopTour playTour").attr("title", "Click to replay this tour");
         });
       }
     };
 
-    var updateVariableDimensions = function() {
-      // TODO
-      //timelapse.fitVideoToViewport(window.innerWidth, window.innerHeight);
+    var fitToWindow = function() {
+      if (settings["viewportGeometry"]["max"]) {
+        timelapse.fitVideoToViewport(window.innerWidth, window.innerHeight);
+      }
       viewerWidth = $viewer.width();
       sliderLeftMargin_pct = (sliderLeftMargin / viewerWidth) * 100;
       sliderRightMargin_pct = (sliderRightMargin / viewerWidth) * 100;
@@ -222,7 +224,8 @@ if (!org.gigapan.timelapse.Timelapse) {
 
       var speedOptions = [$slowSpeed, $fastSpeed, $mediumSpeed];
       // Speeds < 0.5x in Safari, even if emulated, result in broken playback, so do not include the "slow" (0.25x) speed option
-      if (isSafari) speedOptions.shift();
+      if (isSafari)
+        speedOptions.shift();
 
       $customControl.prepend(speedOptions);
 
@@ -260,7 +263,8 @@ if (!org.gigapan.timelapse.Timelapse) {
 
       timelapse.addPlaybackRateChangeListener(function(rate, fromUI) {
         var snaplapse = timelapse.getSnaplapse();
-        if (snaplapse && snaplapse.isPlaying()) return;
+        if (snaplapse && snaplapse.isPlaying())
+          return;
         if (!fromUI) {
           $("#" + viewerDivId + " .toggleSpeed").hide()
           if (rate >= 1) {
@@ -301,7 +305,8 @@ if (!org.gigapan.timelapse.Timelapse) {
         },
         text: false
       }).click(function() {
-        if ($defaultUIPlaybackButton.hasClass("from_help")) return;
+        if ($defaultUIPlaybackButton.hasClass("from_help"))
+          return;
         timelapse.handlePlayPause();
       });
       // Help button
@@ -336,7 +341,8 @@ if (!org.gigapan.timelapse.Timelapse) {
       $customTimeline = $(customTimeline);
       $customControl.append(timeText, customTimeline);
       sliderLeftMargin = $customPlay.width() + $timeText.width() + 30;
-      sliderRightMargin = $customHelpLabel.width() + 35;
+      var sliderRightMarginExtra = (settings["isHyperwall"] && fields.fullControls != "true") ? 5 : 35;
+      sliderRightMargin = $customHelpLabel.width() + sliderRightMarginExtra;
       var width_slider = (playerWidth - sliderLeftMargin - sliderRightMargin);
       $customTimeline.css({
         "left": sliderLeftMargin + "px",
@@ -613,19 +619,23 @@ if (!org.gigapan.timelapse.Timelapse) {
       });
       // Create buttonset
       customEditorModeToolbar.buttonset();
+      // TODO debugg
       var customEditorModeToolbar_height = customEditorModeToolbar.height() + 5;
       // Set position
+      // TODO debugg
       $customControl.css("bottom", "+=" + customEditorModeToolbar_height + "px");
-      var $speedControl = $("#" + viewerDivId + " .toggleSpeed");
-      var $googleLogo = $("#" + viewerDivId + " .googleLogo");
-      var $googleMapToggle = $("#" + viewerDivId + " .toggleGoogleMapBtn");
-      var $contextMapResizer = $("#" + viewerDivId + " .smallMapResizer");
     };
 
     var handleAddressLookup = function() {
-      if (typeof google === "undefined") return;
+      if ( typeof google === "undefined")
+        return;
 
-      var $addressLookupElem = $('<input>').attr({id : viewerDivId + "_addressLookup", size: 35, type: "textbox", "placeholder": "Enter the name of a place to zoom to..."}).addClass("addressLookup");
+      var $addressLookupElem = $('<input>').attr({
+        id: viewerDivId + "_addressLookup",
+        size: 35,
+        type: "textbox",
+        "placeholder": "Enter the name of a place to zoom to..."
+      }).addClass("addressLookup");
       var addressLookupElem = $addressLookupElem.get(0);
       $("#" + viewerDivId).append($addressLookupElem);
 
@@ -637,18 +647,32 @@ if (!org.gigapan.timelapse.Timelapse) {
         var place = autocomplete.getPlace();
         if (!place.geometry) {
           var address = $addressLookupElem.val();
-          geocoder.geocode({'address': address}, function(results, status) {
-           if (status == google.maps.GeocoderStatus.OK) {
-             var lat = results[0].geometry.location.lat();
-             var lng = results[0].geometry.location.lng();
-             newView = {center: {"lat": lat, "lng": lng}, "zoom": 0};
-             setViewGracefully(newView, false, true);
-           } else {
-             console.log("Geocode failed: " + status);
-           }
+          geocoder.geocode({
+            'address': address
+          }, function(results, status) {
+            if (status == google.maps.GeocoderStatus.OK) {
+              var lat = results[0].geometry.location.lat();
+              var lng = results[0].geometry.location.lng();
+              newView = {
+                center: {
+                  "lat": lat,
+                  "lng": lng
+                },
+                "zoom": 0
+              };
+              setViewGracefully(newView, false, true);
+            } else {
+              console.log("Geocode failed: " + status);
+            }
           });
         } else {
-          var newView = {center: {"lat": place.geometry.location.lat(), "lng": place.geometry.location.lng()}, "zoom": 0};
+          var newView = {
+            center: {
+              "lat": place.geometry.location.lat(),
+              "lng": place.geometry.location.lng()
+            },
+            "zoom": 0
+          };
           setViewGracefully(newView, false, true);
         }
       });
@@ -670,6 +694,30 @@ if (!org.gigapan.timelapse.Timelapse) {
       $("#" + viewerDivId + "_customTimeline_timeTickClickRegion_" + frameIdx).focus();
     };
     this.focusTimeTick = focusTimeTick;
+
+    this.handleHyperwallChangeUI = function() {
+      var isShowControls = ( typeof (fields.showControls) != "undefined" && fields.showControls == "true");
+      var isFullControls = ( typeof (fields.fullControls) != "undefined" && fields.fullControls == "true");
+
+      if (!isShowControls || !isFullControls)
+        $("#" + viewerDivId + " .sideToolBar").remove();
+
+      if (!isShowControls) {
+        $customControl.hide();
+        $("#" + viewerDivId + " .scaleBarContainer").remove();
+      }
+
+      if (!isFullControls) {
+        $("#" + viewerDivId + " .toggleSpeed").remove();
+        $customHelpLabel.remove();
+        $customPlay.remove();
+        $timeText.css({
+          "text-align": "center",
+          "left": "-=" + 14 + "px",
+          "padding-left": "12px"
+        });
+      }
+    };
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////
     //

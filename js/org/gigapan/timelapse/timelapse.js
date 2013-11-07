@@ -136,6 +136,7 @@ if (!window['$']) {
     // Settings
     //settings["videosetStatsDivId"] = settings["videosetStatsDivId"] || "videoset_stats_container";
     //var hasLayers = settings["hasLayers"] || false;
+    var isHyperwall = settings["isHyperwall"] || false;
     var loopPlayback = settings["loopPlayback"] || false;
     var customLoopPlaybackRates = settings["customLoopPlaybackRates"] || null;
     var playOnLoad = settings["playOnLoad"] || false;
@@ -152,7 +153,7 @@ if (!window['$']) {
     var viewportGeometry = {
       width: ( typeof (settings["viewportGeometry"]) == "undefined" || typeof (settings["viewportGeometry"]['width']) == "undefined") ? undefined : settings["viewportGeometry"]['width'],
       height: ( typeof (settings["viewportGeometry"]) == "undefined" || typeof (settings["viewportGeometry"]['height']) == "undefined") ? undefined : settings["viewportGeometry"]['height'],
-      ratio: ( typeof (settings["viewportGeometry"]) == "undefined" || typeof (settings["viewportGeometry"]['ratio']) == "undefined") ? undefined : settings["viewportGeometry"]['ratio']
+      max: ( typeof (settings["viewportGeometry"]) == "undefined" || typeof (settings["viewportGeometry"]['max']) == "undefined") ? false : settings["viewportGeometry"]['max'],
     };
     var skippedFramesAtEnd = ( typeof (settings["skippedFramesAtEnd"]) == "undefined" || settings["skippedFramesAtEnd"] < 0) ? 0 : settings["skippedFramesAtEnd"];
     var skippedFramesAtStart = ( typeof (settings["skippedFramesAtStart"]) == "undefined" || settings["skippedFramesAtStart"] < 0) ? 0 : settings["skippedFramesAtStart"];
@@ -220,6 +221,7 @@ if (!window['$']) {
     var isFirefox = UTIL.isFirefox();
     var enableSmallGoogleMap = true;
     var enablePanoVideo = true;
+    var isChrome = UTIL.isChrome();
 
     // Viewer
     var viewerType;
@@ -246,8 +248,10 @@ if (!window['$']) {
     var animateInterval = null;
     var lastAnimationTime;
     var minTranslateSpeedPixelsPerSecond = 25.0;
-    var animationFractionPerSecond = 3.0; // goes 300% toward goal in 1 sec
-    var minZoomSpeedPerSecond = 0.25; // in log2
+    var animationFractionPerSecond = 3.0;
+    // goes 300% toward goal in 1 sec
+    var minZoomSpeedPerSecond = 0.25;
+    // in log2
     var keyIntervals = [];
     var targetViewChangeListeners = [];
     var viewChangeListeners = [];
@@ -274,6 +278,10 @@ if (!window['$']) {
     var toursJSON = {};
     var translationSpeedConstant = 20;
     var leader;
+
+    // Joystick Variables
+    var isJoystickButtonPressed = [false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false];
+    var joystickTimers = [0.0, 0.0];
 
     // levelThreshold sets the quality of display by deciding what level of tile to show for a given level of zoom:
     //
@@ -1022,6 +1030,10 @@ if (!window['$']) {
 
     };
 
+    this.toggleMainControls = function() {
+      defaultUI.toggleMainControls();
+    };
+
     this.getPlaybackRate = function() {
       return videoset.getPlaybackRate();
     };
@@ -1181,40 +1193,7 @@ if (!window['$']) {
     this.getTmJSON = _getTmJSON;
 
     var _fullScreen = function(state) {
-      var newViewportWidth, newViewportHeight;
-      var showMainControls = defaultUI.isShowMainControls();
-      if (originalViewportWidth == null) {
-        originalViewportWidth = $("#" + videoDivId).width();
-        originalViewportHeight = $("#" + videoDivId).height();
-      }
-
-      if (state == undefined || state) {
-        fullScreen = true;
-        $("body").css("overflow", "hidden");
-        var extraViewportHeight = showMainControls ? ($("#" + viewerDivId + " .controls").outerHeight() + $("#" + viewerDivId + " .timelineSlider").outerHeight() + 2) : 0;
-        newViewportWidth = window.innerWidth - 2;
-        // Extra 2px for the borders
-        newViewportHeight = window.innerHeight - extraViewportHeight;
-        // Subtract height of controls and extra 2px for borders
-        // Ensure minimum dimensions to not break controls
-        if (newViewportWidth < 816)
-          newViewportWidth = 816;
-        if (newViewportHeight < 468)
-          newViewportHeight = 468;
-        resetParaBeforeFullScreen();
-        saveParaBeforeFullScreen();
-        fitVideoToViewport(newViewportWidth, newViewportHeight);
-        setParaBeforeFullScreen();
-        window.scrollTo(0, 0);
-      } else {
-        fullScreen = false;
-        $("body").css("overflow", "auto");
-        fitVideoToViewport(originalViewportWidth, originalViewportHeight);
-        resetParaBeforeFullScreen();
-      }
-      defaultUI.handleFullScreenChange(fullScreen);
-      updateTagInfo_timeData();
-      updateTagInfo_locationData();
+      console.log("Hey Paul, you are fullscreen.");
     };
     this.fullScreen = _fullScreen;
 
@@ -1358,7 +1337,7 @@ if (!window['$']) {
         "top": "0px",
         "left": "0px"
       });
-      if (snaplapse)
+      if (snaplapse && $("#" + settings["composerDiv"]).is(':visible'))
         updateEditor();
       if (scaleBar)
         scaleBar.updateVideoSize();
@@ -1446,6 +1425,7 @@ if (!window['$']) {
     var limitScale = function(scale) {
       return Math.max(_getMinScale(), Math.min(_getMaxScale(), scale));
     };
+    this.limitScale = limitScale;
 
     var view2string = function(view) {
       return "[view x:" + view.x + " y:" + view.y + " scale:" + view.scale + "]";
@@ -1455,10 +1435,15 @@ if (!window['$']) {
       if (newView) {
         var tempView = {};
         tempView.scale = limitScale(newView.scale);
-        tempView.x = Math.max(0, Math.min(panoWidth, newView.x));
-        tempView.y = Math.max(0, Math.min(panoHeight, newView.y));
-        targetView.x = tempView.x;
-        targetView.y = tempView.y;
+        if (isHyperwall) {
+          targetView.x = newView.x;
+          targetView.y = newView.y;
+        } else {
+          tempView.x = Math.max(0, Math.min(panoWidth, newView.x));
+          tempView.y = Math.max(0, Math.min(panoHeight, newView.y));
+          targetView.x = tempView.x;
+          targetView.y = tempView.y;
+        }
         targetView.scale = tempView.scale;
       } else {
         // Rather than specifying a new view, it is easier to just specify the offset for translating
@@ -1468,10 +1453,12 @@ if (!window['$']) {
         }
       }
 
+      // ~35Hz or 12.5Hz
+      var animateRate = isHyperwall ? 30 : 80;
       if (animateInterval == null) {
         animateInterval = setInterval(function() {
           animate(fromGoogleMapflag);
-        }, 80); // 12.5 hz
+        }, animateRate);
         lastAnimationTime = UTIL.getCurrentTimeInSecs();
       }
 
@@ -1508,7 +1495,89 @@ if (!window['$']) {
       return Math.pow(2, x);
     };
 
+    var checkForJoystick = function() {
+      if (!isChrome) {
+        return false;
+      }
+
+      var gamepad = navigator.webkitGetGamepads()[0];
+      var translationSpeedConstant = 30;
+      var joystickError = 0.15;
+      var scalingConstant = 0.94;
+      var secondaryFunctionsEnabled = true;
+      var timeSpeedConstant = timelapseDurationInSeconds / 400.0;
+
+      if (gamepad == null) {
+        return false;
+      }
+
+      // Horizontal Motion
+      if (Math.abs(gamepad.axes[0]) > joystickError) {
+        view.x = Math.max(0, Math.min(panoWidth, view.x + (gamepad.axes[0] * translationSpeedConstant) / view.scale));
+        targetView = view;
+      }
+
+      // Vertical Motion
+      if (Math.abs(gamepad.axes[1]) > joystickError) {
+        view.y = Math.max(0, Math.min(panoHeight, view.y + (gamepad.axes[1] * translationSpeedConstant) / view.scale));
+        targetView = view;
+      }
+
+      // Zooming in/out
+      if (gamepad.axes[3] > joystickError) {
+        view.scale = limitScale(view.scale * (scalingConstant + (1 - scalingConstant) * (1 - gamepad.axes[3])));
+        targetView = view;
+      } else if (gamepad.axes[3] < -joystickError) {
+        view.scale = limitScale(view.scale / (scalingConstant + (1 - scalingConstant) * (1 + gamepad.axes[3])));
+        targetView = view;
+      }
+      refresh();
+
+      // Time Control
+      if (secondaryFunctionsEnabled) {
+        // Seek the video
+        var seekFPS = 5.0;
+        if (gamepad.buttons[7] && !gamepad.buttons[6]) {
+          if (joystickTimers[0] > 1.0 / seekFPS) {
+            thisObj.handlePlayPause();
+            videoset.seek(videoset.getCurrentTime() + (1.0 / _getFps()));
+            joystickTimers[0] = 0.0;
+          }
+          joystickTimers[0] += 0.040;
+        }
+        if (gamepad.buttons[6] && !gamepad.buttons[7]) {
+          if (joystickTimers[1] > 1.0 / seekFPS) {
+            thisObj.handlePlayPause();
+            videoset.seek(videoset.getCurrentTime() - (1.0 / _getFps()));
+            joystickTimers[1] = 0.0;
+          }
+          joystickTimers[1] += 0.040;
+        }
+
+        // Play/Pause Video
+        var buttonNumberForPlay = 0;
+        if (gamepad.buttons[buttonNumberForPlay] && !isJoystickButtonPressed[buttonNumberForPlay]) {
+          thisObj.handlePlayPause();
+          isJoystickButtonPressed[buttonNumberForPlay] = true;
+        } else if (!gamepad.buttons[buttonNumberForPlay] && isJoystickButtonPressed[buttonNumberForPlay]) {
+          isJoystickButtonPressed[buttonNumberForPlay] = false;
+        }
+
+        // Set FullScreen
+        var buttonNumberForFullScreen = 1;
+        if (gamepad.buttons[buttonNumberForFullScreen] && !isJoystickButtonPressed[buttonNumberForFullScreen]) {
+          _fullScreen(!fullScreen);
+          isJoystickButtonPressed[buttonNumberForFullScreen] = true;
+        } else if (!gamepad.buttons[buttonNumberForFullScreen] && isJoystickButtonPressed[buttonNumberForFullScreen]) {
+          isJoystickButtonPressed[buttonNumberForFullScreen] = false;
+        }
+      }
+      return true;
+    };
+
     var animate = function(fromGoogleMapflag) {
+      //var isJoystickWorking = checkForJoystick();
+
       // Compute deltaT between this animation frame and last
       var now = UTIL.getCurrentTimeInSecs();
       var deltaT = now - lastAnimationTime;
@@ -1539,20 +1608,22 @@ if (!window['$']) {
         view.y = targetView.y;
         view.scale = targetView.scale;
         //UTIL.log("animation finished, clearing interval");
+        //if (!isJoystickWorking) {
         clearInterval(animateInterval);
         animateInterval = null;
-        for (i = 0; i < viewChangeListeners.length; i++)
+        //}
+        for ( i = 0; i < viewChangeListeners.length; i++)
           viewChangeListeners[i](view);
       } else {
         view = computeViewFit(_computeMotion(computeBoundingBox(view), computeBoundingBox(targetView), t));
       }
       refresh(fromGoogleMapflag);
       // Run listeners
-      for (i = 0; i < viewChangeListeners.length; i++)
+      for ( i = 0; i < viewChangeListeners.length; i++)
         viewChangeListeners[i](view);
     };
 
-    // Bounding box point fit
+    // Convert pixel bounding box to center view (x, y, scale)
     var computeViewFit = function(bbox) {
       if ( typeof (bbox.bbox) != 'undefined')
         bbox = bbox.bbox;
@@ -1567,7 +1638,7 @@ if (!window['$']) {
     };
     this.computeViewFit = computeViewFit;
 
-    // Bounding box lat/lng fit
+    // Convert lat/Lng bounding box to center view (x, y, scale)
     var computeViewLatLngFit = function(newView) {
       var projection = _getProjection();
       var newViewBboxNE = newView.bbox.ne;
@@ -1597,7 +1668,7 @@ if (!window['$']) {
     };
     this.computeViewLatLngFit = computeViewLatLngFit;
 
-    // Point center
+    // Convert {center:{x, y}, zoom:z} to center view (x, y, scale)
     var computeViewPointCenter = function(newView) {
       return {
         x: newView.center.x,
@@ -1607,7 +1678,7 @@ if (!window['$']) {
     };
     this.computeViewPointCenter = computeViewPointCenter;
 
-    // LatLng center
+    // Convert {center:{lat, lng}, zoom:z} to center view (x, y, scale)
     var computeViewLatLngCenter = function(newView) {
       var point = _getProjection().latlngToPoint({
         "lat": newView.center.lat,
@@ -1621,6 +1692,7 @@ if (!window['$']) {
     };
     this.computeViewLatLngCenter = computeViewLatLngCenter;
 
+    // Convert center view (x, y, scale) to pixel bounding box
     var computeBoundingBox = function(theView) {
       var halfWidth = 0.5 * viewportWidth / theView.scale;
       var halfHeight = 0.5 * viewportHeight / theView.scale;
@@ -1633,6 +1705,7 @@ if (!window['$']) {
     };
     this.computeBoundingBox = computeBoundingBox;
 
+    // Convert center view (x, y, scale) to lat/lng bounding box
     var computeBoundingBoxLatLng = function(theView) {
       if (theView == undefined)
         theView = view;
@@ -1652,6 +1725,24 @@ if (!window['$']) {
       };
     };
     this.computeBoundingBoxLatLng = computeBoundingBoxLatLng;
+
+    // Convert pixel bounding box to {center:{lat, lng}, zoom:z}
+    var pixelBoundingBoxToLatLngCenter = function(bbox) {
+      var centerView = computeViewFit(bbox);
+      var projection = _getProjection();
+      var latLng = projection.pointToLatlng({
+        x: centerView.x,
+        y: centerView.y
+      });
+      return {
+        center: {
+          "lat": latLng.lat,
+          "lng": latLng.lng
+        },
+        "zoom": scaleToZoom(centerView.scale)
+      }
+    };
+    this.pixelBoundingBoxToLatLngCenter = pixelBoundingBoxToLatLngCenter;
 
     var onPanoLoadSuccessCallback = function(data, desiredView, doWarp) {
       UTIL.log('onPanoLoadSuccessCallback(' + JSON.stringify(data) + ', ' + view + ', ' + ')');
@@ -1682,7 +1773,7 @@ if (!window['$']) {
 
       // Set capture time
       if (tmJSON["capture-times"]) {
-        tmJSON["capture-times"].splice(0,framesToSkipAtStart);
+        tmJSON["capture-times"].splice(0, framesToSkipAtStart);
         captureTimes = tmJSON["capture-times"];
       } else {
         for (var i = 0; i < frames; i++) {
@@ -1783,6 +1874,8 @@ if (!window['$']) {
 
     // Update tag position on the timeline and color
     var updateTagInfo_timeData = function() {
+      if (!defaultUI)
+        return null;
       var mode = defaultUI.getMode();
       if (fullScreen || mode == "player") {
         return null;
@@ -1806,6 +1899,8 @@ if (!window['$']) {
 
     // Update tag information of location data
     var updateTagInfo_locationData = function(dragFromGoogleMapflag) {
+      if (!defaultUI)
+        return null;
       var mode = defaultUI.getMode();
       if (scaleBar == undefined && smallGoogleMap == undefined) {
         if (fullScreen || mode == "player") {
@@ -1818,10 +1913,16 @@ if (!window['$']) {
         if (tmJSON['projection-bounds'])
           videoViewer_projection = _getProjection();
         // Get video viewer center location
-        var scale = view.scale;
+
+        if (isHyperwall && !masterView)
+          masterView = timelapse.getView();
+
+        var scale = isHyperwall ? masterView.scale : view.scale;
+        var desiredView = isHyperwall ? masterView : view;
+
         var videoViewer_centerPoint = {
-          "x": view.x,
-          "y": view.y,
+          "x": desiredView.x,
+          "y": desiredView.y,
           "scale": scale
         };
         var tagLatLngCenter_nav;
@@ -1833,8 +1934,8 @@ if (!window['$']) {
         if (scaleBar) {
           // Compute the the distance between two center pixels
           var videoViewer_nearCenterPoint = {
-            "x": (view.x + 1 / scale),
-            "y": view.y,
+            "x": (desiredView.x + 1 / scale),
+            "y": desiredView.y,
             "scale": scale
           };
           var tagLatLngNearCenter_nav, distance_pixel_lng;
@@ -1850,13 +1951,13 @@ if (!window['$']) {
           var offsetX = (viewportWidth / 2) / scale;
           var offsetY = (viewportHeight / 2) / scale;
           var videoViewer_leftTopPoint = {
-            "x": (view.x - offsetX),
-            "y": (view.y - offsetY),
+            "x": (desiredView.x - offsetX),
+            "y": (desiredView.y - offsetY),
             "scale": scale
           };
           var videoViewer_rightBotPoint = {
-            "x": (view.x + offsetX),
-            "y": (view.y + offsetY),
+            "x": (desiredView.x + offsetX),
+            "y": (desiredView.y + offsetY),
             "scale": scale
           };
           var tagLatLngNE_nav, tagLatLngSW_nav;
@@ -2103,7 +2204,8 @@ if (!window['$']) {
     };
 
     var changePlaybackRate = function(obj) {
-      var rate = $(obj).attr("data-speed") - 0; // Convert to number
+      var rate = $(obj).attr("data-speed") - 0;
+      // Convert to number
       thisObj.setPlaybackRate(rate);
       playbackSpeed = rate;
     };
@@ -2156,19 +2258,8 @@ if (!window['$']) {
         }
       };
 
-      // Full screen
-      window.onresize = function() {
-        clearTimeout(resizeTimeout);
-        if (fullScreen) {
-          resizeTimeout = setTimeout(function() {
-            _fullScreen(true);
-          }, 100);
-        }
-      };
-
       // On URL hash change, do share view related stuff
       window.onhashchange = handleHashChange;
-
     }
 
     var isCurrentTimeAtOrPastDuration = function() {
@@ -2187,7 +2278,7 @@ if (!window['$']) {
           annotator.updateAnnotationPositions();
 
         timelapseCurrentTimeInSeconds = t;
-        timelapseCurrentCaptureTimeIndex = Math.min(frames - 1,Math.floor(t * _getFps()));
+        timelapseCurrentCaptureTimeIndex = Math.min(frames - 1, Math.floor(t * _getFps()));
         if (timelapseCurrentTimeInSeconds.toFixed(3) < 0 || (timelapseCurrentTimeInSeconds.toFixed(3) == 0 && thisObj.getPlaybackRate() < 0)) {
           timelapseCurrentTimeInSeconds = 0;
           _pause();
@@ -2234,10 +2325,11 @@ if (!window['$']) {
         $("#" + viewerDivId + " .zoomSlider").slider("value", _viewScaleToZoomSlider(view.scale));
       });
 
-      _addViewChangeListener(function(view) {
+      _addViewChangeListener(function() {
         if (annotator)
           annotator.updateAnnotationPositions();
-        updateTagInfo_locationData();
+        if (!isHyperwall)
+          updateTagInfo_locationData();
       });
 
       _addVideoPauseListener(function() {
@@ -2338,13 +2430,21 @@ if (!window['$']) {
       defaultUI = new org.gigapan.timelapse.DefaultUI(thisObj, settings);
       if (settings["enableCustomUI"] == true)
         customUI = new org.gigapan.timelapse.CustomUI(thisObj, settings);
+
       //handlePluginVideoTagOverride(); //TODO
 
       if (settings["scaleBarOptions"] && tmJSON['projection-bounds'])
         scaleBar = new org.gigapan.timelapse.ScaleBar(settings["scaleBarOptions"], thisObj);
       // Must be placed after TimelineSlider is created
-      if (settings["smallGoogleMapOptions"] && tmJSON['projection-bounds'] && typeof google !== "undefined")
-        smallGoogleMap = new org.gigapan.timelapse.SmallGoogleMap(settings["smallGoogleMapOptions"], thisObj);
+
+      if (isHyperwall)
+        customUI.handleHyperwallChangeUI();
+
+      if (settings["smallGoogleMapOptions"] && tmJSON['projection-bounds'] && typeof google !== "undefined") {
+        // TODO debugg
+        if (!isHyperwall || fields.showMap)
+          smallGoogleMap = new org.gigapan.timelapse.SmallGoogleMap(settings["smallGoogleMapOptions"], thisObj, settings);
+      }
 
       thisObj.setPlaybackRate(playbackSpeed);
 
@@ -2378,61 +2478,35 @@ if (!window['$']) {
     };
 
     var computeViewportGeometry = function(data) {
-      var newWidth, newHeight;
-      if (viewportGeometry.width == undefined && viewportGeometry.height == undefined) {
-        newWidth = data["video_width"] - data["tile_width"];
-        newHeight = data["video_height"] - data["tile_height"];
-      } else {
-        if (viewportGeometry.height == undefined) {
-          if (viewportGeometry.ratio != undefined && viewportGeometry.width != "max") {
-            viewportGeometry.height = viewportGeometry.width / viewportGeometry.ratio;
-          } else {
-            viewportGeometry.height = data["video_height"] - data["tile_height"];
-          }
-        }
-        if (viewportGeometry.width == undefined) {
-          if (viewportGeometry.ratio != undefined && viewportGeometry.height != "max") {
-            viewportGeometry.width = viewportGeometry.height * viewportGeometry.ratio;
-          } else {
-            viewportGeometry.width = data["video_width"] - data["tile_width"];
-          }
-        }
-        newWidth = viewportGeometry.width;
-        newHeight = viewportGeometry.height;
-        var viewerPosition = $("#" + viewerDivId).position();
-        if (viewportGeometry.height == "max") {
-          newHeight = window.innerHeight - $("#" + viewerDivId + " .controls").outerHeight() - $("#" + viewerDivId + " .timelineSliderFiller").outerHeight() - viewerPosition.top * 2 - 2;
-          if (settings['composerDiv'] || settings['annotatorDiv']) {
-            // This is the height of the keyframe container
-            newHeight -= 180;
-          }
-        }
-        if (viewportGeometry.width == "max") {
-          newWidth = window.innerWidth - viewerPosition.left * 2;
-        }
-        if (viewportGeometry.width == "max" && viewportGeometry.height == "max") {
-          if (viewportGeometry.ratio != undefined) {
-            newWidth = newHeight * viewportGeometry.ratio;
-          }
-        }
-        if (settings['composerDiv'] || settings['annotatorDiv']) {
-          if (viewportGeometry.height == "max")
-            newHeight -= visualizerGeometry.height;
-          if (viewportGeometry.width == "max")
-            newWidth -= visualizerGeometry.width;
-        }
-        if (newHeight < 468) {
-          newHeight = 468;
+      if (viewportGeometry.max == false) {
+        if (viewportGeometry.width == undefined)
+          viewportGeometry.width = data["video_width"] - data["tile_width"];
+        if (viewportGeometry.height == undefined)
+          viewportGeometry.height = data["video_height"] - data["tile_height"];
+        if (viewportGeometry.height < 468) {
+          viewportGeometry.height = 468;
           visualizerGeometry.height = defaultVisualizerGeometry.height;
           visualizerGeometry.width = visualizerGeometry.height * (newWidth / newHeight);
         }
-        if (newWidth < 816) {
-          newWidth = 816;
+        if (viewportGeometry.width < 816) {
+          viewportGeometry.width = 816;
         }
+      } else {
+        $("#" + viewerDivId).css({
+          "position": "absolute",
+          "top": "0px",
+          "left": "0px"
+        });
+        $("body").css("overflow", "hidden");
+        if (settings['composerDiv'])
+          $("#" + settings['composerDiv']).hide();
+        if (settings['annotatorDiv'])
+          $("#" + settings['annotatorDiv']).hide();
       }
+
       return {
-        width: newWidth,
-        height: newHeight
+        width: viewportGeometry.width,
+        height: viewportGeometry.height
       };
     };
 
@@ -2580,6 +2654,8 @@ if (!window['$']) {
         $("#html5_overridden_message").show();
       }
     }
+
+
     this.handlePluginVideoTagOverride = handlePluginVideoTagOverride;
 
     function setViewportSize(newWidth, newHeight) {
@@ -2649,6 +2725,8 @@ if (!window['$']) {
       }
       // End wiki specific css
     }
+
+
     this.setViewportSize = setViewportSize;
 
     var showSpinner = function(viewerDivId) {
@@ -2673,6 +2751,8 @@ if (!window['$']) {
       //return prefixes[Math.floor(Math.random() * prefixes.length)];
       return prefixes;
     }
+
+
     this.getTileHostUrlPrefix = getTileHostUrlPrefix;
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////

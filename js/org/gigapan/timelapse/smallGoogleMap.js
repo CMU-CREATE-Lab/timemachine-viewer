@@ -40,9 +40,7 @@
  VERIFY NAMESPACE
 
  Create the global symbol "org" if it doesn't exist.  Throw an error if it does exist but is not an object.
- */
-
-"use strict";
+ */"use strict";
 
 // Create the global symbol "org" if it doesn't exist.  Throw an error if it does exist but is not an object.
 var org;
@@ -91,16 +89,17 @@ if (!org.gigapan.timelapse.Timelapse) {
 // CODE
 //
 (function() {
-  org.gigapan.timelapse.SmallGoogleMap = function(smallGoogleMapOptions, timelapse) {
+  org.gigapan.timelapse.SmallGoogleMap = function(smallGoogleMapOptions, timelapse, settings) {
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////
     //
     // Class variables
     //
-    var minHeight = 120;
-    var minWidth = 160;
-    var maxHeight = 220;
-    var maxWidth = 330;
+    var isHyperwall = settings["isHyperwall"];
+    var minHeight = isHyperwall ? 450 : 120;
+    var minWidth = isHyperwall ? 500 : 160;
+    var maxHeight = isHyperwall ? 768 : 220;
+    var maxWidth = isHyperwall ? 1024 : 330;
     var startWidth = minWidth;
     var startHeight = minHeight;
     var smallGoogleMapDivId = ( typeof (smallGoogleMapOptions["smallGoogleMapDiv"]) == "undefined") ? "smallGoogleMap2013" : smallGoogleMapOptions["smallGoogleMapDiv"];
@@ -181,8 +180,10 @@ if (!org.gigapan.timelapse.Timelapse) {
           duration: 200,
           progress: onComplete,
           complete: function() {
-            if (onComplete) onComplete();
-            if (callBackOnComplete) callBackOnComplete();
+            if (onComplete)
+              onComplete();
+            if (callBackOnComplete)
+              callBackOnComplete();
           }
         });
       } else {
@@ -251,15 +252,17 @@ if (!org.gigapan.timelapse.Timelapse) {
       // Draw the rectangle bounding box on the map
       var defaultLatLng_leftTop = new google.maps.LatLng(0, 0, true);
       var defaultLatLng_rightBot = new google.maps.LatLng(0, 0, true);
-      googleMapBox = new google.maps.Rectangle({
-        strokeColor: "rgb(219,48,48)",
-        strokeOpacity: mapBoxStrokeOpacity,
-        strokeWeight: 1,
-        fillColor: "rgb(219,48,48)",
-        fillOpacity: mapBoxFillOpacity,
-        map: googleMap,
-        bounds: new google.maps.LatLngBounds(defaultLatLng_leftTop, defaultLatLng_rightBot)
-      });
+      if (!isHyperwall) {
+        googleMapBox = new google.maps.Rectangle({
+          strokeColor: "rgb(219,48,48)",
+          strokeOpacity: mapBoxStrokeOpacity,
+          strokeWeight: 1,
+          fillColor: "rgb(219,48,48)",
+          fillOpacity: mapBoxFillOpacity,
+          map: googleMap,
+          bounds: new google.maps.LatLngBounds(defaultLatLng_leftTop, defaultLatLng_rightBot)
+        });
+      }
       // Add event listeners for the small google map
       $(smallMapContainer).mousewheel(function(event, delta) {
         if (event.shiftKey) {
@@ -289,7 +292,7 @@ if (!org.gigapan.timelapse.Timelapse) {
         });
       });
       // Create resizer
-      if (resizable) {
+      if (resizable && !isHyperwall) {
         smallMapResizer = document.createElement("div");
         $smallMapResizer = $(smallMapResizer);
         $smallMapResizer.addClass("smallMapResizer");
@@ -309,7 +312,7 @@ if (!org.gigapan.timelapse.Timelapse) {
         }, false);
       }
       // Create toggle button
-      if (showToggleBtn) {
+      if (showToggleBtn && !isHyperwall) {
         $smallMapContainer.append('<button class="toggleGoogleMapBtn" title="Toggle the map">Toggle</button>');
         var $toggleGoogleMapBtn = $(".toggleGoogleMapBtn");
         $toggleGoogleMapBtn.button({
@@ -447,11 +450,38 @@ if (!org.gigapan.timelapse.Timelapse) {
         setSmallMapShadow(true);
       }
       $smallMapContainer.css({
-        "top": mapGeometry.top + "px",
-        "right": mapGeometry.right + "px",
         "width": mapGeometry.width + "px",
         "height": mapGeometry.height + "px"
       });
+      // Set position
+      if (isHyperwall) {
+        if (fields.mapPosition == "topRight") {
+          $smallMapContainer.css({
+            "right": mapGeometry.right + "px",
+            "top": mapGeometry.top + "px"
+          });
+        } else if (fields.mapPosition == "topLeft") {
+          $smallMapContainer.css({
+            "left": mapGeometry.right + "px",
+            "top": mapGeometry.top + "px"
+          });
+        } else if (fields.mapPosition == "bottomLeft") {
+          $smallMapContainer.css({
+            "left": mapGeometry.right + "px",
+            "bottom": mapGeometry.top + "px"
+          });
+        } else {
+          $smallMapContainer.css({
+            "right": mapGeometry.right + "px",
+            "bottom": mapGeometry.top + "px"
+          });
+        }
+      } else {
+        $smallMapContainer.css({
+          "right": mapGeometry.right + "px",
+          "top": mapGeometry.top + "px"
+        });
+      }
       // Get attribute
       smallMapContainer_width = $smallMapContainer.width();
       smallMapContainer_height = $smallMapContainer.height();
@@ -563,7 +593,8 @@ if (!org.gigapan.timelapse.Timelapse) {
     var setSmallMapBoxLocation = function(tagLatLngNE, tagLatLngSW) {
       var boxLatLngNE_googleMap = new google.maps.LatLng(tagLatLngNE.lat, tagLatLngNE.lng, true);
       var boxLatLngSW_googleMap = new google.maps.LatLng(tagLatLngSW.lat, tagLatLngSW.lng, true);
-      googleMapBox.setBounds(new google.maps.LatLngBounds(boxLatLngNE_googleMap, boxLatLngSW_googleMap));
+      if (!isHyperwall)
+        googleMapBox.setBounds(new google.maps.LatLngBounds(boxLatLngNE_googleMap, boxLatLngSW_googleMap));
     };
     this.setSmallMapBoxLocation = setSmallMapBoxLocation;
 
@@ -577,7 +608,8 @@ if (!org.gigapan.timelapse.Timelapse) {
         fillColor: boxColor,
         fillOpacity: mapBoxFillOpacity
       };
-      googleMapBox.setOptions(boxOption);
+      if (!isHyperwall)
+        googleMapBox.setOptions(boxOption);
     };
     this.drawSmallMapBoxColor = drawSmallMapBoxColor;
 

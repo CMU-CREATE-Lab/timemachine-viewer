@@ -1,3 +1,7 @@
+.timelineSlider.ui-slider-disabled {
+	opacity: 1;
+}
+
 #loadSnaplapseButton {
   left: 9px;
   top: 9px;

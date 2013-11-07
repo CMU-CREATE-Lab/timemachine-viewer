@@ -572,6 +572,7 @@ function playCachedSnaplapse(snaplapseId) {
           $playbackButton.hide();
           $("#" + timelapseViewerDivId + ' .stopTimeWarp').show();
           $("#" + timelapseViewerDivId + ' .addressLookup').attr("disabled", "disabled");
+          $("#" + timelapseViewerDivId + ' .timelineSlider').slider("disable");
         });
 
         snaplapse.addEventListener('stop', function() {
@@ -612,6 +613,7 @@ function playCachedSnaplapse(snaplapseId) {
           $("#" + timelapseViewerDivId + ' .help').removeClass("disabled").addClass("enabled");
           $("#" + timelapseViewerDivId + ' .addressLookup').removeAttr("disabled");
           hideAnnotationBubble();
+          $("#" + timelapseViewerDivId + ' .timelineSlider').slider("enable");
         });
 
         snaplapse.addEventListener('keyframe-added', function(keyframe, insertionIndex) {

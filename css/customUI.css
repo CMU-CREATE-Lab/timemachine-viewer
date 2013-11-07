@@ -46,7 +46,7 @@
 }
 
 .customEditorModeToolbar .playStopTimewarp {
-	width: 70px !important;
+  width: 70px !important;
 }
 
 .customEditorModeToolbar .ui-button {
@@ -215,6 +215,7 @@
   border-radius: 35px !important;
   box-shadow: 2px 2px 3px rgba(0,0,0,0.3);
   z-index: 10;
+  outline: none;
 }
 
 .customHelpLabel.ui-button {

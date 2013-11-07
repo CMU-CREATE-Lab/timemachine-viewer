@@ -40,9 +40,7 @@
  VERIFY NAMESPACE
 
  Create the global symbol "org" if it doesn't exist.  Throw an error if it does exist but is not an object.
-*/
-
-"use strict";
+ */"use strict";
 
 // Create the global symbol "org" if it doesn't exist.  Throw an error if it does exist but is not an object.
 var org;
@@ -131,7 +129,8 @@ if (!org.gigapan.timelapse.Timelapse) {
         },
         text: false
       }).on("click", function() {
-        if ($(this).hasClass("from_help")) return;
+        if ($(this).hasClass("from_help"))
+          return;
         timelapse.handlePlayPause();
       });
       // Stop button
@@ -867,9 +866,7 @@ if (!org.gigapan.timelapse.Timelapse) {
 
     var shareView = function() {
       var $shareUrl = $("#" + viewerDivId + " .shareurl");
-      $shareUrl.val(
-        window.location.href.split("#")[0] + timelapse.getShareView()
-      ).focus(function() {
+      $shareUrl.val(window.location.href.split("#")[0] + timelapse.getShareView()).focus(function() {
         $(this).select();
       }).click(function() {
         $(this).select();
@@ -877,6 +874,31 @@ if (!org.gigapan.timelapse.Timelapse) {
         e.preventDefault();
       });
       $("#" + viewerDivId + " .shareView").dialog("open");
+    };
+
+    var fitToWindow = function() {
+      var newViewportWidth, newViewportHeight;
+      var extraViewportHeight = showMainControls ? ($("#" + viewerDivId + " .controls").outerHeight() + $("#" + viewerDivId + " .timelineSlider").outerHeight() + 2) : 0;
+      newViewportWidth = window.innerWidth - 2;
+      // Extra 2px for the borders
+      newViewportHeight = window.innerHeight - extraViewportHeight;
+      // Subtract height of controls and extra 2px for borders
+      // Ensure minimum dimensions to not break controls
+      if (newViewportWidth < 816)
+        newViewportWidth = 816;
+      if (newViewportHeight < 468)
+        newViewportHeight = 468;
+
+      var scaleBar = timelapse.getScaleBar()
+      if (scaleBar)
+        scaleBar.updateVideoSize();
+
+      timelapse.fitVideoToViewport(newViewportWidth, newViewportHeight);
+      window.scrollTo(0, 0);
+
+      handleFitToWindowChange(true);
+      timelapse.updateTagInfo_timeData();
+      timelapse.updateTagInfo_locationData();
     };
 
     function createPlaybackSpeedMenu() {
@@ -1092,11 +1114,11 @@ if (!org.gigapan.timelapse.Timelapse) {
     };
     this.handleEditorModeToolbarChange = handleEditorModeToolbarChange;
 
-    var handleFullScreenChange = function(fullScreen) {
+    var handleFitToWindowChange = function(isFitToWindow) {
       var panoVideo;
       if (visualizer)
         panoVideo = visualizer.getPanoVideo();
-      if (fullScreen) {
+      if (isFitToWindow) {
         if (mode == "editor") {
           hideEditorArea();
           disableEditorToolbarButtons();
@@ -1131,16 +1153,16 @@ if (!org.gigapan.timelapse.Timelapse) {
         }
       }
       if (visualizer)
-        visualizer.setMode(mode, fullScreen);
+        visualizer.setMode(mode, isFitToWindow);
     };
-    this.handleFullScreenChange = handleFullScreenChange;
+    this.handleFitToWindowChange = handleFitToWindowChange;
 
     var _toggleMainControls = function() {
       showMainControls = !showMainControls;
       $("#" + viewerDivId + " .controls").toggle();
       $("#" + viewerDivId + " .timelineSliderFiller").toggle();
       $("#" + viewerDivId + " .timeSliderColorSelectorBot_canvas_editorMode").toggle();
-      timelapse.fullScreen(timelapse.isFullScreen());
+      fitToWindow();
     };
     this.toggleMainControls = _toggleMainControls;
 
@@ -1200,6 +1222,12 @@ if (!org.gigapan.timelapse.Timelapse) {
     }
     if (timelapse.getLoopPlayback()) {
       $("#" + viewerDivId + " .repeatCheckbox").prop("checked", true).button("refresh").change();
+    }
+    if (settings["viewportGeometry"]["max"]) {
+      window.onresize = function() {
+        fitToWindow();
+      };
+      fitToWindow();
     }
   };
   //end of org.gigapan.timelapse.DefaultUI
