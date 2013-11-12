@@ -142,9 +142,9 @@
         if (locationElem.attr('disabled') == "disabled")
           return;
         locationElem.attr('disabled', 'disabled');
-        var bounds = locationElem.attr("data-bounds");
-        if (bounds) {
-          controller.emit("setLocation", bounds);
+        var centerView = locationElem.attr("data-centerView");
+        if (centerView) {
+          controller.emit("setLocation", centerView);
           // Prevent overclicking with a timeout.
           // Would be best to detect when the final action actuallycompletes though.
           setTimeout(function() {
@@ -161,6 +161,7 @@
           "class": "tourContainer",
           "data-tourFragment": tour.fragment,
           "data-bounds": JSON.stringify(tour.firstKeyframe.bounds),
+          "data-centerView": JSON.stringify(tour.firstKeyframe.centerView),
           "title": tour.title
         });
         var tourImg = $('<img />').attr({

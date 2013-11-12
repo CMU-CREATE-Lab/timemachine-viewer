@@ -10,10 +10,9 @@ if (fields.master) {
     console.log('controlReciever connected');
   });
 
-  controlReciever.on('sync setLocation', function(bounds) {
-    console.log("sync setLocation", bounds);
-		var latLngCenter = timelapse.pixelBoundingBoxToLatLngCenter(JSON.parse(bounds));
-    setViewGracefully(latLngCenter, false, true)
+  controlReciever.on('sync setLocation', function(centerView) {
+    console.log("sync setLocation", centerView);
+    setViewGracefully(JSON.parse(centerView), false, true)
   });
 
   controlReciever.on('sync playTour', function(tourFragment) {
@@ -36,6 +35,7 @@ if (fields.master) {
     var tour = {
       "title": tourJSON.snaplapse.unsafe_string_title,
       "firstKeyframe": {
+      	centerView: timelapse.pixelBoundingBoxToLatLngCenter(firstKeyframe.bounds),
         bounds: firstKeyframe.bounds,
         frame: Math.floor(parseInt(tourJSON.snaplapse.fps) * parseFloat(firstKeyframe.time))
       },
