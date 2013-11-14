@@ -1234,7 +1234,12 @@ if (!Math.uuid) {
       $("#" + itemIdHead + "_speed").val(desiredSpeed.toFixed(2));
       startingFrame['loopTimes'] = loopTimes;
       $("#" + itemIdHead + "_loopTimes").val(loopTimes);
-      startingFrame['duration'] = desiredDuration;
+      // Entering a value of 0 for a duration means that the user wants to instantly warp between keyframes.
+      // There is code that caps the speed, which also affects the duration. So if a user does enter 0 for the duration,
+      // it is possible that it will actually become ~0 (i.e. 0.03) to match the speed cap. This breaks the ability
+      // to instantly warp between scenes, so if the duration entered is <= 0.49 we change it to 0 below. This affects
+      // both the UI and the interal calls that use the duration.
+      if (Math.max(desiredDuration, 0.49) != desiredDuration) desiredDuration = 0;
       $("#" + itemIdHead + "_duration").val(desiredDuration.toFixed(2));
     } else {
       /////////////////////////////////////////////
