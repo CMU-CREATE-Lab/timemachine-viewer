@@ -44,7 +44,9 @@
 
         var viewerOptions = {
           url: url, //can be absolute or relative
-          mediaType: ".mp4",
+          composerDiv: "composer1",
+          disableTourLooping: true,
+          mediaType: ".mp4"
         };
 
         timelapse = new org.gigapan.timelapse.Timelapse("player1", viewerOptions);
@@ -58,8 +60,6 @@
   </head>
   <body>
     <div id="player1" style="position: absolute; top:10px; left:10px;"></div>
-<!--
-    <div id="annotator1"></div>
-    <div id="composer1"></div>-->
+    <div id="composer1"></div>
   </body>
 </html>
