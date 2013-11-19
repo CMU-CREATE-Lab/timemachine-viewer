@@ -1220,10 +1220,10 @@ if (!Math.uuid) {
             } else if (desiredDuration < actualDuration / 100) {
               // Set a threshold for the smallest duration
               // so we don't get extremely high speeds like 9999999%
-              desiredDuration = actualDuration / 100;
+              desiredDuration = 0;
             }
-            playbackRate = actualDuration / desiredDuration;
-            desiredSpeed = playbackRate * 100;
+            playbackRate = (desiredDuration == 0) ? 0 : actualDuration / desiredDuration;
+            desiredSpeed = (desiredDuration == 0) ? 10000 : playbackRate * 100;
           }
         } else {
           desiredSpeed = 0;
@@ -1234,12 +1234,6 @@ if (!Math.uuid) {
       $("#" + itemIdHead + "_speed").val(desiredSpeed.toFixed(2));
       startingFrame['loopTimes'] = loopTimes;
       $("#" + itemIdHead + "_loopTimes").val(loopTimes);
-      // Entering a value of 0 for a duration means that the user wants to instantly warp between keyframes.
-      // There is code that caps the speed, which also affects the duration. So if a user does enter 0 for the duration,
-      // it is possible that it will actually become ~0 (i.e. 0.03) to match the speed cap. This breaks the ability
-      // to instantly warp between scenes, so if the duration entered is <= 0.49 we change it to 0 below. This affects
-      // both the UI and the interal calls that use the duration.
-      if (Math.max(desiredDuration, 0.49) != desiredDuration) desiredDuration = 0;
       $("#" + itemIdHead + "_duration").val(desiredDuration.toFixed(2));
     } else {
       /////////////////////////////////////////////

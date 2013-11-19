@@ -1223,7 +1223,7 @@ if (!org.gigapan.timelapse.Timelapse) {
     if (timelapse.getLoopPlayback()) {
       $("#" + viewerDivId + " .repeatCheckbox").prop("checked", true).button("refresh").change();
     }
-    if (settings["viewportGeometry"]["max"]) {
+    if (settings["viewportGeometry"] && settings["viewportGeometry"]["max"]) {
       window.onresize = function() {
         fitToWindow();
       };
