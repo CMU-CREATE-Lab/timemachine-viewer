@@ -1220,8 +1220,11 @@ if (!Math.uuid) {
             } else if (desiredDuration < actualDuration / 100) {
               // Set a threshold for the smallest duration
               // so we don't get extremely high speeds like 9999999%
+              //desiredDuration = actualDuration / 100;
               desiredDuration = 0;
             }
+            //playbackRate = actualDuration / desiredDuration;
+            //desiredSpeed = playbackRate * 100;
             playbackRate = (desiredDuration == 0) ? 0 : actualDuration / desiredDuration;
             desiredSpeed = (desiredDuration == 0) ? 10000 : playbackRate * 100;
           }
@@ -1234,6 +1237,7 @@ if (!Math.uuid) {
       $("#" + itemIdHead + "_speed").val(desiredSpeed.toFixed(2));
       startingFrame['loopTimes'] = loopTimes;
       $("#" + itemIdHead + "_loopTimes").val(loopTimes);
+      startingFrame['duration'] = desiredDuration;
       $("#" + itemIdHead + "_duration").val(desiredDuration.toFixed(2));
     } else {
       /////////////////////////////////////////////
