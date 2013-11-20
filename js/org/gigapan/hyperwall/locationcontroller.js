@@ -75,4 +75,12 @@ if (fields.master) {
     };
     setViewGracefully(newView, false, true);
   });
+
+  controlReciever.on('sync play', function(data) {
+    timelapse.play();
+  });
+
+  controlReciever.on('sync pause', function(data) {
+    timelapse.pause();
+  });
 }
