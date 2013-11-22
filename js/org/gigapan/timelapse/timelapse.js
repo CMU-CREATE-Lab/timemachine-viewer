@@ -1454,7 +1454,7 @@ if (!window['$']) {
       }
 
       // ~35Hz or 12.5Hz
-      var animateRate = isHyperwall ? 30 : 80;
+      var animateRate = isHyperwall ? 5 : 80;
       if (animateInterval == null) {
         animateInterval = setInterval(function() {
           animate(fromGoogleMapflag);

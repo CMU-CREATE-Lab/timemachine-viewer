@@ -8,11 +8,27 @@ if (fields.master) {
 
   controlReciever.on('connect', function() {
     console.log('controlReciever connected');
+    timelapse.addVideoPlayListener(function() {
+      console.log("isPlaying", !timelapse.isPaused());
+      controlReciever.emit('handlePlayPauseController', true);
+    });
+    timelapse.addVideoPauseListener(function() {
+      console.log("isPlaying", !timelapse.isPaused());
+      controlReciever.emit('handlePlayPauseController', false);
+    });
+  });
+
+  controlReciever.on('sync setControllerPlayButton', function() {
+    console.log("timelapse.isPaused()", timelapse.isPaused());
+    if (!timelapse.isPaused())
+      controlReciever.emit('handlePlayPauseController', true);
+    else
+      controlReciever.emit('handlePlayPauseController', false);
   });
 
   controlReciever.on('sync setLocation', function(centerView) {
     console.log("sync setLocation", centerView);
-    setViewGracefully(JSON.parse(centerView), false, true)
+    setViewGracefully(JSON.parse(centerView), false, false)
   });
 
   controlReciever.on('sync playTour', function(tourFragment) {
@@ -35,7 +51,7 @@ if (fields.master) {
     var tour = {
       "title": tourJSON.snaplapse.unsafe_string_title,
       "firstKeyframe": {
-      	centerView: timelapse.pixelBoundingBoxToLatLngCenter(firstKeyframe.bounds),
+        centerView: timelapse.pixelBoundingBoxToLatLngCenter(firstKeyframe.bounds),
         bounds: firstKeyframe.bounds,
         frame: Math.floor(parseInt(tourJSON.snaplapse.fps) * parseFloat(firstKeyframe.time))
       },
@@ -45,7 +61,7 @@ if (fields.master) {
   });
 
   controlReciever.on('sync mapViewUpdate', function(data) {
-    console.log("sync mapViewUpdate", data);
+    //console.log("sync mapViewUpdate", data);
     var snaplapse = timelapse.getSnaplapse();
     if (snaplapse.isPlaying())
       snaplapse.stop();
@@ -73,14 +89,11 @@ if (fields.master) {
       },
       "zoom": viewArray[2]
     };
-    setViewGracefully(newView, false, true);
+    setViewGracefully(newView, false, false);
   });
 
-  controlReciever.on('sync play', function(data) {
-    timelapse.play();
-  });
-
-  controlReciever.on('sync pause', function(data) {
-    timelapse.pause();
+  controlReciever.on('sync handlePlayPauseServer', function(data) {
+    console.log("sync handlePlayPauseServer", data);
+    timelapse.handlePlayPause();
   });
 }

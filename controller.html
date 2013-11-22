@@ -15,8 +15,8 @@
       .tourContainer {
         position: relative;
         display: inline-block;
-        width: 225px;
-        height: 154px;
+        width: 190px;
+        height: 130px;
         padding: 0;
         border: 0;
         margin-top: 2px;
@@ -30,11 +30,11 @@
       }
       .tourTxt {
         position: absolute;
-        top: 134px;
+        top: 112px;
         width: inherit;
         font-family: Arial, Helvetica, sans-serif;
         color: white;
-        font-size: 12px;
+        font-size: 11px;
         text-align: center;
         background-color: black;
         opacity: 0.6;
@@ -48,7 +48,7 @@
         border: 0;
         margin: 0;
         background-color: black;
-        height: 160px;
+        height: 134px;
         white-space: nowrap;
         border: 0px;
         overflow-y: hidden;
@@ -63,10 +63,11 @@
       .tourImg:hover {
         opacity: 1;
       }
-      body {
+      body, html {
         padding: 0;
         border: 0;
         margin: 0;
+        background: transparent;
       }
     </style>
 
@@ -79,7 +80,7 @@
       var numberOfTours;
       var isMobile = navigator.userAgent.match(/Android|BlackBerry|iPhone|iPad|iPod|Opera Mini|IEMobile/i);
 
-      function readThumbnailFromServer(firstKeyframe) {
+      var readThumbnailFromServer = function(firstKeyframe) {
         var image_base64;
         switch(firstKeyframe) {
           case "Growth of Las Vegas, Nevada":
@@ -108,9 +109,9 @@
             break;
         }
         return image_base64;
-      }
+      };
 
-      function createThumbnailSlider(toursData) {
+      var createThumbnailSlider = function(toursData) {
         var tours = toursData.items;
         toursSlider = $(".toursSlider");
         numberOfTours = tours.length;
@@ -119,7 +120,7 @@
           //call the server to decode the tour fragment
           controller.emit("decodeTour", tourFragment);
         }
-      }
+      };
 
       var playTour = function() {
         var locationElem = $(this);
@@ -147,7 +148,7 @@
           controller.emit("setLocation", centerView);
           // Set the location of android object
           var viewObj = JSON.parse(centerView);
-          var viewForAndroid = viewObj.center.lat+','+viewObj.center.lng+','+viewObj.zoom;
+          var viewForAndroid = viewObj.center.lat + ',' + viewObj.center.lng + ',' + viewObj.zoom;
           androidObject.setMapLocation(viewForAndroid);
           // Prevent overclicking with a timeout.
           // Would be best to detect when the final action actuallycompletes though.
@@ -157,7 +158,7 @@
         }
       };
 
-      function createThumbnail(tour) {
+      var createThumbnail = function(tour) {
         // prevent adding repeatedly from multiple masters
         if (toursSlider.children().length >= numberOfTours)
           return;
@@ -223,11 +224,11 @@
           if (isMobile)
             toursSlider.sortable("disable").sortable("option", "revert", false);
         }
-      }
+      };
 
-      function debug(txt) {
+      var debug = function(txt) {
         $("#debug").text(txt);
-      }
+      };
 
       function init() {
         controller = io.connect('/controller');

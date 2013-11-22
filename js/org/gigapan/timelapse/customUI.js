@@ -167,7 +167,7 @@ if (!org.gigapan.timelapse.Timelapse) {
 
       // TODO
       // Update certain properties on window resize
-      if (settings["viewportGeometry"]["max"]) {
+      if (settings["viewportGeometry"] && settings["viewportGeometry"]["max"]) {
         $(window).resize(function() {
           fitToWindow();
         });
@@ -202,7 +202,7 @@ if (!org.gigapan.timelapse.Timelapse) {
     };
 
     var fitToWindow = function() {
-      if (settings["viewportGeometry"]["max"]) {
+      if (settings["viewportGeometry"] && settings["viewportGeometry"]["max"]) {
         timelapse.fitVideoToViewport(window.innerWidth, window.innerHeight);
       }
       viewerWidth = $viewer.width();
@@ -333,6 +333,7 @@ if (!org.gigapan.timelapse.Timelapse) {
         }
       });
     };
+
     var createCustomTimeline = function() {
       // Create slider container
       var timeText = createAnElement("div", "timeText", viewerDivId + "_customTimeline_timeText");

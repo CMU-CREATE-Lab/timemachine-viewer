@@ -113,14 +113,14 @@ function viewsync_init() {
       //}, 1000);
 
       timelapse.addVideoPlayListener(function() {
-        console.log('play');
+        console.log('master play');
         viewsync.emit('play', {
           play: true
         });
         viewsync_send_time(true);
       });
       timelapse.addVideoPauseListener(function() {
-        console.log('pause');
+        console.log('master pause');
         viewsync.emit('play', {
           play: false
         });
