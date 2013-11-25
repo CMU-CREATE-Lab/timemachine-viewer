@@ -65,12 +65,11 @@ if (fields.master) {
     var snaplapse = timelapse.getSnaplapse();
     if (snaplapse.isPlaying())
       snaplapse.stop();
-    var maxGmapsScale = 12;
     var formattedData = data.split(" ");
     mapLatLng.lat = parseFloat(formattedData[0]);
     mapLatLng.lng = parseFloat(formattedData[1]);
     var movePoint = timelapse.getProjection().latlngToPoint(mapLatLng);
-    movePoint.scale = Math.pow(2, parseFloat(formattedData[2]) - maxGmapsScale);
+    movePoint.scale = timelapse.zoomToScale(parseFloat(formattedData[2]));
     timelapse.setTargetView(movePoint);
   });
 
