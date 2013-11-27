@@ -60,8 +60,8 @@
         width: inherit;
         height: inherit;
       }
-      .tourImg:hover {
-        opacity: 1;
+      #debug {
+        color: white;
       }
       body, html {
         padding: 0;
@@ -73,8 +73,10 @@
 
     <script>
       var controller;
-      var enableSortableTimeout;
-      var enableSortable = true;
+      var singleTapTimeout;
+      var doubleTapHoldTimeout;
+      var isSingleTap = false;
+      var isDoubleTapHold = false;
       var toursSlider;
       var tourContainerWidth;
       var numberOfTours;
@@ -138,8 +140,9 @@
         }
       };
 
-      var setLocation = function() {
-        var locationElem = $(this);
+      var setLocation = function(event) {
+        var locationElem = $(event.currentTarget);
+        console.log(locationElem);
         if (locationElem.attr('disabled') == "disabled")
           return;
         locationElem.attr('disabled', 'disabled');
@@ -178,23 +181,51 @@
           "class": "tourTxt"
         });
         //attach events
-        //tourContainer.on("click", playTour);
-        tourContainer.on("click", setLocation);
         if (isMobile) {
           tourContainer.on("touchstart", function(event) {
-            enableSortableTimeout = setTimeout(function() {
-              enableSortable = false;
-            }, 100);
+            clearTimeout(doubleTapHoldTimeout);
+            if (!isDoubleTapHold) {
+              //is likely to become a single tap
+              singleTapTimeout = setTimeout(function() {
+                isSingleTap = true;
+              }, 100);
+            }
           }).on("touchend", function(event) {
-            clearTimeout(enableSortableTimeout);
-            if (enableSortable) {
-              toursSlider.sortable("enable");
-            } else {
-              enableSortable = true;
+            clearTimeout(singleTapTimeout);
+            if (isSingleTap) {
+              //consume the single tap
+              isSingleTap = false;
+              setLocation(event);
+            }
+            if (isDoubleTapHold) {
+              //consume the double tap hold
+              isDoubleTapHold = false;
+              toursSlider.sortable("disable");
+            }
+          }).on("touchcancel", function(event) {
+            clearTimeout(singleTapTimeout);
+            isSingleTap = false;
+            if (isDoubleTapHold) {
+              //consume the double tap hold
+              isDoubleTapHold = false;
               toursSlider.sortable("disable");
             }
           }).on("click", function(event) {
-            toursSlider.sortable("disable");
+            //is likely to be a double tap hold
+            isSingleTap = false;
+            clearTimeout(singleTapTimeout);
+            isDoubleTapHold = true;
+            toursSlider.sortable("enable");
+            doubleTapHoldTimeout = setTimeout(function() {
+              //too late to be a double tap hold
+              isDoubleTapHold = false;
+              toursSlider.sortable("disable");
+            }, 200);
+          });
+        } else {
+          //tourContainer.on("click", playTour);
+          tourContainer.on("click", function(event) {
+            setLocation(event);
           });
         }
         //append elements

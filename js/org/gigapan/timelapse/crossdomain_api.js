@@ -157,16 +157,12 @@ function zoomHome(view) {
 function zoomGracefully(view) {
   if ((newZoom != 0 && newZoom > view.zoom) || (newZoom == 0 && view.zoom <= 10)) {
     var doWarp = false;
-    timelapse.setNewView(view, doWarp);
     var zoomDiff = newZoom - view.zoom;
     if (zoomDiff >= 0.5)
       view.zoom += 0.5;
-    else {
+    else
       view.zoom += zoomDiff;
-      setTimeout(function() {
-        timelapse.setNewView(view, doWarp);
-      }, 150);
-    }
+    timelapse.setNewView(view, doWarp);
     setTimeout(function() {
       zoomGracefully(view);
     }, 150);
