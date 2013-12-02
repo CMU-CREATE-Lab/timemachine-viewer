@@ -81,6 +81,7 @@
       var tourContainerWidth;
       var numberOfTours;
       var isMobile = navigator.userAgent.match(/Android|BlackBerry|iPhone|iPad|iPod|Opera Mini|IEMobile/i);
+      var enableSorting = false;
 
       var readThumbnailFromServer = function(firstKeyframe) {
         var image_base64;
@@ -142,7 +143,7 @@
 
       var setLocation = function(event) {
         var locationElem = $(event.currentTarget);
-        console.log(locationElem);
+        //console.log(locationElem);
         if (locationElem.attr('disabled') == "disabled")
           return;
         locationElem.attr('disabled', 'disabled');
@@ -181,7 +182,7 @@
           "class": "tourTxt"
         });
         //attach events
-        if (isMobile) {
+        if (isMobile && enableSorting == true) {
           tourContainer.on("touchstart", function(event) {
             clearTimeout(doubleTapHoldTimeout);
             if (!isDoubleTapHold) {
