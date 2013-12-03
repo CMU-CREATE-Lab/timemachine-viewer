@@ -9,17 +9,20 @@ if (fields.master) {
   controlReciever.on('connect', function() {
     console.log('controlReciever connected');
     timelapse.addVideoPlayListener(function() {
-      console.log("isPlaying", !timelapse.isPaused());
+      //console.log("isPlaying", !timelapse.isPaused());
+      if (timelapse.isDoingLoopingDwell()) return;
       controlReciever.emit('handlePlayPauseController', true);
     });
     timelapse.addVideoPauseListener(function() {
-      console.log("isPlaying", !timelapse.isPaused());
+      //console.log("isPlaying", !timelapse.isPaused());
+      if (timelapse.isDoingLoopingDwell()) return;
       controlReciever.emit('handlePlayPauseController', false);
     });
   });
 
   controlReciever.on('sync setControllerPlayButton', function() {
-    console.log("timelapse.isPaused()", timelapse.isPaused());
+    //console.log("timelapse.isPaused()", timelapse.isPaused());
+    if (timelapse.isDoingLoopingDwell()) return;
     if (!timelapse.isPaused())
       controlReciever.emit('handlePlayPauseController', true);
     else
@@ -27,12 +30,12 @@ if (fields.master) {
   });
 
   controlReciever.on('sync setLocation', function(centerView) {
-    console.log("sync setLocation", centerView);
+    //console.log("sync setLocation", centerView);
     setViewGracefully(JSON.parse(centerView), false, false)
   });
 
   controlReciever.on('sync playTour', function(tourFragment) {
-    console.log("sync playTour tourFragment", tourFragment);
+    //console.log("sync playTour tourFragment", tourFragment);
     var snaplapse = timelapse.getSnaplapse();
     var snaplapseViewer = snaplapse.getSnaplapseViewer();
     var tourJSON = snaplapse.urlStringToJSON(tourFragment);
@@ -43,7 +46,7 @@ if (fields.master) {
   });
 
   controlReciever.on('sync decodeTour', function(tourFragment) {
-    console.log("sync decodeTour tourFragment", tourFragment);
+    //console.log("sync decodeTour tourFragment", tourFragment);
     var snaplapse = timelapse.getSnaplapse();
     var snaplapseViewer = snaplapse.getSnaplapseViewer();
     var tourJSON = JSON.parse(snaplapse.urlStringToJSON(tourFragment));
@@ -74,7 +77,7 @@ if (fields.master) {
   });
 
   controlReciever.on('sync mapZoomTo', function(data) {
-    console.log("sync mapZoomTo", data);
+    //console.log("sync mapZoomTo", data);
     var snaplapse = timelapse.getSnaplapse();
     if (snaplapse.isPlaying())
       snaplapse.stop();
@@ -92,7 +95,9 @@ if (fields.master) {
   });
 
   controlReciever.on('sync handlePlayPauseServer', function(data) {
-    console.log("sync handlePlayPauseServer", data);
+    //console.log("sync handlePlayPauseServer", data);
+    if (timelapse.isDoingLoopingDwell())
+      controlReciever.emit('handlePlayPauseController', false);
     timelapse.handlePlayPause();
   });
 }

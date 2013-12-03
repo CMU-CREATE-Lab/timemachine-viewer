@@ -352,6 +352,10 @@ if (!window['$']) {
     //
     // Public methods
     //
+    this.isDoingLoopingDwell = function() {
+      return doingLoopingDwell;
+    };
+
     this.disableEditorToolbarButtons = function() {
       defaultUI.disableEditorToolbarButtons();
     };
