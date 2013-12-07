@@ -86,29 +86,89 @@
       var readThumbnailFromServer = function(firstKeyframe) {
         var image_base64;
         switch(firstKeyframe) {
-          case "Growth of Las Vegas, Nevada":
-            image_base64 = "images/controller/vegas.png";
+          case "Rondonia":
+            image_base64 = "images/controller/Rondonia.png";
             break;
-          case "Amazon Deforestation, Brazil":
-            image_base64 = "images/controller/brazil.png";
+          case "Tucurui Dam":
+            image_base64 = "images/controller/Tucurui Dam.png";
             break;
-          case "Wyoming Coal Mining":
-            image_base64 = "images/controller/wyoming.png";
+          case "Meander":
+            image_base64 = "images/controller/Meander.png";
             break;
-          case "Columbia Glacier Retreat":
-            image_base64 = "images/controller/glacier.png";
+          case "Bolivia Evulsing":
+            image_base64 = "images/controller/Bolivia Evulsing.png";
             break;
-          case "Saudi Arabia Irrigation":
-            image_base64 = "images/controller/saudi.png";
+          case "Mouth of Amazon":
+            image_base64 = "images/controller/Mouth of Amazon.png";
             break;
-          case "Dubai Coastal Expansion":
-            image_base64 = "images/controller/dubai.png";
+          case "South Cape Cod":
+            image_base64 = "images/controller/South Cape Cod.png";
             break;
-          case "Drying of Lake Urmia, Iran":
-            image_base64 = "images/controller/urmia.png";
+          case "Outer Banks NC":
+            image_base64 = "images/controller/Outer Banks NC.png";
             break;
-          case "Drying of the Aral Sea":
-            image_base64 = "images/controller/aral.png";
+          case "Urmia":
+            image_base64 = "images/controller/Urmia.png";
+            break;
+          case "Aral Sea":
+            image_base64 = "images/controller/Aral Sea.png";
+            break;
+          case "Aral Expansion":
+            image_base64 = "images/controller/Aral Expansion.png";
+            break;
+          case "Saudi Irrigation":
+            image_base64 = "images/controller/Saudi Irrigation.png";
+            break;
+          case "SE Australia Bushfires":
+            image_base64 = "images/controller/SE Australia Bushfires.png";
+            break;
+          case "Pinatubo":
+            image_base64 = "images/controller/Pinatubo.png";
+            break;
+          case "Cherynobyl":
+            image_base64 = "images/controller/Cherynobyl.png";
+            break;
+          case "Mendenhall Glacier":
+            image_base64 = "images/controller/Mendenhall Glacier.png";
+            break;
+          case "Columbia Glacier":
+            image_base64 = "images/controller/Columbia Glacier.png";
+            break;
+          case "Malaspina Glacier":
+            image_base64 = "images/controller/Malaspina Glacier.png";
+            break;
+          case "Shanghai":
+            image_base64 = "images/controller/Shanghai.png";
+            break;
+          case "Pearl River Delta":
+            image_base64 = "images/controller/Pearl River Delta.png";
+            break;
+          case "Dubai":
+            image_base64 = "images/controller/Dubai.png";
+            break;
+          case "DFW":
+            image_base64 = "images/controller/DFW.png";
+            break;
+          case "Rifle, CO":
+            image_base64 = "images/controller/Rifle, CO.png";
+            break;
+          case "PA Fracking":
+            image_base64 = "images/controller/PA Fracking.png";
+            break;
+          case "Mountaintop Removal":
+            image_base64 = "images/controller/Mountaintop Removal.png";
+            break;
+          case "WyomingCoal":
+            image_base64 = "images/controller/WyomingCoal.png";
+            break;
+          case "Tar Sands, Alberta":
+            image_base64 = "images/controller/Tar Sands, Alberta.png";
+            break;
+          case "Alberta Logging":
+            image_base64 = "images/controller/Alberta Logging.png";
+            break;
+          case "Washington Logging":
+            image_base64 = "images/controller/Washington Logging.png";
             break;
         }
         return image_base64;
@@ -266,8 +326,8 @@
         controller = io.connect('/controller');
         //get tour from server
         $.ajax({
-          url: "http://timemachine-hyperwall.appspot.com/createlab/tours.json"
-          //url: "tours.json"
+          //url: "http://timemachine-hyperwall.appspot.com/createlab/tours.json"
+          url: "tours.json"
         }).done(function(toursData) {
           //server calls this function after decoding the tour URL
           controller.on('sync returnTour', function(tour_str) {
