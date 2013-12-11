@@ -1020,7 +1020,8 @@ if (!org.gigapan.timelapse.Timelapse) {
 
     function createZoomSlider($zoom) {
       $zoom.append('<div class="zoomSlider" title="Click to zoom"></div>');
-      $("#" + viewerDivId + " .zoomSlider").slider({
+      var $zoomSlider = $("#" + viewerDivId + " .zoomSlider");
+      $zoomSlider.slider({
         orientation: "vertical",
         value: timelapse.viewScaleToZoomSlider(timelapse.getDefaultScale()),
         min: 0,
@@ -1030,6 +1031,14 @@ if (!org.gigapan.timelapse.Timelapse) {
           timelapse.setScaleFromSlider(ui.value);
         }
       }).removeClass("ui-corner-all");
+
+      $zoomSlider.bind("mousedown", function() {
+        if (window && (window.self !== window.top)) {
+          $("body").one("mouseleave", function(event) {
+            $zoomSlider.trigger("mouseup");
+          });
+        };
+      });
 
       $("#" + viewerDivId + " .zoomSlider .ui-slider-handle").attr("title", "Drag to zoom");
     }
