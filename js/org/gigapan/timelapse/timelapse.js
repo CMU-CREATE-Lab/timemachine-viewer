@@ -1399,11 +1399,25 @@ if (!window['$']) {
         }
         return false;
       };
-      $("body").bind("mouseup mouseleave", function() {
-        mouseIsDown = false;
-        $(videoDiv).removeClass("openHand closedHand");
-        document.onmousemove = saveMouseMove;
-        document.onmouseup = saveMouseUp;
+      // Make sure we release mousedown upon exiting our viewport if we are inside an iframe
+      $("body").one("mouseleave", function(event) {
+        console.log(event.type, event.toElement, event.fromElement, event.relatedTarget, event.targetElement);
+        if (window && (window.self !== window.top)) {
+          mouseIsDown = false;
+          $(videoDiv).removeClass("openHand closedHand");
+          document.onmousemove = saveMouseMove;
+          document.onmouseup = saveMouseUp;
+        }
+      });
+      // Release mousedown upon mouseup
+      $(document).one("mouseup", function(event) {
+        console.log(event.type, event.toElement, event.fromElement, event.relatedTarget, event.targetElement);
+        if (event && event.type == "mouseup") {
+          mouseIsDown = false;
+          $(videoDiv).removeClass("openHand closedHand");
+          document.onmousemove = saveMouseMove;
+          document.onmouseup = saveMouseUp;
+        }
       });
       return false;
     };
