@@ -1363,6 +1363,7 @@ if (!window['$']) {
     var handleMousedownEvent = function(event, fromTimewarpMap) {
       if (event.which != 1 || (annotator && (event.metaKey || event.ctrlKey || event.altKey || annotator.getCanMoveAnnotation())))
         return;
+      cancelZoomGracefully();
       var mouseIsDown = true;
       var lastEvent = event;
       var saveMouseMove = document.onmousemove;

@@ -31,6 +31,7 @@ if (fields.master) {
 
   controlReciever.on('sync setLocation', function(centerView) {
     //console.log("sync setLocation", centerView);
+    cancelZoomGracefully();
     setViewGracefully(JSON.parse(centerView), false, false)
   });
 

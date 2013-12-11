@@ -32,7 +32,7 @@
 // Authors:
 // Paul Dille (pdille@andrew.cmu.edu)
 
-var geocoder, newView, newZoom, doPlay;
+var geocoder, newView, newZoom, doPlay, zoomGracefullyTimeout;
 
 function setupPostMessageHandlers() {
   // Handles the cross-domain iframe request to see whether a time machine is supported by the current user.
@@ -99,6 +99,8 @@ function setupPostMessageHandlers() {
 
 // Set the view, animating smoothly if doWarp is false.
 function setViewGracefully(toView, doWarp, doPlayParam) {
+  cancelZoomGracefully();
+
   newView = toView;
   newZoom = toView.zoom;
   doPlay = doPlayParam ? doPlayParam : false;
@@ -142,11 +144,11 @@ function zoomHome(view) {
     var doWarp = false;
     timelapse.setNewView(view, doWarp);
     view.zoom -= 0.5;
-    setTimeout(function() {
+    zoomGracefullyTimeout = setTimeout(function() {
       zoomHome(view);
     }, 150);
   } else {
-    setTimeout(function() {
+    zoomGracefullyTimeout = setTimeout(function() {
       zoomGracefully(newView);
     }, 550);
   }
@@ -163,11 +165,15 @@ function zoomGracefully(view) {
     else
       view.zoom += zoomDiff;
     timelapse.setNewView(view, doWarp);
-    setTimeout(function() {
+    zoomGracefullyTimeout = setTimeout(function() {
       zoomGracefully(view);
     }, 150);
   } else {
     if (doPlay)
       timelapse.play();
   }
+}
+
+function cancelZoomGracefully() {
+  clearTimeout(zoomGracefullyTimeout);
 }
