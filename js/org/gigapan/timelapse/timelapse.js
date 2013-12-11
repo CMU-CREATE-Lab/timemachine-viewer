@@ -1410,12 +1410,10 @@ if (!window['$']) {
       });
       // Release mousedown upon mouseup
       $(document).one("mouseup", function(event) {
-        if (event && event.type == "mouseup") {
-          mouseIsDown = false;
-          $(videoDiv).removeClass("openHand closedHand");
-          document.onmousemove = saveMouseMove;
-          document.onmouseup = saveMouseUp;
-        }
+        mouseIsDown = false;
+        $(videoDiv).removeClass("openHand closedHand");
+        document.onmousemove = saveMouseMove;
+        document.onmouseup = saveMouseUp;
       });
       return false;
     };
