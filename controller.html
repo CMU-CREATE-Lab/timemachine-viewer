@@ -89,12 +89,39 @@
       var enableSorting = false;
 
       // Auto mode variables
-      var isAutoModeEnabled = false;
+      var isAutoModeDelayTimeoutRunning = false;
       var screenIdleTimeout;
-      var screenIdleTime = 90000;
       var autoModeDelayTimeout;
-      var autoModeDelayTime = 25000;
       var currentLocationIdx = -1;
+      // These three values below are stored on the Android tablet, but for debugging purposes on the Desktop
+      // we still need default values to pull from. Thus changing these values *will not have an affect* if
+      // you are using the tablet. Instead, change the values in the settings menu there.
+      var doAutoMode = true;
+      var screenIdleTime = 90000;
+      var autoModeDelayTime = 25000;
+
+      var setAutoModeDelayTime = function(newValue) {
+        autoModeDelayTime = newValue;
+        resetScreenIdleTimeout();
+      };
+
+      var setScreenIdleTime = function(newValue) {
+        screenIdleTime = newValue;
+        resetScreenIdleTimeout();
+      };
+
+      var resetScreenIdleTimeout = function() {
+        stopScreenIdleTimeout();
+        startScreenIdleTimeout();
+      };
+
+      var setDoAutoMode = function(status) {
+        if (status == false)
+          stopScreenIdleTimeout();
+        doAutoMode = status;
+        if (status == true)
+          startScreenIdleTimeout();
+      };
 
       var triggerAutoModeClick = function() {
         currentLocationIdx++;
@@ -107,9 +134,9 @@
       };
 
       var runAutoMode = function() {
-        isAutoModeEnabled = true;
+        isAutoModeDelayTimeoutRunning = true;
         try {
-          androidObject.setIsAutoModeEnabled(true);
+          androidObject.setIsAutoModeDelayTimeoutRunning(true);
         } catch(err) {
           console.log("androidObject is undefined for function runAutoMode(). Reference error!");
         }
@@ -117,28 +144,28 @@
       };
 
       var stopAutoMode = function() {
-        isAutoModeEnabled = false;
+        isAutoModeDelayTimeoutRunning = false;
         try {
-          androidObject.setIsAutoModeEnabled(false);
+          androidObject.setIsAutoModeDelayTimeoutRunning(false);
         } catch(err) {
           console.log("androidObject is undefined for function stopAutoMode(). Reference error!");
         }
         clearTimeout(autoModeDelayTimeout);
       };
 
-      var resetScreenIdleTimeout = function() {
-        stopScreenIdleTimeout();
-        startScreenIdleTimeout();
-      };
-
       var startScreenIdleTimeout = function() {
+        if (doAutoMode == false)
+          return;
+        clearTimeout(screenIdleTimeout);
         screenIdleTimeout = setTimeout(function() {
           runAutoMode();
         }, screenIdleTime);
       };
 
       var stopScreenIdleTimeout = function() {
-        if (isAutoModeEnabled)
+        if (doAutoMode == false)
+          return;
+        if (isAutoModeDelayTimeoutRunning)
           stopAutoMode();
         clearTimeout(screenIdleTimeout);
       };
@@ -355,7 +382,7 @@
             $toursSlider.children().removeClass("tourContainerHighlight");
             $currentTarget.addClass("tourContainerHighlight");
             // Scroll to the position
-            if (isAutoModeEnabled)
+            if (isAutoModeDelayTimeoutRunning)
               $(document).scrollLeft(Math.round($currentTarget.position().left - $(window).width() / 2 + tourContainerWidth / 2));
           });
         }
