@@ -37,8 +37,8 @@
 
     <script type="text/javascript">
       jQuery.support.cors = true;
-      // Landsat
-      var url = "https://earthengine.google.org/timelapse/data/20130507/"
+      // Landsat ("https" will casue the thumbnail loading from the server fail)
+      var url = "http://earthengine.google.org/timelapse/data/20130507/"
 
       function init() {
         var myView = null;
@@ -83,6 +83,7 @@
           viewportGeometry: {
             width: 1068, //defaults to the size in tm.json, the default min value is 816, 1068
             height: 600, //defaults to the size in tm.json, the default min value is 468, 600
+            max: true
           }, //use the size in tm.json if both width and height params left out
           scaleBarOptions: {
             scaleBarDiv: "scaleBar1",
@@ -105,7 +106,9 @@
             }
           }, //display small google map; display nothing if param left out
           showAddressLookup: true,
-          newHomeView: myHomeView //override the home view
+          newHomeView: myHomeView, //override the home view
+          showEditorModeButton: true,
+          //startEditorFromPresentationMode: true
         };
 
         timelapse = new org.gigapan.timelapse.Timelapse("player1", viewerOptions);

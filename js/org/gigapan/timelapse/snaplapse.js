@@ -183,11 +183,13 @@ if (!Math.uuid) {
     };
 
     // Hide the transition area for the last key frame on the UI
-    var hideLastKeyframeTransition = function() {
-      var $keyframeItems = $("#" + composerDivId + " .snaplapse_keyframe_list > .ui-selectee");
-      var numItems = $keyframeItems.size();
+    var hideLastKeyframeTransition = function(showIdx) {
+      var $keyframeItems = $("#" + composerDivId + " .snaplapse_keyframe_list").children();
+      var numItems = $keyframeItems.length;
       // Unhide the transition options
-      var $keyframeItems_show = $keyframeItems.eq(numItems - 2);
+      if ( typeof (showIdx) == "undefined" || showIdx == numItems - 1)
+        showIdx = numItems - 2;
+      var $keyframeItems_show = $keyframeItems.eq(showIdx);
       if ($keyframeItems_show) {
         $keyframeItems_show.find(".transition_table_mask").children().show();
         $keyframeItems_show.find(".snaplapse_keyframe_list_item_play_button").button("option", "disabled", false);
@@ -743,6 +745,26 @@ if (!Math.uuid) {
       }
     };
 
+    var moveOneKeyframe = function(moveIdx) {
+      // Rearrange keyframes
+      var from = moveIdx.from;
+      var to = moveIdx.to;
+      var elementToMove = keyframes[from]
+      var elementToBuild_1 = keyframes[from - 1];
+      keyframes.splice(from, 1);
+      keyframes.splice(to, 0, elementToMove);
+      // Rebuild the keyframe before the "from" index before sorting
+      if (elementToBuild_1 != undefined)
+        tryBuildKeyframeInterval_refreshKeyframeParas(elementToBuild_1.id);
+      // Rebuild itself
+      tryBuildKeyframeInterval_refreshKeyframeParas(elementToMove.id);
+      // Rebuild the keyframe before itself after sorting
+      var elementToBuild_2 = keyframes[to - 1];
+      if (elementToBuild_2 != undefined)
+        tryBuildKeyframeInterval_refreshKeyframeParas(elementToBuild_2.id);
+    };
+    this.moveOneKeyframe = moveOneKeyframe;
+
     var resetKeyframe = function(keyframe) {
       if (keyframe['buildConstraint'] == "duration") {
         keyframe['speed'] = null;
@@ -935,9 +957,8 @@ if (!Math.uuid) {
         }
         currentWaitDuration = currentKeyframeInterval.getWaitDuration();
         var currentFrame = currentKeyframeInterval.getStartingFrame();
-        if (currentFrame) {
-          UTIL.selectSelectableElements($("#" + composerDivId + " .snaplapse_keyframe_list"), $("#" + composerDivId + "_snaplapse_keyframe_" + currentFrame.id));
-        }
+        if (currentFrame)
+          UTIL.selectSortableElements($("#" + composerDivId + " .snaplapse_keyframe_list"), $("#" + composerDivId + "_snaplapse_keyframe_" + currentFrame.id), true);
 
         var keyframeStartingTime = currentKeyframeInterval.getStartingTime();
 
@@ -1077,7 +1098,7 @@ if (!Math.uuid) {
         }
       } else {
         _stop(true);
-        UTIL.selectSelectableElements($("#" + composerDivId + " .snaplapse_keyframe_list"), $("#" + composerDivId + "_snaplapse_keyframe_" + keyframes[keyframes.length - 1].id));
+        UTIL.selectSortableElements($("#" + composerDivId + " .snaplapse_keyframe_list"), $("#" + composerDivId + "_snaplapse_keyframe_" + keyframes[keyframes.length - 1].id));
       }
     };
 

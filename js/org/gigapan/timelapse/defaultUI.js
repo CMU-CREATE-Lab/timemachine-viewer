@@ -866,7 +866,15 @@ if (!org.gigapan.timelapse.Timelapse) {
 
     var shareView = function() {
       var $shareUrl = $("#" + viewerDivId + " .shareurl");
-      $shareUrl.val(window.location.href.split("#")[0] + timelapse.getShareView()).focus(function() {
+      var parentUrl = "";
+      if (window.top === window.self) {
+        // no iframe
+        parentUrl = window.location.href.split("#")[0];
+      } else {
+        // inside iframe
+        parentUrl = document.referrer.split("#")[0];
+      }
+      $shareUrl.val(parentUrl + timelapse.getShareView()).focus(function() {
         $(this).select();
       }).click(function() {
         $(this).select();
@@ -1104,7 +1112,7 @@ if (!org.gigapan.timelapse.Timelapse) {
 
     // Change the status of the editor toolbar
     var handleEditorModeToolbarChange = function() {
-      var $keyframeItems = $("#" + settings["composerDiv"] + " .snaplapse_keyframe_list > .ui-selectee");
+      var $keyframeItems = $("#" + settings["composerDiv"] + " .snaplapse_keyframe_list").children();
       var numItems = $keyframeItems.size();
       if (numItems >= 1) {
         $("#" + viewerDivId + " .deleteTimetag").button("option", "disabled", false);

@@ -638,7 +638,8 @@ if (!org.gigapan.timelapse.Timelapse) {
       tagElement.addEventListener("click", function(event) {
         var snaplapseID = event.target.id.match(/[a-zA-Z0-9]+(_snaplapse_keyframe_)[a-zA-Z0-9]+/);
         snaplapseID = snaplapseID[0];
-        UTIL.selectSelectableElements($("#" + composerDivId + " .snaplapse_keyframe_list"), $("#" + snaplapseID));
+        var keyframeId = snaplapseID.split("_")[3];
+        snaplapse.getSnaplapseViewer().selectAndGo($("#" + snaplapseID), keyframeId);
       }, false);
       tagElement.addEventListener("mouseover", function(event) {
         var tagColor = event.target.style.backgroundColor;

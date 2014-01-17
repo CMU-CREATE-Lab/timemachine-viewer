@@ -12,13 +12,13 @@ body, html {
 }
 
 .ui-dialog {
-	border: 1px solid #656565;
-	border-radius: 2px;
+  border: 1px solid #656565;
+  border-radius: 2px;
   font-size: 13px;
 }
 
 .ui-dialog .ui-dialog-titlebar {
-	border-radius: 2px;
+  border-radius: 2px;
 }
 
 .ui-widget-content {
@@ -27,7 +27,7 @@ body, html {
 }
 
 .ui-dialog .ui-button {
-	border-radius: 2px;
+  border-radius: 2px;
 }
 
 .snaplapsePlayingMask {
@@ -392,6 +392,7 @@ body, html {
   height: 100%;
   border-radius: 0;
   padding: 0;
+  border-right: 1px solid #656565 !important;
 }
 
 .fullscreenLabel.ui-state-default {
@@ -434,6 +435,7 @@ body, html {
 
 .viewerModeOptions {
   border-radius: 2px;
+  margin-right: -1px;
 }
 
 .viewerModeOptions .ui-corner-all {
@@ -507,16 +509,6 @@ body, html {
   padding: 0;
 }
 
-.toolbar .ui-button {
-  min-width: 35px;
-  margin-right: 0px;
-  margin-left: 1px;
-  border-radius: 0px !important;
-  vertical-align: middle;
-  border: 0px solid white;
-  height: 100%;
-}
-
 .playerModeToolbar .ui-state-default {
   background: white;
 }
@@ -549,6 +541,33 @@ body, html {
   float: right;
   display: none;
   height: 100%;
+}
+
+.toolbar .ui-button {
+  min-width: 35px;
+  margin-right: -1px;
+  margin-left: 0px;
+  border-radius: 0px !important;
+  vertical-align: middle;
+  border-top: 0px solid white;
+  border-bottom: 0px solid white;
+  height: 100%;
+  border-left: 1px solid rgb(220,220,220);
+  border-right: 1px solid rgb(220,220,220);
+}
+
+.toolbar .ui-button:hover:not([disabled]) {
+  /*
+   -moz-box-shadow: 0 0 12px #656565;
+   -webkit-box-shadow: 0 0 12px #656565;
+   box-shadow: 0 0 12px #656565;*/
+  border-right: 1px solid #656565;
+  border-left: 1px solid #656565;
+  z-index: 999;
+}
+
+.toolbar .ui-button:focus {
+  outline: none;
 }
 
 .annotatorModeToolbar {
@@ -585,8 +604,7 @@ body, html {
 }
 
 .toolbar .ui-state-active {
-  border: 0px solid #959595;
-  background: #959595/*{bgColorActive}*/;
+  background: #656565;
   color: white;
 }
 
@@ -756,11 +774,4 @@ body, html {
   margin-left: auto;
   margin-right: auto;
   z-index: 10;
-}
-
-.addressLookup {
-  position: absolute;
-  top: 609px;
-  left: 18px;
-  z-index: 99;
 }

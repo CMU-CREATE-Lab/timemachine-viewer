@@ -1,5 +1,5 @@
 .timelineSlider.ui-slider-disabled {
-	opacity: 1;
+  opacity: 1;
 }
 
 #loadSnaplapseButton {
@@ -66,10 +66,8 @@
 }
 
 .transition_table_mask {
-  width: 103px;
-  height: 150px;
-  z-index: 999;
-  background-color: white;
+  width: 96px;
+  height: 143px;
   font-size: 10px;
   font-family: Arial, Helvetica, sans-serif;
 }
@@ -84,13 +82,27 @@
   text-align: left;
   padding: 0px;
   overflow: hidden;
+  height: 100%;
 }
 
 .keyframe_table {
+  cursor: pointer;
   border-bottom: 1px solid #656565;
   border-right: 1px solid #656565;
   border-left: 1px solid #656565;
-  padding: 10px 15px;
+  border-top: 0px solid #656565;
+  padding-left: 13px;
+  padding-right: 11px;
+  padding-top: 15px;
+  padding-bottom: 10px;
+}
+
+.keyframe_table:hover {
+  /*
+   -moz-box-shadow: 0 0 12px #656565;
+   -webkit-box-shadow: 0 0 12px #656565;
+   box-shadow: 0 0 12px #656565;*/
+  z-index: 999;
 }
 
 .snaplapse_composer_controls {
@@ -103,6 +115,15 @@
   margin-left: 0px;
   margin-right: 0px;
   display: block;
+}
+
+.keyframe-button-container .ui-button:focus {
+  z-index: 20;
+  outline: none;
+}
+
+.keyframe-button-container .ui-state-hover {
+  z-index: 20;
 }
 
 .keyframe-button-container .ui-state-active {
@@ -129,8 +150,9 @@
 }
 
 .snaplapse_keyframe_container {
+  margin-left: 96px;
   width: 1079px;
-  min-height: 175px;
+  min-height: 174px;
   padding: 0;
   margin: 0;
   border-left: solid 1px #656565;
@@ -151,6 +173,8 @@
   /* do not remove, this is used for the scrollTop function */
   position: relative;
   white-space: nowrap;
+  height: 148px;
+  margin-left: -1px;
 }
 
 .snaplapse_keyframe_list .ui-selecting {
@@ -164,15 +188,16 @@
 .snaplapse_keyframe_list_item {
   display: inline-block;
   padding: 0px 0px;
-  cursor: pointer;
   font-size: 8pt;
   margin-right: 0px;
   margin-bottom: 0px;
   margin-top: 0px;
   margin-left: 0px;
+  height: 100%;
 }
 
 .snaplapse_keyframe_list_item_table {
+  height: 100%;
 }
 
 .snaplapse_keyframe_list_item_timestamp {
@@ -187,13 +212,99 @@
   display: block;
 }
 
-.snaplapse_keyframe_list_item_thumbnail {
+.snaplapse_keyframe_list_item_description_label:focus {
+  outline: none;
+}
+
+.snaplapse_keyframe_list_item_thumbnail_container {
   width: 126px;
   height: 73px;
-  margin-bottom: 0px;
+  position: relative;
+  margin-bottom: 2px;
+  border-radius: 1px;
   border: solid 1px black;
+  background: black;
+  cursor: pointer;
+}
+
+.snaplapse_keyframe_list_item_thumbnail_container:focus {
+  outline: none;
+}
+
+.snaplapse_keyframe_list_item_thumbnail_container_presentation {
+  width: 126px;
+  height: 73px;
+  position: relative;
+  border-top: solid 1px black;
+  border-left: solid 1px black;
+  border-bottom: solid 1px black;
+  background: black;
+  cursor: pointer;
+}
+
+.snaplapse_keyframe_list_item_thumbnail_container_presentation:focus {
+
+}
+
+.snaplapse_keyframe_list_item_thumbnail_overlay {
+	position: absolute;
+  top: 0px;
+  left: 0px;
+  margin: 0;
+  padding: 0;
+	width: 126px;
+  height: 73px;
+  border: solid 0px black;
+  -webkit-transition: all 0.2s linear;
+  -o-transition: all 0.2s linear;
+  -moz-transition: all 0.2s linear;
+  -ms-transition: all 0.2s linear;
+  transition: all 0.2s linear;
+  background: transparent;
+  z-index: 2;
+}
+
+.snaplapse_keyframe_list_item_thumbnail_overlay:hover {
+  -moz-box-shadow: inset 0 0 80px black;
+  -webkit-box-shadow: inset 0 0 80px black;
+  box-shadow: inset 0 0 80px black;
+/*
+	background: black;
+	opacity: 0.5;*/
+  -webkit-transition: all 0.2s linear;
+  -o-transition: all 0.2s linear;
+  -moz-transition: all 0.2s linear;
+  -ms-transition: all 0.2s linear;
+  transition: all 0.2s linear;
+}
+
+.snaplapse_keyframe_list_item_thumbnail {
+	position: absolute;
+  top: 0px;
+  left: 0px;
+  margin: 0;
+  padding: 0;
+	width: 126px;
+  height: 73px;
+  border: solid 0px black;
   background-color: black;
-  display: block;
+  z-index: 1;
+}
+
+.snaplapse_keyframe_list_item_title {
+  position: absolute;
+  left: 0px;
+  bottom: 0px;
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 9pt;
+  text-align: center;
+  width: 126px;
+  background-color: black;
+  opacity: 0.6;
+  overflow: hidden;
+  color: white;
+  z-index: 3;
+  display: none;
 }
 
 .snaplapse_keyframe_list_item_description {
@@ -207,10 +318,14 @@
 }
 
 .snaplapse_keyframe_list_item_duration_container {
-  margin-right: 20px;
-  margin-left: 29px;
-  position: absolute;
-  top: 100px;
+  margin-bottom: 5px;
+  display: block;
+}
+
+.snaplapse_keyframe_list_item_durationRadio {
+  margin-top: -18px;
+  margin-left: 7px;
+  display: block;
 }
 
 .snaplapse_keyframe_list_item_duration_label_1 {
@@ -232,10 +347,8 @@
 }
 
 .snaplapse_keyframe_list_item_speed_container {
-  margin-right: 20px;
-  margin-left: 29px;
-  position: absolute;
-  top: 33px;
+  margin-top: 4px;
+  display: block;
 }
 
 .snaplapse_keyframe_list_item_speed_label_2 {
@@ -252,8 +365,25 @@
 .snaplapse_keyframe_list_item_speed {
   font-family: Arial, Helvetica, sans-serif;
   font-size: 10px;
-  width: 40px;
+  width: 35px;
   height: 12px;
+}
+
+.snaplapse_keyframe_list_item_loop_container {
+  margin-top: 7px;
+  display: block;
+}
+
+.snaplapse_keyframe_list_item_loopRadio {
+  margin-top: -30px;
+  margin-left: 7px;
+  display: block;
+}
+
+.snaplapse_keyframe_list_item_loop_label {
+  display: block;
+  width: 20px;
+  font-family: Arial, Helvetica, sans-serif;
 }
 
 .snaplapse_keyframe_list_item_loop {
@@ -261,13 +391,6 @@
   font-size: 10px;
   width: 35px;
   height: 12px;
-}
-
-.snaplapse_keyframe_list_item_loop_container {
-  margin-right: 20px;
-  margin-left: 29px;
-  position: absolute;
-  top: -2px;
 }
 
 .snaplapse_keyframe_list_item_loop_container .ui-state-active {
@@ -381,7 +504,7 @@
   font-weight: bold;
 }
 
-.saveTimewarpWindow_tourTitleInput{
+.saveTimewarpWindow_tourTitleInput {
   width: 316px;
 }
 

@@ -47,7 +47,7 @@ var org;
 if (!org) {
   org = {};
 } else {
-  if (typeof org != "object") {
+  if ( typeof org != "object") {
     var orgExistsMessage = "Error: failed to create org namespace: org already exists and is not an object";
     alert(orgExistsMessage);
     throw new Error(orgExistsMessage);
@@ -58,7 +58,7 @@ if (!org) {
 if (!org.gigapan) {
   org.gigapan = {};
 } else {
-  if (typeof org.gigapan != "object") {
+  if ( typeof org.gigapan != "object") {
     var orgGigapanExistsMessage = "Error: failed to create org.gigapan namespace: org.gigapan already exists and is not an object";
     alert(orgGigapanExistsMessage);
     throw new Error(orgGigapanExistsMessage);
@@ -85,21 +85,17 @@ if (!org.gigapan) {
   //2 == verbose (everything)
   var loggingLevel = 1;
 
-  org.gigapan.Util = function() { };
+  org.gigapan.Util = function() {
+  };
 
   org.gigapan.Util.setLoggingLevel = function(newLevel) {
-    if (newLevel < 0 || newLevel > 2) newLevel = 1;
+    if (newLevel < 0 || newLevel > 2)
+      newLevel = 1;
     loggingLevel = newLevel;
   };
 
   org.gigapan.Util.isMobile = function() {
-    return (navigator.userAgent.match(/Android/i) ||
-            navigator.userAgent.match(/webOS/i) ||
-            navigator.userAgent.match(/iPhone/i) ||
-            navigator.userAgent.match(/iPad/i) ||
-            navigator.userAgent.match(/iPod/i) ||
-            navigator.userAgent.match(/BlackBerry/i) ||
-            navigator.userAgent.match(/Windows Phone/i));
+    return (navigator.userAgent.match(/Android/i) || navigator.userAgent.match(/webOS/i) || navigator.userAgent.match(/iPhone/i) || navigator.userAgent.match(/iPad/i) || navigator.userAgent.match(/iPod/i) || navigator.userAgent.match(/BlackBerry/i) || navigator.userAgent.match(/Windows Phone/i));
   };
 
   org.gigapan.Util.browserSupported = function() {
@@ -145,7 +141,7 @@ if (!org.gigapan) {
   };
 
   org.gigapan.Util.isOpera = function() {
-    return typeof(window.opera) !== "undefined";
+    return typeof (window.opera) !== "undefined";
   };
 
   org.gigapan.Util.getMediaType = function() {
@@ -176,11 +172,11 @@ if (!org.gigapan) {
   org.gigapan.Util.isNumber = function(n) {
     // Code taken from http://stackoverflow.com/questions/18082/validate-numbers-in-javascript-isnumeric
     // Added check to ensure that the value being checked is defined
-    return (typeof(n) !== 'undefined') && !isNaN(parseFloat(n)) && isFinite(n);
+    return ( typeof (n) !== 'undefined') && !isNaN(parseFloat(n)) && isFinite(n);
   };
 
   org.gigapan.Util.log = function(str, logType) {
-    if (typeof(console) == 'undefined' || console == null)
+    if ( typeof (console) == 'undefined' || console == null)
       return;
     var now = (new Date()).getTime();
     if (loggingLevel >= 2 || (loggingLevel == 1 && logType && logType == 1)) {
@@ -199,7 +195,7 @@ if (!org.gigapan) {
   };
 
   org.gigapan.Util.dumpObject = function(obj) {
-    if (typeof obj != 'object') {
+    if ( typeof obj != 'object') {
       return obj;
     }
     var ret = '{';
@@ -247,15 +243,15 @@ if (!org.gigapan) {
   // Wrapper for ajax calls
   org.gigapan.Util.ajax = function(dataType, rootPath, path, callback) {
     var ajaxUrl;
-    if (typeof(cached_ajax) != "undefined") {
+    if ( typeof (cached_ajax) != "undefined") {
       // We are on file url or using cached ajax to get around
       // cross domain security policies
       ajaxUrl = rootPath + path;
       // If the key does not include the absolute dataset URL,
       // assume the key is relative and in the form of "./foo.blah"
-      if (typeof(cached_ajax[ajaxUrl]) == "undefined")
+      if ( typeof (cached_ajax[ajaxUrl]) == "undefined")
         ajaxUrl = "./" + path;
-      if (typeof(cached_ajax[ajaxUrl]) == "undefined") {
+      if ( typeof (cached_ajax[ajaxUrl]) == "undefined") {
         org.gigapan.Util.error("Error loading key from ajax_includes [" + ajaxUrl + "]");
         return;
       }
@@ -312,12 +308,28 @@ if (!org.gigapan) {
   // Note: Hash variables may contain potentially unsafe user-inputted data.
   // Caution must be taken when working with these values.
   org.gigapan.Util.getUnsafeHashVars = function() {
-    return org.gigapan.Util.unpackVars(window.location.hash.slice(1));
+    var hash = "";
+    // TODO: link to our page on the time machine website
+    if (window.top === window.self) {
+      // No iframe
+      hash = window.location.hash.slice(1);
+    } else {
+      try {
+        // Inside iframe
+        hash = window.top.location.hash.slice(1);
+      } catch(e) {
+      }
+      // If the parent of the iframe has no hash, load hash from the embedded URL
+      if (hash == "")
+        hash = window.location.hash.slice(1);
+    }
+    return org.gigapan.Util.unpackVars(hash);
   };
 
   // Select an element in jQuery selectable
-  org.gigapan.Util.selectSelectableElements = function($selectableContainer, $elementsToSelect) {
-    if ($selectableContainer.length == 0) return;
+  org.gigapan.Util.selectSelectableElements = function($selectableContainer, $elementsToSelect, autoScroll) {
+    if ($selectableContainer.length == 0)
+      return;
     // Add unselecting class to all elements in the styleboard canvas except the ones to select
     $(".ui-selected", $selectableContainer).not($elementsToSelect).removeClass("ui-selected").addClass("ui-unselecting");
     // Add ui-selecting class to the elements to select
@@ -327,8 +339,42 @@ if (!org.gigapan) {
     // Trigger the mouse stop event (this will select all .ui-selecting elements, and deselect all .ui-unselecting elements)
     $selectableContainer.data("uiSelectable")._mouseStop(null);
     // Scroll to the position
-    var $selectableContainerParent = $selectableContainer.parent();
-    $selectableContainerParent.scrollLeft(Math.round($elementsToSelect.position().left - $selectableContainerParent.width() / 3));
+    if (autoScroll == true) {
+      var $selectableContainerParent = $selectableContainer.parent();
+      $selectableContainerParent.scrollLeft(Math.round($elementsToSelect.position().left - $selectableContainerParent.width() / 3));
+    }
+  };
+
+  // Select an element in jQuery sortable
+  org.gigapan.Util.selectSortableElements = function($sortableContainer, $elementsToSelect, autoScroll) {
+    if ($sortableContainer.length == 0)
+      return;
+    // Add unselecting class to all elements in the styleboard canvas except the ones to select
+    var $unselectedItems = $(".ui-selected", $sortableContainer).not($elementsToSelect).removeClass("ui-selected");
+    for (var i = 0; i < $unselectedItems.length; i++)
+      org.gigapan.Util.changeBackgroundColorOpacity($unselectedItems[i], 0);
+    // Add ui-selecting class to the elements to select
+    var $selectedItems = $elementsToSelect.not(".ui-selected").addClass("ui-selected");
+    for (var i = 0; i < $selectedItems.length; i++)
+      org.gigapan.Util.changeBackgroundColorOpacity($selectedItems[i], 0.15);
+    // Refresh the selectable to prevent errors
+    $sortableContainer.sortable('refresh');
+    // Scroll to the position
+    if (autoScroll == true) {
+      var $sortableContainerParent = $sortableContainer.parent();
+      $sortableContainerParent.scrollLeft(Math.round($elementsToSelect.position().left - $sortableContainerParent.width() / 3));
+    }
+  };
+
+  org.gigapan.Util.changeBackgroundColorOpacity = function(element, opacity) {
+    var $element = $(element);
+    // Get the original color
+    var tagColor = element.style.backgroundColor;
+    var rgb = tagColor.match(/^rgba\((\d+),\s*(\d+),\s*(\d+),.*\)$/);
+    // Restore the original color
+    var colorStr = "rgba(" + rgb[1] + "," + rgb[2] + "," + rgb[3] + "," + opacity + ")";
+    if ($element.hasClass("snaplapse_keyframe_list_item"))
+      $element.find(".keyframe_table").css("background-color", colorStr);
   };
 
 })();

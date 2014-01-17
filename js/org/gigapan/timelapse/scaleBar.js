@@ -40,9 +40,7 @@
  VERIFY NAMESPACE
 
  Create the global symbol "org" if it doesn't exist.  Throw an error if it does exist but is not an object.
- */
-
-"use strict";
+ */"use strict";
 
 // Create the global symbol "org" if it doesn't exist.  Throw an error if it does exist but is not an object.
 var org;
@@ -102,6 +100,7 @@ if (!org.gigapan.timelapse.Timelapse) {
     var barLength = ( typeof (scaleBarOptions["geometry"]) == "undefined" || typeof (scaleBarOptions["geometry"]["barLength"]) == "undefined") ? minBarLength : scaleBarOptions["geometry"]["barLength"];
     var offsetX = ( typeof (scaleBarOptions["geometry"]) == "undefined" || typeof (scaleBarOptions["geometry"]["offsetX"]) == "undefined") ? 0 : scaleBarOptions["geometry"]["offsetX"];
     var offsetY = ( typeof (scaleBarOptions["geometry"]) == "undefined" || typeof (scaleBarOptions["geometry"]["offsetY"]) == "undefined") ? 0 : scaleBarOptions["geometry"]["offsetY"];
+    var position = ( typeof (scaleBarOptions["geometry"]) == "undefined" || typeof (scaleBarOptions["geometry"]["position"]) == "undefined") ? "left" : scaleBarOptions["geometry"]["position"];
     var videoDivId = timelapse.getVideoDivId();
     var viewerDivId = timelapse.getViewerDivId();
     var videoDivHeight;
@@ -390,10 +389,11 @@ if (!org.gigapan.timelapse.Timelapse) {
       $scaleBarContainer.append(scaleBarTop_txt_DOM, scaleBar_canvas, scaleBarBot_txt_DOM);
       $("#" + videoDivId).append(scaleBarContainer);
       // Set position
-      $scaleBarContainer.css({
-        "bottom": offsetY + 10 + "px",
-        "left": offsetX + 10 + "px"
-      });
+      $scaleBarContainer.css("bottom", offsetY + 10 + "px");
+      if (position == "left")
+        $scaleBarContainer.css("left", offsetX + 9 + "px");
+      else
+        $scaleBarContainer.css("right", offsetX + 9 + "px");
       // Cache elements
       metricUnit_txt_DOM = document.getElementById(scaleBarDivId + "_scaleBarTop_txt");
       englishUnit_txt_DOM = document.getElementById(scaleBarDivId + "_scaleBarBot_txt");

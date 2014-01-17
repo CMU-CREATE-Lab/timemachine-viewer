@@ -160,6 +160,7 @@ if (!window['$']) {
     var mediaType = ( typeof (settings["mediaType"]) == "undefined") ? null : settings["mediaType"];
     var showAddressLookup = ( typeof (settings["showAddressLookup"]) == "undefined") ? false : settings["showAddressLookup"];
     var visualizerScale = ( typeof (settings["visualizerScale"]) == "undefined") ? 1 : settings["visualizerScale"];
+    var enableMetadataCacheBreaker = settings["enableMetadataCacheBreaker"] || false;
     var defaultVisualizerGeometry = {
       width: viewportGeometry.width / 4.3,
       height: viewportGeometry.height / 4.3
@@ -168,6 +169,8 @@ if (!window['$']) {
       width: defaultVisualizerGeometry.width * visualizerScale,
       height: defaultVisualizerGeometry.height * visualizerScale
     };
+    var minViewportHeight = 400;
+    var minViewportWidth = 700;
 
     // Objects
     var videoset;
@@ -275,6 +278,7 @@ if (!window['$']) {
     var homeView;
     var firstVideoId;
     var originalPlaybackRate = playbackSpeed;
+    var originalLoopPlayback = loopPlayback;
     var toursJSON = {};
     var translationSpeedConstant = 20;
     var leader;
@@ -352,10 +356,6 @@ if (!window['$']) {
     //
     // Public methods
     //
-    this.isDoingLoopingDwell = function() {
-      return doingLoopingDwell;
-    };
-
     this.disableEditorToolbarButtons = function() {
       defaultUI.disableEditorToolbarButtons();
     };
@@ -456,8 +456,14 @@ if (!window['$']) {
       return loopPlayback;
     };
 
-    this.setLoopPlayback = function(newLoopPlayback) {
+    this.setLoopPlayback = function(newLoopPlayback, preserveOriginalLoop) {
+      if (!preserveOriginalLoop)
+        originalLoopPlayback = loopPlayback;
       loopPlayback = newLoopPlayback;
+    };
+
+    this.restoreLoopPlayback = function() {
+      loopPlayback = originalLoopPlayback;
     };
 
     this.handleEditorModeToolbarChange = function() {
@@ -1264,20 +1270,29 @@ if (!window['$']) {
       var newView = getViewFromHash(unsafeHashVars);
       var newTime = getTimeFromHash(unsafeHashVars);
       var tourJSON = getTourFromHash(unsafeHashVars);
-      if (newView || newTime || tourJSON) {
+      var presentationJSON = getPresentationFromHash(unsafeHashVars);
+      if (newView || newTime || tourJSON || presentationJSON) {
         if (newView) {
           _setNewView(newView, true);
         }
         if (newTime) {
           _seek(newTime);
         }
-        if (tourJSON) {
+        if (tourJSON || presentationJSON) {
+          var JSON;
           var snaplapse = thisObj.getSnaplapse();
           if (snaplapse) {
             var snaplapseViewer = snaplapse.getSnaplapseViewer();
-            if (snaplapseViewer) {
-              snaplapse.clearSnaplapse();
-              snaplapseViewer.loadNewSnaplapse(tourJSON);
+            if (tourJSON) {
+              JSON = tourJSON;
+              if (snaplapseViewer)
+                snaplapseViewer.loadNewSnaplapse(JSON);
+            } else if (presentationJSON) {
+              // Prevent the editor leave page alert from showing if presentation mode is enabled from the hash
+              window.onbeforeunload = null;
+              JSON = presentationJSON;
+              if (snaplapseViewer)
+                snaplapseViewer.loadNewSnaplapse(JSON, true);
             }
           }
         }
@@ -1312,6 +1327,18 @@ if (!window['$']) {
         if (snaplapse) {
           var tourJSON = snaplapse.urlStringToJSON(unsafeHashVars.tour);
           return tourJSON;
+        }
+      }
+      return null;
+    };
+
+    // Gets safe presentation JSON from an unsafe hash string.
+    var getPresentationFromHash = function(unsafeHashVars) {
+      if (unsafeHashVars && unsafeHashVars.presentation) {
+        var snaplapse = thisObj.getSnaplapse();
+        if (snaplapse) {
+          var presentationJSON = snaplapse.urlStringToJSON(unsafeHashVars.presentation);
+          return presentationJSON;
         }
       }
       return null;
@@ -1363,7 +1390,11 @@ if (!window['$']) {
     var handleMousedownEvent = function(event, fromTimewarpMap) {
       if (event.which != 1 || (annotator && (event.metaKey || event.ctrlKey || event.altKey || annotator.getCanMoveAnnotation())))
         return;
-      cancelZoomGracefully();
+      // TODO: Revisit when we refactor view code
+      try {
+        cancelZoomGracefully();
+      } catch(err) {
+      }
       var mouseIsDown = true;
       var lastEvent = event;
       var saveMouseMove = document.onmousemove;
@@ -1740,6 +1771,12 @@ if (!window['$']) {
       };
     };
     this.computeBoundingBoxLatLng = computeBoundingBoxLatLng;
+
+    // Convert pixel bounding box to lat/lng bounding box
+    var pixelBoundingBoxToLatLngBoundingBox = function(bbox) {
+      return computeBoundingBoxLatLng(computeViewFit(bbox));
+    };
+    this.pixelBoundingBoxToLatLngBoundingBox = pixelBoundingBoxToLatLngBoundingBox;
 
     // Convert pixel bounding box to {center:{lat, lng}, zoom:z}
     var pixelBoundingBoxToLatLngCenter = function(bbox) {
@@ -2254,7 +2291,11 @@ if (!window['$']) {
       datasetPath = settings["url"] + path;
       showSpinner(viewerDivId);
       //org.gigapan.Util.log("Attempting to fetch videoset JSON from URL [" + datasetPath + "]...");
-      UTIL.ajax("json", settings["url"], path + 'r.json', loadVideoSet);
+      UTIL.ajax("json", settings["url"], path + "r.json" + getMetadataCacheBreaker(), loadVideoSet);
+    }
+
+    function getMetadataCacheBreaker() {
+      return ( enableMetadataCacheBreaker ? ("?" + new Date().getTime()) : "");
     }
 
     function loadVideoSet(data) {
@@ -2265,13 +2306,15 @@ if (!window['$']) {
       hideSpinner(viewerDivId);
     }
 
+    var handleLeavePage = function() {
+      if ((snaplapse && snaplapse.getKeyframes().length > 0) || (annotator && annotator.getAnnotationList().length > 0)) {
+        return "You are attempting to leave this page while creating a tour.";
+      }
+    };
+
     function setupUIHandlers() {
       // Leave Page Alert
-      window.onbeforeunload = function() {
-        if ((snaplapse && snaplapse.getKeyframes().length > 0) || (annotator && annotator.getAnnotationList().length > 0)) {
-          return "You are attempting to leave this page while creating a tour.";
-        }
-      };
+      window.onbeforeunload = handleLeavePage;
 
       // On URL hash change, do share view related stuff
       window.onhashchange = handleHashChange;
@@ -2363,6 +2406,17 @@ if (!window['$']) {
           }).attr({
             "title": "Play"
           });
+          if (customUI.getLocker() != "month") {
+            // The UI when the month locker is enabled is handled in customUI.js
+            $("#" + viewerDivId + " .modisCustomPlay").button({
+              icons: {
+                primary: "ui-icon-custom-play"
+              },
+              text: false
+            }).attr({
+              "title": "Play"
+            });
+          }
         }
         // TODO: UI Class should handle this
         $("#" + viewerDivId + " .playbackButton").button({
@@ -2387,6 +2441,17 @@ if (!window['$']) {
           }).attr({
             "title": "Pause"
           });
+          if (customUI.getLocker() != "month") {
+            // The UI when the month locker is enabled is handled in customUI.js
+            $("#" + viewerDivId + " .modisCustomPlay").button({
+              icons: {
+                primary: "ui-icon-custom-pause"
+              },
+              text: false
+            }).attr({
+              "title": "Pause"
+            });
+          }
         }
         // TODO: UI Class should handle this
         $("#" + viewerDivId + " .playbackButton").button({
@@ -2443,7 +2508,7 @@ if (!window['$']) {
       //hasLayers = timelapseMetadataJSON["has_layers"] || false;
       setupUIHandlers();
       defaultUI = new org.gigapan.timelapse.DefaultUI(thisObj, settings);
-      if (settings["enableCustomUI"] == true)
+      if (settings["enableCustomUI"] && settings["enableCustomUI"] != false)
         customUI = new org.gigapan.timelapse.CustomUI(thisObj, settings);
 
       //handlePluginVideoTagOverride(); //TODO
@@ -2498,13 +2563,13 @@ if (!window['$']) {
           viewportGeometry.width = data["video_width"] - data["tile_width"];
         if (viewportGeometry.height == undefined)
           viewportGeometry.height = data["video_height"] - data["tile_height"];
-        if (viewportGeometry.height < 468) {
-          viewportGeometry.height = 468;
+        if (viewportGeometry.height < minViewportHeight) {
+          viewportGeometry.height = minViewportHeight;
           visualizerGeometry.height = defaultVisualizerGeometry.height;
-          visualizerGeometry.width = visualizerGeometry.height * (newWidth / newHeight);
+          visualizerGeometry.width = visualizerGeometry.height * (data["video_width"] / data["video_height"]);
         }
-        if (viewportGeometry.width < 816) {
-          viewportGeometry.width = 816;
+        if (viewportGeometry.width < minViewportWidth) {
+          viewportGeometry.width = minViewportWidth;
         }
       } else {
         $("#" + viewerDivId).css({
@@ -2513,8 +2578,9 @@ if (!window['$']) {
           "left": "0px"
         });
         $("body").css("overflow", "hidden");
-        if (settings['composerDiv'])
-          $("#" + settings['composerDiv']).hide();
+        //debug
+        //if (settings['composerDiv'])
+        //$("#" + settings['composerDiv']).hide();
         if (settings['annotatorDiv'])
           $("#" + settings['annotatorDiv']).hide();
       }
@@ -2545,7 +2611,7 @@ if (!window['$']) {
       validateAndSetDatasetIndex(datasetLayer * tmJSON["sizes"].length + playerSize);
       var path = tmJSON["datasets"][datasetIndex]['id'] + "/";
       datasetPath = settings["url"] + path;
-      UTIL.ajax("json", settings["url"], path + 'r.json', _loadInitialVideoSet);
+      UTIL.ajax("json", settings["url"], path + "r.json" + getMetadataCacheBreaker(), _loadInitialVideoSet);
     };
     this.loadTimelapseJSON = _loadTimelapseJSON;
 
@@ -2636,7 +2702,7 @@ if (!window['$']) {
       // which in any browser will reslove relative paths correctly. We choose the latter to keep the message console clean.
       $('<style type="text/css">.closedHand {cursor: url("./css/cursors/closedhand.cur"), move !important;} .openHand {cursor: url("./css/cursors/openhand.cur"), move !important;} .tiledContentHolder {cursor: url("./css/cursors/openhand.cur"), move;}</style>').appendTo($('head'));
 
-      UTIL.ajax("json", settings["url"], "tm.json", _loadTimelapseJSON);
+      UTIL.ajax("json", settings["url"], "tm.json" + getMetadataCacheBreaker(), _loadTimelapseJSON);
     }
 
     function setupSliderHandlers(viewerDivId) {
