@@ -603,10 +603,16 @@ if (!org.gigapan.timelapse.Timelapse) {
           $("#" + viewerDivId + " .toggleSpeed").hide()
           if (rate >= 1) {
             $fastSpeed.show();
+            $mediumSpeed.hide();
+            $slowSpeed.hide();
           } else if ((rate < 1 && rate >= 0.5) || (isSafari && rate < 0.5)) {
             $mediumSpeed.show();
+            $fastSpeed.hide();
+            $slowSpeed.hide();
           } else {
             $slowSpeed.show();
+            $mediumSpeed.hide();
+            $fastSpeed.hide();
           }
         }
       });
