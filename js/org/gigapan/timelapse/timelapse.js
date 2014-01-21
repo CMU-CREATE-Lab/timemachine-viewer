@@ -1825,6 +1825,7 @@ if (!window['$']) {
 
       // Set capture time
       if (tmJSON["capture-times"]) {
+        tmJSON["capture-times"].splice(tmJSON["capture-times"].length - framesToSkipAtEnd, framesToSkipAtEnd);
         tmJSON["capture-times"].splice(0, framesToSkipAtStart);
         captureTimes = tmJSON["capture-times"];
       } else {

@@ -131,9 +131,8 @@ if (!org.gigapan.timelapse.Timelapse) {
     var $monthSpinnerContainer;
     var $monthSpinner;
     var $monthSpinnerTxt;
+    var previousEffectiveSpinnerValue = 0;
     var previousSpinnerValue = 0;
-    var maxSpinnerValue;
-    var minSpinnerValue = 0;
     var locker = "none";
     var yearLockMinPlaybackFrame;
     var yearLockMaxPlaybackFrame;
@@ -157,6 +156,9 @@ if (!org.gigapan.timelapse.Timelapse) {
     var $endTimeDot;
     var spinnerCircleOffset1 = 8;
     var spinnerCircleOffset2 = 9;
+    var spinnerAngleArc = 273;
+    var spinnerAngleOffset = -47;
+    var maxYearNumFrames;
 
     // In px.
     var viewerWidth;
@@ -233,7 +235,8 @@ if (!org.gigapan.timelapse.Timelapse) {
             "numFramesThisYear": 0,
             "currentStackEndIdx": -1,
             "previousStackEndIdx": -1,
-            "maxSpinnerValue": -1
+            "maxSpinnerValue": -1,
+            "minSpinnerValue": 0
           };
           if (yearDictionary[year - 1]) {
             yearDictionary[year]["currentStackEndIdx"] = yearDictionary[year - 1]["currentStackEndIdx"];
@@ -256,7 +259,14 @@ if (!org.gigapan.timelapse.Timelapse) {
       // The first year is a special case that contains less frames than other years.
       // We need this variable to correctly seek to a desired time.
       // If there are more special cases, you need more special offset variables.
-      firstYearFrameOffset = yearDictionary[firstYear + 1]["numFramesThisYear"] - yearDictionary[firstYear]["numFramesThisYear"];
+      maxYearNumFrames = yearDictionary[firstYear + 1]["numFramesThisYear"];
+      firstYearFrameOffset = maxYearNumFrames - yearDictionary[firstYear]["numFramesThisYear"];
+      for (var i = yearDictionary[firstYear]["minSpinnerValue"]; i <= yearDictionary[firstYear]["maxSpinnerValue"]; i++)
+        frameDictionary[i]["monthFrameIdx"] += firstYearFrameOffset;
+      yearDictionary[firstYear]["minSpinnerValue"] += firstYearFrameOffset;
+      yearDictionary[firstYear]["maxSpinnerValue"] += firstYearFrameOffset;
+      previousEffectiveSpinnerValue = yearDictionary[firstYear]["minSpinnerValue"];
+      previousSpinnerValue = previousEffectiveSpinnerValue;
     };
 
     var createCustomControl = function() {
@@ -360,7 +370,6 @@ if (!org.gigapan.timelapse.Timelapse) {
     };
 
     var createMonthSpinner = function() {
-      maxSpinnerValue = yearDictionary[firstYear]["maxSpinnerValue"];
       $monthSpinnerContainer = $('<div class="monthSpinnerContainer"></div>');
       $monthSpinner = $('<input class="monthSpinner" data-width="' + spinnerRadius + '" data-height="' + spinnerRadius + '">');
       $monthSpinnerTxt = $('<div class="monthSpinnerTxt"></div>');
@@ -368,8 +377,8 @@ if (!org.gigapan.timelapse.Timelapse) {
       $monthSpinnerContainer.append($monthSpinnerTxt);
       $customControl.append($monthSpinnerContainer);
       $monthSpinner.knob({
-        min: minSpinnerValue,
-        max: maxSpinnerValue,
+        min: 0,
+        max: maxYearNumFrames - 1,
         fgColor: "#707070",
         bgColor: "#ffffff",
         thickness: 0.27,
@@ -377,38 +386,39 @@ if (!org.gigapan.timelapse.Timelapse) {
         width: spinnerRadius,
         height: spinnerRadius,
         displayInput: false,
-        angleArc: 273,
-        angleOffset: -47,
+        angleArc: spinnerAngleArc,
+        angleOffset: spinnerAngleOffset,
         stopper: false,
         change: function(value) {
           var currentYear = getCurrentYear();
-          if (value > maxSpinnerValue) {
-            if (previousSpinnerValue >= minSpinnerValue && previousSpinnerValue <= (maxSpinnerValue + minSpinnerValue) / 2)
+          var minSpinnerValue = yearDictionary[currentYear]["minSpinnerValue"];
+          var maxSpinnerValue = yearDictionary[currentYear]["maxSpinnerValue"];
+          if (previousSpinnerValue > maxYearNumFrames - 1) {
+            if (value == 0) {
+              seekToFrame(value, "year", 1);
+              return false;
+            } else if (value == maxYearNumFrames - 1) {
+              seekToFrame(value, "year", -1);
+              return false;
+            }
+          }
+          previousSpinnerValue = value;
+          if (value > maxSpinnerValue || value < minSpinnerValue) {
+            if (previousEffectiveSpinnerValue >= minSpinnerValue && previousEffectiveSpinnerValue <= (maxSpinnerValue + minSpinnerValue) / 2)
               $monthSpinner.val(minSpinnerValue).trigger("change");
-            else if (previousSpinnerValue > (maxSpinnerValue + minSpinnerValue) / 2 && previousSpinnerValue <= maxSpinnerValue)
+            else if (previousEffectiveSpinnerValue > (maxSpinnerValue + minSpinnerValue) / 2 && previousEffectiveSpinnerValue <= maxSpinnerValue)
               $monthSpinner.val(maxSpinnerValue).trigger("change");
             return false;
           } else {
-            if (previousSpinnerValue == maxSpinnerValue && value == minSpinnerValue) {
-              previousSpinnerValue = value;
-              seekToFrame(value, "year", 1);
-            } else if (previousSpinnerValue == minSpinnerValue && value == maxSpinnerValue) {
-              previousSpinnerValue = value;
-              seekToFrame(value, "year", -1);
-            } else {
-              previousSpinnerValue = value;
-              seekToFrame(value, "year");
-            }
+            previousEffectiveSpinnerValue = value;
+            seekToFrame(value, "year");
           }
         },
         release: function(value) {
           if (!originalIsPaused)
             timelapse.handlePlayPause();
-          if (locker == "month") {
-            computeMonthLockPlaybackFrames();
-            if (isPlaying)
-              updateMonthLockPlaybackInterval();
-          }
+          if (locker == "month" && isPlaying)
+            playMonthLockFrames();
         },
         draw: function() {
           var angleOffset = 0.14;
@@ -481,10 +491,8 @@ if (!org.gigapan.timelapse.Timelapse) {
         originalIsPaused = timelapse.isPaused();
         if (!originalIsPaused)
           timelapse.handlePlayPause();
-        if (locker == "month" && isPlaying) {
-          clearInterval(monthLockPlaybackInterval);
-          monthLockPlaybackInterval = null;
-        }
+        if (locker == "month" && isPlaying)
+          stopMonthLockFrames();
       });
 
       // Handle mouse leave iframe
@@ -563,7 +571,7 @@ if (!org.gigapan.timelapse.Timelapse) {
         $mediumSpeed.stop(true, true).show();
         $fastSpeed.slideUp(300);
         if (locker == "month" && isPlaying)
-          updateMonthLockPlaybackInterval();
+          playMonthLockFrames();
       });
 
       $mediumSpeed.button({
@@ -581,7 +589,7 @@ if (!org.gigapan.timelapse.Timelapse) {
         }
         $mediumSpeed.slideUp(300);
         if (locker == "month" && isPlaying)
-          updateMonthLockPlaybackInterval();
+          playMonthLockFrames();
       });
 
       $slowSpeed.button({
@@ -592,7 +600,7 @@ if (!org.gigapan.timelapse.Timelapse) {
         $fastSpeed.stop(true, true).show();
         $slowSpeed.slideUp(300);
         if (locker == "month" && isPlaying)
-          updateMonthLockPlaybackInterval();
+          playMonthLockFrames();
       });
 
       timelapse.addPlaybackRateChangeListener(function(rate, fromUI) {
@@ -923,8 +931,11 @@ if (!org.gigapan.timelapse.Timelapse) {
       originalIsPaused = timelapse.isPaused();
       if (!originalIsPaused)
         timelapse.handlePlayPause();
-      if (locker != "month") {
+      if (locker != "month")
         seekToFrame(endFrameIdx, locker);
+      else {
+        if (isPlaying)
+          stopMonthLockFrames();
       }
       isShowHoverEffect = false;
       // Track mouse
@@ -932,6 +943,8 @@ if (!org.gigapan.timelapse.Timelapse) {
       $(document).one("mouseup", function(event) {
         if (!originalIsPaused)
           timelapse.handlePlayPause();
+        if (locker == "month" && isPlaying)
+          playMonthLockFrames();
         $viewer.off("mousemove", trackMouseAndSlide);
         isShowHoverEffect = true;
       });
@@ -966,9 +979,11 @@ if (!org.gigapan.timelapse.Timelapse) {
       var currentYearIdx = parseInt(this.id.split("_")[3]);
       var currentYear = firstYear + currentYearIdx;
       if (locker != "year") {
-        if (locker == "month")
+        if (locker == "month") {
+          if (isPlaying)
+            stopMonthLockFrames();
           seekToFrame(currentYearIdx, "month");
-        else
+        } else
           seekToFrame(yearDictionary[currentYear]["previousStackEndIdx"] + 1, locker);
         focusTimeTick(timelapse.getCurrentFrameNumber());
       }
@@ -980,6 +995,8 @@ if (!org.gigapan.timelapse.Timelapse) {
         $(event.target).removeClass("closedHand").addClass("openHand");
         if (!originalIsPaused)
           timelapse.handlePlayPause();
+        if (locker == "month" && isPlaying)
+          playMonthLockFrames();
         $viewer.off("mousemove", trackMouseAndSlide);
         isShowHoverEffect = true;
       });
@@ -1327,25 +1344,24 @@ if (!org.gigapan.timelapse.Timelapse) {
     var seekToFrame = function(desiredIdx, constraint, yearOffset) {
       var desiredFrameIdx = desiredIdx;
       if (datasetType == "modis") {
+        var currentYear = getCurrentYear();
         if (constraint == "month") {
           // Fix month and seek to target year
           var desiredYear = desiredIdx + firstYear;
-          var currentYear = getCurrentYear();
-          var currentMonthIdx = parseInt($monthSpinner.val());
-          if (desiredYear == firstYear && currentYear != firstYear)
-            currentMonthIdx = currentMonthIdx - firstYearFrameOffset;
-          if (desiredYear != firstYear && currentYear == firstYear)
-            currentMonthIdx = currentMonthIdx + firstYearFrameOffset;
+          var currentFrame = timelapse.getCurrentFrameNumber();
+          var currentMonthIdx = frameDictionary[currentFrame]["monthFrameIdx"];
           var maxDesiredMonthIdx = yearDictionary[desiredYear]["maxSpinnerValue"];
-          if (currentMonthIdx > maxDesiredMonthIdx || currentMonthIdx < 0)
+          var minDesiredMonthIdx = yearDictionary[desiredYear]["minSpinnerValue"];
+          if (currentMonthIdx > maxDesiredMonthIdx || currentMonthIdx < minDesiredMonthIdx)
             return;
+          if (desiredYear == firstYear)
+            currentMonthIdx -= firstYearFrameOffset;
           desiredFrameIdx = yearDictionary[desiredYear]["previousStackEndIdx"] + 1 + currentMonthIdx;
         } else if (constraint == "year") {
           // Fix year and seek to target month
           var desiredMonthIdx = desiredIdx;
-          var currentYear = getCurrentYear();
           if (yearOffset) {
-            currentYear = currentYear + yearOffset;
+            currentYear += yearOffset;
             if (currentYear > endYear)
               currentYear = endYear;
             else if (currentYear < firstYear)
@@ -1355,6 +1371,8 @@ if (!org.gigapan.timelapse.Timelapse) {
             else if (yearOffset < 0)
               desiredMonthIdx = yearDictionary[currentYear]["maxSpinnerValue"];
           }
+          if (currentYear == firstYear)
+            desiredMonthIdx -= firstYearFrameOffset;
           desiredFrameIdx = yearDictionary[currentYear]["previousStackEndIdx"] + 1 + desiredMonthIdx;
         }
       }
@@ -1363,24 +1381,17 @@ if (!org.gigapan.timelapse.Timelapse) {
 
     var computeMonthLockPlaybackFrames = function() {
       monthLockPlaybackFrames = [];
-      var currentMonthIdx = parseInt($monthSpinner.val());
-      var currentYear = getCurrentYear();
-      if (currentYear == firstYear)
-        currentMonthIdx = currentMonthIdx + firstYearFrameOffset;
+      var currentFrame = timelapse.getCurrentFrameNumber();
+      var currentMonthIdx = frameDictionary[currentFrame]["monthFrameIdx"];
       // Compute the frame indicies that we need to loop through for the selected month
       for (var i = firstYear; i <= endYear; i++) {
         var year = yearDictionary[i];
-        var yearFrameIdx;
-        if (i == firstYear) {
-          yearFrameIdx = year["previousStackEndIdx"] + 1 + currentMonthIdx - firstYearFrameOffset;
-          if (yearFrameIdx < 0)
-            continue;
-        } else {
-          yearFrameIdx = year["previousStackEndIdx"] + 1 + currentMonthIdx;
-          if (currentMonthIdx > year["maxSpinnerValue"])
-            continue;
-        }
-        monthLockPlaybackFrames.push(yearFrameIdx);
+        if (currentMonthIdx < year["minSpinnerValue"] || currentMonthIdx > year["maxSpinnerValue"])
+          continue;
+        var frameIdx = year["previousStackEndIdx"] + 1 + currentMonthIdx;
+        if (i == firstYear)
+          frameIdx -= firstYearFrameOffset;
+        monthLockPlaybackFrames.push(frameIdx);
       }
     };
 
@@ -1424,20 +1435,13 @@ if (!org.gigapan.timelapse.Timelapse) {
     };
 
     var updateTimelineSlider = function(frameIdx) {
+      if (frameIdx < 0 || frameIdx > numFrames - 1)
+        return;
       var currentYear = frameDictionary[frameIdx]["year"];
-      var previousYear = getCurrentYear();
       if (datasetType == "modis") {
-        if (currentYear != previousYear) {
-          maxSpinnerValue = yearDictionary[currentYear]["maxSpinnerValue"];
-          $monthSpinner.trigger('configure', {
-            "max": maxSpinnerValue
-          });
-        }
         $monthSpinnerTxt.text(frameDictionary[frameIdx]["monthText"]);
         $monthSpinner.val(frameDictionary[frameIdx]["monthFrameIdx"]).trigger('change');
       }
-      if (frameIdx < 0 || frameIdx > numFrames - 1)
-        return;
       $currentTimeTick.css("left", frameDictionary[frameIdx]["x"] + "%");
       $timeText.text(currentYear);
     };
