@@ -1024,14 +1024,16 @@ if (!org.gigapan.timelapse.Timelapse) {
       else
         targetFrameIdx = computeSliderHandlePosition_landsat(nowX);
 
-      var currentFrameIdx = timelapse.getCurrentFrameNumber();
-      if (currentFrameIdx != targetFrameIdx) {
-        if (locker == "month")
+      if (locker == "month") {
+      	var currentYearIdx = getCurrentYear() - firstYear;
+        if (currentYearIdx != targetFrameIdx)
           seekToFrame(targetFrameIdx, locker);
-        else
+      } else {
+        var currentFrameIdx = timelapse.getCurrentFrameNumber();
+        if (currentFrameIdx != targetFrameIdx)
           timelapse.seekToFrame(targetFrameIdx);
-        $("#" + viewerDivId + "_customTimeline_timeTickClickRegion_" + targetFrameIdx).focus();
       }
+      $("#" + viewerDivId + "_customTimeline_timeTickClickRegion_" + targetFrameIdx).focus();
     };
 
     var computeSliderHandlePosition_landsat = function(nowX) {
