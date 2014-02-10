@@ -6,6 +6,14 @@ body, html {
   font-family: Arial, Helvetica, sans-serif;
 }
 
+.createLabLogo {
+  width: 110px;
+  position: absolute;
+  bottom: 43px;
+  right: 62px;
+  border: 0px;
+}
+
 #player1_timelapse_canvas {
   background: black;
   z-index: 5;
@@ -41,7 +49,11 @@ body, html {
 }
 
 .playStopTimewarp {
-  width: 65px;
+
+}
+
+.newTimewarp {
+  border-right: 1px solid #656565 !important;
 }
 
 .loadingOverlay {
@@ -79,14 +91,6 @@ body, html {
   opacity: 1;
 }
 
-.playbackButton .ui-icon.ui-icon-custom-play {
-  margin-left: -8px !important;
-}
-
-.playbackButton .ui-icon.ui-icon-custom-pause {
-  margin-left: -12px !important;
-}
-
 .ui-button .ui-icon.ui-icon-custom-play {
   background-image: url(../images/buttons/custom_play.png);
   margin-top: -12px;
@@ -117,6 +121,100 @@ body, html {
   outline: 0;
 }
 
+.playbackSpeed {
+  position: absolute;
+  width: 152px;
+  height: 17px;
+  bottom: 24px;
+  left: 89px;
+  background: white;
+  border: 1px solid #656565;
+  border-radius: 2px !important;
+  box-shadow: 2px 2px 3px rgba(0,0,0,0.3);
+  z-index: 30;
+  outline: none;
+}
+
+.playbackSpeed .ui-button-text {
+  text-align: center;
+  padding: 0;
+  font-size: 10px;
+  margin-top: -1px;
+  margin-left: -13px;
+}
+
+.playbackSpeed .ui-icon {
+  margin-right: -4px;
+}
+
+.viewerModeBtn {
+  position: absolute;
+  width: 27px;
+  height: 27px;
+  bottom: 89px;
+  right: 20px;
+  background: white;
+  border: 1px solid #656565;
+  border-radius: 17px !important;
+  box-shadow: 2px 2px 3px rgba(0,0,0,0.3);
+  z-index: 30;
+  outline: none;
+  overflow: hidden;
+}
+
+.viewerModeBtn .ui-icon {
+  margin-left: -8px;
+  margin-top: -8px;
+}
+
+.viewerModeBtn.ui-state-active {
+  border: 1px solid #ffffff;
+  background: rgba(0,0,0,0.6);
+  color: white;
+}
+
+.viewerModeBtn.ui-state-active .ui-icon {
+  background-image: url(../images/ui-icons_custom_256x240.png)/*{iconsActive}*/;
+}
+
+.share {
+  position: absolute;
+  width: 27px;
+  height: 27px;
+  bottom: 54px;
+  right: 20px;
+  background: white;
+  border: 1px solid #656565;
+  border-radius: 17px !important;
+  box-shadow: 2px 2px 3px rgba(0,0,0,0.3);
+  z-index: 30;
+  outline: none;
+}
+
+.share .ui-icon {
+  margin-left: -4px;
+  margin-top: -9px;
+}
+
+.helpPlayerLabel.ui-button {
+  position: absolute;
+  width: 25px;
+  height: 25px;
+  bottom: 19px;
+  right: 20px;
+  background: white;
+  border: 1px solid #656565;
+  border-radius: 15px !important;
+  box-shadow: 2px 2px 3px rgba(0,0,0,0.3);
+  z-index: 30;
+  outline: none;
+}
+
+.helpPlayerLabel .ui-icon {
+  margin-left: -8px;
+  margin-top: -9px;
+}
+
 .instructions {
   height: 290px;
   background-color: rgba(0, 0, 0, 0.5);
@@ -136,26 +234,6 @@ body, html {
 
 .instructions p {
   font-size: 12px;
-}
-
-.instructions span.loophelp {
-  width: 135px;
-  background-color: #262626;
-  border: 1px solid #444;
-  height: 19px;
-  overflow: visible;
-  bottom: 0px;
-  left: 40px;
-  padding: 13px 15px 15px;
-}
-
-.instructions span.loophelp p {
-  margin: 0;
-  padding: 0;
-  background-repeat: no-repeat;
-  background-position: bottom left;
-  background-image: url(../images/bubble_edge_horizontal.png);
-  height: 46px;
 }
 
 .instructions span.movehelp {
@@ -199,8 +277,8 @@ body, html {
   border: 1px solid #444;
   height: 19px;
   overflow: visible;
-  bottom: 0px;
-  right: 0px;
+  bottom: 47px;
+  left: 20px;
   padding: 13px 15px 15px;
 }
 
@@ -222,86 +300,79 @@ body, html {
   font-size: 12px;
   color: #202020;
   font-family: Arial, Helvetica, sans-serif;
+  display: none;
 }
 
 .captureTime {
-  margin: 0px;
-  padding: 0px;
   position: absolute;
-  left: 100px;
-  bottom: 23px;
-  font-size: 12px;
-  color: #202020;
+  left: 90px;
+  bottom: 43px;
+  font-size: 14px;
+  text-shadow: -1px 0 #656565, 0 1px #656565, 1px 0 #656565, 0 -1px #656565, 2px 2px 3px rgba(0,0,0,0.3);
   font-family: Arial, Helvetica, sans-serif;
-}
-
-.repeatBtnContainer {
-  position: absolute;
-  top: 0px;
-  left: 56px;
-  margin-top: 0px;
-  margin-left: 0px;
-  margin-right: 0px;
-  margin-bottom: 0px;
-  padding: 0;
-  height: 100%;
-}
-
-.repeatBtnContainer .ui-button.ui-state-active {
-  background: #959595;
-}
-
-.repeatLabel.ui-state-default {
-  background: white;
-}
-
-.repeatLabel {
-  height: 100%;
-  border-radius: 0;
-  padding: 0;
-}
-
-.repeatLabel.ui-button {
-  border-radius: 0px !important;
-  vertical-align: middle;
-  border: 0px solid white;
-  border-right: 1px solid #656565;
-  width: 26px;
-}
-
-.ui-button.ui-state-active .ui-icon.ui-icon-custom-repeat {
-  background-image: url(../images/buttons/repeat-active.png);
-  opacity: 1;
-}
-
-.ui-button .ui-icon.ui-icon-custom-repeat {
-  background-image: url(../images/buttons/repeat-inactive.png);
-  margin-top: -5px;
-  margin-left: -5px;
-  width: 12px;
-  height: 12px;
-  opacity: 0.6;
-}
-
-.ui-button.ui-state-hover .ui-icon-custom-repeat {
-  background-image: url(../images/buttons/repeat-inactive.png);
-  opacity: 1;
-}
-
-.timewarpMapLabel .ui-button-text {
-  margin-top: 11px;
+  text-align: center;
+  color: white;
+  font-weight: normal;
 }
 
 .playbackButton.ui-button {
-  margin: 0px;
-  padding: 0px;
   display: block;
-  width: 55px;
-  height: 100%;
-  border: 0px solid #656565;
-  border-right: 1px solid #656565;
+  position: absolute;
+  width: 50px;
+  height: 50px;
+  bottom: 17px;
+  left: 20px;
   background: white;
-  border-radius: 0px;
+  border: 1px solid #656565;
+  border-radius: 35px !important;
+  box-shadow: 2px 2px 3px rgba(0,0,0,0.3);
+  z-index: 10;
+  outline: none;
+}
+
+.timelineSliderFiller {
+  position: absolute;
+  bottom: 26px;
+  left: 258px;
+  right: 67px;
+  width: auto;
+  box-shadow: 2px 2px 3px rgba(0,0,0,0.3);
+  border: 1px solid #656565;
+  background: transparent;
+}
+
+.timelineSlider {
+  background: rgba(255,255,255,0.3);
+  cursor: pointer;
+  border: 2px solid rgba(255,255,255,0.8);
+  position: absolute;
+  height: 7px;
+  width: inherit;
+  position: relative;
+  top: 0px;
+  left: 0px;
+  margin: 0;
+  padding: 0;
+  z-index: 25;
+}
+
+.timelineSlider .ui-slider-handle {
+  width: 12px;
+  margin-left: -5px !important;
+  height: 15px;
+  overflow: hidden;
+  top: -5px;
+  border-style: none;
+  border: none;
+  margin: 0px;
+  z-index: 5;
+  border: 1px solid #656565;
+  border-radius: 2px !important;
+}
+
+.timelineSlider .ui-slider-range {
+  background: red;
+  opacity: 0.4;
 }
 
 .stopTimeWarp.ui-button {
@@ -384,17 +455,6 @@ body, html {
   margin-top: -9px;
 }
 
-.viewerModeBtn.ui-state-default {
-  background: white;
-}
-
-.viewerModeBtn {
-  height: 100%;
-  border-radius: 0;
-  padding: 0;
-  border-right: 1px solid #656565 !important;
-}
-
 .fullscreenLabel.ui-state-default {
   background: white;
 }
@@ -415,6 +475,7 @@ body, html {
 
 .playbackSpeedOptions {
   border-radius: 2px;
+  font-size: 11px;
 }
 
 .playbackSpeedOptions .ui-corner-all {
@@ -423,33 +484,13 @@ body, html {
 
 .playbackSpeedOptions.ui-menu {
   position: absolute;
-  width: 160px;
+  width: 130px;
   padding: 10px;
   border: 1px solid #656565;
   z-index: 27;
 }
 
 .playbackSpeedOptions.ui-state-focus {
-  padding: 10px;
-}
-
-.viewerModeOptions {
-  border-radius: 2px;
-  margin-right: -1px;
-}
-
-.viewerModeOptions .ui-corner-all {
-  border-radius: 2px;
-}
-
-.viewerModeOptions.ui-menu {
-  position: absolute;
-  width: 100px;
-  padding: 10px;
-  border: 1px solid #656565;
-}
-
-.viewerModeOptions.ui-state-focus {
   padding: 10px;
 }
 
@@ -470,6 +511,15 @@ body, html {
 
 .sizeOptions.ui-state-focus {
   padding: 10px;
+}
+
+.controls {
+  position: absolute;
+  left: 0px;
+  bottom: 0px;
+  width: 100%;
+  height: 60px;
+  overflow: visible;
 }
 
 .tools .ui-button {
@@ -499,48 +549,28 @@ body, html {
 }
 
 .toolbar {
-  position: absolute;
-  top: 0px;
-  right: 0px;
-  height: 100%;
-  font-size: 11px;
-  z-index: 30;
+  display: none;
+  width: inherit;
+  height: 40px;
+  background-color: rgb(220,220,220);
+  position: relative;
+  border-right: 1px solid #656565;
+  border-left: 1px solid #656565;
+  border-top: 0px solid #838383;
+  border-bottom: 1px solid #656565;
+  font-size: 12px;
   margin: 0;
   padding: 0;
+  z-index: 20;
 }
 
-.playerModeToolbar .ui-state-default {
-  background: white;
+.toolbar .ui-state-active {
+  background: #656565;
+  color: white;
 }
 
-.editorModeToolbar .ui-state-default {
-  background: white;
-}
-
-.annotatorModeToolbar .ui-state-default {
-  background: white;
-}
-
-.playerModeToolbar {
-  margin-top: 0px;
-  margin-left: 0px;
-  margin-right: 0px;
-  margin-bottom: 0px;
-  padding: 0;
-  display: inline;
-  float: right;
-  height: 100%;
-}
-
-.editorModeToolbar {
-  margin-top: 0px;
-  margin-left: 0px;
-  margin-right: 0px;
-  margin-bottom: 0px;
-  padding: 0;
-  float: right;
-  display: none;
-  height: 100%;
+.toolbar .ui-state-active .ui-icon {
+  background-image: url(../images/ui-icons_custom_256x240.png)/*{iconsActive}*/;
 }
 
 .toolbar .ui-button {
@@ -556,7 +586,8 @@ body, html {
   border-right: 1px solid rgb(220,220,220);
 }
 
-.toolbar .ui-button:hover:not([disabled]) {
+.toolbar .ui-button:hover:not(
+[disabled]) {
   /*
    -moz-box-shadow: 0 0 12px #656565;
    -webkit-box-shadow: 0 0 12px #656565;
@@ -568,6 +599,25 @@ body, html {
 
 .toolbar .ui-button:focus {
   outline: none;
+}
+
+.editorModeToolbar .ui-state-default {
+  background: white;
+}
+
+.annotatorModeToolbar .ui-state-default {
+  background: white;
+}
+
+.editorModeToolbar {
+  margin-top: 0px;
+  margin-left: 0px;
+  margin-right: 0px;
+  margin-bottom: 0px;
+  padding: 0;
+  float: right;
+  display: none;
+  height: 100%;
 }
 
 .annotatorModeToolbar {
@@ -590,121 +640,6 @@ body, html {
   margin-bottom: 0px;
   padding: 0;
   height: 100%;
-}
-
-.viewerModeBtnContainer {
-  float: right;
-  display: inline;
-  margin-top: 0px;
-  margin-left: 0px;
-  margin-right: 0px;
-  margin-bottom: 0px;
-  padding: 0;
-  height: 100%;
-}
-
-.toolbar .ui-state-active {
-  background: #656565;
-  color: white;
-}
-
-.toolbar .ui-state-active .ui-icon {
-  background-image: url(../images/ui-icons_custom_256x240.png)/*{iconsActive}*/;
-}
-
-.playbackSpeed {
-  width: 200px;
-}
-
-.controls {
-  display: block;
-  width: 512px;
-  height: 45px;
-  background-color: rgb(220,220,220);
-  position: relative;
-  border-right: 1px solid #656565;
-  border-left: 1px solid #656565;
-  border-top: 0px solid #838383;
-  border-bottom: 1px solid #656565;
-  z-index: 20;
-}
-
-.controls_editor {
-  top: 470px;
-  border-bottom: 1px solid #656565;
-  border-right: 1px solid #656565;
-  border-top: 0px solid #838383;
-}
-
-.timeSliderColorBot_div_playerMode {
-  opacity: 0.6;
-  position: absolute;
-  z-index: 1;
-  top: 0px;
-  left: 0px;
-  bottom: 0px;
-  right: -1px;
-  border-right: 1px solid #656565;
-  background-color: #ffffff;
-  background-image: -webkit-linear-gradient(#8f8f8f, #676767 60%, #1e1e1e);
-  background-image: -moz-linear-gradient(#8f8f8f, #676767 60%, #1e1e1e);
-  background-image: -o-linear-gradient(#8f8f8f, #676767 60%, #1e1e1e);
-  background-image: -ms-linear-gradient(#8f8f8f, #676767 60%, #1e1e1e);
-  height: 8px;
-}
-
-.timeSliderColorSelectorBot_canvas_editorMode {
-  border-right: 1px solid #656565;
-  border-bottom: 1px solid #656565;
-  position: absolute;
-  opacity: 0.6;
-  top: 0px;
-  left: 0px;
-  z-index: 1;
-  visibility: hidden;
-  height: 7px;
-}
-
-.timelineSliderFiller {
-  height: 8px;
-  position: relative;
-  border-left: 1px solid #656565;
-  border-right: 0px;
-  border-top: 0px;
-  border-bottom: 0px;
-}
-
-.timelineSlider {
-  background-color: transparent !important;
-  background: transparent !important;
-  cursor: pointer;
-  display: block;
-  width: 513px;
-  height: 7px;
-  position: relative;
-  bottom: 0px;
-  border: 0px;
-  margin: 0px 0px 0px 0px;
-  z-index: 25;
-}
-
-.timelineSlider .ui-slider-handle {
-  width: 9px;
-  margin-left: -5px !important;
-  height: 17px;
-  overflow: hidden;
-  top: -6px;
-  border-style: none;
-  border: none;
-  margin: 0px;
-  z-index: 5;
-  border: 1px solid #656565;
-  border-radius: 2px !important;
-}
-
-.ui-slider-range {
-  background: #ffffff;
-  opacity: 0.8;
 }
 
 .carousel {

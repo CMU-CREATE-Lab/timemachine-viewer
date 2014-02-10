@@ -166,7 +166,6 @@ if (!Math.uuid) {
       timeCounterIntervalHandle = null;
       if (timelapse.getVisualizer())
         timelapse.getVisualizer().deleteAllTags();
-
     };
     this.clearSnaplapse = _clearSnaplapse;
 
@@ -746,11 +745,17 @@ if (!Math.uuid) {
     };
 
     var moveOneKeyframe = function(moveIdx) {
+
       // Rearrange keyframes
       var from = moveIdx.from;
       var to = moveIdx.to;
       var elementToMove = keyframes[from]
       var elementToBuild_1 = keyframes[from - 1];
+
+      // Update the visualizer
+      if (timelapse.getVisualizer())
+        timelapse.getVisualizer().deleteTimeTag(keyframes[from]["id"], keyframes[from - 1]);
+
       keyframes.splice(from, 1);
       keyframes.splice(to, 0, elementToMove);
       // Rebuild the keyframe before the "from" index before sorting
@@ -762,6 +767,10 @@ if (!Math.uuid) {
       var elementToBuild_2 = keyframes[to - 1];
       if (elementToBuild_2 != undefined)
         tryBuildKeyframeInterval_refreshKeyframeParas(elementToBuild_2.id);
+
+      // Update the visualizer
+      if (timelapse.getVisualizer())
+        timelapse.getVisualizer().addTimeTag(keyframes, to);
     };
     this.moveOneKeyframe = moveOneKeyframe;
 

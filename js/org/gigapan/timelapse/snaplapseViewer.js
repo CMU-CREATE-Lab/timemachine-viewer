@@ -171,21 +171,25 @@ function playCachedSnaplapse(snaplapseId) {
 
     var hideViewerUI = function() {
       var $speedControl = $("#" + timelapseViewerDivId + " .toggleSpeed");
+      var $modisSpeedControl = $("#" + timelapseViewerDivId + " .modisToggleSpeed");
       var $googleLogo = $("#" + timelapseViewerDivId + " .googleLogo");
       var $googleMapToggle = $("#" + timelapseViewerDivId + " .toggleGoogleMapBtn");
       var $contextMapResizer = $("#" + timelapseViewerDivId + " .smallMapResizer");
       var $customTimeline = $("#" + timelapseViewerDivId + "_customTimeline");
       var $customHelpLabel = $(".customHelpLabel");
       var $customPlay = $(".customPlay");
-      var $timeText = $("#" + timelapseViewerDivId + "_customTimeline_timeText");
+      var $modisCustomPlay = $(".modisCustomPlay");
+      var $timeText = $("#" + timelapseViewerDivId + " .timeText");
       var $sideToolBar = $("#" + timelapseViewerDivId + " .sideToolBar").stop(true, true).fadeOut(200);
 
       $sideToolBar.hide();
       $customTimeline.stop(true, true).fadeOut(100);
       $speedControl.hide();
+      $modisSpeedControl.hide();
       $customHelpLabel.stop(true, true).fadeOut(100);
       $googleLogo.css("bottom", "-=" + 50 + "px");
       $customPlay.hide();
+      $modisCustomPlay.hide();
       $timeText.css({
         "text-align": "center",
         "left": "-=" + 14 + "px",
@@ -205,13 +209,15 @@ function playCachedSnaplapse(snaplapseId) {
       var $customTimeline = $("#" + timelapseViewerDivId + "_customTimeline");
       var $customHelpLabel = $(".customHelpLabel");
       var $customPlay = $(".customPlay");
-      var $timeText = $("#" + timelapseViewerDivId + "_customTimeline_timeText");
+      var $modisCustomPlay = $(".modisCustomPlay");
+      var $timeText = $("#" + timelapseViewerDivId + " .timeText");
       var $sideToolBar = $("#" + timelapseViewerDivId + " .sideToolBar").stop(true, true).fadeOut(200);
 
       $customTimeline.stop(true, true).fadeIn(100);
       $customHelpLabel.stop(true, true).fadeIn(100);
       $googleLogo.css("bottom", "+=" + 50 + "px");
       $customPlay.show();
+      $modisCustomPlay.show();
       $timeText.css({
         "text-align": "right",
         "left": "+=" + 14 + "px",
@@ -445,7 +451,7 @@ function playCachedSnaplapse(snaplapseId) {
       var $tiledContentHolder = $("#" + timelapseViewerDivId + " .tiledContentHolder");
       var playerOffset = $tiledContentHolder.offset();
       var timelineSliderFillerHeight = $("#" + composerDivId + " .timelineSliderFiller").outerHeight() || 12;
-      var newTop = $("#" + timelapseViewerDivId + " .timelineSliderFiller").outerHeight() + $("#" + timelapseViewerDivId + " .controls").outerHeight() + $tiledContentHolder.outerHeight() + playerOffset.top - 1 - (timelineSliderFillerHeight * +!!settings["enableCustomUI"]);
+      var newTop = $("#" + timelapseViewerDivId + " .toolbar").outerHeight() + $tiledContentHolder.outerHeight() + playerOffset.top - 1;
       var newLeft = playerOffset.left;
       var newWidth = $tiledContentHolder.width();
       $("#" + composerDivId + " .snaplapse_keyframe_container").css({
@@ -582,6 +588,8 @@ function playCachedSnaplapse(snaplapseId) {
         setToPresentationViewOnlyMode();
       if (!didOnce) {
         var $playbackButton = $("#" + timelapseViewerDivId + ' .playbackButton');
+        var $controls = $("#" + timelapseViewerDivId + ' .controls');
+        var $sideToolbar = $("#" + timelapseViewerDivId + ' .sideToolBar');
         snaplapse.addEventListener('play', function() {
           var visualizer = timelapse.getVisualizer();
           var isFullScreen = timelapse.isFullScreen();
@@ -605,7 +613,6 @@ function playCachedSnaplapse(snaplapseId) {
             "height": $snaplapseContainer.height()
           });
           // Other UI
-          $("#" + timelapseViewerDivId + " .viewerModeBtn").button("disable");
           if (!isFullScreen)
             timelapse.disableEditorToolbarButtons();
           if (visualizer) {
@@ -634,7 +641,10 @@ function playCachedSnaplapse(snaplapseId) {
           $("#" + timelapseViewerDivId + " .instructions").stop(true, true).fadeOut(50);
           $("#" + timelapseViewerDivId + " .instructions").removeClass('on');
           $("#" + timelapseViewerDivId + ' .repeatCheckbox').button("disable");
-          $playbackButton.hide();
+          if (datasetType == undefined) {
+            $sideToolbar.stop(true, true).fadeOut(100);
+            $controls.stop(true, true).fadeOut(100);
+          }
           $("#" + timelapseViewerDivId + ' .stopTimeWarp').show();
           $("#" + timelapseViewerDivId + ' .addressLookup').attr("disabled", "disabled");
           $("#" + timelapseViewerDivId + ' .timelineSlider').slider("disable");
@@ -646,7 +656,6 @@ function playCachedSnaplapse(snaplapseId) {
 
           $("#" + timelapseViewerDivId + " .snaplapsePlayingMask").remove();
           $("#" + composerDivId + " .snaplapsePlayingMask").remove();
-          $("#" + timelapseViewerDivId + " .viewerModeBtn").button("enable");
           if (!isFullScreen)
             timelapse.enableEditorToolbarButtons();
           if (visualizer && !isFullScreen)
@@ -673,7 +682,10 @@ function playCachedSnaplapse(snaplapseId) {
           $("#" + timelapseViewerDivId + ' .stopTimeWarp').hide();
           $playbackButton.removeClass("pause").addClass("play");
           $playbackButton.attr("title", "Play");
-          $playbackButton.show();
+          if (datasetType == undefined) {
+            $sideToolbar.stop(true, true).fadeIn(100);
+            $controls.stop(true, true).fadeIn(100);
+          }
           $("#" + timelapseViewerDivId + ' .repeatCheckbox').button("enable");
           $("#" + timelapseViewerDivId + ' .help').removeClass("disabled").addClass("enabled");
           $("#" + timelapseViewerDivId + ' .addressLookup').removeAttr("disabled");
@@ -1182,7 +1194,7 @@ function playCachedSnaplapse(snaplapseId) {
       var rootFlag = "root=" + root + "&";
       var boundsFlag = "boundsLTRB=" + bounds.xmin + "," + bounds.ymin + "," + bounds.xmax + "," + bounds.ymax + "&";
       var sizeFlag = "width=" + width + "&height=" + height + "&";
-      var timeFlag = "frameTime=" + timelapse.getCurrentTime();
+      var timeFlag = "frameTime=" + time;
       return serverURL + rootFlag + boundsFlag + sizeFlag + timeFlag;
     };
 
@@ -1421,5 +1433,10 @@ function playCachedSnaplapse(snaplapseId) {
     initializeSnaplapseUI();
     newSnaplapse(null);
     setPresentationMode(startEditorFromPresentationMode);
+
+    // There is sometimes a race condition that customUI is created before the snaplapseViewer
+    var customUI = timelapse.getCustomUI();
+    if (customUI)
+      customUI.fitToWindow();
   };
 })();

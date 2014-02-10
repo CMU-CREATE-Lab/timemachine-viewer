@@ -97,10 +97,18 @@ if (!org.gigapan.timelapse.Timelapse) {
     var mode = "player";
     var viewerDivId = timelapse.getViewerDivId();
     var videoDivId = timelapse.getVideoDivId();
+    var $videoDiv = $("#" + videoDivId);
     var tmJSON = timelapse.getTmJSON();
     var panInterval;
     var translationSpeedConstant = 20;
     var $playbackButton = $("#" + viewerDivId + " .playbackButton");
+    var $toolbar = $("#" + viewerDivId + " .toolbar");
+    var $controls = $("#" + viewerDivId + " .controls");
+    var $editorModeToolbar = $("#" + viewerDivId + " .editorModeToolbar");
+    var $annotatorModeToolbar = $("#" + viewerDivId + " .annotatorModeToolbar");
+    var toolbarHeight = $toolbar.outerHeight();
+    var minViewportHeight = timelapse.getMinViewportHeight();
+    var minViewportWidth = timelapse.getMinViewportWidth();
 
     var visualizer = timelapse.getVisualizer();
     var annotator = timelapse.getAnnotator();
@@ -133,13 +141,6 @@ if (!org.gigapan.timelapse.Timelapse) {
           return;
         timelapse.handlePlayPause();
       });
-      // Stop button
-      $("#" + viewerDivId + " .stopTimeWarp").button({
-        icons: {
-          secondary: "ui-icon-custom-stop"
-        },
-        text: false
-      });
       // Create fullscreen button
       if (showFullScreenBtn) {
         var $fullScreenBtnContainer = $("#" + viewerDivId + " .fullScreenBtnContainer");
@@ -161,25 +162,6 @@ if (!org.gigapan.timelapse.Timelapse) {
           }
         });
       }
-      // Create loop button
-      var $repeatBtnContainer = $("#" + viewerDivId + " .repeatBtnContainer");
-      $repeatBtnContainer.append('<input type="checkbox" class="repeatCheckbox"/>');
-      $repeatBtnContainer.append('<label class="repeatLabel" title="Repeat playback">Repeat</label>');
-      var $repeatCheckbox = $("#" + viewerDivId + " .repeatCheckbox");
-      $repeatCheckbox.attr("id", viewerDivId + "_repeatCheckbox");
-      $("#" + viewerDivId + " .repeatLabel").attr("for", viewerDivId + "_repeatCheckbox");
-      $repeatCheckbox.button({
-        icons: {
-          primary: "ui-icon-custom-repeat"
-        },
-        text: false
-      }).change(function() {
-        if ($repeatCheckbox.is(":checked")) {
-          timelapse.setLoopPlayback(true);
-        } else {
-          timelapse.setLoopPlayback(false);
-        }
-      });
       // Create mode switch button
       if (settings["composerDiv"] || settings["annotatorDiv"]) {
         createModeSwitchButton();
@@ -387,17 +369,19 @@ if (!org.gigapan.timelapse.Timelapse) {
 
     // Create the player mode toolbar
     var createPlayerModeToolbar = function() {
-      var playerModeToolbar = $("#" + viewerDivId + " .playerModeToolbar");
       // Create share button
       if (showShareBtn) {
-        playerModeToolbar.append('<button class="share" title="Share current view">Share</button>');
         $("#" + viewerDivId + " .share").button({
           icons: {
             primary: "ui-icon-person"
           },
           text: true
         }).click(function() {
-          shareView();
+          var shareViewDialog = $("#" + viewerDivId + " .shareView");
+          if (shareViewDialog.dialog("isOpen"))
+            shareViewDialog.dialog("close");
+          else
+            shareView();
         });
       }
       // Share view window
@@ -414,7 +398,6 @@ if (!org.gigapan.timelapse.Timelapse) {
       }).parent().appendTo($("#" + viewerDivId));
       // Create playbackSpeed menu and button
       createPlaybackSpeedMenu();
-      playerModeToolbar.append('<button class="playbackSpeed" title="Change playback speed"></button>');
       var $playbackSpeed = $("#" + viewerDivId + " .playbackSpeed");
       var $playbackSpeedOptions = $("#" + viewerDivId + " .playbackSpeedOptions");
       $playbackSpeed.button({
@@ -427,52 +410,18 @@ if (!org.gigapan.timelapse.Timelapse) {
           $playbackSpeedOptions.hide();
         } else {
           $playbackSpeedOptions.show().position({
-            my: "left bottom",
-            at: "left top",
-            of: this
+            my: "right bottom",
+            at: "right top",
+            of: $playbackSpeed
           });
-          $("#" + viewerDivId + " .sizeOptions").hide();
-          $("#" + viewerDivId + " .viewerModeOptions").hide();
           $(document).one("mouseup", function(e) {
-            if ($playbackSpeed.has(e.target).length == 0)
+            var targetGroup = $(e.target).parents().addBack();
+            if (!targetGroup.is(".playbackSpeed"))
               $playbackSpeedOptions.hide();
           });
         }
       });
-      //$("#" + viewerDivId + " .playbackSpeed span").text("");
-      // Create size menu and button
-      if (settings["showSizeBtn"] == true) {
-        populateSizes();
-        playerModeToolbar.append('<button class="size" title="Change viewer size">Size</button>');
-        var $size = $("#" + viewerDivId + " .size");
-        var $sizeOptions = $("#" + viewerDivId + " .sizeOptions");
-        $size.button({
-          icons: {
-            secondary: "ui-icon-triangle-1-s"
-          },
-          text: true
-        }).click(function() {
-          if ($sizeOptions.is(":visible")) {
-            $sizeOptions.hide();
-          } else {
-            $sizeOptions.show().position({
-              my: "left bottom",
-              at: "left top",
-              of: this
-            });
-            $playbackSpeedOptions.hide();
-            $("#" + viewerDivId + " .viewerModeOptions").hide();
-            $(document).one("mouseup", function(e) {
-              if ($size.has(e.target).length == 0)
-                $sizeOptions.hide();
-            });
-          }
-        });
-        $sizeOptions.hide().menu();
-      }
       // Create help button
-      playerModeToolbar.append('<input type="checkbox" class="helpPlayerCheckbox"/>');
-      playerModeToolbar.append('<label class="helpPlayerLabel" title="Show instructions"></label>');
       var helpPlayerCheckbox = $("#" + viewerDivId + " .helpPlayerCheckbox");
       helpPlayerCheckbox.attr("id", viewerDivId + "_helpPlayerCheckbox");
       var $helpPlayerLabel = $("#" + viewerDivId + " .helpPlayerLabel");
@@ -493,8 +442,6 @@ if (!org.gigapan.timelapse.Timelapse) {
           removeHelpOverlay();
         }
       });
-      // Create buttonset
-      playerModeToolbar.buttonset();
     };
 
     // Create the editor mode toolbar
@@ -587,21 +534,11 @@ if (!org.gigapan.timelapse.Timelapse) {
     // Hide the area for editing the timewarp
     var hideEditorArea = function() {
       $("#" + settings["composerDiv"]).hide();
-
-      if (visualizer) {
-        $("#" + viewerDivId + " .timeSliderColorBot_div_playerMode").show();
-        $("#" + viewerDivId + " .timeSliderColorSelectorBot_canvas_editorMode").css("visibility", "hidden");
-      }
     };
 
     // Show the area for editing the timewarp
     var showEditorArea = function() {
       $("#" + settings["composerDiv"]).show();
-
-      if (visualizer) {
-        $("#" + viewerDivId + " .timeSliderColorSelectorBot_canvas_editorMode").css("visibility", "visible");
-        $("#" + viewerDivId + " .timeSliderColorBot_div_playerMode").hide();
-      }
     };
 
     // Create the annotator toolbar
@@ -740,9 +677,10 @@ if (!org.gigapan.timelapse.Timelapse) {
 
       if (newMode == "player") {
         mode = newMode;
-        $("#" + viewerDivId + " .annotatorModeToolbar").hide();
-        $("#" + viewerDivId + " .editorModeToolbar").hide();
-        $("#" + viewerDivId + " .playerModeToolbar").show();
+        $annotatorModeToolbar.hide();
+        $editorModeToolbar.hide();
+        $toolbar.hide();
+        $controls.css("bottom", "0px");
         $("#" + viewerDivId + " .fullscreenCheckbox").prop("checked", fullScreen).button("refresh");
         $("#" + viewerDivId + " .moveAnnotationCheckbox").prop("checked", false).button("refresh").change();
         if (!fullScreen) {
@@ -764,9 +702,10 @@ if (!org.gigapan.timelapse.Timelapse) {
         }
       } else if (newMode == "editor") {
         mode = newMode;
-        $("#" + viewerDivId + " .playerModeToolbar").hide();
-        $("#" + viewerDivId + " .annotatorModeToolbar").hide();
-        $("#" + viewerDivId + " .editorModeToolbar").show();
+        $toolbar.show();
+        $controls.css("bottom", toolbarHeight + "px");
+        $annotatorModeToolbar.hide();
+        $editorModeToolbar.show();
         $("#" + viewerDivId + " .fullscreenCheckbox").prop("checked", fullScreen).button("refresh");
         $("#" + viewerDivId + " .moveAnnotationCheckbox").prop("checked", false).button("refresh").change();
         if (!fullScreen) {
@@ -785,7 +724,7 @@ if (!org.gigapan.timelapse.Timelapse) {
         timelapse.updateTagInfo_locationData();
       } else if (newMode == "annotator") {
         mode = newMode;
-        $("#" + viewerDivId + " .playerModeToolbar").hide();
+        $("#" + viewerDivId + " .controls").show();
         $("#" + viewerDivId + " .editorModeToolbar").hide();
         $("#" + viewerDivId + " .annotatorModeToolbar").show();
         $("#" + viewerDivId + " .fullscreenCheckbox").prop("checked", fullScreen).button("refresh");
@@ -805,62 +744,27 @@ if (!org.gigapan.timelapse.Timelapse) {
       }
       if (visualizer)
         visualizer.setMode(mode, fullScreen);
+      if (settings["viewportGeometry"] && settings["viewportGeometry"]["max"])
+        fitToWindow();
     };
 
     // Create the mode switching button
     var createModeSwitchButton = function() {
-      // Populate the dropdown
-      var html = "";
-      if (settings["annotatorDiv"]) {
-        html += '<li><a href="javascript:void(0);">Annotator</a></li>';
-      }
-      if (settings["composerDiv"]) {
-        html += '<li><a href="javascript:void(0);">Editor</a></li>';
-      }
-      html += '<li><a href="javascript:void(0);">Player</a></li>';
-      $("#" + viewerDivId + " .viewerModeOptions").append(html);
-
-      // Create menu and button
-      var viewerModeBtnContainer = $("#" + viewerDivId + " .viewerModeBtnContainer");
-      viewerModeBtnContainer.append('<button class="viewerModeBtn" title="Change viewer mode">Player</button>');
       var $viewerModeBtn = $("#" + viewerDivId + " .viewerModeBtn");
-      var $viewerModeOptions = $("#" + viewerDivId + " .viewerModeOptions");
       $viewerModeBtn.attr("id", viewerDivId + "_viewerModeBtn");
-      $viewerModeBtn.button({
+      var $viewerModeCheckbox = $("#" + viewerDivId + " .viewerModeCheckbox");
+      $viewerModeCheckbox.attr("id", viewerDivId + "_viewerModeCheckbox");
+      $viewerModeBtn.attr("for", viewerDivId + "_viewerModeCheckbox");
+      $viewerModeCheckbox.button({
         icons: {
-          primary: "ui-icon-gear"
+          primary: "ui-icon-note"
         },
-        text: true
+        text: false
       }).click(function() {
-        if ($viewerModeOptions.is(":visible")) {
-          $viewerModeOptions.hide();
-        } else {
-          $viewerModeOptions.show().position({
-            my: "right bottom",
-            at: "right top",
-            of: this
-          });
-          $("#" + viewerDivId + " .playbackSpeedOptions").hide();
-          $("#" + viewerDivId + " .sizeOptions").hide();
-        }
-        $(document).one("mouseup", function(e) {
-          if ($viewerModeBtn.has(e.target).length == 0)
-            $viewerModeOptions.hide();
-        });
-      });
-      $("#" + viewerDivId + " .viewerModeOptions").hide().menu();
-
-      // Set the dropdown
-      $("#" + viewerDivId + " .viewerModeOptions li a").bind("click", function() {
-        var newMode = $(this).text();
-        $viewerModeBtn.button("option", "label", newMode);
-        if (newMode == "Editor") {
+        if ($viewerModeCheckbox.is(":checked"))
           setMode("editor");
-        } else if (newMode == "Player") {
+        else
           setMode("player");
-        } else if (newMode == "Annotator") {
-          setMode("annotator");
-        }
       });
     };
 
@@ -886,20 +790,31 @@ if (!org.gigapan.timelapse.Timelapse) {
 
     var fitToWindow = function() {
       var newViewportWidth, newViewportHeight;
-      var extraViewportHeight = showMainControls ? ($("#" + viewerDivId + " .controls").outerHeight() + $("#" + viewerDivId + " .timelineSlider").outerHeight() + 2) : 0;
       newViewportWidth = window.innerWidth - 2;
       // Extra 2px for the borders
-      newViewportHeight = window.innerHeight - extraViewportHeight;
-      // Subtract height of controls and extra 2px for borders
-      // Ensure minimum dimensions to not break controls
-      if (newViewportWidth < 816)
-        newViewportWidth = 816;
-      if (newViewportHeight < 468)
-        newViewportHeight = 468;
-
+      newViewportHeight = window.innerHeight;
+      // Extra 1px for the borders
       var scaleBar = timelapse.getScaleBar()
       if (scaleBar)
         scaleBar.updateVideoSize();
+
+      var $snaplapseKeyframeContainer = $("#" + settings["composerDiv"] + " .snaplapse_keyframe_container");
+      // 175 is the height of the keyframe container
+      var extraHeight = 175 + toolbarHeight;
+      newViewportHeight -= extraHeight;
+
+      // Ensure minimum dimensions to not break controls
+      if (newViewportWidth < minViewportWidth)
+        newViewportWidth = minViewportWidth;
+      if (newViewportHeight < minViewportHeight)
+        newViewportHeight = minViewportHeight;
+
+      if (mode == "editor") {
+        $snaplapseKeyframeContainer.css({
+          "top": newViewportHeight + toolbarHeight,
+          "width": newViewportWidth
+        });
+      }
 
       timelapse.fitVideoToViewport(newViewportWidth, newViewportHeight);
       window.scrollTo(0, 0);
@@ -988,6 +903,7 @@ if (!org.gigapan.timelapse.Timelapse) {
       }
     }
 
+    // Unused
     function populateSizes() {
       // Populate the player size dropdown
       var html = "";
@@ -1060,10 +976,11 @@ if (!org.gigapan.timelapse.Timelapse) {
       $("#" + viewerDivId + " .totalTime").html(org.gigapan.Util.formatTime(timelapse.getDuration(), true));
       $("#" + viewerDivId + " .currentCaptureTime").html(org.gigapan.Util.htmlForTextWithEmbeddedNewlines(captureTimes[timelapse.getTimelapseCurrentCaptureTimeIndex()]));
 
-      $("#" + viewerDivId + " .timelineSlider").slider({
+      var $timelineSlider = $("#" + viewerDivId + " .timelineSlider");
+      $timelineSlider.slider({
         min: 0,
         max: numFrames - 1, // this way the time scrubber goes exactly to the end of timeline
-        range: "max",
+        range: "min",
         step: 1,
         slide: function(e, ui) {
           // $(this).slider('value')  --> previous value
@@ -1078,6 +995,14 @@ if (!org.gigapan.timelapse.Timelapse) {
         }
       }).removeClass("ui-corner-all").children().removeClass("ui-corner-all");
       $("#" + viewerDivId + " .timelineSlider .ui-slider-handle").attr("title", "Drag to go to a different point in time");
+
+      $timelineSlider.bind("mousedown", function() {
+        if (window && (window.self !== window.top)) {
+          $("body").one("mouseleave", function(event) {
+            $timelineSlider.trigger("mouseup");
+          });
+        };
+      });
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1137,15 +1062,10 @@ if (!org.gigapan.timelapse.Timelapse) {
         panoVideo = visualizer.getPanoVideo();
       if (isFitToWindow) {
         if (mode == "editor") {
-          hideEditorArea();
-          disableEditorToolbarButtons();
           if (panoVideo) {
             panoVideo.pause();
           }
-          if (visualizer)
-            $("#" + viewerDivId + " .timeSliderColorSelectorBot_canvas_editorMode").css("visibility", "hidden");
         } else if (mode == "annotator") {
-          hideAnnotatorArea();
           if (panoVideo)
             panoVideo.pause();
         }
@@ -1160,8 +1080,6 @@ if (!org.gigapan.timelapse.Timelapse) {
             panoVideo.play();
           }
           showEditorArea();
-          if (visualizer)
-            $("#" + viewerDivId + " .timeSliderColorSelectorBot_canvas_editorMode").css("visibility", "visible");
         } else if (mode == "annotator") {
           showAnnotatorArea();
           timelapse.seek_panoVideo(videoset.getCurrentTime());
@@ -1178,7 +1096,6 @@ if (!org.gigapan.timelapse.Timelapse) {
       showMainControls = !showMainControls;
       $("#" + viewerDivId + " .controls").toggle();
       $("#" + viewerDivId + " .timelineSliderFiller").toggle();
-      $("#" + viewerDivId + " .timeSliderColorSelectorBot_canvas_editorMode").toggle();
       fitToWindow();
     };
     this.toggleMainControls = _toggleMainControls;
@@ -1232,19 +1149,18 @@ if (!org.gigapan.timelapse.Timelapse) {
     if (!showMainControls) {
       $("#" + viewerDivId + " .controls").hide();
       $("#" + viewerDivId + " .timelineSliderFiller").hide();
-      $("#" + viewerDivId + " .timeSliderColorSelectorBot_canvas_editorMode").hide();
     }
     if (!showHomeBtn) {
       $("#" + viewerDivId + " .zoomall").hide();
     }
-    if (timelapse.getLoopPlayback()) {
-      $("#" + viewerDivId + " .repeatCheckbox").prop("checked", true).button("refresh").change();
-    }
     if (settings["viewportGeometry"] && settings["viewportGeometry"]["max"]) {
-      window.onresize = function() {
+      // We already add a resizing handler in customUI.js, so don't add it again.
+      if ( typeof settings["enableCustomUI"] == "undefined" || settings["enableCustomUI"] == false) {
+        window.onresize = function() {
+          fitToWindow();
+        };
         fitToWindow();
-      };
-      fitToWindow();
+      }
     }
   };
   //end of org.gigapan.timelapse.DefaultUI

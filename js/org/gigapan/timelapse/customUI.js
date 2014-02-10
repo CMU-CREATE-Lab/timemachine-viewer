@@ -123,7 +123,7 @@ if (!org.gigapan.timelapse.Timelapse) {
     var numYears;
     var pixelRatio = getPixelRatio();
     var endFrameIdx = numFrames - 1;
-    var extraHeight = 0;
+    var extraHeight = 2;
     var $customEditorControl;
     var $customSpeedhelp;
 
@@ -305,10 +305,11 @@ if (!org.gigapan.timelapse.Timelapse) {
       }
       fitToWindow();
 
-      var $speedControl = $("#" + viewerDivId + " .toggleSpeed");
-      var $googleLogo = $("#" + viewerDivId + " .googleLogo");
-      var $googleMapToggle = $("#" + viewerDivId + " .toggleGoogleMapBtn");
-      var $contextMapResizer = $("#" + viewerDivId + " .smallMapResizer");
+      var $speedControl;
+      if (datasetType == "landsat")
+        $speedControl = $("#" + viewerDivId + " .toggleSpeed");
+      else
+        $speedControl = $("#" + viewerDivId + " .modisToggleSpeed");
 
       // Set event listeners
       var snaplapse = timelapse.getSnaplapse();
@@ -509,40 +510,6 @@ if (!org.gigapan.timelapse.Timelapse) {
       var bsr = ctx.webkitBackingStorePixelRatio || ctx.mozBackingStorePixelRatio || ctx.msBackingStorePixelRatio || ctx.oBackingStorePixelRatio || ctx.backignStorePixelRatio || 1;
       return dpr / bsr;
     }
-
-    var fitToWindow = function() {
-      if (settings["viewportGeometry"] && settings["viewportGeometry"]["max"]) {
-        var hashVars = org.gigapan.Util.getUnsafeHashVars();
-        var $snaplapseKeyframeContainer = $("#" + settings["composerDiv"] + " .snaplapse_keyframe_container");
-        if (hashVars && hashVars.presentation) {
-          // If in presentation viewer-only mode
-          extraHeight = 99;
-          $snaplapseKeyframeContainer.css({
-            "top": window.innerHeight - extraHeight + 6,
-            "width": "inherit",
-            "max-width": window.innerWidth - 2
-          });
-        } else if (editorEnabled) {
-          // If the editor is enabled
-          var toolbarHeight = $customEditorControl.height();
-          extraHeight = $snaplapseKeyframeContainer.height() + toolbarHeight + 1;
-          $snaplapseKeyframeContainer.css({
-            "top": window.innerHeight - extraHeight + toolbarHeight,
-            "width": window.innerWidth - 2
-          });
-        }
-        timelapse.fitVideoToViewport(window.innerWidth - 2, window.innerHeight - extraHeight);
-      }
-      viewerWidth = $viewer.width();
-      sliderLeftMargin_pct = (sliderLeftMargin / viewerWidth) * 100;
-      sliderRightMargin_pct = (sliderRightMargin / viewerWidth) * 100;
-      sliderWidth_pct = 100 - sliderLeftMargin_pct - sliderRightMargin_pct;
-      $customTimeline.css({
-        'width': sliderWidth_pct + "%",
-        'left': sliderLeftMargin_pct + "%"
-      });
-      sliderWidth = $customTimeline.width();
-    };
 
     var createSpeedControl = function() {
       // Toggle speed
@@ -1450,6 +1417,41 @@ if (!org.gigapan.timelapse.Timelapse) {
     //
     // Public methods
     //
+    var fitToWindow = function() {
+      if (settings["viewportGeometry"] && settings["viewportGeometry"]["max"]) {
+        var hashVars = org.gigapan.Util.getUnsafeHashVars();
+        var $snaplapseKeyframeContainer = $("#" + settings["composerDiv"] + " .snaplapse_keyframe_container");
+        if (hashVars && hashVars.presentation) {
+          // If in presentation viewer-only mode
+          extraHeight = 99;
+          $snaplapseKeyframeContainer.css({
+            "top": window.innerHeight - extraHeight + 6,
+            "width": "inherit",
+            "max-width": window.innerWidth - 2
+          });
+        } else if (editorEnabled) {
+          // If the editor is enabled
+          var toolbarHeight = $customEditorControl.outerHeight();
+          extraHeight = $snaplapseKeyframeContainer.outerHeight() + toolbarHeight;
+          $snaplapseKeyframeContainer.css({
+            "top": window.innerHeight - extraHeight + toolbarHeight,
+            "width": window.innerWidth - 2
+          });
+        }
+        timelapse.fitVideoToViewport(window.innerWidth - 2, window.innerHeight - extraHeight);
+      }
+      viewerWidth = $viewer.width();
+      sliderLeftMargin_pct = (sliderLeftMargin / viewerWidth) * 100;
+      sliderRightMargin_pct = (sliderRightMargin / viewerWidth) * 100;
+      sliderWidth_pct = 100 - sliderLeftMargin_pct - sliderRightMargin_pct;
+      $customTimeline.css({
+        'width': sliderWidth_pct + "%",
+        'left': sliderLeftMargin_pct + "%"
+      });
+      sliderWidth = $customTimeline.width();
+    };
+    this.fitToWindow = fitToWindow;
+
     var focusTimeTick = function(frameIdx) {
       var elementIdx = frameIdx;
       if (datasetType == "modis")

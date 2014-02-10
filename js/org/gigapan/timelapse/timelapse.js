@@ -187,8 +187,6 @@ if (!window['$']) {
     // DOM elements
     var Tslider1Full;
     var Tslider1Color;
-    var colorSelectorBot;
-    var ctx_colorSelectorBot;
     var panoVideo;
     var $subtitle_DOM;
     var subtitle_DOM;
@@ -356,6 +354,18 @@ if (!window['$']) {
     //
     // Public methods
     //
+    this.getCustomUI = function() {
+    	return customUI;
+    };
+
+    this.getMinViewportHeight = function() {
+      return minViewportHeight;
+    };
+
+    this.getMinViewportWidth = function() {
+      return minViewportWidth;
+    };
+
     this.disableEditorToolbarButtons = function() {
       defaultUI.disableEditorToolbarButtons();
     };
@@ -1387,7 +1397,7 @@ if (!window['$']) {
       }
     };
 
-    var handleMousedownEvent = function(event, fromTimewarpMap) {
+    var handleMousedownEvent = function(event) {
       if (event.which != 1 || (annotator && (event.metaKey || event.ctrlKey || event.altKey || annotator.getCanMoveAnnotation())))
         return;
       // TODO: Revisit when we refactor view code
@@ -1403,29 +1413,15 @@ if (!window['$']) {
       document.onmousemove = function(event) {
         if (mouseIsDown) {
           //if (videoset.isStalled()) return;
-          if (fromTimewarpMap) {
-            // This is for the timewarp map
-            // TODO: Each time we drag the box we do a new warp. This is inefficient
-            // and we should just warp once upon exiting the context map mode.
-            if (event.shiftKey) {
-              targetView.x += (event.pageX - lastEvent.pageX) * 0.2 / homeView.scale;
-              targetView.y += (event.pageY - lastEvent.pageY) * 0.2 / homeView.scale;
-            } else {
-              targetView.x += (event.pageX - lastEvent.pageX) / homeView.scale;
-              targetView.y += (event.pageY - lastEvent.pageY) / homeView.scale;
-            }
-            _warpTo(targetView);
+          // This is for the tile content holder
+          if (event.shiftKey) {
+            targetView.x += (lastEvent.pageX - event.pageX) * 0.2 / view.scale;
+            targetView.y += (lastEvent.pageY - event.pageY) * 0.2 / view.scale;
           } else {
-            // This is for the tile content holder
-            if (event.shiftKey) {
-              targetView.x += (lastEvent.pageX - event.pageX) * 0.2 / view.scale;
-              targetView.y += (lastEvent.pageY - event.pageY) * 0.2 / view.scale;
-            } else {
-              targetView.x += (lastEvent.pageX - event.pageX) / view.scale;
-              targetView.y += (lastEvent.pageY - event.pageY) / view.scale;
-            }
-            setTargetView(targetView);
+            targetView.x += (lastEvent.pageX - event.pageX) / view.scale;
+            targetView.y += (lastEvent.pageY - event.pageY) / view.scale;
           }
+          setTargetView(targetView);
           lastEvent = event;
         }
         return false;
@@ -1876,39 +1872,6 @@ if (!window['$']) {
       $("#" + viewerDivId + " .addTimetag").button("option", "disabled", false);
     };
 
-    // Initialize the color selector for the editor
-    var initColorSelector = function() {
-      // Set colors
-      var colorTimeLeft;
-      var colorTimeRight;
-      var colorTimeCenter;
-      if (tmJSON['projection-bounds']) {
-        colorTimeRight = "#000000";
-        colorTimeLeft = "#000000";
-        colorTimeCenter = "#000000";
-      } else {
-        colorTimeRight = "#dd0050";
-        colorTimeLeft = "#007030";
-        colorTimeCenter = "#c36500";
-      }
-      // Set the bottom color selector
-      var CS_bot = document.getElementsByClassName("timeSliderColorSelectorBot_canvas_editorMode")[0];
-      var newWidth_CS_bot = $("#" + viewerDivId + " .tiledContentHolder").outerWidth() - 1;
-      CS_bot.width = newWidth_CS_bot - 1;
-      CS_bot.height = CS_bot.offsetHeight - 1;
-      var ctx_CS_bot = CS_bot.getContext('2d');
-      ctx_CS_bot.lineWidth = CS_bot.height * 2;
-      var grad_bot = ctx_CS_bot.createLinearGradient(0, 0, CS_bot.offsetWidth, 0);
-      grad_bot.addColorStop(0, colorTimeLeft);
-      grad_bot.addColorStop(0.5, colorTimeCenter);
-      grad_bot.addColorStop(1, colorTimeRight);
-      ctx_CS_bot.strokeStyle = grad_bot;
-      ctx_CS_bot.beginPath();
-      ctx_CS_bot.moveTo(0, 0);
-      ctx_CS_bot.lineTo(CS_bot.offsetWidth, 0);
-      ctx_CS_bot.stroke();
-    };
-
     // Initialize the tag info with location data
     var initializeTagInfo_locationData = function() {
       var boundingBox = computeBoundingBox(homeView);
@@ -1917,11 +1880,8 @@ if (!window['$']) {
       tagInfo_locationData.homeView.scale = homeView.scale;
       if (visualizer) {
         var navigationMap = visualizer.getNavigationMap();
-        var timewarpMap = visualizer.getTimewarpMap();
         var navigationMapWidth = $(navigationMap).width();
-        var timewarpMapWidth = $(timewarpMap).width();
         tagInfo_locationData.scale_map_nav = navigationMapWidth / (boundingBox.xmax - boundingBox.xmin);
-        tagInfo_locationData.scale_map_timewarp = timewarpMapWidth / (boundingBox.xmax - boundingBox.xmin);
       }
     };
 
@@ -2072,17 +2032,7 @@ if (!window['$']) {
 
     // Select tag color according to time
     var getTagColor = function(time) {
-      var timelineX;
-      if (time == undefined) {
-        timelineX = Tslider1Full.offsetWidth - Tslider1Color.offsetWidth - 1;
-      } else {
-        timelineX = ((time * _getFps()) / (_getNumFrames() - 1)) * Tslider1Full.width() - 1;
-      }
-      if (timelineX < 0)
-        timelineX = 0;
-      // Get color selector element
-      var pixel = ctx_colorSelectorBot.getImageData(timelineX, 0, 1, 1).data;
-      return [pixel[0], pixel[1], pixel[2], timelineX];
+      return [255, 0, 0, 0];
     };
     this.getTagColor = getTagColor;
 
@@ -2497,7 +2447,6 @@ if (!window['$']) {
         $("#" + videoDivId).append('<div class="snaplapse-annotation-description"><div></div></div>');
         snaplapse = new org.gigapan.timelapse.Snaplapse(settings["composerDiv"], thisObj, settings);
 
-        initColorSelector();
         // Timewarp visualizer that shows the location of the current view and transitions between keyframes
         if (!tmJSON['projection-bounds']) {
           visualizer = new org.gigapan.timelapse.Visualizer(thisObj, snaplapse, visualizerGeometry);
@@ -2549,8 +2498,6 @@ if (!window['$']) {
       Tslider1Full = $("#Tslider1");
       Tslider1Color = Tslider1Full.find(" .ui-slider-range.ui-widget-header.ui-slider-range-max").get(0);
       Tslider1Full = Tslider1Full.get(0);
-      colorSelectorBot = $("#" + viewerDivId + " .timeSliderColorSelectorBot_canvas_editorMode").get(0);
-      ctx_colorSelectorBot = colorSelectorBot.getContext('2d');
       if (snaplapse) {
         $subtitle_DOM = $("#" + viewerDivId + " .snaplapse-annotation-description");
         subtitle_DOM = $subtitle_DOM.get(0);
@@ -2774,8 +2721,6 @@ if (!window['$']) {
 
       // Controls
       $("#" + viewerDivId + " .controls").width(newWidth);
-      $("#" + viewerDivId + " .timelineSliderFiller").width(newWidth);
-      $("#" + viewerDivId + " .timelineSlider").width(newWidth);
 
       $("#" + viewerDivId + " .spinnerOverlay").css({
         "margin": spinnerCenterHeight + " " + spinnerCenterWidth
