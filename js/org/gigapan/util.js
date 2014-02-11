@@ -242,37 +242,42 @@ if (!org.gigapan) {
 
   // Wrapper for ajax calls
   org.gigapan.Util.ajax = function(dataType, rootPath, path, callback) {
-    var ajaxUrl;
-    if ( typeof (cached_ajax) != "undefined") {
-      // We are on file url or using cached ajax to get around
-      // cross domain security policies
-      ajaxUrl = rootPath + path;
-      // If the key does not include the absolute dataset URL,
-      // assume the key is relative and in the form of "./foo.blah"
-      if ( typeof (cached_ajax[ajaxUrl]) == "undefined")
+    var ajaxUrl = rootPath + path;
+    var doNormalAjax = false;
+
+    // Check that there is a global cache object
+    if (typeof(cached_ajax) !== "undefined") {
+      if (typeof(cached_ajax[ajaxUrl]) === "undefined") {
+        // If the key does not include the absolute dataset URL,
+        // perhaps it is relative and in the form of "./foo.bar"
         ajaxUrl = "./" + path;
-      if ( typeof (cached_ajax[ajaxUrl]) == "undefined") {
-        org.gigapan.Util.error("Error loading key from ajax_includes [" + ajaxUrl + "]");
+        if (typeof(cached_ajax[ajaxUrl]) === "undefined") {
+          doNormalAjax = true;
+        }
+      }
+
+      if (!doNormalAjax) {
+        console.log("cached");
+        callback(cached_ajax[ajaxUrl]);
         return;
       }
-      callback(cached_ajax[ajaxUrl]);
-    } else {
-      // We are not on file url or we are utilizing the Chrome
-      // --allow-file-access-from-files param and can do normal ajax calls
-      ajaxUrl = rootPath + path;
-      $.ajax({
-        dataType: dataType,
-        url: ajaxUrl,
-        success: function(data) {
-          if (data)
-            callback(data);
-        },
-        error: function() {
-          org.gigapan.Util.error("Error loading file from URL [" + ajaxUrl + "]");
-          return;
-        }
-      });
     }
+
+    // Nothing cached, so do an actual request
+    ajaxUrl = rootPath + path;
+    console.log(ajaxUrl);
+    $.ajax({
+      dataType: dataType,
+      url: ajaxUrl,
+      success: function(data) {
+        if (data)
+          callback(data);
+      },
+      error: function() {
+        org.gigapan.Util.error("Error loading file from path [" + ajaxUrl + "]");
+        return;
+      }
+    });
   };
 
   org.gigapan.Util.htmlForTextWithEmbeddedNewlines = function(text) {
