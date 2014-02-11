@@ -257,7 +257,6 @@ if (!org.gigapan) {
       }
 
       if (!doNormalAjax) {
-        console.log("cached");
         callback(cached_ajax[ajaxUrl]);
         return;
       }
@@ -265,7 +264,6 @@ if (!org.gigapan) {
 
     // Nothing cached, so do an actual request
     ajaxUrl = rootPath + path;
-    console.log(ajaxUrl);
     $.ajax({
       dataType: dataType,
       url: ajaxUrl,
