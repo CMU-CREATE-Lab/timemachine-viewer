@@ -112,24 +112,6 @@ if (!window['$']) {
 (function() {
   var UTIL = org.gigapan.Util;
 
-  org.gigapan.timelapse.loadTimeMachine = function(json) {
-    var timelapseObj = availableTimelapses[availableTimelapses.length - 1];
-    timelapseObj.loadTimelapseJSON(json);
-  };
-
-  org.gigapan.timelapse.loadVideoset = function(json) {
-    var timelapseObj = availableTimelapses[availableTimelapses.length - 1];
-    if (timelapseObj.getDatasetJSON() == null)
-      timelapseObj.loadInitialVideoSet(json);
-    else
-      timelapseObj.loadVideoSet(json);
-  };
-
-  org.gigapan.timelapse.loadTours = function(json) {
-    var timelapseObj = availableTimelapses[availableTimelapses.length - 1];
-    timelapseObj.loadToursJSON(json);
-  };
-
   org.gigapan.timelapse.Timelapse = function(viewerDivId, settings) {
     availableTimelapses.push(this);
 
@@ -374,6 +356,8 @@ if (!window['$']) {
       defaultUI.enableEditorToolbarButtons();
     };
 
+    // Used by defaultUI to switch between modes (player, editor, etc)
+    // TODO: Rename?
     this.getMode = function() {
       return defaultUI.getMode();
     };
@@ -1928,7 +1912,7 @@ if (!window['$']) {
         // Get video viewer center location
 
         if (isHyperwall && !masterView)
-          masterView = timelapse.getView();
+          masterView = thisObj.getView();
 
         var scale = isHyperwall ? masterView.scale : view.scale;
         var desiredView = isHyperwall ? masterView : view;
