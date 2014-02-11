@@ -927,6 +927,17 @@ if (!window['$']) {
     //
     // Public methods
     //
+    this.getThumbnailOfCurrentView = function(width, height) {
+      var snaplapse = thisObj.getSnaplapse();
+      if (snaplapse) {
+        var snaplapseViewer = snaplapse.getSnaplapseViewer();
+        if (!snaplapseViewer) return null;
+        if (!width) width = 126;
+        if (!height) height = 73;
+        return snaplapseViewer.generateThumbnailURL(tileRootPath, thisObj.getBoundingBoxForCurrentView(), width, height, thisObj.getCurrentTime().toFixed(2))
+      }
+    };
+
     var _isPaused = function() {
       return videoset.isPaused();
     };

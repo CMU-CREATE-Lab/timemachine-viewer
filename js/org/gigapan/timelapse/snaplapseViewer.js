@@ -1197,6 +1197,7 @@ function playCachedSnaplapse(snaplapseId) {
       var timeFlag = "frameTime=" + time;
       return serverURL + rootFlag + boundsFlag + sizeFlag + timeFlag;
     };
+    this.generateThumbnailURL = generateThumbnailURL;
 
     var resetKeyframeTransitionUI = function(buildConstraint, keyframeElementId) {
       if (buildConstraint == "duration") {
