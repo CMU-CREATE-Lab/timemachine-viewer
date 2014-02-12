@@ -146,12 +146,12 @@
 }
 
 .keyframe-button-container .ui-button:focus {
-  z-index: 20;
+  z-index: 18;
   outline: none;
 }
 
 .keyframe-button-container .ui-state-hover {
-  z-index: 20;
+  z-index: 18;
 }
 
 .keyframe-button-container .ui-state-active {

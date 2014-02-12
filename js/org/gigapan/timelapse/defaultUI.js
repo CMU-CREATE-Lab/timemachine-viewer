@@ -1108,6 +1108,7 @@ if (!org.gigapan.timelapse.Timelapse) {
       $("#" + viewerDivId + " .loadTimewarp").button("option", "disabled", true);
       $("#" + viewerDivId + " .newTimewarp").button("option", "disabled", true);
       $("#" + viewerDivId + " .setTimewarp").button("option", "disabled", true);
+      $("#" + viewerDivId + " .toggleMode").button("option", "disabled", true);
     };
     this.disableEditorToolbarButtons = disableEditorToolbarButtons;
 
@@ -1119,6 +1120,7 @@ if (!org.gigapan.timelapse.Timelapse) {
       $("#" + viewerDivId + " .loadTimewarp").button("option", "disabled", false);
       $("#" + viewerDivId + " .newTimewarp").button("option", "disabled", false);
       $("#" + viewerDivId + " .setTimewarp").button("option", "disabled", false);
+      $("#" + viewerDivId + " .toggleMode").button("option", "disabled", false);
     };
     this.enableEditorToolbarButtons = enableEditorToolbarButtons;
 
