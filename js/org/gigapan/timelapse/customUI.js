@@ -96,7 +96,7 @@ if (!org.gigapan.timelapse.Timelapse) {
     //
     var datasetType = settings["enableCustomUI"] != "modis" ? "landsat" : "modis";
     var startEditorFromPresentationMode = settings["startEditorFromPresentationMode"] ? settings["startEditorFromPresentationMode"] : false;
-    var showEditorModeButton = settings["showEditorModeButton"] ? settings["showEditorModeButton"] : false;
+    var showEditorModeButton = settings["showEditorModeButton"] ? settings["showEditorModeButton"] : true;
     var viewerDivId = timelapse.getViewerDivId();
     var $viewer = $("#" + viewerDivId);
     var viewer_offset = $viewer.offset();
@@ -1217,7 +1217,7 @@ if (!org.gigapan.timelapse.Timelapse) {
         text: true,
         disabled: true
       }).click(function() {
-        var confirmClearAlert = confirm("Are you sure you want to clear the timewarp?");
+        var confirmClearAlert = confirm("Are you sure you want to delete all keyframes");
         if (!confirmClearAlert)
           return;
         timelapse.getSnaplapse().getSnaplapseViewer().loadNewSnaplapse(null);
@@ -1425,7 +1425,7 @@ if (!org.gigapan.timelapse.Timelapse) {
         var $snaplapseKeyframeContainer = $("#" + settings["composerDiv"] + " .snaplapse_keyframe_container");
         if (hashVars && hashVars.presentation) {
           // If in presentation viewer-only mode
-          extraHeight = 99;
+          extraHeight = 103;
           $snaplapseKeyframeContainer.css({
             "top": window.innerHeight - extraHeight + 6,
             "width": "inherit",

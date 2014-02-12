@@ -17,21 +17,6 @@
   right: 5px;
 }
 
-.saveTimewarpWindow_txt {
-  position: absolute;
-  width: 383px;
-  top: 57px;
-  left: 10px;
-  right: 5px;
-}
-
-.saveTimewarpWindow_txt2 {
-  position: absolute;
-  width: 383px;
-  top: 220px;
-  left: 10px;
-}
-
 .loadTimewarpWindow_JSON {
   position: absolute;
   left: 5px;
@@ -41,19 +26,62 @@
   resize: none;
 }
 
+.saveTimewarpWindow_tourTitle {
+  position: absolute;
+  top: 18px;
+  left: 10px;
+  width: 400px;
+  font-weight: bold;
+}
+
+.saveTimewarpWindow_tourTitleInput {
+  width: 316px;
+}
+
+.saveTimewarpWindow_title_share {
+  position: absolute;
+  width: 383px;
+  top: 37px;
+  left: 10px;
+  right: 5px;
+}
+
+.saveTimewarpWindow_txt {
+  position: absolute;
+  width: 383px;
+  top: 77px;
+  left: 10px;
+  right: 5px;
+}
+
 .saveTimewarpWindow_JSON {
   position: absolute;
   left: 10px;
-  top: 97px;
+  top: 112px;
   width: 383px;
   height: 100px;
   resize: none;
 }
 
+.saveTimewarpWindow_title_embed {
+  position: absolute;
+  width: 383px;
+  top: 214px;
+  left: 10px;
+  right: 5px;
+}
+
+.saveTimewarpWindow_txt2 {
+  position: absolute;
+  width: 383px;
+  top: 254px;
+  left: 10px;
+}
+
 .saveTimewarpWindow_JSON2 {
   resize: none;
   position: absolute;
-  top: 260px;
+  top: 289px;
   left: 10px;
   height: 100px;
   width: 383px;
@@ -61,7 +89,7 @@
 
 .saveTimewarpWindow_JSON2_sizesContainer {
   position: absolute;
-  top: 382px;
+  top: 407px;
   left: 10px;
 }
 
@@ -425,7 +453,7 @@
   position: absolute;
   width: 100%;
   height: 65px;
-  bottom: 10px;
+  bottom: 15px;
   left: 0px;
   color: #ffffff;
   background-color: rgba(0,0,0,0);
@@ -494,18 +522,6 @@
   margin-left: -100px;
   margin-top: -100px;
   z-index: 99;
-}
-
-.saveTimewarpWindow_tourTitle {
-  position: absolute;
-  top: 18px;
-  left: 10px;
-  width: 400px;
-  font-weight: bold;
-}
-
-.saveTimewarpWindow_tourTitleInput {
-  width: 316px;
 }
 
 .tourLoadOverlayTitle {

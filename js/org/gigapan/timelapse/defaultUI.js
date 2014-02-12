@@ -120,6 +120,8 @@ if (!org.gigapan.timelapse.Timelapse) {
     var showZoomControls = ( typeof (settings["showZoomControls"]) == "undefined") ? true : settings["showZoomControls"];
     var showPanControls = ( typeof (settings["showPanControls"]) == "undefined") ? true : settings["showPanControls"];
     var showFullScreenBtn = ( typeof (settings["showFullScreenBtn"]) == "undefined") ? true : settings["showFullScreenBtn"];
+    var startEditorFromPresentationMode = settings["startEditorFromPresentationMode"] ? settings["startEditorFromPresentationMode"] : false;
+    var showEditorModeButton = settings["showEditorModeButton"] ? settings["showEditorModeButton"] : true;
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////
     //
@@ -511,29 +513,53 @@ if (!org.gigapan.timelapse.Timelapse) {
         },
         text: true
       }).click(function() {
-        var confirmClearAlert = confirm("Are you sure you want to clear the timewarp?");
+        var confirmClearAlert = confirm("Are you sure you want to delete all keyframes?");
         if (!confirmClearAlert)
           return;
         timelapse.getSnaplapse().getSnaplapseViewer().loadNewSnaplapse(null);
         handleEditorModeToolbarChange();
       });
-      // Create global setting button
-      //editorModeToolbar.append('<button class="setTimewarp" title="Global settings">Set</button>');
-      //$("#" + viewerDivId + " .setTimewarp").button({
-      //  icons: {
-      //    primary: "ui-icon-wrench"
-      //  },
-      //  text: false
-      //}).click(function() {
-      //  timelapse.getSnaplapse().getSnaplapseViewer().showSetSnaplapseWindow();
-      //});
-      // Create buttonset
-      //editorModeToolbar.buttonset();
+      // Create mode toggle button
+      if (showEditorModeButton) {
+        var modeText = startEditorFromPresentationMode ? "Presentation" : "Tour";
+        editorModeToolbar.append('<button class="toggleMode" title="Toggle between tour and presentation mode">' + modeText + '</button>');
+        var $toggleMode = $("#" + viewerDivId + " .toggleMode").button({
+          icons: {
+            primary: "ui-icon-gear"
+          },
+          text: true
+        }).click(function() {
+          if (startEditorFromPresentationMode) {
+            $toggleMode.button("option", "label", "Tour");
+            setPresentationMode(false);
+          } else {
+            $toggleMode.button("option", "label", "Presentation");
+            setPresentationMode(true);
+          }
+        });
+      }
+    };
+
+    var setPresentationMode = function(status) {
+      var snaplapseViewer = timelapse.getSnaplapse().getSnaplapseViewer();
+      if (status == true) {
+        startEditorFromPresentationMode = true;
+        $("#" + viewerDivId + " .toolbar .playStopTimewarp").hide();
+        if (snaplapseViewer)
+          snaplapseViewer.setPresentationMode(true);
+      } else {
+        startEditorFromPresentationMode = false;
+        $("#" + viewerDivId + " .toolbar .playStopTimewarp").show();
+        if (snaplapseViewer)
+          snaplapseViewer.setPresentationMode(false);
+      }
     };
 
     // Hide the area for editing the timewarp
     var hideEditorArea = function() {
-      $("#" + settings["composerDiv"]).hide();
+      var snaplapseViewer = timelapse.getSnaplapse().getSnaplapseViewer();
+      if (!snaplapseViewer.getPresentationModeFromHash())
+        $("#" + settings["composerDiv"]).hide();
     };
 
     // Show the area for editing the timewarp
@@ -720,7 +746,6 @@ if (!org.gigapan.timelapse.Timelapse) {
         } else {
           disableEditorToolbarButtons();
         }
-        timelapse.updateTagInfo_timeData();
         timelapse.updateTagInfo_locationData();
       } else if (newMode == "annotator") {
         mode = newMode;
@@ -739,7 +764,6 @@ if (!org.gigapan.timelapse.Timelapse) {
         if (snaplapse) {
           snaplapseViewer.hideAnnotationBubble();
         }
-        timelapse.updateTagInfo_timeData();
         timelapse.updateTagInfo_locationData();
       }
       if (visualizer)
@@ -786,42 +810,6 @@ if (!org.gigapan.timelapse.Timelapse) {
         e.preventDefault();
       });
       $("#" + viewerDivId + " .shareView").dialog("open");
-    };
-
-    var fitToWindow = function() {
-      var newViewportWidth, newViewportHeight;
-      newViewportWidth = window.innerWidth - 2;
-      // Extra 2px for the borders
-      newViewportHeight = window.innerHeight;
-      // Extra 1px for the borders
-      var scaleBar = timelapse.getScaleBar()
-      if (scaleBar)
-        scaleBar.updateVideoSize();
-
-      var $snaplapseKeyframeContainer = $("#" + settings["composerDiv"] + " .snaplapse_keyframe_container");
-      // 175 is the height of the keyframe container
-      var extraHeight = 175 + toolbarHeight;
-      newViewportHeight -= extraHeight;
-
-      // Ensure minimum dimensions to not break controls
-      if (newViewportWidth < minViewportWidth)
-        newViewportWidth = minViewportWidth;
-      if (newViewportHeight < minViewportHeight)
-        newViewportHeight = minViewportHeight;
-
-      if (mode == "editor") {
-        $snaplapseKeyframeContainer.css({
-          "top": newViewportHeight + toolbarHeight,
-          "width": newViewportWidth
-        });
-      }
-
-      timelapse.fitVideoToViewport(newViewportWidth, newViewportHeight);
-      window.scrollTo(0, 0);
-
-      handleFitToWindowChange(true);
-      timelapse.updateTagInfo_timeData();
-      timelapse.updateTagInfo_locationData();
     };
 
     function createPlaybackSpeedMenu() {
@@ -1133,6 +1121,48 @@ if (!org.gigapan.timelapse.Timelapse) {
       $("#" + viewerDivId + " .setTimewarp").button("option", "disabled", false);
     };
     this.enableEditorToolbarButtons = enableEditorToolbarButtons;
+
+    var fitToWindow = function() {
+      var newViewportWidth, newViewportHeight;
+      newViewportWidth = window.innerWidth - 2;
+      // Extra 2px for the borders
+      newViewportHeight = window.innerHeight;
+      // Extra 1px for the borders
+      var scaleBar = timelapse.getScaleBar()
+      if (scaleBar)
+        scaleBar.updateVideoSize();
+
+      var $snaplapseKeyframeContainer = $("#" + settings["composerDiv"] + " .snaplapse_keyframe_container");
+      // 175 is the height of the keyframe container
+      var extraHeight = 175 + toolbarHeight;
+      newViewportHeight -= extraHeight;
+
+      // Ensure minimum dimensions to not break controls
+      if (newViewportWidth < minViewportWidth)
+        newViewportWidth = minViewportWidth;
+      if (newViewportHeight < minViewportHeight)
+        newViewportHeight = minViewportHeight;
+
+      if (mode == "editor") {
+        $snaplapseKeyframeContainer.css({
+          "top": newViewportHeight + toolbarHeight,
+          "width": newViewportWidth
+        });
+      } else if (mode == "player") {
+        $snaplapseKeyframeContainer.css({
+          "top": newViewportHeight + 6,
+          "width": "inherit",
+          "max-width": newViewportWidth
+        });
+      }
+
+      timelapse.fitVideoToViewport(newViewportWidth, newViewportHeight);
+      window.scrollTo(0, 0);
+
+      handleFitToWindowChange(true);
+      timelapse.updateTagInfo_locationData();
+    };
+    this.fitToWindow = fitToWindow;
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////
     //

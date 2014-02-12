@@ -134,22 +134,22 @@ if (!org.gigapan.timelapse.Timelapse) {
     var tagsNavigation_position;
     var isHideNavigationMap = false;
     // Parameters for context map
+    var defaultTagColor = timelapse.getTagColor();
+    var defaultTagRGB = defaultTagColor[0] + "," + defaultTagColor[1] + "," + defaultTagColor[2];
     var tagOpacity = 0.5;
     var maskOpacity = 0.8;
-    var strokeOpacity = 0.6;
     var dotsPerSecond = 8;
     var navigationMapBox_borderWidth = 1;
     var navigationMapCircle_borderWidth = 1;
     var navigationMap_box_strokeOpacity = 0.5;
     var navigationMap_circle_radius = 5;
     var navigationMap_circle_strokeOpacity = 0.7;
+    var navigationMap_circle_fillOpacity = 0.6;
     var navigationMap_tag_strokeWidth = 1;
     var navigationMap_tag_strokeOpacity = 0.7;
+    var navigationMap_tag_fillOpacity = 0.4;
     var navigationMap_line_strokeOpacity = 0.4;
     var navigationMap_line_strokeWidth = 2;
-    var timewarpMap_tag_fillOpacity = 0.4;
-    var timewarpMap_tag_strokeOpacity = 0.6;
-    var timewarpMap_line_strokeOpacity = 0.4;
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////
     //
@@ -239,7 +239,7 @@ if (!org.gigapan.timelapse.Timelapse) {
         y: 0,
         width: 0,
         height: 0,
-        stroke: "rgba(255,255,255,0)",
+        stroke: "rgb(" + defaultTagRGB + ")",
         opacity: navigationMap_box_strokeOpacity,
         strokeWidth: navigationMapBox_borderWidth
       });
@@ -247,8 +247,8 @@ if (!org.gigapan.timelapse.Timelapse) {
         x: 0,
         y: 0,
         radius: navigationMap_circle_radius,
-        fill: "rgba(255,255,255,0)",
-        stroke: "rgba(255,255,255,0)",
+        fill: "rgba(" + defaultTagRGB + "," + navigationMap_circle_strokeOpacity + ")",
+        stroke: "rgba(" + defaultTagRGB + "," + navigationMap_circle_fillOpacity + ")",
         strokeWidth: navigationMapCircle_borderWidth
       });
       navigationMap_layer_navigation.add(navigationMap_circle);
@@ -282,8 +282,7 @@ if (!org.gigapan.timelapse.Timelapse) {
       //console.log(kineticLayer.getChildren());
     };
 
-    // Draw a Catmull-Rom spline on the canvas (Cardinal spline with tension=1)
-    // Unused
+    // (Unused) Draw a Catmull-Rom spline on the canvas (Cardinal spline with tension=1)
     var drawSpline = function(kineticLayer, pStart, pEnd, lineW, lineColor, id, name) {
       var controlPoint = {
         x: (pStart.x + pEnd.x) / 3,
@@ -449,8 +448,7 @@ if (!org.gigapan.timelapse.Timelapse) {
       return connection;
     };
 
-    // Draw a polygon on the canvas
-    // Unused
+    // (Unused) Draw a polygon on the canvas
     var drawPolygon_4Point = function(kineticLayer, p1, p2, p3, p4, color1, color2, grad_direction) {
       var gradientStartPoint, gradientEndPoint;
       if (grad_direction == "x") {
@@ -672,26 +670,6 @@ if (!org.gigapan.timelapse.Timelapse) {
     };
     this.setMode = setMode;
 
-    // Update the elements in the interface related to time data
-    var updateInterface_timeData = function(tagInfo_timeData) {
-      // Set the color of elements in the visualizer
-      var RGB = tagInfo_timeData.color.r + "," + tagInfo_timeData.color.g + "," + tagInfo_timeData.color.b;
-      var tagColorRGB = "rgb(" + RGB + ")";
-      var tagColorRGBA_dark = "rgba(" + RGB + "," + strokeOpacity + ")";
-      // Set the color of navigation map box
-      navigationMap_box.setAttrs({
-        stroke: tagColorRGB,
-      });
-      navigationMap_circle.setAttrs({
-        stroke: "rgba(" + RGB + "," + navigationMap_circle_strokeOpacity + ")",
-        fill: tagColorRGBA_dark
-      });
-      navigationMap_layer_navigation.draw();
-      // The reason to hide and show the elements is the workaround for a webkit refresh bug
-      //$(visualizer).hide().show(0);
-    };
-    this.updateInterface_timeData = updateInterface_timeData;
-
     // Update the elements in the interface related to location data
     var updateInterface_locationData = function(tagInfo_locationData) {
       // Draw the bounding box on the small navigation map
@@ -703,13 +681,10 @@ if (!org.gigapan.timelapse.Timelapse) {
         width: nowWidth_nav,
         height: nowHeight_nav
       });
-      var nowRadius_nav = 4.7667 * Math.log(nowWidth_nav + nowHeight_nav) - 16.525;
-      if (nowRadius_nav < 2)
-        nowRadius_nav = 2;
       navigationMap_circle.setAttrs({
         x: tagInfo_locationData.tagPointCenter_nav.x,
         y: tagInfo_locationData.tagPointCenter_nav.y,
-        radius: nowRadius_nav
+        radius: tagInfo_locationData.tagPointRadius_nav
       });
       navigationMap_mask.setAttrs({
         points: [{
@@ -753,11 +728,10 @@ if (!org.gigapan.timelapse.Timelapse) {
     this.updateInterface_locationData = updateInterface_locationData;
 
     // Add a time tag on the visualization area
-    var addTimeTag = function(keyframes, index) {
+    var addTimeTag = function(keyframes, index, isKeyframeFromLoad) {
       var keyframe = keyframes[index];
       var keyframe_last = keyframes[index - 1];
       var keyframe_next = keyframes[index + 1];
-      var tagInfo_timeData = timelapse.getTagInfo_timeData();
       var idHead = composerDivId + "_snaplapse_keyframe_" + keyframe.id;
       var idHead_last;
       var idHead_next;
@@ -766,11 +740,8 @@ if (!org.gigapan.timelapse.Timelapse) {
       if (keyframe_next != undefined)
         idHead_next = composerDivId + "_snaplapse_keyframe_" + keyframe_next.id;
       // Get the color of tags
-      var r = tagInfo_timeData.color.r;
-      var g = tagInfo_timeData.color.g;
-      var b = tagInfo_timeData.color.b;
-      var color_head = "rgba(" + r + "," + g + "," + b + ",";
-      var color_timewarpFill = color_head + timewarpMap_tag_fillOpacity + ")";
+      var color_head = "rgba(" + defaultTagRGB + ",";
+      var color_navigationFill = color_head + navigationMap_tag_fillOpacity + ")";
       var color_navigationStroke = color_head + navigationMap_tag_strokeOpacity + ")";
       var color_navigationStroke_line = color_head + navigationMap_line_strokeOpacity + ")";
       // Variables for tag transition line
@@ -780,15 +751,21 @@ if (!org.gigapan.timelapse.Timelapse) {
       var navigationMap_circle_x = navigationMap_circle.getX();
       var navigationMap_circle_y = navigationMap_circle.getY();
       var navigationMap_circle_radius = navigationMap_circle.getRadius();
-      if(keyframe.timeTagNavigation) {
-				navigationMap_circle_x = keyframe.timeTagNavigation.x;
-				navigationMap_circle_y = keyframe.timeTagNavigation.y;
-				navigationMap_circle_radius = keyframe.timeTagNavigation.r;
+      if (keyframe.timeTagNavigation) {
+        navigationMap_circle_x = keyframe.timeTagNavigation.x;
+        navigationMap_circle_y = keyframe.timeTagNavigation.y;
+        navigationMap_circle_radius = keyframe.timeTagNavigation.r;
+      } else if (isKeyframeFromLoad) {
+        var mapXY = timelapse.viewPointToContextMapPoint(timelapse.computeViewFit(keyframe.bounds));
+        var contextMapPointInfo = timelapse.boundingBoxToContextMapPointInfo(keyframe.bounds);
+        navigationMap_circle_x = mapXY.x;
+        navigationMap_circle_y = mapXY.y;
+        navigationMap_circle_radius = contextMapPointInfo.radius;
       }
       var tagInfoNavigation = {
         "id": idHead + "_timeTagNavigation",
         "position": "absolute",
-        "backgroundColor": color_timewarpFill,
+        "backgroundColor": color_navigationFill,
         "top": navigationMap_circle_y - navigationMap_circle_radius - navigationMap_tag_strokeWidth / 2 + "px",
         "left": navigationMap_circle_x - navigationMap_circle_radius - navigationMap_tag_strokeWidth / 2 + "px",
         "height": navigationMap_circle_radius * 2 + "px",

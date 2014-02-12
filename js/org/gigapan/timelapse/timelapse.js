@@ -291,18 +291,6 @@ if (!window['$']) {
         "x": undefined,
         "y": undefined
       },
-      "tagPointNE_timewarp": {
-        "x": undefined,
-        "y": undefined
-      },
-      "tagPointSW_timewarp": {
-        "x": undefined,
-        "y": undefined
-      },
-      "tagPointCenter_timewarp": {
-        "x": undefined,
-        "y": undefined
-      },
       "tagLatLngNE_nav": {
         "lat": undefined,
         "lng": undefined
@@ -321,23 +309,19 @@ if (!window['$']) {
       },
       "distance_pixel_lng": undefined,
       "scale_map_nav": undefined,
-      "scale_map_timewarp": undefined
-    };
-    var tagInfo_timeData = {
-      "timelineX": undefined,
-      "color": {
-        "r": undefined,
-        "g": undefined,
-        "b": undefined
-      },
+      "tagPointRadius_nav": undefined
     };
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////
     //
     // Public methods
     //
+    this.getDefaultUI = function() {
+      return defaultUI;
+    };
+
     this.getCustomUI = function() {
-    	return customUI;
+      return customUI;
     };
 
     this.getMinViewportHeight = function() {
@@ -404,10 +388,6 @@ if (!window['$']) {
 
     this.getTagInfo_locationData = function() {
       return tagInfo_locationData;
-    };
-
-    this.getTagInfo_timeData = function() {
-      return tagInfo_timeData;
     };
 
     this.setSmallGoogleMapEnableStatus = function(status) {
@@ -919,9 +899,12 @@ if (!window['$']) {
       var snaplapse = thisObj.getSnaplapse();
       if (snaplapse) {
         var snaplapseViewer = snaplapse.getSnaplapseViewer();
-        if (!snaplapseViewer) return null;
-        if (!width) width = 126;
-        if (!height) height = 73;
+        if (!snaplapseViewer)
+          return null;
+        if (!width)
+          width = 126;
+        if (!height)
+          height = 73;
         return snaplapseViewer.generateThumbnailURL(tileRootPath, thisObj.getBoundingBoxForCurrentView(), width, height, thisObj.getCurrentTime().toFixed(2))
       }
     };
@@ -1812,14 +1795,6 @@ if (!window['$']) {
           captureTimes.push("--");
         }
       }
-
-      if (!view) {
-        view = $.extend({}, _homeView());
-      }
-
-      if (doWarp != false)
-        _warpTo( typeof (desiredView) != 'undefined' && desiredView ? desiredView : _homeView());
-
     };
 
     var readVideoDivSize = function() {
@@ -1873,31 +1848,6 @@ if (!window['$']) {
       }
     };
 
-    // Update tag position on the timeline and color
-    var updateTagInfo_timeData = function() {
-      if (!defaultUI)
-        return null;
-      var mode = defaultUI.getMode();
-      if (fullScreen || mode == "player") {
-        return null;
-      }
-      if (visualizer) {
-        // Update information
-        var tagInfo = getTagColor();
-        tagInfo_timeData.color.r = tagInfo[0];
-        tagInfo_timeData.color.g = tagInfo[1];
-        tagInfo_timeData.color.b = tagInfo[2];
-        if (smallGoogleMap && enableSmallGoogleMap == true && (mode == "editor" || mode == "annotator")) {
-          smallGoogleMap.drawSmallMapBoxColor(tagInfo_timeData.color);
-        }
-        if (visualizer) {
-          tagInfo_timeData.timelineX = tagInfo[3];
-          visualizer.updateInterface_timeData(tagInfo_timeData);
-        }
-      }
-    };
-    this.updateTagInfo_timeData = updateTagInfo_timeData;
-
     // Update tag information of location data
     var updateTagInfo_locationData = function(dragFromGoogleMapflag) {
       if (!defaultUI)
@@ -1949,17 +1899,14 @@ if (!window['$']) {
         }
         if (visualizer || smallGoogleMap) {
           // Get the location bound of the video viewer
-          var offsetX = (viewportWidth / 2) / scale;
-          var offsetY = (viewportHeight / 2) / scale;
+          var bbox = computeBoundingBox(desiredView);
           var videoViewer_leftTopPoint = {
-            "x": (desiredView.x - offsetX),
-            "y": (desiredView.y - offsetY),
-            "scale": scale
+            "x": bbox.xmin,
+            "y": bbox.ymin
           };
           var videoViewer_rightBotPoint = {
-            "x": (desiredView.x + offsetX),
-            "y": (desiredView.y + offsetY),
-            "scale": scale
+            "x": bbox.xmax,
+            "y": bbox.ymax
           };
           var tagLatLngNE_nav, tagLatLngSW_nav;
           if (videoViewer_projection) {
@@ -1981,36 +1928,11 @@ if (!window['$']) {
           }
           if (visualizer) {
             // Calculate the position on the navigation map
-            var video = videoset.getCurrentActiveVideo();
-            var video_top;
-            var video_left;
-            if (viewerType == "video") {
-              video_top = parseInt(video.style.top);
-              video_left = parseInt(video.style.left);
-            } else if (viewerType == "canvas") {
-              video_top = video.geometry.top;
-              video_left = video.geometry.top;
-            }
-            var x_NE = videoViewer_leftTopPoint.x - tagInfo_locationData.homeView.xmin;
-            var y_NE = videoViewer_leftTopPoint.y - tagInfo_locationData.homeView.ymin;
-            var x_SW = videoViewer_rightBotPoint.x - tagInfo_locationData.homeView.xmin;
-            var y_SW = videoViewer_rightBotPoint.y - tagInfo_locationData.homeView.ymin;
-            var x_Center = view.x - tagInfo_locationData.homeView.xmin;
-            var y_Center = view.y - tagInfo_locationData.homeView.ymin;
-            var scale_map_nav = tagInfo_locationData.scale_map_nav;
-            var scale_map_timewarp = tagInfo_locationData.scale_map_timewarp;
-            tagInfo_locationData.tagPointNE_nav.x = x_NE * scale_map_nav;
-            tagInfo_locationData.tagPointNE_nav.y = y_NE * scale_map_nav;
-            tagInfo_locationData.tagPointSW_nav.x = x_SW * scale_map_nav;
-            tagInfo_locationData.tagPointSW_nav.y = y_SW * scale_map_nav;
-            tagInfo_locationData.tagPointCenter_nav.x = x_Center * scale_map_nav;
-            tagInfo_locationData.tagPointCenter_nav.y = y_Center * scale_map_nav;
-            tagInfo_locationData.tagPointNE_timewarp.x = x_NE * scale_map_timewarp;
-            tagInfo_locationData.tagPointNE_timewarp.y = y_NE * scale_map_timewarp;
-            tagInfo_locationData.tagPointSW_timewarp.x = x_SW * scale_map_timewarp;
-            tagInfo_locationData.tagPointSW_timewarp.y = y_SW * scale_map_timewarp;
-            tagInfo_locationData.tagPointCenter_timewarp.x = x_Center * scale_map_timewarp;
-            tagInfo_locationData.tagPointCenter_timewarp.y = y_Center * scale_map_timewarp;
+            var contextMapPointInfo = boundingBoxToContextMapPointInfo(bbox);
+            tagInfo_locationData.tagPointNE_nav = contextMapPointInfo.p_NE;
+            tagInfo_locationData.tagPointSW_nav = contextMapPointInfo.p_SW;
+            tagInfo_locationData.tagPointCenter_nav = viewPointToContextMapPoint(view);
+            tagInfo_locationData.tagPointRadius_nav = contextMapPointInfo.radius;
             visualizer.updateInterface_locationData(tagInfo_locationData);
           }// End of if (visualizer)
         }// End of if (visualizer || smallGoogleMap)
@@ -2018,8 +1940,37 @@ if (!window['$']) {
     };
     this.updateTagInfo_locationData = updateTagInfo_locationData;
 
-    // Select tag color according to time
-    var getTagColor = function(time) {
+    var viewPointToContextMapPoint = function(viewPoint) {
+      return {
+        x: (viewPoint.x - tagInfo_locationData.homeView.xmin) * tagInfo_locationData.scale_map_nav,
+        y: (viewPoint.y - tagInfo_locationData.homeView.ymin) * tagInfo_locationData.scale_map_nav
+      };
+    };
+    this.viewPointToContextMapPoint = viewPointToContextMapPoint;
+
+    var boundingBoxToContextMapPointInfo = function(bbox) {
+      var p_NE = viewPointToContextMapPoint({
+        "x": bbox.xmin,
+        "y": bbox.ymin
+      });
+      var p_SW = viewPointToContextMapPoint({
+        "x": bbox.xmax,
+        "y": bbox.ymax
+      });
+      var radius = 4.7667 * Math.log(Math.abs(p_NE.x - p_SW.x) + Math.abs(p_NE.y - p_SW.y)) - 16.525;
+      if (radius < 2)
+        radius = 2;
+      return {
+        p_NE: p_NE,
+        p_SW: p_SW,
+        radius: radius
+      };
+    };
+    this.boundingBoxToContextMapPointInfo = boundingBoxToContextMapPointInfo;
+
+    // Select tag color
+    var getTagColor = function() {
+      // TODO: change color?
       return [255, 0, 0, 0];
     };
     this.getTagColor = getTagColor;
@@ -2302,7 +2253,6 @@ if (!window['$']) {
         $("#" + viewerDivId + " .currentTime").html(UTIL.formatTime(timelapseCurrentTimeInSeconds, true));
         $("#" + viewerDivId + " .currentCaptureTime").html(UTIL.htmlForTextWithEmbeddedNewlines(captureTimes[timelapseCurrentCaptureTimeIndex]));
         $("#" + viewerDivId + " .timelineSlider").slider("value", (timelapseCurrentTimeInSeconds * _getFps() - 0.3));
-        updateTagInfo_timeData();
       });
 
       _addTargetViewChangeListener(function(view) {
@@ -2390,7 +2340,6 @@ if (!window['$']) {
 
       _makeVideoVisibleListener(function(videoId) {
         if (videoId == firstVideoId) {
-
           // Hash params override the view set during initialization
           if (handleHashChange()) {
             // handleHashChange() already did what we wanted
@@ -2409,7 +2358,6 @@ if (!window['$']) {
             onTimeMachinePlayerReady(viewerDivId);
           }
           updateTagInfo_locationData();
-          updateTagInfo_timeData();
         }
       });
 
@@ -2441,7 +2389,6 @@ if (!window['$']) {
         customUI.handleHyperwallChangeUI();
 
       if (settings["smallGoogleMapOptions"] && tmJSON['projection-bounds'] && typeof google !== "undefined") {
-        // TODO debugg
         if (!isHyperwall || fields.showMap)
           smallGoogleMap = new org.gigapan.timelapse.SmallGoogleMap(settings["smallGoogleMapOptions"], thisObj, settings);
       }
@@ -2495,9 +2442,6 @@ if (!window['$']) {
           "left": "0px"
         });
         $("body").css("overflow", "hidden");
-        //debug
-        //if (settings['composerDiv'])
-        //$("#" + settings['composerDiv']).hide();
         if (settings['annotatorDiv'])
           $("#" + settings['annotatorDiv']).hide();
       }
@@ -2519,7 +2463,7 @@ if (!window['$']) {
       // Assume tiles and json are on same host
       tileRootPath = settings["url"];
 
-      if (typeof(playerSize) === 'undefined') {
+      if ( typeof (playerSize) === 'undefined') {
         for (var i = 0; i < tmJSON["sizes"].length; i++) {
           playerSize = i;
           if (settings["playerSize"] && tmJSON["sizes"][i].toLowerCase() == settings["playerSize"].toLowerCase())
@@ -2628,7 +2572,6 @@ if (!window['$']) {
       $('<style type="text/css">.closedHand {cursor: url("./css/cursors/closedhand.cur"), move !important;} .openHand {cursor: url("./css/cursors/openhand.cur"), move !important;} .tiledContentHolder {cursor: url("./css/cursors/openhand.cur"), move;}</style>').appendTo($('head'));
 
       loadTimelapse(settings["url"]);
-
     }
 
     function setupSliderHandlers(viewerDivId) {
