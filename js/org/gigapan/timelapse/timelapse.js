@@ -257,9 +257,9 @@ if (!window['$']) {
     var captureTimes = [];
     var homeView;
     var firstVideoId;
+    var topLevelVideo = {};
     var originalPlaybackRate = playbackSpeed;
     var originalLoopPlayback = loopPlayback;
-    var toursJSON = {};
     var translationSpeedConstant = 20;
     var leader;
 
@@ -563,18 +563,6 @@ if (!window['$']) {
       return scaleToZoom(newView.scale);
     };
     this.getZoomFromBoundingBoxView = getZoomFromBoundingBoxView;
-
-    this.changeDataset = function(data) {
-      //datasetPath = gigapanUrl;
-      UTIL.log("changeDataset(" + datasetPath + "): view is " + JSON.stringify(view));
-
-      // Reset currentIdx so that we'll load in the new tile with the different resolution.  We don't null the
-      // currentVideo here because 1) it will be assigned in the refresh() method when it compares the bestIdx
-      // and the currentIdx; and 2) we want currentVideo to be non-null so that the VideosetStats can keep
-      // track of what video replaced it.
-      currentIdx = null;
-      onPanoLoadSuccessCallback(data, view);
-    };
 
     var handleKeydownEvent = function(event) {
       var activeElement = document.activeElement;
@@ -1825,8 +1813,13 @@ if (!window['$']) {
         }
       }
 
+      if (!view) {
+        view = $.extend({}, _homeView());
+      }
+
       if (doWarp != false)
         _warpTo( typeof (desiredView) != 'undefined' && desiredView ? desiredView : _homeView());
+
     };
 
     var readVideoDivSize = function() {
@@ -2202,25 +2195,28 @@ if (!window['$']) {
     };
 
     var changePlaybackRate = function(obj) {
-      var rate = $(obj).attr("data-speed") - 0;
       // Convert to number
+      var rate = $(obj).attr("data-speed") - 0;
       thisObj.setPlaybackRate(rate);
       playbackSpeed = rate;
     };
     this.changePlaybackRate = changePlaybackRate;
 
+    // TODO: Need to make sure viewport actually changes size.
+    // Need to change logic in fitVideoToViewport()
     this.switchSize = function(index) {
       playerSize = index;
       var newIndex = datasetLayer * tmJSON["sizes"].length + playerSize;
       validateAndSetDatasetIndex(newIndex);
-      loadVideosetJSON();
-      $("#" + viewerDivId + " .playerSizeText").text(tmJSON["datasets"][index]["name"]);
+      loadTimelapseCallback(tmJSON);
+      $("#" + viewerDivId + " .playerSizeText").text(tmJSON["datasets"][datasetIndex]["name"]);
     };
 
-    this.switchLayer = function(index) {
-      var newIndex = index * tmJSON["sizes"].length + playerSize;
+    this.switchLayer = function(layerNum) {
+      var newIndex = layerNum * tmJSON["sizes"].length + playerSize;
+      datasetLayer = layerNum;
       validateAndSetDatasetIndex(newIndex);
-      loadVideosetJSON();
+      loadTimelapseCallback(tmJSON);
     };
 
     function validateAndSetDatasetIndex(newDatasetIndex) {
@@ -2232,24 +2228,8 @@ if (!window['$']) {
       }
     }
 
-    function loadVideosetJSON() {
-      var path = tmJSON["datasets"][datasetIndex]['id'] + "/";
-      datasetPath = settings["url"] + path;
-      showSpinner(viewerDivId);
-      //org.gigapan.Util.log("Attempting to fetch videoset JSON from URL [" + datasetPath + "]...");
-      UTIL.ajax("json", settings["url"], path + "r.json" + getMetadataCacheBreaker(), loadVideoSet);
-    }
-
     function getMetadataCacheBreaker() {
       return ( enableMetadataCacheBreaker ? ("?" + new Date().getTime()) : "");
-    }
-
-    function loadVideoSet(data) {
-      datasetJSON = data;
-      thisObj.changeDataset(data);
-      if (!fullScreen)
-        setViewportSize(data["video_width"] - data["tile_width"], data["video_height"] - data["tile_height"]);
-      hideSpinner(viewerDivId);
     }
 
     var handleLeavePage = function() {
@@ -2410,11 +2390,6 @@ if (!window['$']) {
 
       _makeVideoVisibleListener(function(videoId) {
         if (videoId == firstVideoId) {
-          if (visualizer) {
-            initializeTagInfo_locationData();
-            visualizer.loadNavigationMap(tagInfo_locationData);
-            panoVideo = visualizer.clonePanoVideo(firstVideoId);
-          }
 
           // Hash params override the view set during initialization
           if (handleHashChange()) {
@@ -2489,7 +2464,6 @@ if (!window['$']) {
     // TODO: factor out most of this map related code
     // Cache and initialize DOM elements
     var cacheAndInitializeElements = function() {
-      leader = videoset.getLeader();
       Tslider1Full = $("#Tslider1");
       Tslider1Color = Tslider1Full.find(" .ui-slider-range.ui-widget-header.ui-slider-range-max").get(0);
       Tslider1Full = Tslider1Full.get(0);
@@ -2534,56 +2508,64 @@ if (!window['$']) {
       };
     };
 
-    var _loadToursJSON = function(json) {
-      toursJSON = json;
-      // Do stuff
-    };
-    this.loadToursJSON = _loadToursJSON;
+    var loadTimelapse = function(url) {
+      settings["url"] = url;
+      UTIL.ajax("json", url, "tm.json" + getMetadataCacheBreaker(), loadTimelapseCallback);
+    }
+    this.loadTimelapse = loadTimelapse;
 
-    var _loadTimelapseJSON = function(json) {
+    var loadTimelapseCallback = function(json) {
       tmJSON = json;
       // Assume tiles and json are on same host
       tileRootPath = settings["url"];
 
-      for (var i = 0; i < tmJSON["sizes"].length; i++) {
-        playerSize = i;
-        if (settings["playerSize"] && tmJSON["sizes"][i].toLowerCase() == settings["playerSize"].toLowerCase())
-          break;
+      if (typeof(playerSize) === 'undefined') {
+        for (var i = 0; i < tmJSON["sizes"].length; i++) {
+          playerSize = i;
+          if (settings["playerSize"] && tmJSON["sizes"][i].toLowerCase() == settings["playerSize"].toLowerCase())
+            break;
+        }
       }
       // layer + size = index of dataset
       validateAndSetDatasetIndex(datasetLayer * tmJSON["sizes"].length + playerSize);
       var path = tmJSON["datasets"][datasetIndex]['id'] + "/";
       datasetPath = settings["url"] + path;
-      UTIL.ajax("json", settings["url"], path + "r.json" + getMetadataCacheBreaker(), _loadInitialVideoSet);
+      UTIL.ajax("json", settings["url"], path + "r.json" + getMetadataCacheBreaker(), loadVideoSetCallback);
     };
-    this.loadTimelapseJSON = _loadTimelapseJSON;
 
-    var _loadInitialVideoSet = function(data) {
+    var loadVideoSetCallback = function(data) {
       datasetJSON = data;
 
-      onPanoLoadSuccessCallback(data, null, false);
-
+      homeView = null;
+      view = null;
+      // Reset currentIdx so that we'll load in the new tile with the different resolution.  We don't null the
+      // currentVideo here because 1) it will be assigned in the refresh() method when it compares the bestIdx
+      // and the currentIdx; and 2) we want currentVideo to be non-null so that the VideosetStats can keep
+      // track of what video replaced it.
+      currentIdx = null;
+      onPanoLoadSuccessCallback(data, null, true);
       var newViewportGeometry = computeViewportGeometry(data);
       fitVideoToViewport(newViewportGeometry.width, newViewportGeometry.height);
 
-      setupTimelapse();
+      // Only do once
+      if (!defaultUI)
+        setupTimelapse();
 
+      // TODO check if currently playing
       if (playOnLoad)
         _play();
 
-      hideSpinner(viewerDivId);
+      if (visualizer) {
+        topLevelVideo.src = getTileidxUrl(0);
+        topLevelVideo.geometry = tileidxGeometry(0);
+        leader = videoset.getLeader();
+        initializeTagInfo_locationData();
+        visualizer.loadNavigationMap(tagInfo_locationData);
+        panoVideo = visualizer.clonePanoVideo(topLevelVideo);
+      }
 
-      // TODO: this should be in UI class
-      $("#" + viewerDivId + " img " + ", #" + viewerDivId + " a").css({
-        "-moz-user-select": "none",
-        "-webkit-user-select": "none",
-        "-webkit-user-drag": "none",
-        "-khtml-user-select": "none",
-        "-o-user-select": "none",
-        "user-select": "none"
-      });
+      hideSpinner(viewerDivId);
     };
-    this.loadInitialVideoSet = _loadInitialVideoSet;
 
     function loadPlayerControlsTemplate(html) {
       var viewerDiv = document.getElementById(viewerDivId);
@@ -2645,7 +2627,8 @@ if (!window['$']) {
       // which in any browser will reslove relative paths correctly. We choose the latter to keep the message console clean.
       $('<style type="text/css">.closedHand {cursor: url("./css/cursors/closedhand.cur"), move !important;} .openHand {cursor: url("./css/cursors/openhand.cur"), move !important;} .tiledContentHolder {cursor: url("./css/cursors/openhand.cur"), move;}</style>').appendTo($('head'));
 
-      UTIL.ajax("json", settings["url"], "tm.json" + getMetadataCacheBreaker(), _loadTimelapseJSON);
+      loadTimelapse(settings["url"]);
+
     }
 
     function setupSliderHandlers(viewerDivId) {

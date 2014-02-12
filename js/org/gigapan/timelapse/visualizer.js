@@ -90,14 +90,12 @@ if (!org.gigapan.timelapse.Timelapse) {
 // CODE
 //
 (function() {
-  var UTIL = org.gigapan.Util;
   org.gigapan.timelapse.Visualizer = function(timelapse, snaplapse, visualizerGeometry) {
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////
     //
     // Class variables
     //
     var videoset = timelapse.getVideoset();
-    var viewerType = UTIL.getViewerType();
     var composerDivId = snaplapse.getComposerDivId();
     var visualizerDivId = composerDivId + "_visualizer";
     var videoDivID = timelapse.getVideoDivId();
@@ -200,8 +198,6 @@ if (!org.gigapan.timelapse.Timelapse) {
         }
       });
       // Set position and size
-      var playerWidth = $("#" + videoDivID).outerWidth();
-      var playerHeight = $("#" + videoDivID).outerHeight();
       $navigationMap_container.css({
         "right": "20px",
         "top": "20px",
@@ -287,6 +283,7 @@ if (!org.gigapan.timelapse.Timelapse) {
     };
 
     // Draw a Catmull-Rom spline on the canvas (Cardinal spline with tension=1)
+    // Unused
     var drawSpline = function(kineticLayer, pStart, pEnd, lineW, lineColor, id, name) {
       var controlPoint = {
         x: (pStart.x + pEnd.x) / 3,
@@ -453,6 +450,7 @@ if (!org.gigapan.timelapse.Timelapse) {
     };
 
     // Draw a polygon on the canvas
+    // Unused
     var drawPolygon_4Point = function(kineticLayer, p1, p2, p3, p4, color1, color2, grad_direction) {
       var gradientStartPoint, gradientEndPoint;
       if (grad_direction == "x") {
@@ -576,32 +574,22 @@ if (!org.gigapan.timelapse.Timelapse) {
     this.updateTagPaths = updateTagPaths;
 
     // Clone the pano video
-    this.clonePanoVideo = function() {
-      var firstVideo = videoset.getCurrentActiveVideo();
-      panoVideo = document.createElement("video");
-      // Ouch.  A brand new bug in Chrome 15 (apparently) causes videos to never load
-      // if they've been loaded recently and are being loaded again now.
-      // It's pretty weird, but this disgusting code seems to work around the problem.
-      panoVideo.setAttribute('src', firstVideo.src + "?time=" + (new Date().getTime()));
-      panoVideo.setAttribute('preload', 'auto');
-      panoVideo.style.position = "absolute";
-      if (viewerType == "video") {
-        panoVideo.style.top = firstVideo.style.top;
-        panoVideo.style.left = firstVideo.style.left;
-        panoVideo.style.width = firstVideo.style.width;
-        panoVideo.style.height = firstVideo.style.height;
-      } else if (viewerType == "canvas") {
-        panoVideo.style.top = firstVideo.geometry.top + "px";
-        panoVideo.style.left = firstVideo.geometry.left + "px";
-        panoVideo.style.width = firstVideo.geometry.width + "px";
-        panoVideo.style.height = firstVideo.geometry.height + "px";
-      }
-      panoVideo.addEventListener("loadeddata", function() {
-        panoVideo.currentTime = timelapse.getVideoset().getLeader();
-      }, false);
-      // TODO
-      panoVideo.addEventListener("timeupdate", function() {
-        if (!panoVideo.seeking) {
+    this.clonePanoVideo = function(topLevelVideo) {
+      if (!panoVideo) {
+        panoVideo = document.createElement("video");
+        panoVideo.addEventListener("timeupdate", function() {
+          if (!panoVideo.seeking) {
+            navigationMap_background.setAttrs({
+              image: panoVideo,
+              x: navigationMap_drawImage.x,
+              y: navigationMap_drawImage.y,
+              width: navigationMap_drawImage.width,
+              height: navigationMap_drawImage.height
+            });
+            navigationMap_layer_background.draw();
+          }
+        }, false);
+        panoVideo.addEventListener("seeked", function() {
           navigationMap_background.setAttrs({
             image: panoVideo,
             x: navigationMap_drawImage.x,
@@ -610,18 +598,21 @@ if (!org.gigapan.timelapse.Timelapse) {
             height: navigationMap_drawImage.height
           });
           navigationMap_layer_background.draw();
-        }
-      }, false);
-      panoVideo.addEventListener("seeked", function() {
-        navigationMap_background.setAttrs({
-          image: panoVideo,
-          x: navigationMap_drawImage.x,
-          y: navigationMap_drawImage.y,
-          width: navigationMap_drawImage.width,
-          height: navigationMap_drawImage.height
-        });
-        navigationMap_layer_background.draw();
-      }, false);
+        }, false);
+        panoVideo.addEventListener("loadeddata", function() {
+          timelapse.seek_panoVideo(timelapse.getCurrentTime());
+        }, false);
+      }
+      // Ouch.  A brand new bug in Chrome 15 (apparently) causes videos to never load
+      // if they've been loaded recently and are being loaded again now.
+      // It's pretty weird, but this disgusting code seems to work around the problem.
+      panoVideo.setAttribute('src', topLevelVideo.src + "?time=" + (new Date().getTime()) + "1765");
+      panoVideo.setAttribute('preload', 'auto');
+      panoVideo.style.position = "absolute";
+      panoVideo.style.top = topLevelVideo.geometry.top + "px";
+      panoVideo.style.left = topLevelVideo.geometry.left + "px";
+      panoVideo.style.width = topLevelVideo.geometry.width + "px";
+      panoVideo.style.height = topLevelVideo.geometry.height + "px";
       panoVideo.load();
       return panoVideo;
     };
@@ -639,13 +630,8 @@ if (!org.gigapan.timelapse.Timelapse) {
       var video = videoset.getCurrentActiveVideo();
       navigationMap_drawImage.x = videoLeft * scale;
       navigationMap_drawImage.y = videoTop * scale;
-      if (viewerType == "video") {
-        navigationMap_drawImage.width = video.offsetWidth * scale + 2;
-        navigationMap_drawImage.height = video.offsetHeight * scale + 2;
-      } else if (viewerType == "canvas") {
-        navigationMap_drawImage.width = video.geometry.width * scale + 2;
-        navigationMap_drawImage.height = video.geometry.height * scale + 2;
-      }
+      navigationMap_drawImage.width = video.geometry.width * scale + 2;
+      navigationMap_drawImage.height = video.geometry.height * scale + 2;
       // The setTimeout is a hack for chrome video bug
       //setTimeout(function() {
       //navigationMap_background.setAttrs({
@@ -785,9 +771,7 @@ if (!org.gigapan.timelapse.Timelapse) {
       var b = tagInfo_timeData.color.b;
       var color_head = "rgba(" + r + "," + g + "," + b + ",";
       var color_timewarpFill = color_head + timewarpMap_tag_fillOpacity + ")";
-      var color_timewarpStroke = color_head + timewarpMap_tag_strokeOpacity + ")";
       var color_navigationStroke = color_head + navigationMap_tag_strokeOpacity + ")";
-      var color_timewarpStroke_line = color_head + timewarpMap_line_strokeOpacity + ")";
       var color_navigationStroke_line = color_head + navigationMap_line_strokeOpacity + ")";
       // Variables for tag transition line
       var pNow;

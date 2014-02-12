@@ -466,6 +466,7 @@ if (!window['$']) {
 
         video.style.width = geometry.width + "px";
         video.style.height = geometry.height + "px";
+        video.geometry = geometry;
       } else if (viewerType == "canvas") {
         video.geometry = geometry;
         drawToCanvas(video);
