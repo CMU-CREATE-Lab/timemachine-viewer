@@ -4,6 +4,7 @@ body, html {
   margin: 0px auto;
   padding: 0px;
   font-family: Arial, Helvetica, sans-serif;
+  background: transparent;
 }
 
 .createLabLogo {
@@ -48,9 +49,68 @@ body, html {
   background: white;
 }
 
-.toolbar .toggleMode {
+.editorModeToolbar .newTimewarp {
   border-right: 1px solid #656565 !important;
 }
+
+.toolbar .editorTitle {
+  position: absolute;
+  left: 20px;
+  top: 10px;
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 15px;
+  color: black;
+  opacity: 0.8;
+  font-weight: bold;
+}
+
+.toolbar .toggleMode {
+  position: absolute;
+  width: 138px;
+  height: 20px;
+  bottom: 10px;
+  left: 20px;
+  background: white;
+  border: 1px solid #656565;
+  border-radius: 2px !important;
+  z-index: 30;
+  outline: none;
+}
+
+.toolbar .toggleMode .ui-button-text {
+  text-align: center;
+  padding: 0;
+  font-size: 11px;
+  margin-top: -1px;
+  margin-left: -13px;
+}
+
+.toolbar .toggleMode .ui-icon {
+  margin-right: -4px;
+}
+
+.editorModeOptions {
+  border-radius: 2px;
+  font-size: 11px;
+  box-shadow: 2px 2px 3px rgba(0,0,0,0.3);
+}
+
+.editorModeOptions .ui-corner-all {
+  border-radius: 2px;
+}
+
+.editorModeOptions.ui-menu {
+  position: absolute;
+  width: 116px;
+  padding: 10px;
+  border: 1px solid #656565;
+  z-index: 35;
+}
+
+.editorModeOptions.ui-state-focus {
+  padding: 10px;
+}
+
 
 .loadingOverlay {
   background-color: rgba(0, 0, 0, 0);
@@ -472,6 +532,7 @@ body, html {
 .playbackSpeedOptions {
   border-radius: 2px;
   font-size: 11px;
+  box-shadow: 2px 2px 3px rgba(0,0,0,0.3);
 }
 
 .playbackSpeedOptions .ui-corner-all {
@@ -560,16 +621,16 @@ body, html {
   z-index: 20;
 }
 
-.toolbar .ui-state-active {
-  background: #656565;
+.editorModeToolbar .ui-state-active {
+  background: #656565 !important;
   color: white;
 }
 
-.toolbar .ui-state-active .ui-icon {
+.editorModeToolbar .ui-state-active .ui-icon {
   background-image: url(../images/ui-icons_custom_256x240.png)/*{iconsActive}*/;
 }
 
-.toolbar .ui-button {
+.editorModeToolbar .ui-button {
   min-width: 35px;
   margin-right: -1px;
   margin-left: 0px;
@@ -582,7 +643,7 @@ body, html {
   border-right: 1px solid rgb(220,220,220);
 }
 
-.toolbar .ui-button:hover:not(
+.editorModeToolbar .ui-button:hover:not(
 [disabled]) {
   /*
    -moz-box-shadow: 0 0 12px #656565;

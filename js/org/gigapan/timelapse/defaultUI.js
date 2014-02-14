@@ -412,8 +412,8 @@ if (!org.gigapan.timelapse.Timelapse) {
           $playbackSpeedOptions.hide();
         } else {
           $playbackSpeedOptions.show().position({
-            my: "right bottom",
-            at: "right top",
+            my: "center bottom",
+            at: "center top",
             of: $playbackSpeed
           });
           $(document).one("mouseup", function(e) {
@@ -448,9 +448,9 @@ if (!org.gigapan.timelapse.Timelapse) {
 
     // Create the editor mode toolbar
     var createEditorModeToolbar = function() {
-      var editorModeToolbar = $("#" + viewerDivId + " .editorModeToolbar");
+      var $editorModeToolbar = $("#" + viewerDivId + " .editorModeToolbar");
       // Create play button
-      editorModeToolbar.append('<button class="playStopTimewarp" title="Play or stop a tour">Play</button>');
+      $editorModeToolbar.append('<button class="playStopTimewarp" title="Play or stop a tour">Play</button>');
       $("#" + viewerDivId + " .playStopTimewarp").button({
         icons: {
           primary: "ui-icon-play"
@@ -461,7 +461,7 @@ if (!org.gigapan.timelapse.Timelapse) {
         timelapse.getSnaplapse().getSnaplapseViewer().playStopSnaplapse();
       });
       // Create add button
-      editorModeToolbar.append('<button class="addTimetag" title="Add a keyframe">Add</button>');
+      $editorModeToolbar.append('<button class="addTimetag" title="Add a keyframe">Add</button>');
       $("#" + viewerDivId + " .addTimetag").button({
         icons: {
           primary: "ui-icon-plus"
@@ -474,7 +474,7 @@ if (!org.gigapan.timelapse.Timelapse) {
         timelapse.getSnaplapse().getSnaplapseViewer().recordKeyframe();
       });
       // Create delete button
-      editorModeToolbar.append('<button class="deleteTimetag" title="Delete a keyframe">Del</button>');
+      $editorModeToolbar.append('<button class="deleteTimetag" title="Delete a keyframe">Del</button>');
       $("#" + viewerDivId + " .deleteTimetag").button({
         icons: {
           primary: "ui-icon-minus"
@@ -485,7 +485,7 @@ if (!org.gigapan.timelapse.Timelapse) {
         timelapse.getSnaplapse().getSnaplapseViewer().deleteSelectedKeyframes();
       });
       // Create save button
-      editorModeToolbar.append('<button class="saveTimewarp" title="Share a tour">Share</button>');
+      $editorModeToolbar.append('<button class="saveTimewarp" title="Share a tour">Share</button>');
       $("#" + viewerDivId + " .saveTimewarp").button({
         icons: {
           primary: "ui-icon-person"
@@ -496,7 +496,7 @@ if (!org.gigapan.timelapse.Timelapse) {
         timelapse.getSnaplapse().getSnaplapseViewer().saveSnaplapse();
       });
       // Create load button
-      editorModeToolbar.append('<button class="loadTimewarp" title="Load a tour">Load</button>');
+      $editorModeToolbar.append('<button class="loadTimewarp" title="Load a tour">Load</button>');
       $("#" + viewerDivId + " .loadTimewarp").button({
         icons: {
           primary: "ui-icon-folder-open"
@@ -506,7 +506,7 @@ if (!org.gigapan.timelapse.Timelapse) {
         timelapse.getSnaplapse().getSnaplapseViewer().showLoadSnaplapseWindow();
       });
       // Create new button
-      editorModeToolbar.append('<button class="newTimewarp" title="Remove all keyframes">Clear</button>');
+      $editorModeToolbar.append('<button class="newTimewarp" title="Remove all keyframes">Clear</button>');
       $("#" + viewerDivId + " .newTimewarp").button({
         icons: {
           primary: "ui-icon-trash"
@@ -519,25 +519,57 @@ if (!org.gigapan.timelapse.Timelapse) {
         timelapse.getSnaplapse().getSnaplapseViewer().loadNewSnaplapse(null);
         handleEditorModeToolbarChange();
       });
-      // Create mode toggle button
+      // Create mode toggle button and options
       if (showEditorModeButton) {
-        var modeText = startEditorFromPresentationMode ? "Presentation" : "Tour";
-        editorModeToolbar.append('<button class="toggleMode" title="Toggle between tour and presentation mode">' + modeText + '</button>');
+        // Populate the dropdown debug
+        var editorModeOptions = "";
+        editorModeOptions += '<li class="presentationOption"><a href="javascript:void(0);">' + getEditorModeText("presentation") + '</a></li>';
+        editorModeOptions += '<li class="tourOption"><a href="javascript:void(0);">' + getEditorModeText("tour") + '</a></li>';
+        var $editorModeOptions = $("#" + viewerDivId + " .editorModeOptions").append(editorModeOptions);
+        // Create button
         var $toggleMode = $("#" + viewerDivId + " .toggleMode").button({
           icons: {
-            primary: "ui-icon-gear"
+            secondary: "ui-icon-triangle-1-s"
           },
           text: true
         }).click(function() {
-          if (startEditorFromPresentationMode) {
-            $toggleMode.button("option", "label", "Tour");
-            setPresentationMode(false);
+          if ($editorModeOptions.is(":visible")) {
+            $editorModeOptions.hide();
           } else {
-            $toggleMode.button("option", "label", "Presentation");
-            setPresentationMode(true);
+            $editorModeOptions.show().position({
+              my: "center top",
+              at: "center bottom",
+              of: $toggleMode
+            });
+            $(document).one("mouseup", function(e) {
+              var targetGroup = $(e.target).parents().addBack();
+              if (!targetGroup.is(".toggleMode"))
+                $editorModeOptions.hide();
+            });
           }
         });
+        if (startEditorFromPresentationMode)
+          $("#" + viewerDivId + " .toggleMode .ui-button-text").text(getEditorModeText("presentation"));
+        else
+          $("#" + viewerDivId + " .toggleMode .ui-button-text").text(getEditorModeText("tour"));
+        $editorModeOptions.hide().menu();
+        // Set the dropdown
+        $("#" + viewerDivId + " .editorModeOptions li a").click(function() {
+          var selectedModeTxt = $(this).text();
+          if (selectedModeTxt == getEditorModeText("tour"))
+            setPresentationMode(false);
+          else if (selectedModeTxt == getEditorModeText("presentation"))
+            setPresentationMode(true);
+          $("#" + viewerDivId + " .toggleMode span").text(selectedModeTxt);
+        });
       }
+    };
+
+    var getEditorModeText = function(mode) {
+      if (mode == "tour")
+        return "Tour Editor";
+      else if (mode == "presentation")
+        return "Presentation Editor";
     };
 
     var setPresentationMode = function(status) {
