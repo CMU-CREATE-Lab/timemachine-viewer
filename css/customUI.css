@@ -184,7 +184,7 @@
   width: 70px !important;
 }
 
-.customEditorModeToolbar .toggleMode {
+.customEditorModeToolbar .newTimewarp {
   border-right: 1px solid #656565 !important;
 }
 
@@ -509,7 +509,33 @@
 
 .addressLookup {
   position: absolute;
-  top: 7px;
-  left: 16px;
+  top: 10px;
+  left: 172px;
   z-index: 99;
+  height: 13px;
+}
+
+.customEditorControl .toggleMode {
+  position: absolute;
+  width: 138px;
+  height: 20px;
+  bottom: 10px;
+  left: 20px;
+  background: white;
+  border: 1px solid #656565;
+  border-radius: 2px !important;
+  z-index: 30;
+  outline: none;
+}
+
+.customEditorControl .toggleMode .ui-button-text {
+  text-align: center;
+  padding: 0;
+  font-size: 11px;
+  margin-top: 0px;
+  margin-left: -13px;
+}
+
+.customEditorControl .toggleMode .ui-icon {
+  margin-right: -4px;
 }

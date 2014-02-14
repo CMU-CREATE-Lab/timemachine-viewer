@@ -1025,7 +1025,7 @@ if (!org.gigapan.timelapse.Timelapse) {
         targetFrameIdx = computeSliderHandlePosition_landsat(nowX);
 
       if (locker == "month") {
-      	var currentYearIdx = getCurrentYear() - firstYear;
+        var currentYearIdx = getCurrentYear() - firstYear;
         if (currentYearIdx != targetFrameIdx)
           seekToFrame(targetFrameIdx, locker);
       } else {
@@ -1225,21 +1225,48 @@ if (!org.gigapan.timelapse.Timelapse) {
       });
       // Create mode toggle button
       if (showEditorModeButton) {
-        var modeText = startEditorFromPresentationMode ? "Presentation" : "Tour";
-        customEditorModeToolbar.append('<button class="toggleMode" title="Toggle between tour and presentation mode">' + modeText + '</button>');
+        // Populate the dropdown
+        $customEditorControl.append('<ul class="editorModeOptions"></ul>');
+        var editorModeOptions = "";
+        editorModeOptions += '<li><a href="javascript:void(0);">' + getCustomEditorModeText("presentation") + '</a></li>';
+        editorModeOptions += '<li><a href="javascript:void(0);">' + getCustomEditorModeText("tour") + '</a></li>';
+        var $editorModeOptions = $("#" + viewerDivId + " .editorModeOptions").append(editorModeOptions);
+        // Create button
+        $customEditorControl.append('<button class="toggleMode" title="Toggle between tour and presentation mode">Change Mode</button>');
         var $toggleMode = $("#" + viewerDivId + " .toggleMode").button({
           icons: {
-            primary: "ui-icon-gear"
+            secondary: "ui-icon-triangle-1-s"
           },
           text: true
         }).click(function() {
-          if (startEditorFromPresentationMode) {
-            $toggleMode.button("option", "label", "Tour");
-            setPresentationMode(false);
+          if ($editorModeOptions.is(":visible")) {
+            $editorModeOptions.hide();
           } else {
-            $toggleMode.button("option", "label", "Presentation");
-            setPresentationMode(true);
+            $editorModeOptions.show().position({
+              my: "center top",
+              at: "center bottom",
+              of: $toggleMode
+            });
+            $(document).one("mouseup", function(e) {
+              var targetGroup = $(e.target).parents().addBack();
+              if (!targetGroup.is(".toggleMode"))
+                $editorModeOptions.hide();
+            });
           }
+        });
+        if (startEditorFromPresentationMode)
+          $("#" + viewerDivId + " .toggleMode .ui-button-text").text(getCustomEditorModeText("presentation"));
+        else
+          $("#" + viewerDivId + " .toggleMode .ui-button-text").text(getCustomEditorModeText("tour"));
+        $editorModeOptions.hide().menu();
+        // Set the dropdown
+        $("#" + viewerDivId + " .editorModeOptions li a").click(function() {
+          var selectedModeTxt = $(this).text();
+          if (selectedModeTxt == getCustomEditorModeText("tour"))
+            setPresentationMode(false);
+          else if (selectedModeTxt == getCustomEditorModeText("presentation"))
+            setPresentationMode(true);
+          $("#" + viewerDivId + " .toggleMode span").text(selectedModeTxt);
         });
       }
       // Create buttonset
@@ -1252,6 +1279,13 @@ if (!org.gigapan.timelapse.Timelapse) {
         handleAddressLookup();
       if (startEditorFromPresentationMode)
         setPresentationMode(true);
+    };
+
+    var getCustomEditorModeText = function(mode) {
+      if (mode == "tour")
+        return "Tour Editor";
+      else if (mode == "presentation")
+        return "Presentation Editor";
     };
 
     var handleAddressLookup = function() {

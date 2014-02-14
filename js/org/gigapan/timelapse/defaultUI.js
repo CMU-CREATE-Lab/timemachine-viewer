@@ -521,10 +521,10 @@ if (!org.gigapan.timelapse.Timelapse) {
       });
       // Create mode toggle button and options
       if (showEditorModeButton) {
-        // Populate the dropdown debug
+        // Populate the dropdown
         var editorModeOptions = "";
-        editorModeOptions += '<li class="presentationOption"><a href="javascript:void(0);">' + getEditorModeText("presentation") + '</a></li>';
-        editorModeOptions += '<li class="tourOption"><a href="javascript:void(0);">' + getEditorModeText("tour") + '</a></li>';
+        editorModeOptions += '<li><a href="javascript:void(0);">' + getEditorModeText("presentation") + '</a></li>';
+        editorModeOptions += '<li><a href="javascript:void(0);">' + getEditorModeText("tour") + '</a></li>';
         var $editorModeOptions = $("#" + viewerDivId + " .editorModeOptions").append(editorModeOptions);
         // Create button
         var $toggleMode = $("#" + viewerDivId + " .toggleMode").button({
