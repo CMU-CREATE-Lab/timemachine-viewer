@@ -135,7 +135,7 @@ if (!Math.uuid) {
     var extraWaitForStartDuration = 0;
     var startingPlaybackRate = 1;
 
-    var TOUR_SHARING_VERSION = 3;
+    var TOUR_SHARING_VERSION = 4;
 
     var _clearSnaplapse = function() {
 
@@ -267,10 +267,18 @@ if (!Math.uuid) {
 
     this.setTextAnnotationForKeyframe = function(keyframeId, description, isDescriptionVisible) {
       if (keyframeId && keyframesById[keyframeId]) {
-        if (description != undefined) {
+        if (description != undefined)
           keyframesById[keyframeId]['unsafe_string_description'] = description;
-        }
         keyframesById[keyframeId]['is-description-visible'] = isDescriptionVisible;
+        return true;
+      }
+      return false;
+    };
+
+    this.setTitleForKeyframe = function(keyframeId, description) {
+      if (keyframeId && keyframesById[keyframeId]) {
+        if (description != undefined)
+          keyframesById[keyframeId]['unsafe_string_frameTitle'] = description;
         return true;
       }
       return false;
@@ -474,6 +482,8 @@ if (!Math.uuid) {
           encoder.write_udecimal(zoom, 2);
           // Keyframe description
           encoder.write_string(keyframes[i]['unsafe_string_description']);
+          // Keyframe title
+          encoder.write_string(keyframes[i]['unsafe_string_frameTitle']);
         }
         // Tour title
         var title = $("#" + composerDivId + " .saveTimewarpWindow_tourTitleInput").val();
@@ -572,6 +582,10 @@ if (!Math.uuid) {
           frame["bounds"]["ymax"] = bbox.ymax;
           // Decode keyframe subtitle
           frame["unsafe_string_description"] = encoder.read_unsafe_string();
+          if (version >= 4) {
+            // Decode keyframe title
+            frame["unsafe_string_frameTitle"] = encoder.read_unsafe_string();
+          }
           frame["is-description-visible"] = frame["unsafe_string_description"] ? true : false;
           keyframes.push(frame);
         }
@@ -646,7 +660,7 @@ if (!Math.uuid) {
           if ( typeof keyframe['time'] != 'undefined' && typeof keyframe['bounds'] != 'undefined' && typeof keyframe['bounds']['xmin'] != 'undefined' && typeof keyframe['bounds']['ymin'] != 'undefined' && typeof keyframe['bounds']['xmax'] != 'undefined' && typeof keyframe['bounds']['ymax'] != 'undefined') {
             // NOTE: if is-description-visible is undefined, then we define it as *true* in order to maintain
             // backward compatibility with older time warps which don't have this property.
-            this.recordKeyframe(null, keyframe['time'], keyframe['bounds'], keyframe['unsafe_string_description'], ( typeof keyframe['is-description-visible'] == 'undefined') ? true : keyframe['is-description-visible'], keyframe['duration'], true, keyframe['buildConstraint'], keyframe['speed'], keyframe['loopTimes'], keyframe['waitStart'], keyframe['waitEnd'], loadKeyframesLength);
+            this.recordKeyframe(null, keyframe['time'], keyframe['bounds'], keyframe['unsafe_string_description'], ( typeof keyframe['is-description-visible'] == 'undefined') ? true : keyframe['is-description-visible'], keyframe['duration'], true, keyframe['buildConstraint'], keyframe['speed'], keyframe['loopTimes'], keyframe['waitStart'], keyframe['waitEnd'], loadKeyframesLength, keyframe['unsafe_string_frameTitle']);
           } else {
             UTIL.error("Ignoring invalid keyframe during snaplapse load.");
           }
@@ -666,11 +680,11 @@ if (!Math.uuid) {
     };
 
     this.duplicateKeyframe = function(idOfSourceKeyframe) {
-      var keyframeCopy = this.getKeyframeById(idOfSourceKeyframe);
-      this.recordKeyframe(idOfSourceKeyframe, keyframeCopy['time'], keyframeCopy['bounds'], keyframeCopy['unsafe_string_description'], keyframeCopy['is-description-visible'], keyframeCopy['duration'], false, keyframeCopy['buildConstraint'], keyframeCopy['speed'], keyframeCopy['loopTimes'], keyframeCopy['waitStart'], keyframeCopy['waitEnd'], undefined);
+      var keyframeCopy = cloneFrame(keyframesById[idOfSourceKeyframe]);
+      this.recordKeyframe(idOfSourceKeyframe, keyframeCopy['time'], keyframeCopy['bounds'], keyframeCopy['unsafe_string_description'], keyframeCopy['is-description-visible'], keyframeCopy['duration'], false, keyframeCopy['buildConstraint'], keyframeCopy['speed'], keyframeCopy['loopTimes'], keyframeCopy['waitStart'], keyframeCopy['waitEnd'], undefined, keyframeCopy['unsafe_string_frameTitle']);
     };
 
-    this.recordKeyframe = function(idOfKeyframeToAppendAfter, time, bounds, description, isDescriptionVisible, duration, isFromLoad, buildConstraint, speed, loopTimes, waitStart, waitEnd, loadKeyframesLength) {
+    this.recordKeyframe = function(idOfKeyframeToAppendAfter, time, bounds, description, isDescriptionVisible, duration, isFromLoad, buildConstraint, speed, loopTimes, waitStart, waitEnd, loadKeyframesLength, frameTitle) {
       if ( typeof bounds == 'undefined') {
         bounds = timelapse.getBoundingBoxForCurrentView();
       }
@@ -695,6 +709,7 @@ if (!Math.uuid) {
       keyframe['bounds'].ymax = bounds.ymax;
       keyframe['duration'] = sanitizeDuration(duration);
       keyframe['unsafe_string_description'] = ( typeof description == 'undefined') ? '' : description;
+      keyframe['unsafe_string_frameTitle'] = ( typeof frameTitle == 'undefined') ? '' : frameTitle;
       keyframe['is-description-visible'] = ( typeof isDescriptionVisible == 'undefined') ? false : isDescriptionVisible;
 
       // Determine where the new keyframe will be inserted
@@ -902,9 +917,8 @@ if (!Math.uuid) {
     this.getKeyframeById = function(keyframeId) {
       if (keyframeId) {
         var keyframe = keyframesById[keyframeId];
-        if (keyframe) {
-          return cloneFrame(keyframe);
-        }
+        if (keyframe)
+          return keyframe;
       }
       return null;
     };

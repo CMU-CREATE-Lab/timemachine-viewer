@@ -139,6 +139,7 @@ function playCachedSnaplapse(snaplapseId) {
       to: undefined
     };
     var $videoSizeSelect;
+    var $createSubtitle_dialog = $(".createSubtitle_dialog");
 
     var eventListeners = {};
     // If the user requested a tour editor AND has a div in the DOM for the editor,
@@ -416,10 +417,10 @@ function playCachedSnaplapse(snaplapseId) {
       // Finally, set up the snaplapse links
       setupSnaplapseLinks();
 
-      $(".createSubtitle_dialog").dialog({
+      $createSubtitle_dialog.dialog({
         autoOpen: false,
-        height: 260,
-        width: 333,
+        height: 250,
+        width: 310,
         modal: true,
         resizable: false,
         buttons: {
@@ -433,18 +434,30 @@ function playCachedSnaplapse(snaplapseId) {
 
       // Display the text annotation when you focus on the description field.
       $(".subtitle_textarea").on("focus", function(event) {
-        var thisKeyframeId = $(event.target.parentNode).dialog("option", "keyframeId");
-        displaySnaplapseFrameAnnotation(snaplapse.getKeyframeById(thisKeyframeId));
-        setKeyframeTitleUI(snaplapse.getKeyframeById(thisKeyframeId));
+        var thisKeyframeId = $createSubtitle_dialog.dialog("option", "keyframeId");
+        var thisKeyframe = snaplapse.getKeyframeById(thisKeyframeId);
+        displaySnaplapseFrameAnnotation(thisKeyframe);
         checkTextareaMaxlength(this, maxSubtitleLength);
-      }).on("keyup", function(event) {// Save the text annotation on keyup, so that we don't need a save button
-        var thisKeyframeId = $(event.target.parentNode).dialog("option", "keyframeId");
+      }).on("keyup", function(event) {
+      	// Save the text annotation on keyup, so that we don't need a save button
+        var thisKeyframeId = $createSubtitle_dialog.dialog("option", "keyframeId");
         snaplapse.setTextAnnotationForKeyframe(thisKeyframeId, $(this).val(), true);
-        displaySnaplapseFrameAnnotation(snaplapse.getKeyframeById(thisKeyframeId));
-        setKeyframeTitleUI(snaplapse.getKeyframeById(thisKeyframeId));
+        var thisKeyframe = snaplapse.getKeyframeById(thisKeyframeId);
+        displaySnaplapseFrameAnnotation(thisKeyframe);
         checkTextareaMaxlength(this, maxSubtitleLength);
       }).on("paste", function() {// Set text limit
         checkTextareaMaxlength(this, maxSubtitleLength);
+      });
+
+      // Display the keyframe title when you focus on the text input.
+      $(".keyframe_title_input").on("focus", function(event) {
+        var thisKeyframeId = $createSubtitle_dialog.dialog("option", "keyframeId");
+        setKeyframeTitleUI(snaplapse.getKeyframeById(thisKeyframeId));
+      }).on("keyup", function(event) {
+      	// Save the text annotation on keyup, so that we don't need a save button
+        var thisKeyframeId = $createSubtitle_dialog.dialog("option", "keyframeId");
+        snaplapse.setTitleForKeyframe(thisKeyframeId, $(this).val());
+        setKeyframeTitleUI(snaplapse.getKeyframeById(thisKeyframeId));
       });
 
       // Set the position
@@ -510,10 +523,9 @@ function playCachedSnaplapse(snaplapseId) {
       if (wantToHide == true)
         $thisKeyframeTitle.hide();
       else {
-        if (isTextNonEmpty(frame['unsafe_string_description'])) {
-          $thisKeyframeTitle.text(frame["unsafe_string_description"]);
-          if (startEditorFromPresentationMode || presentationModeFromHash)
-            $thisKeyframeTitle.show();
+        if (isTextNonEmpty(frame['unsafe_string_frameTitle'])) {
+          $thisKeyframeTitle.text(frame["unsafe_string_frameTitle"]);
+          $thisKeyframeTitle.show();
         } else
           $thisKeyframeTitle.hide();
       }
@@ -524,14 +536,12 @@ function playCachedSnaplapse(snaplapseId) {
       if (status == true) {
         startEditorFromPresentationMode = true;
         $snaplapseContainer.find(".snaplapse_keyframe_list_item").css("margin-left", "-1px");
-        $snaplapseContainer.find(".snaplapse_keyframe_list_item_title").show();
         $snaplapseContainer.find(".snaplapse_keyframe_list_item_play_button").hide();
         $snaplapseContainer.find(".transition_table").hide();
         $videoSizeSelect.find("option[value='750,530']").attr('selected', 'selected');
       } else {
         startEditorFromPresentationMode = false;
         $snaplapseContainer.find(".snaplapse_keyframe_list_item").css("margin-left", "0px");
-        $snaplapseContainer.find(".snaplapse_keyframe_list_item_title").hide();
         $snaplapseContainer.find(".snaplapse_keyframe_list_item_play_button").show();
         $snaplapseContainer.find(".transition_table").show();
         $videoSizeSelect.find("option[value='854,480']").attr('selected', 'selected');
@@ -569,7 +579,7 @@ function playCachedSnaplapse(snaplapseId) {
     };
 
     var displaySnaplapseFrameAnnotation = function(frame) {
-      if (frame && !startEditorFromPresentationMode && !presentationModeFromHash) {
+      if (frame) {
         if (frame['is-description-visible']) {
           if (isTextNonEmpty(frame['unsafe_string_description'])) {
             // Uses .text() and not .html() to prevent cross-site scripting
@@ -958,26 +968,30 @@ function playCachedSnaplapse(snaplapseId) {
         selectAndGo($("#" + keyframeListItem.id), thisKeyframeId, true);
         if (this.checked) {
           snaplapse.setTextAnnotationForKeyframe(thisKeyframeId, undefined, true);
-          if (thisKeyframe["unsafe_string_description"] != undefined) {
+          snaplapse.setTitleForKeyframe(thisKeyframeId, undefined);
+          if (thisKeyframe["unsafe_string_description"] != undefined)
             $(".subtitle_textarea").val(thisKeyframe["unsafe_string_description"]);
-          }
-          $(".createSubtitle_dialog").dialog("option", {
+          if (thisKeyframe["unsafe_string_frameTitle"] != undefined)
+            $(".keyframe_title_input").val(thisKeyframe["unsafe_string_frameTitle"]);
+          displaySnaplapseFrameAnnotation(thisKeyframe);
+          $createSubtitle_dialog.dialog("option", {
             "keyframeId": thisKeyframeId,
             "descriptionVisibleCheckboxId": this.id
           }).dialog("open");
         } else {
           snaplapse.setTextAnnotationForKeyframe(thisKeyframeId, undefined, false);
+          snaplapse.setTitleForKeyframe(thisKeyframeId, undefined);
           displaySnaplapseFrameAnnotation(null);
           setKeyframeTitleUI(thisKeyframe, true);
         }
-      }).click(function(event) {
+      }).mousedown(function(event) {
         // For preventing the parent table from getting the click event
         // this is the first step for a checkbox
         // also need to prevent the label from bubbling the event
         event.stopPropagation();
       });
 
-      $("#" + descriptionVisibleCheckboxLabelId).click(function(event) {
+      $("#" + descriptionVisibleCheckboxLabelId).mousedown(function(event) {
         // For preventing the parent table from getting the click event
         // this is the second step for a checkbox
         // also need to prevent the checkbox from bubbling the event

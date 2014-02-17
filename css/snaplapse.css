@@ -100,9 +100,31 @@
   font-family: Arial, Helvetica, sans-serif;
 }
 
+.keyframe_title_container {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  width: inherit;
+  font-weight: bold;
+}
+
+.keyframe_title_input {
+  width: 180px;
+}
+
+.createSubtitle_dialog_txt {
+  position: absolute;
+  top: 45px;
+  left: 10px;
+  right: 10px;
+}
+
 .subtitle_textarea {
-  height: 90px;
-  width: 300px;
+  position: absolute;
+  top: 65px;
+  height: 70px;
+  left: 10px;
+  width: 280px;
   resize: none;
 }
 
@@ -275,12 +297,12 @@
 }
 
 .snaplapse_keyframe_list_item_thumbnail_overlay {
-	position: absolute;
+  position: absolute;
   top: 0px;
   left: 0px;
   margin: 0;
   padding: 0;
-	width: 126px;
+  width: 126px;
   height: 73px;
   border: solid 0px black;
   -webkit-transition: all 0.2s linear;
@@ -296,9 +318,9 @@
   -moz-box-shadow: inset 0 0 80px black;
   -webkit-box-shadow: inset 0 0 80px black;
   box-shadow: inset 0 0 80px black;
-/*
-	background: black;
-	opacity: 0.5;*/
+  /*
+   background: black;
+   opacity: 0.5;*/
   -webkit-transition: all 0.2s linear;
   -o-transition: all 0.2s linear;
   -moz-transition: all 0.2s linear;
@@ -307,12 +329,12 @@
 }
 
 .snaplapse_keyframe_list_item_thumbnail {
-	position: absolute;
+  position: absolute;
   top: 0px;
   left: 0px;
   margin: 0;
   padding: 0;
-	width: 126px;
+  width: 126px;
   height: 73px;
   border: solid 0px black;
   background-color: black;
