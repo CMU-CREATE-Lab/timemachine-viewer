@@ -456,7 +456,7 @@ function playCachedSnaplapse(snaplapseId) {
       }).on("keyup", function(event) {
       	// Save the text annotation on keyup, so that we don't need a save button
         var thisKeyframeId = $createSubtitle_dialog.dialog("option", "keyframeId");
-        snaplapse.setTitleForKeyframe(thisKeyframeId, $(this).val());
+        snaplapse.setTitleForKeyframe(thisKeyframeId, $(this).val(), true);
         setKeyframeTitleUI(snaplapse.getKeyframeById(thisKeyframeId));
       });
 
@@ -579,7 +579,7 @@ function playCachedSnaplapse(snaplapseId) {
     };
 
     var displaySnaplapseFrameAnnotation = function(frame) {
-      if (frame) {
+      if (frame && !presentationModeFromHash) {
         if (frame['is-description-visible']) {
           if (isTextNonEmpty(frame['unsafe_string_description'])) {
             // Uses .text() and not .html() to prevent cross-site scripting
@@ -968,7 +968,7 @@ function playCachedSnaplapse(snaplapseId) {
         selectAndGo($("#" + keyframeListItem.id), thisKeyframeId, true);
         if (this.checked) {
           snaplapse.setTextAnnotationForKeyframe(thisKeyframeId, undefined, true);
-          snaplapse.setTitleForKeyframe(thisKeyframeId, undefined);
+          snaplapse.setTitleForKeyframe(thisKeyframeId, undefined, true);
           if (thisKeyframe["unsafe_string_description"] != undefined)
             $(".subtitle_textarea").val(thisKeyframe["unsafe_string_description"]);
           if (thisKeyframe["unsafe_string_frameTitle"] != undefined)
@@ -980,7 +980,7 @@ function playCachedSnaplapse(snaplapseId) {
           }).dialog("open");
         } else {
           snaplapse.setTextAnnotationForKeyframe(thisKeyframeId, undefined, false);
-          snaplapse.setTitleForKeyframe(thisKeyframeId, undefined);
+          snaplapse.setTitleForKeyframe(thisKeyframeId, undefined, false);
           displaySnaplapseFrameAnnotation(null);
           setKeyframeTitleUI(thisKeyframe, true);
         }

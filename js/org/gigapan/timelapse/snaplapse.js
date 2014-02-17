@@ -275,10 +275,11 @@ if (!Math.uuid) {
       return false;
     };
 
-    this.setTitleForKeyframe = function(keyframeId, description) {
+    this.setTitleForKeyframe = function(keyframeId, description, isDescriptionVisible) {
       if (keyframeId && keyframesById[keyframeId]) {
         if (description != undefined)
           keyframesById[keyframeId]['unsafe_string_frameTitle'] = description;
+        keyframesById[keyframeId]['is-description-visible'] = isDescriptionVisible;
         return true;
       }
       return false;
@@ -586,7 +587,7 @@ if (!Math.uuid) {
             // Decode keyframe title
             frame["unsafe_string_frameTitle"] = encoder.read_unsafe_string();
           }
-          frame["is-description-visible"] = frame["unsafe_string_description"] ? true : false;
+          frame["is-description-visible"] = (frame["unsafe_string_description"] || frame["unsafe_string_frameTitle"]) ? true : false;
           keyframes.push(frame);
         }
         var checksum;
