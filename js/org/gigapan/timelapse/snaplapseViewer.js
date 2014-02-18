@@ -439,7 +439,7 @@ function playCachedSnaplapse(snaplapseId) {
         displaySnaplapseFrameAnnotation(thisKeyframe);
         checkTextareaMaxlength(this, maxSubtitleLength);
       }).on("keyup", function(event) {
-      	// Save the text annotation on keyup, so that we don't need a save button
+        // Save the text annotation on keyup, so that we don't need a save button
         var thisKeyframeId = $createSubtitle_dialog.dialog("option", "keyframeId");
         snaplapse.setTextAnnotationForKeyframe(thisKeyframeId, $(this).val(), true);
         var thisKeyframe = snaplapse.getKeyframeById(thisKeyframeId);
@@ -454,7 +454,7 @@ function playCachedSnaplapse(snaplapseId) {
         var thisKeyframeId = $createSubtitle_dialog.dialog("option", "keyframeId");
         setKeyframeTitleUI(snaplapse.getKeyframeById(thisKeyframeId));
       }).on("keyup", function(event) {
-      	// Save the text annotation on keyup, so that we don't need a save button
+        // Save the text annotation on keyup, so that we don't need a save button
         var thisKeyframeId = $createSubtitle_dialog.dialog("option", "keyframeId");
         snaplapse.setTitleForKeyframe(thisKeyframeId, $(this).val(), true);
         setKeyframeTitleUI(snaplapse.getKeyframeById(thisKeyframeId));
@@ -515,6 +515,26 @@ function playCachedSnaplapse(snaplapseId) {
         var keyframeId = id.split("_")[3];
         var frame = snaplapse.getKeyframeById(keyframeId);
         setKeyframeTitleUI(frame);
+      }
+    };
+
+    var setKeyframeCaptionUI = function(frame, element, wantToHide) {
+      var $keyframeSubtitleBox = $(".keyframeSubtitleBoxForHovering");
+      var $keyframeSubtitle = $keyframeSubtitleBox.find("p");
+      if (wantToHide == true)
+        $keyframeSubtitleBox.stop(true, true).fadeOut(500);
+      else {
+        if (isTextNonEmpty(frame['unsafe_string_description'])) {
+          $keyframeSubtitle.text(frame["unsafe_string_description"]);
+          var offset = $(element).offset();
+          var height = $(document).height();
+          $keyframeSubtitleBox.css({
+            left: offset.left + "px",
+            bottom: height - offset.top + 9 + "px"
+          });
+          $keyframeSubtitleBox.stop(true, true).fadeIn(500);
+        } else
+          $keyframeSubtitleBox.stop(true, true).fadeOut(500);
       }
     };
 
@@ -919,22 +939,40 @@ function playCachedSnaplapse(snaplapseId) {
       $keyframeTable.mousedown(function(event) {
         selectAndGo($("#" + keyframeListItem.id));
         displaySnaplapseFrameAnnotation(null);
-      }).hover(function() {
-        var $keyframeListItem = $("#" + keyframeListItem.id);
-        if (!$keyframeListItem.hasClass("ui-selected"))
-          org.gigapan.Util.changeBackgroundColorOpacity($keyframeListItem.get(0), 0.15);
-      }, function() {
-        var $keyframeListItem = $("#" + keyframeListItem.id);
-        if (!$keyframeListItem.hasClass("ui-selected"))
-          org.gigapan.Util.changeBackgroundColorOpacity($keyframeListItem.get(0), 0);
       });
 
-      $("#" + thumbnailButtonId).click(function(event) {
+      if (!presentationModeFromHash) {
+        $keyframeTable.hover(function() {
+          var $keyframeListItem = $("#" + keyframeListItem.id);
+          if (!$keyframeListItem.hasClass("ui-selected"))
+            org.gigapan.Util.changeBackgroundColorOpacity($keyframeListItem.get(0), 0.15);
+        }, function() {
+          var $keyframeListItem = $("#" + keyframeListItem.id);
+          if (!$keyframeListItem.hasClass("ui-selected"))
+            org.gigapan.Util.changeBackgroundColorOpacity($keyframeListItem.get(0), 0);
+        });
+      }
+
+      var $thumbnailButton = $("#" + thumbnailButtonId);
+
+      $thumbnailButton.click(function(event) {
         event.stopPropagation();
         var id = this.id;
         var keyframeId = id.split("_")[3];
         selectAndGo($("#" + keyframeListItem.id), keyframeId);
       });
+
+      if (presentationModeFromHash) {
+        $thumbnailButton.hover(function() {
+          var thisKeyframeId = this.id.split("_")[3];
+          var thisKeyframe = snaplapse.getKeyframeById(thisKeyframeId);
+          setKeyframeCaptionUI(thisKeyframe, this);
+        }, function() {
+          var thisKeyframeId = this.id.split("_")[3];
+          var thisKeyframe = snaplapse.getKeyframeById(thisKeyframeId);
+          setKeyframeCaptionUI(thisKeyframe, this, true);
+        });
+      }
 
       if (disableTourLooping) {
         $("#" + loopTimesId).hide();
