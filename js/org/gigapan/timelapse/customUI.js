@@ -1274,7 +1274,6 @@ if (!org.gigapan.timelapse.Timelapse) {
       // Move the playing control and the help higher if the editor control bar is enabled
       var customEditorModeToolbar_height = customEditorModeToolbar.height() + 5;
       $customControl.css("bottom", "+=" + customEditorModeToolbar_height + "px");
-      $customSpeedhelp.css("bottom", "+=" + customEditorModeToolbar_height + "px");
       if (settings["showAddressLookup"])
         handleAddressLookup();
       if (startEditorFromPresentationMode)
@@ -1485,6 +1484,10 @@ if (!org.gigapan.timelapse.Timelapse) {
         'left': sliderLeftMargin_pct + "%"
       });
       sliderWidth = $customTimeline.width();
+      $("#" + viewerDivId + " .customInstructions").css({
+        "width": $video.outerWidth() + "px",
+        "height": $video.outerHeight() + "px"
+      });
     };
     this.fitToWindow = fitToWindow;
 

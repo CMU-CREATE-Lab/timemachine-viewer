@@ -960,6 +960,8 @@ function playCachedSnaplapse(snaplapseId) {
         var id = this.id;
         var keyframeId = id.split("_")[3];
         selectAndGo($("#" + keyframeListItem.id), keyframeId);
+        $sortable.children().children().children(".snaplapse_keyframe_list_item_thumbnail_overlay").removeClass("thumbnail_highlight");
+        $(this).children(".snaplapse_keyframe_list_item_thumbnail_overlay").addClass("thumbnail_highlight");
       });
 
       if (presentationModeFromHash) {

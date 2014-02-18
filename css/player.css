@@ -111,7 +111,6 @@ body, html {
   padding: 10px;
 }
 
-
 .loadingOverlay {
   background-color: rgba(0, 0, 0, 0);
   bottom: 0;
@@ -272,9 +271,10 @@ body, html {
 }
 
 .instructions {
-  height: 290px;
   background-color: rgba(0, 0, 0, 0.5);
   position: absolute;
+  top: 0px;
+  left: 0px;
   margin: auto;
   z-index: 999;
   display: none;
