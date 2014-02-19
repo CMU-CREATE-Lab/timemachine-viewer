@@ -182,14 +182,17 @@ function playCachedSnaplapse(snaplapseId) {
       var $customPlay = $(".customPlay");
       var $modisCustomPlay = $(".modisCustomPlay");
       var $timeText = $("#" + timelapseViewerDivId + " .timeText");
-      var $sideToolBar = $("#" + timelapseViewerDivId + " .sideToolBar").stop(true, true).fadeOut(200);
+      var $sideToolBar = $("#" + timelapseViewerDivId + " .sideToolBar");
+      var $modisTimeText = $("#" + timelapseViewerDivId + " .modisTimeText");
+      var $monthSpinnerContainer = $("#" + timelapseViewerDivId + " .monthSpinnerContainer");
+      var $toggleLock = $("#" + timelapseViewerDivId + " .toggleLock");
 
       $sideToolBar.hide();
-      $customTimeline.stop(true, true).fadeOut(100);
+      $customTimeline.hide();
       $speedControl.hide();
       $modisSpeedControl.hide();
-      $customHelpLabel.stop(true, true).fadeOut(100);
-      $googleLogo.css("bottom", "-=" + 50 + "px");
+      $customHelpLabel.hide();
+      $googleLogo.css("bottom", "-=" + 45 + "px");
       $customPlay.hide();
       $modisCustomPlay.hide();
       $timeText.css({
@@ -197,8 +200,11 @@ function playCachedSnaplapse(snaplapseId) {
         "left": "-=" + 14 + "px",
         "padding-left": "12px"
       });
-      $googleMapToggle.fadeOut(100);
-      $contextMapResizer.fadeOut(100);
+      $googleMapToggle.hide();
+      $contextMapResizer.hide();
+      $modisTimeText.css("top", "+=25px");
+      $monthSpinnerContainer.css("top", "+=25px");
+      $toggleLock.hide();
       if (editorEnabled)
         moveDescriptionBox("down");
     };
@@ -213,11 +219,14 @@ function playCachedSnaplapse(snaplapseId) {
       var $customPlay = $(".customPlay");
       var $modisCustomPlay = $(".modisCustomPlay");
       var $timeText = $("#" + timelapseViewerDivId + " .timeText");
-      var $sideToolBar = $("#" + timelapseViewerDivId + " .sideToolBar").stop(true, true).fadeOut(200);
+      var $sideToolBar = $("#" + timelapseViewerDivId + " .sideToolBar");
+      var $modisTimeText = $("#" + timelapseViewerDivId + " .modisTimeText");
+      var $monthSpinnerContainer = $("#" + timelapseViewerDivId + " .monthSpinnerContainer");
+      var $toggleLock = $("#" + timelapseViewerDivId + " .toggleLock");
 
-      $customTimeline.stop(true, true).fadeIn(100);
-      $customHelpLabel.stop(true, true).fadeIn(100);
-      $googleLogo.css("bottom", "+=" + 50 + "px");
+      $customTimeline.show();
+      $customHelpLabel.show();
+      $googleLogo.css("bottom", "+=" + 45 + "px");
       $customPlay.show();
       $modisCustomPlay.show();
       $timeText.css({
@@ -225,9 +234,12 @@ function playCachedSnaplapse(snaplapseId) {
         "left": "+=" + 14 + "px",
         "padding-left": "0px"
       });
-      $googleMapToggle.fadeIn(100);
-      $contextMapResizer.fadeIn(100);
-      $sideToolBar.stop(true, true).fadeIn(100);
+      $googleMapToggle.show();
+      $contextMapResizer.show();
+      $sideToolBar.show();
+      $modisTimeText.css("top", "-=25px");
+      $monthSpinnerContainer.css("top", "-=25px");
+      $toggleLock.show();
       if (editorEnabled)
         moveDescriptionBox("up");
     };

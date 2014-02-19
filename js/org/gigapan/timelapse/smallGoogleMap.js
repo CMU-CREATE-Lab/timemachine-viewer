@@ -111,7 +111,9 @@ if (!org.gigapan.timelapse.Timelapse) {
     };
     var mapGeometry = {
       "width": minWidth,
-      "height": minHeight
+      "height": minHeight,
+      "right": 21,
+      "top": 21
     };
     var lastMapGeometry;
     var googleMap;
@@ -424,8 +426,6 @@ if (!org.gigapan.timelapse.Timelapse) {
       $smallMapContainer.append(smallMap);
       $("#" + videoDivID).append(smallMapContainer);
       // Set geometry
-      var offsetX = 0;
-      var offsetY = 0;
       if (( typeof (smallGoogleMapOptions["geometry"]) != "undefined")) {
         if (( typeof (smallGoogleMapOptions["geometry"]["width"]) != "undefined")) {
           var newWidth = smallGoogleMapOptions["geometry"]["width"];
@@ -437,18 +437,8 @@ if (!org.gigapan.timelapse.Timelapse) {
           if (newHeight <= maxHeight && newHeight >= minHeight)
             mapGeometry.height = newHeight;
         }
-        if (( typeof (smallGoogleMapOptions["geometry"]["offsetX"]) != "undefined")) {
-          offsetX = smallGoogleMapOptions["geometry"]["offsetX"];
-        }
-        if (( typeof (smallGoogleMapOptions["geometry"]["offsetY"]) != "undefined")) {
-          offsetY = smallGoogleMapOptions["geometry"]["offsetY"];
-        }
       }
-      mapGeometry.right = offsetX + 1;
-      mapGeometry.top = offsetY + 1;
-      if (offsetX > 0 && offsetY > 0) {
-        setSmallMapShadow(true);
-      }
+      setSmallMapShadow(true);
       $smallMapContainer.css({
         "width": mapGeometry.width + "px",
         "height": mapGeometry.height + "px"

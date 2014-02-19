@@ -45,7 +45,7 @@
     <script type="text/javascript">
       jQuery.support.cors = true;
       // Landsat
-      var url = "https://earthengine.google.org/timelapse/data/20130507/";
+      var url = "http://earthengine.google.org/timelapse/data/20130507/";
 
       function init() {
         var myView = null;
@@ -80,6 +80,7 @@
           //showHomeBtn: false, //defaults to true
           composerDiv: "composer1", //display the time warp composer; display nothing if param left out
           enableCustomUI: true, //defaults to false
+          //mediaType: ".mp4",
           loopDwell: {
             startDwell: 0.5, //defaults to 0
             endDwell: 0.5 //defaults to 0
@@ -102,15 +103,13 @@
             }
           }, //display scale bar; display nothing if param left out
           smallGoogleMapOptions: {
-            smallGoogleMapDiv: "smallGoogleMap1",
+            smallGoogleMapDiv: "smallGoogleMap1"
             //resizable: false, //defaults to true
             //showToggleBtn: false, //defaults to true
-            geometry: {
-              width: 160, //defaults to 160, (min ,max) value = (160, 330)
-              height: 120, //defaults to 120, (min ,max) value = (120, 220)
-              offsetX: 20, //defaults to 0
-              offsetY: 20 //defaults to 0
-            }
+            //geometry: {
+            //  width: 160, //defaults to 160, (min ,max) value = (160, 330)
+            //  height: 120 //defaults to 120, (min ,max) value = (120, 220)
+            //}
           }, //display small google map; display nothing if param left out
           //showAddressLookup: true,
           newHomeView: myHomeView, //override the home view
