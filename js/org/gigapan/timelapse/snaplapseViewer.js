@@ -140,6 +140,7 @@ function playCachedSnaplapse(snaplapseId) {
     };
     var $videoSizeSelect;
     var $createSubtitle_dialog = $(".createSubtitle_dialog");
+    var $keyframeContainer = $("#" + composerDivId + " .snaplapse_keyframe_container");
 
     var eventListeners = {};
     // If the user requested a tour editor AND has a div in the DOM for the editor,
@@ -522,19 +523,44 @@ function playCachedSnaplapse(snaplapseId) {
       var $keyframeSubtitleBox = $(".keyframeSubtitleBoxForHovering");
       var $keyframeSubtitle = $keyframeSubtitleBox.find("p");
       if (wantToHide == true)
-        $keyframeSubtitleBox.stop(true, true).fadeOut(500);
+        $keyframeSubtitleBox.stop(true, true).fadeOut(200);
       else {
         if (isTextNonEmpty(frame['unsafe_string_description'])) {
           $keyframeSubtitle.text(frame["unsafe_string_description"]);
-          var offset = $(element).offset();
-          var height = $(document).height();
+          var $element = $(element);
+          var containerOffset = $keyframeContainer.offset();
+          var containerWidth = $keyframeContainer.width();
+          var elementOffset = $element.offset();
+          var elementWidth = $element.width();
+          var captionWidth = $keyframeSubtitleBox.width();
+          var documentHeight = $(document).height();
+          var pointerLeft = elementOffset.left + elementWidth / 2;
+          var captionLeft = pointerLeft - captionWidth / 2;
+          var distanceBetweenElementAndLeftEdge = elementOffset.left + elementWidth - containerOffset.left;
+          var distanceBetweenElementAndRightEdge = containerWidth - elementOffset.left + containerOffset.left;
+          var minCaptionLeft = containerOffset.left;
+          var maxCaptionLeft = containerWidth - captionWidth + containerOffset.left;
+          var minPointerLeft = containerOffset.left;
+          var maxPointerLeft = containerWidth + containerOffset.left;
+          if (captionLeft < minCaptionLeft)
+            captionLeft = minCaptionLeft + 5;
+          else if (captionLeft > maxCaptionLeft)
+            captionLeft = maxCaptionLeft - 5;
+          if (pointerLeft < minPointerLeft && distanceBetweenElementAndLeftEdge > 19)
+            pointerLeft = minPointerLeft + 5;
+          else if (pointerLeft > maxPointerLeft && distanceBetweenElementAndRightEdge > 19)
+            pointerLeft = maxPointerLeft - 5;
+          var pointerLeftPercent = ((pointerLeft - captionLeft) / captionWidth) * 100;
           $keyframeSubtitleBox.css({
-            left: offset.left + "px",
-            bottom: height - offset.top + 9 + "px"
+            "left": captionLeft + "px",
+            "bottom": (documentHeight - elementOffset.top + 9) + "px"
           });
-          $keyframeSubtitleBox.stop(true, true).fadeIn(500);
+          $keyframeSubtitle.css({
+            "background-position": pointerLeftPercent + "% 100%"
+          });
+          $keyframeSubtitleBox.stop(true, true).fadeIn(200);
         } else
-          $keyframeSubtitleBox.stop(true, true).fadeOut(500);
+          $keyframeSubtitleBox.stop(true, true).fadeOut(200);
       }
     };
 
