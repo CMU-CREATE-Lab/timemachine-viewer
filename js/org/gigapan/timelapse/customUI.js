@@ -1233,7 +1233,7 @@ if (!org.gigapan.timelapse.Timelapse) {
         var $editorModeOptions = $("#" + viewerDivId + " .editorModeOptions").append(editorModeOptions);
         // Create button
         $customEditorControl.append('<button class="toggleMode" title="Toggle between tour and presentation mode">Change Mode</button>');
-        var $toggleMode = $("#" + viewerDivId + " .toggleMode").button({
+        $("#" + viewerDivId + " .toggleMode").button({
           icons: {
             secondary: "ui-icon-triangle-1-s"
           },
@@ -1245,7 +1245,7 @@ if (!org.gigapan.timelapse.Timelapse) {
             $editorModeOptions.show().position({
               my: "center top",
               at: "center bottom",
-              of: $toggleMode
+              of: $(this)
             });
             $(document).one("mouseup", function(e) {
               var targetGroup = $(e.target).parents().addBack();

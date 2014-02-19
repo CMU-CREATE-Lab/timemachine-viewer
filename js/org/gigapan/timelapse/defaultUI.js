@@ -157,33 +157,28 @@ if (!org.gigapan.timelapse.Timelapse) {
           },
           text: false
         }).change(function() {
-          if ($fullscreenCheckbox.is(":checked")) {
+          if ($fullscreenCheckbox.is(":checked"))
             timelapse.fullScreen(true);
-          } else {
+          else
             timelapse.fullScreen(false);
-          }
         });
       }
       // Create mode switch button
       if (settings["composerDiv"] || settings["annotatorDiv"]) {
         createModeSwitchButton();
-        if (settings["composerDiv"]) {
+        if (settings["composerDiv"])
           createEditorModeToolbar();
-        }
-        if (settings["annotatorDiv"]) {
+        if (settings["annotatorDiv"])
           createAnnotatorModeToolbar();
-        }
       }
 
-      if (!showFullScreenBtn && !$("#" + viewerDivId + ".viewerModeBtnContainer").is(":visible")) {
+      if (!showFullScreenBtn && !$("#" + viewerDivId + ".viewerModeBtnContainer").is(":visible"))
         $("#" + viewerDivId + " .instructions span.speedhelp p").css("background-position", "bottom center");
-      }
 
       // Layers for a dataset
       if (tmJSON["layers"]) {
         $("#" + viewerDivId + " .layerSlider").show();
         populateLayers();
-
         $("#" + viewerDivId + " .layerSlider .jCarouselLite").jCarouselLite({
           btnNext: "#" + viewerDivId + " .layerSlider .next",
           btnPrev: "#" + viewerDivId + " .layerSlider .prev",
@@ -527,7 +522,7 @@ if (!org.gigapan.timelapse.Timelapse) {
         editorModeOptions += '<li><a href="javascript:void(0);">' + getEditorModeText("tour") + '</a></li>';
         var $editorModeOptions = $("#" + viewerDivId + " .editorModeOptions").append(editorModeOptions);
         // Create button
-        var $toggleMode = $("#" + viewerDivId + " .toggleMode").button({
+        $("#" + viewerDivId + " .toggleMode").button({
           icons: {
             secondary: "ui-icon-triangle-1-s"
           },
@@ -539,7 +534,7 @@ if (!org.gigapan.timelapse.Timelapse) {
             $editorModeOptions.show().position({
               my: "center top",
               at: "center bottom",
-              of: $toggleMode
+              of: $(this)
             });
             $(document).one("mouseup", function(e) {
               var targetGroup = $(e.target).parents().addBack();

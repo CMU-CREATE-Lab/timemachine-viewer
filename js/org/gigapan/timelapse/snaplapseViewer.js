@@ -1341,6 +1341,7 @@ function playCachedSnaplapse(snaplapseId) {
         "margin-top": "-1px",
         "margin-bottom": "0"
       });
+      $("#" + timelapseViewerDivId + " .viewerModeBtn").hide();
       presentationModeFromHash = true;
     };
     this.setToPresentationViewOnlyMode = setToPresentationViewOnlyMode;
