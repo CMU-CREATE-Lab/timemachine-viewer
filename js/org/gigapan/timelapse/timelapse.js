@@ -2382,7 +2382,7 @@ if (!window['$']) {
       //handlePluginVideoTagOverride(); //TODO
 
       if (settings["scaleBarOptions"] && tmJSON['projection-bounds'])
-        scaleBar = new org.gigapan.timelapse.ScaleBar(settings["scaleBarOptions"], thisObj);
+        scaleBar = new org.gigapan.timelapse.ScaleBar(settings["scaleBarOptions"], thisObj, settings);
       // Must be placed after TimelineSlider is created
 
       if (isHyperwall)

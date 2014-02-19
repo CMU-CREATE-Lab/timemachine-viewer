@@ -186,6 +186,7 @@ function playCachedSnaplapse(snaplapseId) {
       var $modisTimeText = $("#" + timelapseViewerDivId + " .modisTimeText");
       var $monthSpinnerContainer = $("#" + timelapseViewerDivId + " .monthSpinnerContainer");
       var $toggleLock = $("#" + timelapseViewerDivId + " .toggleLock");
+      var $scaleBarContainer = $("#" + timelapseViewerDivId + " .scaleBarContainer");
 
       $sideToolBar.hide();
       $customTimeline.hide();
@@ -205,6 +206,8 @@ function playCachedSnaplapse(snaplapseId) {
       $modisTimeText.css("top", "+=25px");
       $monthSpinnerContainer.css("top", "+=25px");
       $toggleLock.hide();
+      if (datasetType == "modis")
+        $scaleBarContainer.css("bottom", "-=25px");
       if (editorEnabled)
         moveDescriptionBox("down");
     };
@@ -223,6 +226,7 @@ function playCachedSnaplapse(snaplapseId) {
       var $modisTimeText = $("#" + timelapseViewerDivId + " .modisTimeText");
       var $monthSpinnerContainer = $("#" + timelapseViewerDivId + " .monthSpinnerContainer");
       var $toggleLock = $("#" + timelapseViewerDivId + " .toggleLock");
+      var $scaleBarContainer = $("#" + timelapseViewerDivId + " .scaleBarContainer");
 
       $customTimeline.show();
       $customHelpLabel.show();
@@ -240,6 +244,8 @@ function playCachedSnaplapse(snaplapseId) {
       $modisTimeText.css("top", "-=25px");
       $monthSpinnerContainer.css("top", "-=25px");
       $toggleLock.show();
+      if (datasetType == "modis")
+        $scaleBarContainer.css("bottom", "+=25px");
       if (editorEnabled)
         moveDescriptionBox("up");
     };

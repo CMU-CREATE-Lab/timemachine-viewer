@@ -89,18 +89,27 @@ if (!org.gigapan.timelapse.Timelapse) {
 // CODE
 //
 (function() {
-  org.gigapan.timelapse.ScaleBar = function(scaleBarOptions, timelapse) {
+  org.gigapan.timelapse.ScaleBar = function(scaleBarOptions, timelapse, settings) {
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////
     //
     // Class variables
     //
     var scaleBarDivId = ( typeof (scaleBarOptions["scaleBarDiv"]) == "undefined") ? "scaleBar2013" : scaleBarOptions["scaleBarDiv"];
     var enableVideoQualitySelector = ( typeof (scaleBarOptions["enableVideoQualitySelector"]) == "undefined") ? false : scaleBarOptions["enableVideoQualitySelector"];
-    var minBarLength = 113;
-    var barLength = ( typeof (scaleBarOptions["geometry"]) == "undefined" || typeof (scaleBarOptions["geometry"]["barLength"]) == "undefined") ? minBarLength : scaleBarOptions["geometry"]["barLength"];
-    var offsetX = ( typeof (scaleBarOptions["geometry"]) == "undefined" || typeof (scaleBarOptions["geometry"]["offsetX"]) == "undefined") ? 0 : scaleBarOptions["geometry"]["offsetX"];
-    var offsetY = ( typeof (scaleBarOptions["geometry"]) == "undefined" || typeof (scaleBarOptions["geometry"]["offsetY"]) == "undefined") ? 0 : scaleBarOptions["geometry"]["offsetY"];
-    var position = ( typeof (scaleBarOptions["geometry"]) == "undefined" || typeof (scaleBarOptions["geometry"]["position"]) == "undefined") ? "left" : scaleBarOptions["geometry"]["position"];
+    var barLength;
+    var datasetType;
+    var scaleBarGeometryLandsat = {
+      "x": 9,
+      "y": 77,
+      "position": "left",
+      "barLength": 113
+    };
+    var scaleBarGeometryMODIS = {
+      "x": 9,
+      "y": 135,
+      "position": "left",
+      "barLength": 135
+    };
     var videoDivId = timelapse.getVideoDivId();
     var viewerDivId = timelapse.getViewerDivId();
     var videoDivHeight;
@@ -360,10 +369,13 @@ if (!org.gigapan.timelapse.Timelapse) {
 
     // Create elements for scale bar
     var createScaleBarElements = function() {
+      var scaleBarGeometry;
+      if (datasetType == "landsat")
+        scaleBarGeometry = scaleBarGeometryLandsat;
+      else if (datasetType == "modis")
+        scaleBarGeometry = scaleBarGeometryMODIS;
       // Set bar length
-      if (barLength < minBarLength) {
-        barLength = minBarLength;
-      }
+      barLength = scaleBarGeometry.barLength;
       // Create elements
       scaleBarContainer = document.createElement("div");
       var scaleBarTop_txt_DOM = document.createElement("div");
@@ -389,11 +401,8 @@ if (!org.gigapan.timelapse.Timelapse) {
       $scaleBarContainer.append(scaleBarTop_txt_DOM, scaleBar_canvas, scaleBarBot_txt_DOM);
       $("#" + videoDivId).append(scaleBarContainer);
       // Set position
-      $scaleBarContainer.css("bottom", offsetY + 10 + "px");
-      if (position == "left")
-        $scaleBarContainer.css("left", offsetX + 9 + "px");
-      else
-        $scaleBarContainer.css("right", offsetX + 9 + "px");
+      $scaleBarContainer.css("bottom", scaleBarGeometry.y + "px");
+      $scaleBarContainer.css(scaleBarGeometry.position, scaleBarGeometry.x + "px");
       // Cache elements
       metricUnit_txt_DOM = document.getElementById(scaleBarDivId + "_scaleBarTop_txt");
       englishUnit_txt_DOM = document.getElementById(scaleBarDivId + "_scaleBarBot_txt");
@@ -562,6 +571,12 @@ if (!org.gigapan.timelapse.Timelapse) {
     //
     // Constructor code
     //
+    if ( typeof settings["enableCustomUI"] != "undefined" && settings["enableCustomUI"] != false) {
+      if (settings["enableCustomUI"] != "modis")
+        datasetType = "landsat";
+      else
+        datasetType = "modis";
+    }
     createScaleBarElements();
     if (enableVideoQualitySelector == true) {
       createVideoQualityElements();
