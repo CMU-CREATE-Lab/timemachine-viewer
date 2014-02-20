@@ -95,8 +95,9 @@ if (!org.gigapan.timelapse.Timelapse) {
     // Class variables
     //
     var datasetType = settings["enableCustomUI"] != "modis" ? "landsat" : "modis";
-    var startEditorFromPresentationMode = settings["startEditorFromPresentationMode"] ? settings["startEditorFromPresentationMode"] : false;
-    var showEditorModeButton = settings["showEditorModeButton"] ? settings["showEditorModeButton"] : true;
+    var startEditorFromPresentationMode = ( typeof (settings["startEditorFromPresentationMode"]) == "undefined") ? false : settings["startEditorFromPresentationMode"];
+    var showAddressLookup = ( typeof (settings["showAddressLookup"]) == "undefined") ? false : settings["showAddressLookup"];
+    var showEditorModeButton = ( typeof (settings["showEditorModeButton"]) == "undefined") ? true : settings["showEditorModeButton"];
     var viewerDivId = timelapse.getViewerDivId();
     var $viewer = $("#" + viewerDivId);
     var viewer_offset = $viewer.offset();
@@ -1274,7 +1275,7 @@ if (!org.gigapan.timelapse.Timelapse) {
       // Move the playing control and the help higher if the editor control bar is enabled
       var customEditorModeToolbar_height = customEditorModeToolbar.height() + 5;
       $customControl.css("bottom", "+=" + customEditorModeToolbar_height + "px");
-      if (settings["showAddressLookup"])
+      if (showAddressLookup)
         handleAddressLookup();
       if (startEditorFromPresentationMode)
         setPresentationMode(true);
