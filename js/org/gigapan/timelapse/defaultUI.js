@@ -109,6 +109,7 @@ if (!org.gigapan.timelapse.Timelapse) {
     var toolbarHeight = $toolbar.outerHeight();
     var minViewportHeight = timelapse.getMinViewportHeight();
     var minViewportWidth = timelapse.getMinViewportWidth();
+    var datasetType;
 
     var visualizer = timelapse.getVisualizer();
     var annotator = timelapse.getAnnotator();
@@ -122,8 +123,8 @@ if (!org.gigapan.timelapse.Timelapse) {
     var showFullScreenBtn = ( typeof (settings["showFullScreenBtn"]) == "undefined") ? true : settings["showFullScreenBtn"];
     var startEditorFromPresentationMode = ( typeof (settings["startEditorFromPresentationMode"]) == "undefined") ? false : settings["startEditorFromPresentationMode"];
     var showEditorModeButton = ( typeof (settings["showEditorModeButton"]) == "undefined") ? true : settings["showEditorModeButton"];
+    var showLogoOnDefaultUI = ( typeof (settings["showLogoOnDefaultUI"]) == "undefined") ? true : settings["showLogoOnDefaultUI"];
     var editorEnabled = settings["composerDiv"] && $("#" + settings["composerDiv"]).length;
-    var datasetType;
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////
     //
@@ -1215,21 +1216,27 @@ if (!org.gigapan.timelapse.Timelapse) {
       else
         datasetType = "modis";
     }
+
     createTimelineSlider();
     createToolbar();
-    if (!showZoomControls) {
+
+    if (!showZoomControls)
       $("#" + viewerDivId + " .zoom").hide();
-    }
-    if (!showPanControls) {
+
+    if (!showPanControls)
       $("#" + viewerDivId + " .pan").hide();
-    }
+
     if (!showMainControls || datasetType != undefined) {
       $("#" + viewerDivId + " .controls").hide();
       $("#" + viewerDivId + " .timelineSliderFiller").hide();
     }
-    if (!showHomeBtn) {
+
+    if (!showLogoOnDefaultUI)
+      $("#" + viewerDivId + " .createLabLogo").parent().hide();
+
+    if (!showHomeBtn)
       $("#" + viewerDivId + " .zoomall").hide();
-    }
+
     if (settings["viewportGeometry"] && settings["viewportGeometry"]["max"]) {
       // We already add a resizing handler in customUI.js, so don't add it again.
       if ( typeof settings["enableCustomUI"] == "undefined" || settings["enableCustomUI"] == false) {

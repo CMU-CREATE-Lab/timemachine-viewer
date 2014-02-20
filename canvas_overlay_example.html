@@ -75,7 +75,7 @@
         var currentZoom = timelapse.getCurrentZoom();
 
         // Load the fracking json file
-        $.getJSON('fracked-ar2.json', function (data) {
+        $.getJSON('fracked-ar2.json', function(data) {
           var previousYear = 1983;
 
           // Create a canvas element on the stage with an id specified below
@@ -136,7 +136,7 @@
 
             elem.on("mouseout", function() {
               console.log("mouseout");
-              $("#player1_timelapse").css("cursor","").addClass("openHand");
+              $("#player1_timelapse").css("cursor", "").addClass("openHand");
             });
 
             // Place the elements that will be drawn into groups based on their dates
@@ -167,7 +167,7 @@
         });
 
         // Add a listener that runs every time the time machine view changes (e.g. we pan/zoom)
-        timelapse.addTimeChangeListener(function () {
+        timelapse.addTimeChangeListener(function() {
           if (frackingLayer) {
             // Get all the groups associated with this canvas
             var frackingGroups = frackingLayer.groups;
@@ -189,7 +189,7 @@
         });
 
         // Add a listener that runs every time the time changes in the time machine (e.g. seek with the time scrubber/normal playback)
-        timelapse.addViewChangeListener(function () {
+        timelapse.addViewChangeListener(function() {
           if (frackingLayer) {
             var frackings = frackingLayer.elements;
             // Go through every element on our canvas
@@ -211,6 +211,7 @@
         // Reposition the time machine to a user specific location. In this case, zoomed in on Arkansas
         window.location.hash = '#v=35.43014,-91.67287,6.536,latLng&t=0.03';
       }
+
       $(init);
     </script>
 
