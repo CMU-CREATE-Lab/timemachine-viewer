@@ -2452,8 +2452,12 @@ if (!window['$']) {
     };
 
     var loadTimelapse = function(url) {
+      showSpinner(viewerDivId);
       settings["url"] = url;
-      UTIL.ajax("json", url, "tm.json" + getMetadataCacheBreaker(), loadTimelapseCallback);
+      // Add trailing slash to url if it was omitted
+      if (settings["url"].charAt(settings["url"].length - 1) != "/")
+        settings["url"] += "/";
+      UTIL.ajax("json", settings["url"], "tm.json" + getMetadataCacheBreaker(), loadTimelapseCallback);
     }
     this.loadTimelapse = loadTimelapse;
 
@@ -2497,6 +2501,8 @@ if (!window['$']) {
       // TODO check if currently playing
       if (playOnLoad)
         _play();
+
+      _seek(thisObj.getCurrentTime() + 0.01);
 
       if (visualizer) {
         topLevelVideo.src = getTileidxUrl(0);
@@ -2724,10 +2730,6 @@ if (!window['$']) {
       UTIL.setViewerType(settings["viewerType"]);
     viewerType = UTIL.getViewerType();
     targetView = {};
-
-    // Add trailing slash to url if it was omitted
-    if (settings["url"].charAt(settings["url"].length - 1) != "/")
-      settings["url"] += "/";
 
     UTIL.log('Timelapse("' + settings["url"] + '")');
     showSpinner(viewerDivId);
