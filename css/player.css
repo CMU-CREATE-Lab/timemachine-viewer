@@ -8,11 +8,17 @@ body, html {
 }
 
 .createLabLogo {
-  width: 110px;
+  width: 170px;
+  height: 28px;
   position: absolute;
-  bottom: 43px;
-  right: 62px;
+  bottom: 40px;
+  right: 32px;
   border: 0px;
+  background-image: url("../images/createLabLogo.png");
+  -ms-transform: scale(0.647); /* IE 9 */
+  -webkit-transform: scale(0.647); /* Chrome, Safari, Opera */
+  transform: scale(0.647);
+  display: none;
 }
 
 #player1_timelapse_canvas {

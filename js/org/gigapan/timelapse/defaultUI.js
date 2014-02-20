@@ -1231,8 +1231,8 @@ if (!org.gigapan.timelapse.Timelapse) {
       $("#" + viewerDivId + " .timelineSliderFiller").hide();
     }
 
-    if (!showLogoOnDefaultUI)
-      $("#" + viewerDivId + " .createLabLogo").parent().hide();
+    if (showLogoOnDefaultUI)
+      $("#" + viewerDivId + " .createLabLogo").show();
 
     if (!showHomeBtn)
       $("#" + viewerDivId + " .zoomall").hide();

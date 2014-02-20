@@ -200,7 +200,8 @@
   border-right: 1px solid rgb(220,220,220);
 }
 
-.customEditorModeToolbar .ui-button:hover:not([disabled]) {
+.customEditorModeToolbar .ui-button:hover:not(
+[disabled]) {
   /*
    -moz-box-shadow: 0 0 12px #656565;
    -webkit-box-shadow: 0 0 12px #656565;
@@ -215,10 +216,15 @@
 }
 
 .googleLogo {
-  width: 78px;
+  width: 156px;
+  height: 58px;
   position: absolute;
-  bottom: 69px;
-  right: 15px;
+  bottom: 53px;
+  right: -22px;
+  background-image: url("../images/googleLogo.png");
+  -ms-transform: scale(0.5); /* IE 9 */
+  -webkit-transform: scale(0.5); /* Chrome, Safari, Opera */
+  transform: scale(0.5);
 }
 
 .customControl {

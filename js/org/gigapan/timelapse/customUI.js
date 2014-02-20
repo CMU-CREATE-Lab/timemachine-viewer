@@ -284,7 +284,7 @@ if (!org.gigapan.timelapse.Timelapse) {
         width: "100%"
       });
       // Create google logo
-      $customControl.append('<img src="images/googleLogo.png" class="googleLogo">');
+      $customControl.append('<div class="googleLogo"></div>');
       // Create the spinner for months
       if (datasetType == "modis")
         createMonthSpinner();
