@@ -122,6 +122,7 @@ if (!org.gigapan.timelapse.Timelapse) {
     var showFullScreenBtn = ( typeof (settings["showFullScreenBtn"]) == "undefined") ? true : settings["showFullScreenBtn"];
     var startEditorFromPresentationMode = ( typeof (settings["startEditorFromPresentationMode"]) == "undefined") ? false : settings["startEditorFromPresentationMode"];
     var showEditorModeButton = ( typeof (settings["showEditorModeButton"]) == "undefined") ? true : settings["showEditorModeButton"];
+    var editorEnabled = settings["composerDiv"] && $("#" + settings["composerDiv"]).length;
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////
     //
@@ -170,6 +171,11 @@ if (!org.gigapan.timelapse.Timelapse) {
           createEditorModeToolbar();
         if (settings["annotatorDiv"])
           createAnnotatorModeToolbar();
+      }
+
+      if (!editorEnabled) {
+        $("#" + viewerDivId + " .viewerModeBtn").hide();
+        $("#" + viewerDivId + " .viewerModeCheckbox").hide();
       }
 
       if (!showFullScreenBtn && !$("#" + viewerDivId + ".viewerModeBtnContainer").is(":visible"))
