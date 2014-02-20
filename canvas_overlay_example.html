@@ -38,60 +38,30 @@
 
     <script type="text/javascript">
       jQuery.support.cors = true;
-      // Landsat
-      //var url = "http://earthengine.google.org/timelapse/data";
+
+      // Landsat ("https" will casue the thumbnail loading from the server fail)
       var url = "https://earthengine.google.org/timelapse/data/20130507/";
       var timelapse;
       var frackingLayer;
 
       function init() {
-        var myView = null;
-        var myTime = 0;
-
-        // For Landsat dataset
-        //myHomeView = {center: {"lat": 35.35957, "lng": -91.8649}, "zoom": 0.002};
-
-        var viewerOptions = {
-          url: url, //can be absolute or relative
-          initialTime: myTime, //default to 0; in video time
-          loopPlayback: true, //defaults to false
-          initialView: myView, //see above for possible views to use
-          playOnLoad: false, //defaults to false
-          playbackSpeed: 0.5, //[-1,-.5,-.25,.25,.5,1] available, defaults to 1
-          showMainControls: false, //defaults to true
-          enableCustomUI: true, //defaults to false
-          loopDwell: {
-            startDwell: 0.5, //defaults to 0
-            endDwell: 0.5 //defaults to 0
-          },
-          skippedFramesAtStart: 0,
-          skippedFramesAtEnd: 0,
-          visualizerScale: 1, //defaults to 1
+        var viewerSettings = {
+          url: url,
+          playbackSpeed: 0.5,
+          showMainControls: false,
+          enableCustomUI: true,
           viewportGeometry: {
-            width: 1068, //defaults to the size in tm.json, the default min value is 816, 1068
-            height: 600, //defaults to the size in tm.json, the default min value is 468, 600
-          }, //use the size in tm.json if both width and height params left out
+            width: 1068,
+            height: 600
+          },
           scaleBarOptions: {
-            scaleBarDiv: "scaleBar1",
-            geometry: {
-              barLength: 113, //defaults to 113, min value = 113
-              offsetX: 0, //defaults to 0
-              offsetY: 67 //defaults to 0
-            }
-          }, //display scale bar; display nothing if param left out
+            scaleBarDiv: "scaleBar1"
+          },
           smallGoogleMapOptions: {
-            smallGoogleMapDiv: "smallGoogleMap1",
-            geometry: {
-              width: 160, //defaults to 160, (min ,max) value = (160, 330)
-              height: 120, //defaults to 120, (min ,max) value = (120, 220)
-              offsetX: 20, //defaults to 0
-              offsetY: 20 //defaults to 0
-            }
-          } /*, //display small google map; display nothing if param left out
-          newHomeView: myHomeView //override the home view */
+            smallGoogleMapDiv: "smallGoogleMap1"
+          }
         };
-
-        timelapse = new org.gigapan.timelapse.Timelapse("player1", viewerOptions);
+        timelapse = new org.gigapan.timelapse.Timelapse("player1", viewerSettings);
       }
 
       function onTimeMachinePlayerReady(viewerDivId) {

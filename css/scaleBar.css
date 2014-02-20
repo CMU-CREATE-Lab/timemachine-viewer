@@ -82,19 +82,21 @@
 
 .videoQualityContainer {
   position: absolute;
-  width: 325px;
-  height: 23px;
+  width: 330px;
+  height: 26px;
   z-index: 10;
-  border: 0px solid #000000;
-  background-color: rgba(0,0,0,0);
-  top: 9px;
-  left: 8px;
+  border: 1px solid #656565;
+  top: 22px;
+  left: 100px;
+  box-shadow: 2px 2px 3px rgba(0,0,0,0.3);
+  background-color: white;
+  border-radius: 2px;
 }
 
 .videoQualitySelector {
   font-family: Arial, Helvetica, sans-serif;
   font-size: 12px;
-  margin-top: 2px;
+  margin-top: 4px;
   margin-bottom: 0px;
   margin-right: 0px;
   margin-left: 14px;
@@ -111,8 +113,8 @@
 .metersPerPixel_text {
   position: absolute;
   left: 178px;
-  top: 3px;
-  font-size: 12px;
+  top: 4px;
+  font-size: 11px;
   width: 55px;
   height: 12px;
   font-family: Arial, Helvetica, sans-serif;
@@ -123,7 +125,7 @@
 	vertical-align: middle;
   position: absolute;
   font-size: 12px;
-  top: 4px;
+  top: 6px;
   left: 245px;
   margin-top: 0px;
   margin-bottom: 0px;
@@ -137,7 +139,7 @@
 	vertical-align: middle;
   position: absolute;
   font-size: 12px;
-  top: 4px;
+  top: 6px;
   left: 13px;
   margin-top: 0px;
   margin-bottom: 0px;

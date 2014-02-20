@@ -278,10 +278,9 @@ if (!org.gigapan.timelapse.Timelapse) {
       // Append element
       $viewer.append(customControl);
       // Set position
-      var marginBottom = (settings["customUIOptions"] && settings["customUIOptions"]["marginBottom"]) ? settings["customUIOptions"]["marginBottom"] : 0;
       $customControl.css({
         left: "0px",
-        bottom: marginBottom + "px",
+        bottom: "0px",
         width: "100%"
       });
       // Create google logo
@@ -742,17 +741,16 @@ if (!org.gigapan.timelapse.Timelapse) {
         $timeText.toggleClass("timeText modisTimeText");
       $customTimeline = $(customTimeline);
       $customControl.append(timeText, customTimeline);
-      var extraSliderLeftMargin = (settings["customUIOptions"] && settings["customUIOptions"]["extraSliderLeftMargin"]) ? settings["customUIOptions"]["extraSliderLeftMargin"] : 30;
+      var extraSliderLeftMargin = (datasetType == "landsat") ? 30 : 60;
       sliderLeftMargin = $customPlay.width() + $timeText.width() + extraSliderLeftMargin;
       var extraSliderRightMargin;
-      if (settings["customUIOptions"] && settings["customUIOptions"]["extraSliderRightMargin"]) {
-        extraSliderRightMargin = settings["customUIOptions"]["extraSliderRightMargin"];
-      } else {
+      if (datasetType == "landsat") {
         if (settings["isHyperwall"] && fields.fullControls != "true")
           extraSliderRightMargin = 5;
         else
           extraSliderRightMargin = 35;
-      }
+      } else
+        extraSliderRightMargin = 40;
       sliderRightMargin = $customHelpLabel.width() + extraSliderRightMargin;
       var width_slider = (playerWidth - sliderLeftMargin - sliderRightMargin);
       $customTimeline.css({

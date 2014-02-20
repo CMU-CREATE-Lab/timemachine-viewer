@@ -39,75 +39,35 @@
 
     <script type="text/javascript">
       jQuery.support.cors = true;
-      // Landsat
+
+      // Landsat ("https" will casue the thumbnail loading from the server fail)
       var url = "http://earthengine.google.org/timelapse/data/20130507/";
 
       function init() {
-        var myView = null;
-        var myTime = 0;
-
-        // Examples:
-        //myView = {center: {"x": 670995.6337035171, "y": 635803.4511287402}, "zoom": 3};
-        //myView = {center: {"lat": 8.621690, "lng": 0.829690}, "zoom": 3};
-        //myView = {bbox: {"ne": {"lat": 31.674179, "lng": 36.894680}, "sw": {"lat" : 22.000000, "lng": 24.698099}}};
-        //myView = {bbox: {"xmin": 522384.1012035172, "xmax": 819607.1662035171, "ymin": 552313.8261287402, "ymax": 719293.0761287402}};
-
-        //for landsat video
         myHomeView = {
           x: 677982.255550633,
           y: 521801.7016044302,
           scale: 0.0005840897249061237
         };
-
-        var viewerOptions = {
-          url: url, //can be absolute or relative
-          initialTime: myTime, //default to 0; in video time
-          loopPlayback: true, //defaults to false
-          initialView: myView, //see above for possible views to use
-          //playOnLoad: true, //defaults to false
-          //playbackSpeed: 1, //[-1,-.5,-.25,.25,.5,1] available, defaults to 1
-          //showShareBtn: false, //defaults to true
-          //showFullScreenBtn: false, //display the fullscreen button or not, defaults to true
-          //showSizeBtn: true, //display the size button or not, defaults to false
-          //showZoomControls: false, //defaults to true
-          //showPanControls: false, //defaults to true
-          showMainControls: false, //defaults to true
-          //showHomeBtn: false, //defaults to true
-          //viewerType: "canvas", // video or canvas, defaults to whatever the
-          //mediaType: ".mp4",
-          //annotatorDiv: "annotator1", //displays the annotation editor; display nothing if param left out
-          composerDiv: "composer1", //display the time warp composer; display nothing if param left out
-          enableCustomUI: true, //defaults to false
-          loopDwell: {
-            startDwell: 0.5, //defaults to 0
-            endDwell: 0.5 //defaults to 0
-          },
-          skippedFramesAtStart: 0,
-          skippedFramesAtEnd: 0,
-          visualizerScale: 1, //defaults to 1
+        var viewerSettings = {
+          url: url,
+          composerDiv: "composer1",
+          enableCustomUI: "landsat",
           viewportGeometry: {
-            width: 1068, //defaults to the size in tm.json, the default min value is 816, 1068
-            height: 600, //defaults to the size in tm.json, the default min value is 468, 600
-            max: true //will maximize the viewport to fit the browser's window
-          }, //use the size in tm.json if both width and height params left out
+            width: 1068,
+            height: 600,
+            max: true
+          },
           scaleBarOptions: {
             scaleBarDiv: "scaleBar1"
-            //enableVideoQualitySelector: true, //display video quality selector; display nothing if param left out
-          }, //display scale bar; display nothing if param left out
+          },
           smallGoogleMapOptions: {
             smallGoogleMapDiv: "smallGoogleMap1"
-            //resizable: false, //defaults to true
-            //showToggleBtn: false, //defaults to true
-            //geometry: {
-            //  width: 160, //defaults to 160, (min ,max) value = (160, 330)
-            //  height: 120 //defaults to 120, (min ,max) value = (120, 220)
-            //}
-          }, //display small google map; display nothing if param left out
+          },
           showAddressLookup: true,
-          newHomeView: myHomeView //override the home view
+          newHomeView: myHomeView
         };
-
-        timelapse = new org.gigapan.timelapse.Timelapse("player1", viewerOptions);
+        timelapse = new org.gigapan.timelapse.Timelapse("player1", viewerSettings);
       }
 
       function onTimeMachinePlayerReady(viewerDivId) {

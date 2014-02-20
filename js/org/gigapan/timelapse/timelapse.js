@@ -116,10 +116,8 @@ if (!window['$']) {
     availableTimelapses.push(this);
 
     // Settings
-    //settings["videosetStatsDivId"] = settings["videosetStatsDivId"] || "videoset_stats_container";
-    //var hasLayers = settings["hasLayers"] || false;
     var isHyperwall = settings["isHyperwall"] || false;
-    var loopPlayback = settings["loopPlayback"] || false;
+    var loopPlayback = settings["loopPlayback"] || true;
     var customLoopPlaybackRates = settings["customLoopPlaybackRates"] || null;
     var playOnLoad = settings["playOnLoad"] || false;
     var playbackSpeed = settings["playbackSpeed"] && UTIL.isNumber(settings["playbackSpeed"]) ? settings["playbackSpeed"] : 1;
@@ -152,10 +150,10 @@ if (!window['$']) {
     };
     var minViewportHeight = 400;
     var minViewportWidth = 700;
+    var datasetType;
 
     // Objects
     var videoset;
-    //var videosetStats;
     var snaplapse;
     var snaplapseViewer;
     var scaleBar;
@@ -2712,7 +2710,6 @@ if (!window['$']) {
     //
     // Constructor code
     //
-
     browserSupported = UTIL.browserSupported();
     if (!browserSupported) {
       UTIL.ajax("html", "", "browser_not_supported_template.html", function(html) {
@@ -2730,6 +2727,22 @@ if (!window['$']) {
       UTIL.setViewerType(settings["viewerType"]);
     viewerType = UTIL.getViewerType();
     targetView = {};
+
+    if ( typeof settings["enableCustomUI"] != "undefined" && settings["enableCustomUI"] != false) {
+      if (settings["enableCustomUI"] != "modis")
+        datasetType = "landsat";
+      else
+        datasetType = "modis";
+    }
+
+    if (datasetType == "landsat" && loopDwell == undefined) {
+      loopDwell = {
+        "startDwell": 0.5,
+        "endDwell": 0.5
+      };
+      startDwell = 0.5;
+      endDwell = 0.5;
+    }
 
     UTIL.log('Timelapse("' + settings["url"] + '")');
     showSpinner(viewerDivId);

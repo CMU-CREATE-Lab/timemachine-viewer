@@ -421,9 +421,8 @@ if (!window['$']) {
             UTIL.log("Chrome bug detected, adding cache buster");
             video.setAttribute('src', src + "?time=" + (new Date().getTime()));
             video.load();
-            if (advancing) {
+            if (advancing)
               video.play();
-            }
           }
         };
         setTimeout(check, timeout);

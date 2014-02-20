@@ -35,15 +35,13 @@
       var url = "./";
 
       function init() {
-
-        var viewerOptions = {
-          url: url, //can be absolute or relative
+        var viewerSettings = {
+          url: url,
           composerDiv: "composer1",
           disableTourLooping: true,
           mediaType: ".mp4"
         };
-
-        timelapse = new org.gigapan.timelapse.Timelapse("player1", viewerOptions);
+        timelapse = new org.gigapan.timelapse.Timelapse("player1", viewerSettings);
       }
 
       function onTimeMachinePlayerReady(viewerDivId) {

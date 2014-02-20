@@ -30,94 +30,50 @@
 
     <script type="text/javascript">
       jQuery.support.cors = true;
-      //Pittsburgh
+
+      // Pittsburgh
       var url = "http://g7.gigapan.org/timemachines/pittsburgh-v12";
-      //Blue Marble
+      // Blue Marble
       //var url = "http://g7.gigapan.org/timemachines/blue-marble-v2/";
-      //Ocean Chlorophyll
+      // Ocean Chlorophyll
       //var url = "http://g7.gigapan.org/timemachines/chlorophyll-r32d-crf28-g10-bf0-l/";
-      //Plant Growth
+      // Plant Growth
       //var url = "http://g7.gigapan.org/timemachines/brassica-15m-g10-bf0-l/";
-      //Bees
+      // Bees
       //var url = "http://g7.gigapan.org/timemachines/bees-chalkbrood-45m-2011-07-ap-v9/";
-      //Early Universe
+      // Early Universe
       //var url = "http://g7.gigapan.org/timemachines/e5-crf28-g10-bf0-l/";
-      //Paddle At The Point
+      // Paddle At The Point
       //var url = "http://g7.gigapan.org/timemachines/patp-sub4-crf28-g10-bf0-l/";
-      //CMU Carnival 2010
+      // CMU Carnival 2010
       //var url = "http://g7.gigapan.org/timemachines/carnival-10m-halfsize-g10-bf0-l30/";
-      //Burning Man 2011
+      // Burning Man 2011
       //var url = "http://g7.gigapan.org/timemachines/BurningMan2011-v1/";
-      //Arizona Grasslands
+      // Arizona Grasslands
       //var url = "http://g7.gigapan.org/timemachines/usda-crf24-g10-bf0-l/";
-      //Visible Human Female
+      // Visible Human Female
       //var url = "http://g7.gigapan.org/timemachines/vhf-crf28-g10-bf0-l/";
-      //Weather Radar
+      // Weather Radar
       //var url = "http://g7.gigapan.org/timemachines/radarmosaic-crf28-g10-bf0-6fps/";
-      //Kraus Winter Garden
+      // Kraus Winter Garden
       //var url = "http://g7.gigapan.org/timemachines/ghc1-24h-halfsize-crf32-g10-bf0-l30/";
-      //Solar Dynamics Observatory
+      // Solar Dynamics Observatory
       //var url = "http://g7.gigapan.org/timemachines/sdo-color-crf24-g10-bf0-l/";
 
       function init() {
-        var myView = null;
-        var myTime = 0;
-
-        // Examples:
-        //myView = {center: {"x": 670995.6337035171, "y": 635803.4511287402}, "zoom": 3};
-        //myView = {center: {"lat": 8.621690, "lng": 0.829690}, "zoom": 3};
-        //myView = {bbox: {"ne": {"lat": 31.674179, "lng": 36.894680}, "sw": {"lat" : 22.000000, "lng": 24.698099}}};
-        //myView = {bbox: {"xmin": 522384.1012035172, "xmax": 819607.1662035171, "ymin": 552313.8261287402, "ymax": 719293.0761287402}};
-
-        //for landsat video
-        myHomeView = {
-          x: 677982.255550633,
-          y: 521801.7016044302,
-          scale: 0.0005840897249061237
-        };
-
-        var viewerOptions = {
-          url: url, //can be absolute or relative
-          initialTime: myTime, //default to 0; in video time
-          //playerSize: "480p", //label name from size array specified in tm.json. Defaults to the first element
-          loopPlayback: true, //defaults to false
-          initialView: myView, //see above for possible views to use
-          playOnLoad: false, //defaults to false
-          playbackSpeed: 1, //[-1,-.5,-.25,.25,.5,1] available, defaults to 1
-          //layer: 0, //defaults to first layer. All sets have at least 1 layer starting at index 0
-          //showShareBtn: false, //defaults to true
-          showFullScreenBtn: false, //display the fullscreen button or not, defaults to true
-          //showSizeBtn: true, //display the size button or not, defaults to false
-          //showZoomControls: false, //defaults to true
-          //showPanControls: false, //defaults to true
-          //showMainControls: false, //defaults to true
-          //showHomeBtn: false, //defaults to true
-          //viewerType: "canvas", // video or canvas, defaults to whatever the
-          //mediaType: ".mp4",
-          //annotatorDiv: "annotator1", //displays the annotation editor; display nothing if param left out
-          composerDiv: "composer1", //display the time warp composer; display nothing if param left out
-          //enableCustomUI: true, //defaults to false
-          //blackFrameDetection: true, //defaults to false
-          loopDwell: {
-            startDwell: 0.5, //defaults to 0
-            endDwell: 0.5 //defaults to 0
-          },
-          skippedFramesAtStart: 0,
-          skippedFramesAtEnd: 0,
-          visualizerScale: 1, //defaults to 1
+        var viewerSettings = {
+          url: url,
+          showFullScreenBtn: false,
+          //annotatorDiv: "annotator1",
+          composerDiv: "composer1",
           viewportGeometry: {
-            width: 1068, //defaults to the size in tm.json, the default min value is 816, 1068
-            height: 600, //defaults to the size in tm.json, the default min value is 468, 600
-            //max: true //will maximize the viewport to fit the browser's window
-          }, //use the size in tm.json if both width and height params left out
-          disableTourLooping: true, //default to false if param left out
-          //newHomeView: myHomeView, //override the home view
-          //enableMetadataCacheBreaker: true //defaults to true
-          //showEditorModeButton: false,
-          //startEditorFromPresentationMode: true
+            width: 1068,
+            height: 600,
+            //max: true
+          },
+          disableTourLooping: true
         };
-
-        timelapse = new org.gigapan.timelapse.Timelapse("player1", viewerOptions);
+        timelapse = new org.gigapan.timelapse.Timelapse("player1", viewerSettings);
       }
 
       function onTimeMachinePlayerReady(viewerDivId) {

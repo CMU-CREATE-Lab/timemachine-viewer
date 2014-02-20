@@ -123,6 +123,7 @@ if (!org.gigapan.timelapse.Timelapse) {
     var startEditorFromPresentationMode = ( typeof (settings["startEditorFromPresentationMode"]) == "undefined") ? false : settings["startEditorFromPresentationMode"];
     var showEditorModeButton = ( typeof (settings["showEditorModeButton"]) == "undefined") ? true : settings["showEditorModeButton"];
     var editorEnabled = settings["composerDiv"] && $("#" + settings["composerDiv"]).length;
+    var datasetType;
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////
     //
@@ -563,6 +564,9 @@ if (!org.gigapan.timelapse.Timelapse) {
             setPresentationMode(true);
           $("#" + viewerDivId + " .toggleMode span").text(selectedModeTxt);
         });
+      } else {
+        $("#" + viewerDivId + " .toggleMode").remove();
+        $("#" + viewerDivId + " .editorModeOptions").remove();
       }
     };
 
@@ -1141,7 +1145,8 @@ if (!org.gigapan.timelapse.Timelapse) {
       $("#" + viewerDivId + " .loadTimewarp").button("option", "disabled", true);
       $("#" + viewerDivId + " .newTimewarp").button("option", "disabled", true);
       $("#" + viewerDivId + " .setTimewarp").button("option", "disabled", true);
-      $("#" + viewerDivId + " .toggleMode").button("option", "disabled", true);
+      if (showEditorModeButton)
+        $("#" + viewerDivId + " .toggleMode").button("option", "disabled", true);
     };
     this.disableEditorToolbarButtons = disableEditorToolbarButtons;
 
@@ -1153,7 +1158,8 @@ if (!org.gigapan.timelapse.Timelapse) {
       $("#" + viewerDivId + " .loadTimewarp").button("option", "disabled", false);
       $("#" + viewerDivId + " .newTimewarp").button("option", "disabled", false);
       $("#" + viewerDivId + " .setTimewarp").button("option", "disabled", false);
-      $("#" + viewerDivId + " .toggleMode").button("option", "disabled", false);
+      if (showEditorModeButton)
+        $("#" + viewerDivId + " .toggleMode").button("option", "disabled", false);
     };
     this.enableEditorToolbarButtons = enableEditorToolbarButtons;
 
@@ -1203,6 +1209,12 @@ if (!org.gigapan.timelapse.Timelapse) {
     //
     // Constructor code
     //
+    if ( typeof settings["enableCustomUI"] != "undefined" && settings["enableCustomUI"] != false) {
+      if (settings["enableCustomUI"] != "modis")
+        datasetType = "landsat";
+      else
+        datasetType = "modis";
+    }
     createTimelineSlider();
     createToolbar();
     if (!showZoomControls) {
@@ -1211,7 +1223,7 @@ if (!org.gigapan.timelapse.Timelapse) {
     if (!showPanControls) {
       $("#" + viewerDivId + " .pan").hide();
     }
-    if (!showMainControls) {
+    if (!showMainControls || datasetType != undefined) {
       $("#" + viewerDivId + " .controls").hide();
       $("#" + viewerDivId + " .timelineSliderFiller").hide();
     }

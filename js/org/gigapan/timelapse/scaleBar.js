@@ -314,9 +314,6 @@ if (!org.gigapan.timelapse.Timelapse) {
       $(ratioBarRight).addClass("ratioBarRight");
       $(ratioBarLeft).addClass("ratioBarLeft");
       $(videoQualityContainer).addClass("videoQualityContainer");
-      if ($("#" + viewerDivId + " .addressLookup").length > 0) {
-        $(videoQualityContainer).css("left", 278);
-      }
       var $videoQualitySelectorForm_DOM = $(videoQualitySelectorForm_DOM);
       $videoQualitySelectorForm_DOM.addClass("videoQualitySelectorForm");
       $(videoQualitySelector).addClass("videoQualitySelector");
@@ -362,7 +359,7 @@ if (!org.gigapan.timelapse.Timelapse) {
       var $videoQualityContainer = $(videoQualityContainer);
       $videoQualityContainer.append(videoQuality_text_static_DOM, metersPerPixel_text, metersPerPixel_text_static_DOM, videoQualitySelectorForm_DOM);
       $("#" + videoDivId).append(ratioBarTop, ratioBarBot, ratioBarRight, ratioBarLeft);
-      $("#" + viewerDivId + " .customEditorControl").append(videoQualityContainer);
+      $("#" + viewerDivId).append(videoQualityContainer);
       // Attach events to the video quality selector
       addVideoQualitySelectorEvents();
     };
