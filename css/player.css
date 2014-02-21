@@ -11,8 +11,8 @@ body, html {
   width: 170px;
   height: 28px;
   position: absolute;
-  bottom: 40px;
-  right: 32px;
+  bottom: 37px;
+  right: 64px;
   border: 0px;
   background-image: url("../images/createLabLogo.png");
   -ms-transform: scale(0.647); /* IE 9 */
@@ -210,22 +210,28 @@ body, html {
 
 .viewerModeBtn {
   position: absolute;
-  width: 27px;
-  height: 27px;
-  bottom: 89px;
+  width: 58px;
+  height: 18px;
+  bottom: 86px;
   right: 20px;
   background: white;
   border: 1px solid #656565;
-  border-radius: 17px !important;
+  border-radius: 3px !important;
   box-shadow: 2px 2px 3px rgba(0,0,0,0.3);
   z-index: 30;
   outline: none;
   overflow: hidden;
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 11px;
 }
 
 .viewerModeBtn .ui-icon {
-  margin-left: -8px;
-  margin-top: -8px;
+	margin-left: -2px;
+}
+
+.viewerModeBtn .ui-button-text {
+  margin-top: -1px;
+  margin-left: 0px;
 }
 
 .viewerModeBtn.ui-state-active {
@@ -240,40 +246,52 @@ body, html {
 
 .share {
   position: absolute;
-  width: 27px;
-  height: 27px;
+  width: 60px;
+  height: 20px;
   bottom: 54px;
   right: 20px;
   background: white;
   border: 1px solid #656565;
-  border-radius: 17px !important;
+  border-radius: 3px !important;
   box-shadow: 2px 2px 3px rgba(0,0,0,0.3);
   z-index: 30;
   outline: none;
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 11px;
 }
 
 .share .ui-icon {
-  margin-left: -4px;
-  margin-top: -9px;
+  margin-left: -2px;
+}
+
+.share .ui-button-text {
+  margin-left: -1px;
+  margin-top: -2px;
 }
 
 .helpPlayerLabel.ui-button {
   position: absolute;
-  width: 25px;
-  height: 25px;
-  bottom: 19px;
+  height: 18px;
+  bottom: 22px;
+  width: 58px;
   right: 20px;
   background: white;
   border: 1px solid #656565;
-  border-radius: 15px !important;
+  border-radius: 3px !important;
   box-shadow: 2px 2px 3px rgba(0,0,0,0.3);
   z-index: 30;
   outline: none;
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 11px;
 }
 
 .helpPlayerLabel .ui-icon {
-  margin-left: -8px;
-  margin-top: -9px;
+	margin-left: -1px;
+}
+
+.helpPlayerLabel .ui-button-text {
+  margin-top: -2px;
+  margin-left: 3px;
 }
 
 .instructions {
@@ -396,7 +414,7 @@ body, html {
   position: absolute;
   bottom: 26px;
   left: 258px;
-  right: 67px;
+  right: 100px;
   width: auto;
   box-shadow: 2px 2px 3px rgba(0,0,0,0.3);
   border: 1px solid #656565;

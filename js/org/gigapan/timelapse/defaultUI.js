@@ -435,7 +435,7 @@ if (!org.gigapan.timelapse.Timelapse) {
         icons: {
           primary: "ui-icon-help"
         },
-        text: false
+        text: true
       }).change(function() {
         if (helpPlayerCheckbox.is(":checked")) {
           doHelpOverlay();
@@ -821,7 +821,7 @@ if (!org.gigapan.timelapse.Timelapse) {
         icons: {
           primary: "ui-icon-note"
         },
-        text: false
+        text: true
       }).click(function() {
         if ($viewerModeCheckbox.is(":checked"))
           setMode("editor");
