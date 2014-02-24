@@ -105,7 +105,7 @@ if (!Math.uuid) {
 
 (function() {
   var UTIL = org.gigapan.Util;
-  org.gigapan.timelapse.Snaplapse = function(composerDivId, timelapse, settings) {
+  org.gigapan.timelapse.Snaplapse = function(composerDivId, timelapse, settings, usePresentationSlider) {
 
     var viewer;
     var eventListeners = {};
@@ -143,7 +143,7 @@ if (!Math.uuid) {
         thisObj.stop();
       }
 
-      if (keyframes.length > 0) {
+      if (keyframes.length > 0 && !usePresentationSlider) {
         $("#" + viewerDivId + " .tourLoadOverlay").hide();
         if ($("#" + viewerDivId + " .snaplapseTourPlayBack").children().length > 1) {
           $("#" + viewerDivId + " .snaplapseTourPlayBack").empty();
@@ -650,8 +650,10 @@ if (!Math.uuid) {
           var tourTitle = loadJSON['snaplapse']['unsafe_string_title'] ? loadJSON['snaplapse']['unsafe_string_title'] : "Untitled";
           // Add the tour title to the save dialogue
           $("#" + composerDivId + " .saveTimewarpWindow_tourTitleInput").val(tourTitle);
-          // Add the tour title to be used during tour playback
-          $("#" + viewerDivId + " .tourLoadOverlayTitle").text("Tour: " + tourTitle);
+          if (!usePresentationSlider) {
+            // Add the tour title to be used during tour playback
+            $("#" + viewerDivId + " .tourLoadOverlayTitle").text("Tour: " + tourTitle);
+          }
         }
         if ( typeof (loadJSON['snaplapse']) != 'undefined' && typeof (loadJSON['snaplapse']['keyframes']) != 'undefined') {
           UTIL.log("Found [" + loadJSON['snaplapse']['keyframes'].length + "] keyframes in the json:\n\n" + json);
@@ -761,7 +763,6 @@ if (!Math.uuid) {
     };
 
     var moveOneKeyframe = function(moveIdx) {
-
       // Rearrange keyframes
       var from = moveIdx.from;
       var to = moveIdx.to;
@@ -1133,7 +1134,7 @@ if (!Math.uuid) {
 
     org.gigapan.Util.ajax("html", "", "time_warp_composer.html", function(html) {
       $composerDivObj.html(html);
-      viewer = new org.gigapan.timelapse.snaplapse.SnaplapseViewer(thisObj, timelapse, settings);
+      viewer = new org.gigapan.timelapse.snaplapse.SnaplapseViewer(thisObj, timelapse, settings, usePresentationSlider);
     });
 
   };

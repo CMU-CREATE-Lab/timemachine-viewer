@@ -109,7 +109,7 @@ if (!org.gigapan.timelapse.Timelapse) {
     var toolbarHeight = $toolbar.outerHeight();
     var minViewportHeight = timelapse.getMinViewportHeight();
     var minViewportWidth = timelapse.getMinViewportWidth();
-    var datasetType;
+    var datasetType = timelapse.getDatasetType();
 
     var visualizer = timelapse.getVisualizer();
     var annotator = timelapse.getAnnotator();
@@ -124,7 +124,7 @@ if (!org.gigapan.timelapse.Timelapse) {
     var startEditorFromPresentationMode = ( typeof (settings["startEditorFromPresentationMode"]) == "undefined") ? false : settings["startEditorFromPresentationMode"];
     var showEditorModeButton = ( typeof (settings["showEditorModeButton"]) == "undefined") ? true : settings["showEditorModeButton"];
     var showLogoOnDefaultUI = ( typeof (settings["showLogoOnDefaultUI"]) == "undefined") ? true : settings["showLogoOnDefaultUI"];
-    var editorEnabled = settings["composerDiv"] && $("#" + settings["composerDiv"]).length;
+    var editorEnabled = timelapse.getEditorEnabled();
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////
     //
@@ -173,11 +173,6 @@ if (!org.gigapan.timelapse.Timelapse) {
           createEditorModeToolbar();
         if (settings["annotatorDiv"])
           createAnnotatorModeToolbar();
-      }
-
-      if (!editorEnabled) {
-        $("#" + viewerDivId + " .viewerModeBtn").hide();
-        $("#" + viewerDivId + " .viewerModeCheckbox").hide();
       }
 
       if (!showFullScreenBtn && !$("#" + viewerDivId + ".viewerModeBtnContainer").is(":visible"))
@@ -595,9 +590,7 @@ if (!org.gigapan.timelapse.Timelapse) {
 
     // Hide the area for editing the timewarp
     var hideEditorArea = function() {
-      var snaplapseViewer = timelapse.getSnaplapse().getSnaplapseViewer();
-      if (!snaplapseViewer.getPresentationModeFromHash())
-        $("#" + settings["composerDiv"]).hide();
+      $("#" + settings["composerDiv"]).hide();
     };
 
     // Show the area for editing the timewarp
@@ -813,21 +806,26 @@ if (!org.gigapan.timelapse.Timelapse) {
     // Create the mode switching button
     var createModeSwitchButton = function() {
       var $viewerModeBtn = $("#" + viewerDivId + " .viewerModeBtn");
-      $viewerModeBtn.attr("id", viewerDivId + "_viewerModeBtn");
       var $viewerModeCheckbox = $("#" + viewerDivId + " .viewerModeCheckbox");
-      $viewerModeCheckbox.attr("id", viewerDivId + "_viewerModeCheckbox");
-      $viewerModeBtn.attr("for", viewerDivId + "_viewerModeCheckbox");
-      $viewerModeCheckbox.button({
-        icons: {
-          primary: "ui-icon-note"
-        },
-        text: true
-      }).click(function() {
-        if ($viewerModeCheckbox.is(":checked"))
-          setMode("editor");
-        else
-          setMode("player");
-      });
+      if (editorEnabled) {
+        $viewerModeBtn.attr("id", viewerDivId + "_viewerModeBtn");
+        $viewerModeCheckbox.attr("id", viewerDivId + "_viewerModeCheckbox");
+        $viewerModeBtn.attr("for", viewerDivId + "_viewerModeCheckbox");
+        $viewerModeCheckbox.button({
+          icons: {
+            primary: "ui-icon-note"
+          },
+          text: true
+        }).click(function() {
+          if ($viewerModeCheckbox.is(":checked"))
+            setMode("editor");
+          else
+            setMode("player");
+        });
+      } else {
+        $viewerModeBtn.remove();
+        $viewerModeCheckbox.remove();
+      }
     };
 
     var shareView = function() {
@@ -1170,11 +1168,13 @@ if (!org.gigapan.timelapse.Timelapse) {
       // Extra 2px for the borders
       newViewportHeight = window.innerHeight;
       // Extra 1px for the borders
-      var scaleBar = timelapse.getScaleBar()
+      var scaleBar = timelapse.getScaleBar();
       if (scaleBar)
         scaleBar.updateVideoSize();
 
       var $snaplapseKeyframeContainer = $("#" + settings["composerDiv"] + " .snaplapse_keyframe_container");
+      var $presentationSliderKeyframeContainer = $("#" + settings["presentationSliderDiv"] + " .snaplapse_keyframe_container");
+
       // 175 is the height of the keyframe container
       var extraHeight = 175 + toolbarHeight;
       newViewportHeight -= extraHeight;
@@ -1185,18 +1185,16 @@ if (!org.gigapan.timelapse.Timelapse) {
       if (newViewportHeight < minViewportHeight)
         newViewportHeight = minViewportHeight;
 
-      if (mode == "editor") {
-        $snaplapseKeyframeContainer.css({
-          "top": newViewportHeight + toolbarHeight,
-          "width": newViewportWidth
-        });
-      } else if (mode == "player") {
-        $snaplapseKeyframeContainer.css({
-          "top": newViewportHeight + 6,
-          "width": "inherit",
-          "max-width": newViewportWidth
-        });
-      }
+      $snaplapseKeyframeContainer.css({
+        "top": newViewportHeight + toolbarHeight,
+        "width": newViewportWidth
+      });
+
+      $presentationSliderKeyframeContainer.css({
+        "top": newViewportHeight + 6,
+        "width": "inherit",
+        "max-width": newViewportWidth
+      });
 
       timelapse.fitVideoToViewport(newViewportWidth, newViewportHeight);
       window.scrollTo(0, 0);
@@ -1210,13 +1208,6 @@ if (!org.gigapan.timelapse.Timelapse) {
     //
     // Constructor code
     //
-    if ( typeof settings["enableCustomUI"] != "undefined" && settings["enableCustomUI"] != false) {
-      if (settings["enableCustomUI"] != "modis")
-        datasetType = "landsat";
-      else
-        datasetType = "modis";
-    }
-
     createTimelineSlider();
     createToolbar();
 

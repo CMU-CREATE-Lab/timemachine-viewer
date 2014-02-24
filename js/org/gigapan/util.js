@@ -246,12 +246,12 @@ if (!org.gigapan) {
     var doNormalAjax = false;
 
     // Check that there is a global cache object
-    if (typeof(cached_ajax) !== "undefined") {
-      if (typeof(cached_ajax[ajaxUrl]) === "undefined") {
+    if ( typeof (cached_ajax) !== "undefined") {
+      if ( typeof (cached_ajax[ajaxUrl]) === "undefined") {
         // If the key does not include the absolute dataset URL,
         // perhaps it is relative and in the form of "./foo.bar"
         ajaxUrl = "./" + path;
-        if (typeof(cached_ajax[ajaxUrl]) === "undefined") {
+        if ( typeof (cached_ajax[ajaxUrl]) === "undefined") {
           doNormalAjax = true;
         }
       }
@@ -311,22 +311,15 @@ if (!org.gigapan) {
   // Note: Hash variables may contain potentially unsafe user-inputted data.
   // Caution must be taken when working with these values.
   org.gigapan.Util.getUnsafeHashVars = function() {
-    var hash = "";
+    var hashSource = "";
+    var hashIframe = "";
     // TODO: link to our page on the time machine website
-    if (window.top === window.self) {
-      // No iframe
-      hash = window.location.hash.slice(1);
-    } else {
-      try {
-        // Inside iframe
-        hash = window.top.location.hash.slice(1);
-      } catch(e) {
-      }
-      // If the parent of the iframe has no hash, load hash from the embedded URL
-      if (hash == "")
-        hash = window.location.hash.slice(1);
+    hashSource = window.location.hash.slice(1);
+    try {
+      hashIframe = window.top.location.hash.slice(1);
+    } catch(e) {
     }
-    return org.gigapan.Util.unpackVars(hash);
+    return org.gigapan.Util.unpackVars(hashSource + "&" + hashIframe);
   };
 
   // Select an element in jQuery selectable

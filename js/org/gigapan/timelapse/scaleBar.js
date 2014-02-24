@@ -97,7 +97,7 @@ if (!org.gigapan.timelapse.Timelapse) {
     var scaleBarDivId = ( typeof (scaleBarOptions["scaleBarDiv"]) == "undefined") ? "scaleBar2013" : scaleBarOptions["scaleBarDiv"];
     var enableVideoQualitySelector = ( typeof (scaleBarOptions["enableVideoQualitySelector"]) == "undefined") ? false : scaleBarOptions["enableVideoQualitySelector"];
     var barLength;
-    var datasetType;
+    var datasetType = timelapse.getDatasetType();
     var scaleBarGeometryLandsat = {
       "x": 9,
       "y": 77,
@@ -568,12 +568,6 @@ if (!org.gigapan.timelapse.Timelapse) {
     //
     // Constructor code
     //
-    if ( typeof settings["enableCustomUI"] != "undefined" && settings["enableCustomUI"] != false) {
-      if (settings["enableCustomUI"] != "modis")
-        datasetType = "landsat";
-      else
-        datasetType = "modis";
-    }
     createScaleBarElements();
     if (enableVideoQualitySelector == true) {
       createVideoQualityElements();

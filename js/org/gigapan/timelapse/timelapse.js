@@ -152,10 +152,18 @@ if (!window['$']) {
     var minViewportWidth = 700;
     var datasetType;
 
+    // If the user requested a tour editor AND has a div in the DOM for the editor,
+    // then do all related edtior stuff (pull thumbnails for keyframes, etc.)
+    // Otherwise, we will still handle tours but no editor will be displayed.
+    // (No thumbnails for keyframes pulled and loading a tour will display a load
+    // button with the tour name on the center of the viewport.)
+    var editorEnabled = settings["composerDiv"] && $("#" + settings["composerDiv"]).length;
+
     // Objects
     var videoset;
     var snaplapse;
     var snaplapseViewer;
+    var presentationSlider;
     var scaleBar;
     var smallGoogleMap;
     var annotator;
@@ -313,6 +321,14 @@ if (!window['$']) {
     //
     // Public methods
     //
+    this.getEditorEnabled = function() {
+      return editorEnabled;
+    };
+
+    this.getDatasetType = function() {
+      return datasetType;
+    };
+
     this.getDefaultUI = function() {
       return defaultUI;
     };
@@ -405,6 +421,10 @@ if (!window['$']) {
 
     this.getSnaplapse = function() {
       return snaplapse;
+    };
+
+    this.getPresentationSlider = function() {
+      return presentationSlider;
     };
 
     this.getCanvas = function() {
@@ -1176,7 +1196,8 @@ if (!window['$']) {
     this.getTmJSON = _getTmJSON;
 
     var _fullScreen = function(state) {
-      console.log("Hey Paul, you are fullscreen.");
+      // TODO: Real full screen
+      console.log("Fullscreen unimplemented.");
     };
     this.fullScreen = _fullScreen;
 
@@ -1245,34 +1266,27 @@ if (!window['$']) {
       var tourJSON = getTourFromHash(unsafeHashVars);
       var presentationJSON = getPresentationFromHash(unsafeHashVars);
       if (newView || newTime || tourJSON || presentationJSON) {
-        if (newView) {
+        if (newView)
           _setNewView(newView, true);
-        }
-        if (newTime) {
+        if (newTime)
           _seek(newTime);
+        if (snaplapse && tourJSON) {
+          var snaplapseViewer = snaplapse.getSnaplapseViewer();
+          if (snaplapseViewer)
+            snaplapseViewer.loadNewSnaplapse(tourJSON);
         }
-        if (tourJSON || presentationJSON) {
-          var JSON;
-          var snaplapse = thisObj.getSnaplapse();
-          if (snaplapse) {
-            var snaplapseViewer = snaplapse.getSnaplapseViewer();
-            if (tourJSON) {
-              JSON = tourJSON;
-              if (snaplapseViewer)
-                snaplapseViewer.loadNewSnaplapse(JSON);
-            } else if (presentationJSON) {
-              // Prevent the editor leave page alert from showing if presentation mode is enabled from the hash
-              window.onbeforeunload = null;
-              JSON = presentationJSON;
-              if (snaplapseViewer)
-                snaplapseViewer.loadNewSnaplapse(JSON, true);
-            }
+        if (presentationSlider && presentationJSON) {
+          var presentationSliderViewer = presentationSlider.getSnaplapseViewer();
+          if ( typeof snaplapse == "undefined") {
+            // Prevent the editor leave page alert from showing if only the presentation mode is enabled from the hash
+            window.onbeforeunload = null;
           }
+          if (presentationSliderViewer)
+            presentationSliderViewer.loadNewSnaplapse(presentationJSON);
         }
         return true;
-      } else {
+      } else
         return false;
-      }
     };
 
     // Gets safe view values from an unsafe hash string.
@@ -1296,7 +1310,6 @@ if (!window['$']) {
     // Gets safe tour JSON from an unsafe hash string.
     var getTourFromHash = function(unsafeHashVars) {
       if (unsafeHashVars && unsafeHashVars.tour) {
-        var snaplapse = thisObj.getSnaplapse();
         if (snaplapse) {
           var tourJSON = snaplapse.urlStringToJSON(unsafeHashVars.tour);
           return tourJSON;
@@ -1308,9 +1321,8 @@ if (!window['$']) {
     // Gets safe presentation JSON from an unsafe hash string.
     var getPresentationFromHash = function(unsafeHashVars) {
       if (unsafeHashVars && unsafeHashVars.presentation) {
-        var snaplapse = thisObj.getSnaplapse();
-        if (snaplapse) {
-          var presentationJSON = snaplapse.urlStringToJSON(unsafeHashVars.presentation);
+        if (presentationSlider) {
+          var presentationJSON = presentationSlider.urlStringToJSON(unsafeHashVars.presentation);
           return presentationJSON;
         }
       }
@@ -2361,12 +2373,12 @@ if (!window['$']) {
       if (settings["composerDiv"]) {
         $("#" + videoDivId).append('<div class="snaplapse-annotation-description"><div></div></div>');
         snaplapse = new org.gigapan.timelapse.Snaplapse(settings["composerDiv"], thisObj, settings);
-
         // Timewarp visualizer that shows the location of the current view and transitions between keyframes
-        if (!tmJSON['projection-bounds']) {
+        if (!tmJSON['projection-bounds'] && editorEnabled)
           visualizer = new org.gigapan.timelapse.Visualizer(thisObj, snaplapse, visualizerGeometry);
-        }
       }
+      if (settings["presentationSliderDiv"])
+        presentationSlider = new org.gigapan.timelapse.Snaplapse(settings["presentationSliderDiv"], thisObj, settings, true);
       if (settings["annotatorDiv"])
         annotator = new org.gigapan.timelapse.Annotator(settings["annotatorDiv"], thisObj);
 
@@ -2711,6 +2723,7 @@ if (!window['$']) {
     // Constructor code
     //
     browserSupported = UTIL.browserSupported();
+
     if (!browserSupported) {
       UTIL.ajax("html", "", "browser_not_supported_template.html", function(html) {
         $("#" + viewerDivId).html(html);
@@ -2718,11 +2731,13 @@ if (!window['$']) {
       });
       return;
     }
+
     if (mediaType == null) {
       mediaType = UTIL.getMediaType();
     } else {
       UTIL.setMediaType(mediaType);
     }
+
     if (settings["viewerType"])
       UTIL.setViewerType(settings["viewerType"]);
     viewerType = UTIL.getViewerType();

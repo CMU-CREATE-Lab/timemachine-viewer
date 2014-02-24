@@ -94,7 +94,7 @@ if (!org.gigapan.timelapse.Timelapse) {
     //
     // Class variables
     //
-    var datasetType = settings["enableCustomUI"] != "modis" ? "landsat" : "modis";
+    var datasetType = timelapse.getDatasetType();
     var startEditorFromPresentationMode = ( typeof (settings["startEditorFromPresentationMode"]) == "undefined") ? false : settings["startEditorFromPresentationMode"];
     var showAddressLookup = ( typeof (settings["showAddressLookup"]) == "undefined") ? false : settings["showAddressLookup"];
     var showEditorModeButton = ( typeof (settings["showEditorModeButton"]) == "undefined") ? true : settings["showEditorModeButton"];
@@ -182,7 +182,7 @@ if (!org.gigapan.timelapse.Timelapse) {
     var originalIsPaused;
     var isOpera = org.gigapan.Util.isOpera();
     var isSafari = org.gigapan.Util.isSafari();
-    var editorEnabled = settings["composerDiv"] && $("#" + settings["composerDiv"]).length;
+    var editorEnabled = timelapse.getEditorEnabled();
     var timeTickSpan;
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -293,7 +293,7 @@ if (!org.gigapan.timelapse.Timelapse) {
       // Create timeline slider
       createCustomTimeline();
       // Create editor toolbar
-      if (settings["composerDiv"] && editorEnabled)
+      if (editorEnabled)
         createCustomEditorModeToolBar();
 
       // TODO
@@ -315,21 +315,11 @@ if (!org.gigapan.timelapse.Timelapse) {
       var snaplapse = timelapse.getSnaplapse();
       if (snaplapse) {
         snaplapse.addEventListener('play', function() {
-          $("#" + viewerDivId + " .tourLoadOverlayPlay").attr("src", "images/tour_stop_outline.png").css("opacity", "1.0");
           if ($speedControl.is(':visible'))
             timelapse.getSnaplapse().getSnaplapseViewer().hideViewerUI();
-          var $playStopTour = $("#" + viewerDivId + " .snaplapseTourPlayBack");
-          $playStopTour.css({
-            "left": "0px"
-          }).toggleClass("playTour stopTour").attr("title", "Click to stop this tour");
         });
         snaplapse.addEventListener('stop', function() {
-          $("#" + viewerDivId + " .tourLoadOverlayPlay").attr("src", "images/tour_replay_outline.png").css("opacity", "1.0");
           timelapse.getSnaplapse().getSnaplapseViewer().showViewerUI();
-          var $playStopTour = $("#" + viewerDivId + " .snaplapseTourPlayBack");
-          $playStopTour.css({
-            "left": "60px"
-          }).toggleClass("stopTour playTour").attr("title", "Click to replay this tour");
         });
       }
 
@@ -1452,28 +1442,23 @@ if (!org.gigapan.timelapse.Timelapse) {
     // Public methods
     //
     var fitToWindow = function() {
-      if (settings["viewportGeometry"] && settings["viewportGeometry"]["max"]) {
-        var hashVars = org.gigapan.Util.getUnsafeHashVars();
-        var $snaplapseKeyframeContainer = $("#" + settings["composerDiv"] + " .snaplapse_keyframe_container");
-        if (hashVars && hashVars.presentation) {
-          // If in presentation viewer-only mode
-          extraHeight = 103;
-          $snaplapseKeyframeContainer.css({
-            "top": window.innerHeight - extraHeight + 6,
-            "width": "inherit",
-            "max-width": window.innerWidth - 2
-          });
-        } else if (editorEnabled) {
-          // If the editor is enabled
-          var toolbarHeight = $customEditorControl.outerHeight();
-          extraHeight = $snaplapseKeyframeContainer.outerHeight() + toolbarHeight;
-          $snaplapseKeyframeContainer.css({
-            "top": window.innerHeight - extraHeight + toolbarHeight,
-            "width": window.innerWidth - 2
-          });
+      if (settings["viewportGeometry"] && settings["viewportGeometry"]["max"])
+        if (editorEnabled)
+          timelapse.getDefaultUI().fitToWindow();
+        else {
+        	// Earth Engine Case
+          if (settings["presentationSliderDiv"] && $("#" + settings["presentationSliderDiv"]).length) {
+            // If in presentation viewer-only mode
+            var $presentationSliderKeyframeContainer = $("#" + settings["presentationSliderDiv"] + " .snaplapse_keyframe_container");
+            extraHeight = 103;
+            $presentationSliderKeyframeContainer.css({
+              "top": window.innerHeight - extraHeight + 6,
+              "width": "inherit",
+              "max-width": window.innerWidth - 2
+            });
+          }
+          timelapse.fitVideoToViewport(window.innerWidth - 2, window.innerHeight - extraHeight);
         }
-        timelapse.fitVideoToViewport(window.innerWidth - 2, window.innerHeight - extraHeight);
-      }
       viewerWidth = $viewer.width();
       sliderLeftMargin_pct = (sliderLeftMargin / viewerWidth) * 100;
       sliderRightMargin_pct = (sliderRightMargin / viewerWidth) * 100;
