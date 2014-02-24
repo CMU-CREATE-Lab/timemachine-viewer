@@ -107,7 +107,7 @@ if (!Math.uuid) {
   var UTIL = org.gigapan.Util;
   org.gigapan.timelapse.Snaplapse = function(composerDivId, timelapse, settings, usePresentationSlider) {
 
-    var viewer;
+    var snaplapseViewer;
     var eventListeners = {};
     var keyframes = [];
     var keyframesById = {};
@@ -150,12 +150,12 @@ if (!Math.uuid) {
         }
         $("#" + viewerDivId + " .snaplapseTourPlayBack").hide();
 
-        if ($("#" + viewerDivId + "_customTimeline").is(':hidden')) {
-          viewer.showViewerUI();
-        }
+        if ($("#" + viewerDivId + "_customTimeline").is(':hidden'))
+          snaplapseViewer.showViewerUI();
+
         $("#" + viewerDivId + " .tourLoadOverlay").remove();
         $("#" + viewerDivId).append('<div class="tourLoadOverlay"><div class="tourLoadOverlayTitleContainer"><div class="tourLoadOverlayTitle"></div></div><img class="tourLoadOverlayPlay" title="Click to start the tour" src="images/tour_play_outline.png"></div></div>');
-        viewer.initializeTourOverlyUI();
+        snaplapseViewer.initializeTourOverlyUI();
       }
 
       keyframes.length = 0;
@@ -501,7 +501,7 @@ if (!Math.uuid) {
     // of being appended with "unsafe_string_" to ensure awareness that they may contain
     // potentially unsafe user inputted data.
     // It is then up to developer judgment to consider how these strings will be used.
-    this.urlStringToJSON = function(urlString) {
+    var urlStringToJSON = function(urlString) {
       try {
         var encoder = new org.gigapan.timelapse.UrlEncoder(urlString);
         // Decode version
@@ -608,6 +608,7 @@ if (!Math.uuid) {
         UTIL.error("Error converting snaplapse URL to JSON: " + e.message, e);
       }
     };
+    this.urlStringToJSON = urlStringToJSON;
 
     this.getAsJSON = function() {
       var snaplapseJSON = {};
@@ -636,6 +637,16 @@ if (!Math.uuid) {
         delete snaplapseJSON['snaplapse']['keyframes'][i]["timeTagNavigation"];
       }
       return JSON.stringify(snaplapseJSON, null, 3);
+    };
+
+    this.loadPresentation = function(url) {
+      var match = url.match(/(presentation)=([^#?&]*)/);
+      if (match) {
+        var presentation = match[2];
+        snaplapseViewer.loadNewSnaplapse(urlStringToJSON(presentation));
+      } else {
+        alert("Error: Invalid presentation");
+      }
     };
 
     // The function loads a keyframe everytime it get called
@@ -955,7 +966,7 @@ if (!Math.uuid) {
     };
 
     this.getSnaplapseViewer = function() {
-      return viewer;
+      return snaplapseViewer;
     };
 
     var cloneFrame = function(frame) {
@@ -1134,7 +1145,7 @@ if (!Math.uuid) {
 
     org.gigapan.Util.ajax("html", "", "time_warp_composer.html", function(html) {
       $composerDivObj.html(html);
-      viewer = new org.gigapan.timelapse.snaplapse.SnaplapseViewer(thisObj, timelapse, settings, usePresentationSlider);
+      snaplapseViewer = new org.gigapan.timelapse.snaplapse.SnaplapseViewer(thisObj, timelapse, settings, usePresentationSlider);
     });
 
   };
