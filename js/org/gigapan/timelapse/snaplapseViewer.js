@@ -585,8 +585,10 @@ function playCachedSnaplapse(snaplapseId) {
         $thisKeyframeTitle.hide();
       else {
         if (isTextNonEmpty(frame['unsafe_string_frameTitle'])) {
-          $thisKeyframeTitle.text(frame["unsafe_string_frameTitle"]);
-          $thisKeyframeTitle.show();
+          if (frame['is-description-visible']) {
+            $thisKeyframeTitle.text(frame["unsafe_string_frameTitle"]);
+            $thisKeyframeTitle.show();
+          }
         } else
           $thisKeyframeTitle.hide();
       }

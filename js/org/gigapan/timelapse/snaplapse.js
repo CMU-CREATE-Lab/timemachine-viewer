@@ -1243,7 +1243,7 @@ if (!Math.uuid) {
         // If the actual duration is zero, loop times and speed cannot be zero
         if (actualDuration == 0) {
           if (loopTimes <= 0 && !disableTourLooping)
-            loopTimes = 1;
+            loopTimes = defaultLoopTimes;
           if (desiredSpeed == 0 && !disableTourLooping)
             desiredSpeed = 100;
           if (disableTourLooping)
