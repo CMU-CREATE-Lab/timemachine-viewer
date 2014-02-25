@@ -1476,6 +1476,12 @@ function playCachedSnaplapse(snaplapseId) {
         $("#" + composerDivId + " .saveTimewarpWindow_JSON").val(rootURL + tourUrl).focus().select().click(function() {
           $(this).focus().select();
         });
+        // Text will not be selected when the dialog is opened in IE.
+        // We need to wait some amount of time and try to select the text again.
+        // And even more crazy is that this only works if we keep the initial .focus().select() above. WTF.
+        setTimeout(function() {
+          $("#" + composerDivId + " .saveTimewarpWindow_JSON").focus().select();
+        }, 50);
         $("#" + composerDivId + " .saveTimewarpWindow_JSON2").val('<iframe width="' + embedWidth + '" height="' + embedHeight + '" src="' + rootEmbedURL + tourUrl + '" frameborder="0"></iframe>').click(function() {
           $(this).focus().select();
         });
