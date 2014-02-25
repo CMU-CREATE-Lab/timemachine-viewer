@@ -1237,6 +1237,9 @@ function playCachedSnaplapse(snaplapseId) {
               // Loading completed
               $(".loadingOverlay").remove();
               $(document.body).css("cursor", "default");
+              // Set the value of the last keyframe to null (need to use reference but not clone)
+              // so swaping it with other keyframes will give a default value
+              snaplapse.resetKeyframe();
               if (!editorEnabled) {
                 // If the editor UI is not enabled, then we are in view-only mode
                 // and we need to seek to the first frame.

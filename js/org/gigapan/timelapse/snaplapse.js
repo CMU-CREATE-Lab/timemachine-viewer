@@ -803,13 +803,24 @@ if (!Math.uuid) {
     this.moveOneKeyframe = moveOneKeyframe;
 
     var resetKeyframe = function(keyframe) {
-      if (keyframe['buildConstraint'] == "duration") {
+      if ( typeof (keyframe) == "undefined") {
+        // Reset the last keyframe if keyframe is undefined
+        var keyframe = keyframes[keyframes.length - 1];
         keyframe['speed'] = null;
-        keyframe['loopTimes'] = 0;
-      } else if (keyframe['buildConstraint'] == "speed") {
-        keyframe['duration'] = null;
+        keyframe['loopTimes'] = null;
+        if (settings["enableCustomUI"])
+          keyframe['duration'] = 2;
+        else
+          keyframe['duration'] = null;
+      } else {
+        if (keyframe['buildConstraint'] == "duration") {
+          keyframe['speed'] = null;
+          keyframe['loopTimes'] = 0;
+        } else if (keyframe['buildConstraint'] == "speed")
+          keyframe['duration'] = null;
       }
     };
+    this.resetKeyframe = resetKeyframe;
 
     this.getKeyframes = function() {
       var keyframesClone = [];
