@@ -321,6 +321,10 @@ if (!window['$']) {
     //
     // Public methods
     //
+    this.isDoingLoopingDwell = function() {
+      return doingLoopingDwell;
+    };
+
     this.getEditorEnabled = function() {
       return editorEnabled;
     };
