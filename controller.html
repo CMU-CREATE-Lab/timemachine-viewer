@@ -93,9 +93,10 @@
       var screenIdleTimeout;
       var autoModeDelayTimeout;
       var currentLocationIdx = -1;
+
       // These three values below are stored on the Android tablet, but for debugging purposes on the Desktop
       // we still need default values to pull from. Thus changing these values *will not have an affect* if
-      // you are using the tablet. Instead, change the values in the settings menu there.
+      // you are using the tablet. Instead, change the values in the settings menu there on the tablet.
       var doAutoMode = true;
       var screenIdleTime = 90000;
       var autoModeDelayTime = 25000;
@@ -170,122 +171,11 @@
         clearTimeout(screenIdleTimeout);
       };
 
-      var readThumbnailFromServer = function(firstKeyframe) {
-        var image_base64;
-        switch(firstKeyframe) {
-          case "Rondonia":
-            image_base64 = "images/controller/Rondonia.png";
-            break;
-          case "Tucurui Dam":
-            image_base64 = "images/controller/Tucurui Dam.png";
-            break;
-          case "Meander":
-            image_base64 = "images/controller/Meander.png";
-            break;
-          case "Bolivia Evulsing":
-            image_base64 = "images/controller/Bolivia Evulsing.png";
-            break;
-          case "Mouth of Amazon":
-            image_base64 = "images/controller/Mouth of Amazon.png";
-            break;
-          case "South Cape Cod":
-            image_base64 = "images/controller/South Cape Cod.png";
-            break;
-          case "Outer Banks NC":
-            image_base64 = "images/controller/Outer Banks NC.png";
-            break;
-          case "Urmia":
-            image_base64 = "images/controller/Urmia.png";
-            break;
-          case "Aral Sea":
-            image_base64 = "images/controller/Aral Sea.png";
-            break;
-          case "Aral Expansion":
-            image_base64 = "images/controller/Aral Expansion.png";
-            break;
-          case "Saudi Irrigation":
-            image_base64 = "images/controller/Saudi Irrigation.png";
-            break;
-          case "SE Australia Bushfires":
-            image_base64 = "images/controller/SE Australia Bushfires.png";
-            break;
-          case "Pinatubo":
-            image_base64 = "images/controller/Pinatubo.png";
-            break;
-          case "Cherynobyl":
-            image_base64 = "images/controller/Cherynobyl.png";
-            break;
-          case "Mendenhall Glacier":
-            image_base64 = "images/controller/Mendenhall Glacier.png";
-            break;
-          case "Columbia Glacier":
-            image_base64 = "images/controller/Columbia Glacier.png";
-            break;
-          case "Malaspina Glacier":
-            image_base64 = "images/controller/Malaspina Glacier.png";
-            break;
-          case "Shanghai":
-            image_base64 = "images/controller/Shanghai.png";
-            break;
-          case "Pearl River Delta":
-            image_base64 = "images/controller/Pearl River Delta.png";
-            break;
-          case "Dubai":
-            image_base64 = "images/controller/Dubai.png";
-            break;
-          case "DFW":
-            image_base64 = "images/controller/DFW.png";
-            break;
-          case "Rifle, CO":
-            image_base64 = "images/controller/Rifle, CO.png";
-            break;
-          case "PA Fracking":
-            image_base64 = "images/controller/PA Fracking.png";
-            break;
-          case "Mountaintop Removal":
-            image_base64 = "images/controller/Mountaintop Removal.png";
-            break;
-          case "WyomingCoal":
-            image_base64 = "images/controller/WyomingCoal.png";
-            break;
-          case "Tar Sands, Alberta":
-            image_base64 = "images/controller/Tar Sands, Alberta.png";
-            break;
-          case "Alberta Logging":
-            image_base64 = "images/controller/Alberta Logging.png";
-            break;
-          case "Washington Logging":
-            image_base64 = "images/controller/Washington Logging.png";
-            break;
-        }
-        return image_base64;
-      };
-
-      var createThumbnailSlider = function(toursData) {
-        var tours = toursData.items;
+      var createThumbnailSlider = function(tourData) {
+        var tourURL = tourData.items[0].fragment;
         $toursSlider = $(".toursSlider");
-        numberOfTours = tours.length;
-        for (var i = 0; i < numberOfTours; i++) {
-          var tourFragment = tours[i].fragment;
-          //call the server to decode the tour fragment
-          controller.emit("decodeTour", tourFragment);
-        }
-      };
-
-      var playTour = function() {
-        var locationElem = $(this);
-        if (locationElem.attr('disabled') == "disabled")
-          return;
-        locationElem.attr('disabled', 'disabled');
-        var tourFragment = locationElem.attr("data-tourFragment");
-        if (tourFragment) {
-          controller.emit("playTour", tourFragment);
-          // Prevent overclicking with a timeout.
-          // Would be best to detect when the final action actuallycompletes though.
-          setTimeout(function() {
-            locationElem.removeAttr('disabled');
-          }, 4000);
-        }
+        //call the server to decode the tour url
+        controller.emit("decodeTour", tourURL);
       };
 
       var setLocation = function(event) {
@@ -312,90 +202,92 @@
         }
       };
 
-      var createThumbnail = function(tour) {
+      var createThumbnail = function(tourJSON) {
         // prevent adding repeatedly from multiple masters
+        numberOfTours = tourJSON.keyframes.length;
         if ($toursSlider.children().length >= numberOfTours)
           return;
-        $tourContainer = $('<div />').attr({
-          "class": "tourContainer",
-          "data-tourFragment": tour.fragment,
-          "data-bounds": JSON.stringify(tour.firstKeyframe.bounds),
-          "data-centerView": JSON.stringify(tour.firstKeyframe.centerView),
-          "title": tour.title
-        });
-        var $tourImg = $('<img />').attr({
-          "class": "tourImg",
-          //"src": readThumbnailFromServer(tour.firstKeyframe)
-          "src": readThumbnailFromServer(tour.title)
-        });
-        var $tourTxt = $('<div>' + tour.title + '</div>').attr({
-          "class": "tourTxt"
-        });
-        //attach events
-        if (isMobile && enableSorting == true) {
-          $tourContainer.on("touchstart", function(event) {
-            clearTimeout(doubleTapHoldTimeout);
-            if (!isDoubleTapHold) {
-              //is likely to become a single tap
-              singleTapTimeout = setTimeout(function() {
-                isSingleTap = true;
-              }, 100);
-            }
-          }).on("touchend", function(event) {
-            clearTimeout(singleTapTimeout);
-            if (isSingleTap) {
-              //consume the single tap
+        for (var i = 0; i < numberOfTours; i++) {
+          var keyframe = tourJSON.keyframes[i];
+          $tourContainer = $('<div />').attr({
+            "class": "tourContainer",
+            "data-bounds": JSON.stringify(keyframe.bounds),
+            "data-centerView": JSON.stringify(keyframe.centerView)
+          });
+          var $tourImg = $('<img />').attr({
+            "class": "tourImg",
+            //"src": readThumbnailFromServer(tour.firstKeyframe)
+            "src": keyframe.thumbnailURL
+          });
+          var $tourTxt = $('<div>' + keyframe.unsafe_string_frameTitle + '</div>').attr({
+            "class": "tourTxt"
+          });
+          //attach events
+          if (isMobile && enableSorting == true) {
+            $tourContainer.on("touchstart", function(event) {
+              clearTimeout(doubleTapHoldTimeout);
+              if (!isDoubleTapHold) {
+                //is likely to become a single tap
+                singleTapTimeout = setTimeout(function() {
+                  isSingleTap = true;
+                }, 100);
+              }
+            }).on("touchend", function(event) {
+              clearTimeout(singleTapTimeout);
+              if (isSingleTap) {
+                //consume the single tap
+                isSingleTap = false;
+                setLocation(event);
+              }
+              if (isDoubleTapHold) {
+                //consume the double tap hold
+                isDoubleTapHold = false;
+                $toursSlider.sortable("disable");
+              }
+            }).on("touchcancel", function(event) {
+              clearTimeout(singleTapTimeout);
               isSingleTap = false;
+              if (isDoubleTapHold) {
+                //consume the double tap hold
+                isDoubleTapHold = false;
+                $toursSlider.sortable("disable");
+              }
+            }).on("click", function(event) {
+              //is likely to be a double tap hold
+              isSingleTap = false;
+              clearTimeout(singleTapTimeout);
+              isDoubleTapHold = true;
+              $toursSlider.sortable("enable");
+              doubleTapHoldTimeout = setTimeout(function() {
+                //too late to be a double tap hold
+                isDoubleTapHold = false;
+                $toursSlider.sortable("disable");
+              }, 200);
+            });
+          } else {
+            //$tourContainer.on("click", playTour);
+            $tourContainer.on("click", function(event) {
               setLocation(event);
-            }
-            if (isDoubleTapHold) {
-              //consume the double tap hold
-              isDoubleTapHold = false;
-              $toursSlider.sortable("disable");
-            }
-          }).on("touchcancel", function(event) {
-            clearTimeout(singleTapTimeout);
-            isSingleTap = false;
-            if (isDoubleTapHold) {
-              //consume the double tap hold
-              isDoubleTapHold = false;
-              $toursSlider.sortable("disable");
-            }
-          }).on("click", function(event) {
-            //is likely to be a double tap hold
-            isSingleTap = false;
-            clearTimeout(singleTapTimeout);
-            isDoubleTapHold = true;
-            $toursSlider.sortable("enable");
-            doubleTapHoldTimeout = setTimeout(function() {
-              //too late to be a double tap hold
-              isDoubleTapHold = false;
-              $toursSlider.sortable("disable");
-            }, 200);
-          });
-        } else {
-          //$tourContainer.on("click", playTour);
-          $tourContainer.on("click", function(event) {
-            setLocation(event);
-            var $currentTarget = $(event.currentTarget);
-            currentLocationIdx = $currentTarget.index();
-            $toursSlider.children().removeClass("tourContainerHighlight");
-            $currentTarget.addClass("tourContainerHighlight");
-            // Scroll to the position
-            if (isAutoModeDelayTimeoutRunning)
-              $(document).scrollLeft(Math.round($currentTarget.position().left - $(window).width() / 2 + tourContainerWidth / 2));
-          });
+              var $currentTarget = $(event.currentTarget);
+              currentLocationIdx = $currentTarget.index();
+              $toursSlider.children().removeClass("tourContainerHighlight");
+              $currentTarget.addClass("tourContainerHighlight");
+              // Scroll to the position
+              if (isAutoModeDelayTimeoutRunning)
+                $(document).scrollLeft(Math.round($currentTarget.position().left - $(window).width() / 2 + tourContainerWidth / 2));
+            });
+          }
+          //append elements
+          $tourContainer.append($tourImg, $tourTxt);
+          $toursSlider.append($tourContainer);
+          if (tourContainerWidth == undefined) {
+            tourContainerWidth = $tourContainer.width() + 2;
+            //this is used for the bug that some browsers do not fill the background while scrolling.
+            $toursSlider.css("width", numberOfTours * tourContainerWidth);
+          }
+          if ($toursSlider.children().length == numberOfTours)
+            loadingToursComplete();
         }
-        //append elements
-        $tourContainer.append($tourImg, $tourTxt);
-        $toursSlider.append($tourContainer);
-        if (tourContainerWidth == undefined) {
-          tourContainerWidth = $tourContainer.width() + 2;
-          //this is used for the bug that some browsers do not fill the background while scrolling.
-          $toursSlider.css("width", numberOfTours * tourContainerWidth);
-        }
-        if ($toursSlider.children().length == numberOfTours)
-          loadingToursComplete();
       };
 
       var loadingToursComplete = function() {
@@ -435,8 +327,8 @@
         //get tour from server
         $.ajax({
           //url: "http://timemachine-hyperwall.appspot.com/createlab/tours.json"
-          url: "tours.json"
-        }).done(function(toursData) {
+          url: "tour.json"
+        }).done(function(tourData) {
           //server calls this function after decoding the tour URL
           controller.on('sync returnTour', function(tour_str) {
             createThumbnail(tour_str);
@@ -444,7 +336,7 @@
           controller.on('sync stopScreenIdleTimeout', function() {
             stopScreenIdleTimeout();
           });
-          createThumbnailSlider(toursData);
+          createThumbnailSlider(tourData);
         });
       }
 

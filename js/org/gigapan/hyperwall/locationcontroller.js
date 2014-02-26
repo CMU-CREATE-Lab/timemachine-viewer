@@ -10,19 +10,22 @@ if (fields.master) {
     console.log('controlReciever connected');
     timelapse.addVideoPlayListener(function() {
       //console.log("isPlaying", !timelapse.isPaused());
-      if (timelapse.isDoingLoopingDwell()) return;
+      if (timelapse.isDoingLoopingDwell())
+        return;
       controlReciever.emit('handlePlayPauseController', true);
     });
     timelapse.addVideoPauseListener(function() {
       //console.log("isPlaying", !timelapse.isPaused());
-      if (timelapse.isDoingLoopingDwell()) return;
+      if (timelapse.isDoingLoopingDwell())
+        return;
       controlReciever.emit('handlePlayPauseController', false);
     });
   });
 
   controlReciever.on('sync setControllerPlayButton', function() {
     //console.log("timelapse.isPaused()", timelapse.isPaused());
-    if (timelapse.isDoingLoopingDwell()) return;
+    if (timelapse.isDoingLoopingDwell())
+      return;
     if (!timelapse.isPaused())
       controlReciever.emit('handlePlayPauseController', true);
     else
@@ -46,22 +49,21 @@ if (fields.master) {
     });
   });
 
-  controlReciever.on('sync decodeTour', function(tourFragment) {
+  controlReciever.on('sync decodeTour', function(tourURL) {
     //console.log("sync decodeTour tourFragment", tourFragment);
     var snaplapse = timelapse.getSnaplapse();
     var snaplapseViewer = snaplapse.getSnaplapseViewer();
-    var tourJSON = JSON.parse(snaplapse.urlStringToJSON(tourFragment));
-    var firstKeyframe = tourJSON.snaplapse.keyframes[0];
-    var tour = {
-      "title": tourJSON.snaplapse.unsafe_string_title,
-      "firstKeyframe": {
-        centerView: timelapse.pixelBoundingBoxToLatLngCenter(firstKeyframe.bounds),
-        bounds: firstKeyframe.bounds,
-        frame: Math.floor(parseInt(tourJSON.snaplapse.fps) * parseFloat(firstKeyframe.time))
-      },
-      "fragment": tourFragment
+    var match = tourURL.match(/(presentation)=([^#?&]*)/);
+    var presentation = match[2];
+    var tourJSON = JSON.parse(snaplapse.urlStringToJSON(presentation));
+    var tourJSON = tourJSON.snaplapse;
+    var settings = timelapse.getSettings();
+    for (var i = 0; i < tourJSON.keyframes.length; i++) {
+      var keyframe = tourJSON.keyframes[i];
+      keyframe.centerView = timelapse.pixelBoundingBoxToLatLngCenter(keyframe.bounds);
+      keyframe.thumbnailURL = snaplapseViewer.generateThumbnailURL(settings["url"], keyframe.bounds, 260, 185, keyframe.time);
     }
-    controlReciever.emit('returnTour', tour);
+    controlReciever.emit('returnTour', tourJSON);
   });
 
   controlReciever.on('sync mapViewUpdate', function(data) {

@@ -321,6 +321,10 @@ if (!window['$']) {
     //
     // Public methods
     //
+    this.getSettings = function() {
+      return settings;
+    };
+
     this.isDoingLoopingDwell = function() {
       return doingLoopingDwell;
     };
