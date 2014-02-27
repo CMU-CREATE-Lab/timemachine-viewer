@@ -135,7 +135,7 @@ if (!org.gigapan.timelapse.Timelapse) {
     var ratioBarBot;
     var ratioBarRight;
     var ratioBarLeft;
-    var videoQualityContainer;
+    var $videoQualityContainer;
     var scaleBarContainer;
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -296,46 +296,30 @@ if (!org.gigapan.timelapse.Timelapse) {
 
     // Create elements for video quality
     var createVideoQualityElements = function() {
-      // Create elements
+      // Create ratio bars
       ratioBarTop = document.createElement("div");
       ratioBarBot = document.createElement("div");
       ratioBarRight = document.createElement("div");
       ratioBarLeft = document.createElement("div");
-      videoQualityContainer = document.createElement("div");
-      var videoQualitySelectorForm_DOM = document.createElement("form");
-      videoQualitySelector = document.createElement("select");
-      metersPerPixel_text = document.createElement("input");
-      metersPerPixel_text.type = "text";
-      var metersPerPixel_text_static_DOM = document.createElement("div");
-      var videoQuality_text_static_DOM = document.createElement("div");
-      // Add class for css
       $(ratioBarTop).addClass("ratioBarTop");
       $(ratioBarBot).addClass("ratioBarBot");
       $(ratioBarRight).addClass("ratioBarRight");
       $(ratioBarLeft).addClass("ratioBarLeft");
-      $(videoQualityContainer).addClass("videoQualityContainer");
-      var $videoQualitySelectorForm_DOM = $(videoQualitySelectorForm_DOM);
-      $videoQualitySelectorForm_DOM.addClass("videoQualitySelectorForm");
-      $(videoQualitySelector).addClass("videoQualitySelector");
-      $(metersPerPixel_text).addClass("metersPerPixel_text");
-      $(metersPerPixel_text_static_DOM).addClass("metersPerPixel_text_static");
-      $(videoQuality_text_static_DOM).addClass("videoQuality_text_static");
-      // Set id
-      ratioBarTop.id = scaleBarDivId + "_ratioBarTop";
-      ratioBarBot.id = scaleBarDivId + "_ratioBarBot";
-      ratioBarRight.id = scaleBarDivId + "_ratioBarRight";
-      ratioBarLeft.id = scaleBarDivId + "_ratioBarLeft";
-      videoQualityContainer.id = scaleBarDivId + "_videoQualityContainer";
-      videoQualitySelectorForm_DOM.id = scaleBarDivId + "_videoQualitySelectorForm";
-      videoQualitySelector.id = scaleBarDivId + "_videoQualitySelector";
-      metersPerPixel_text.id = scaleBarDivId + "_metersPerPixel_text";
-      metersPerPixel_text_static_DOM.id = scaleBarDivId + "metersPerPixel_text_static";
-      videoQuality_text_static_DOM.id = scaleBarDivId + "videoQuality_text_static";
-      // Set text
-      metersPerPixel_text_static_DOM.textContent = "meters / pixel";
-      videoQuality_text_static_DOM.textContent = "Quality:";
+      $("#" + videoDivId).append(ratioBarTop, ratioBarBot, ratioBarRight, ratioBarLeft);
+      // Create video quality selector
+      var content = '';
+      content += '<div class="videoQualityContainer">';
+      content += '    <div class="videoQuality_text_static">Resolution for:</div>';
+      content += '    <select class="videoQualitySelector"></select>';
+      content += '    <input class="metersPerPixel_text" type="text">';
+      content += '    <div class="metersPerPixel_text_static">meters / pixel</div>';
+      content += '</div>';
+      $videoQualityContainer = $(content);
+      $("#" + viewerDivId).append($videoQualityContainer);
+      videoQualitySelector = $("#" + viewerDivId + " .videoQualitySelector").get(0);
+      metersPerPixel_text = $("#" + viewerDivId + " .metersPerPixel_text").get(0);
       // Add video quality options
-      addOptions("default", "Viewer Size", "The Viewport Size", videoQualitySelector);
+      addOptions("default", "Current Window", "The Viewport Size", videoQualitySelector);
       addOptions("15360x8640", "15360 x 8640", "16K", videoQualitySelector);
       addOptions("11520x6480", "11520 x 6480", "12K", videoQualitySelector);
       addOptions("7860x4320", "7860 x 4320", "8K", videoQualitySelector);
@@ -354,12 +338,6 @@ if (!org.gigapan.timelapse.Timelapse) {
       addOptions("854x480", "854 x 480", "480p", videoQualitySelector);
       addOptions("640x360", "640 x 360", "360p", videoQualitySelector);
       addOptions("427x240", "427 x 240", "240p", videoQualitySelector);
-      // Append elements
-      $videoQualitySelectorForm_DOM.append(videoQualitySelector);
-      var $videoQualityContainer = $(videoQualityContainer);
-      $videoQualityContainer.append(videoQuality_text_static_DOM, metersPerPixel_text, metersPerPixel_text_static_DOM, videoQualitySelectorForm_DOM);
-      $("#" + videoDivId).append(ratioBarTop, ratioBarBot, ratioBarRight, ratioBarLeft);
-      $("#" + viewerDivId).append(videoQualityContainer);
       // Attach events to the video quality selector
       addVideoQualitySelectorEvents();
     };
@@ -460,17 +438,15 @@ if (!org.gigapan.timelapse.Timelapse) {
 
     // Hide the video quality
     var hideVideoQualityBar = function() {
-      if ($(videoQualityContainer).is(":visible")) {
-        $(videoQualityContainer).fadeOut(200);
-      }
+      if ($videoQualityContainer.is(":visible"))
+        $videoQualityContainer.fadeOut(200);
     };
     this.hideVideoQualityBar = hideVideoQualityBar;
 
     // Show the video quality
     var showVideoQualityBar = function() {
-      if (!$(videoQualityContainer).is(":visible")) {
-        $(videoQualityContainer).fadeIn(200);
-      }
+      if (!$videoQualityContainer.is(":visible"))
+        $videoQualityContainer.fadeIn(200);
     };
     this.showVideoQualityBar = showVideoQualityBar;
 
@@ -533,21 +509,10 @@ if (!org.gigapan.timelapse.Timelapse) {
         "strokeWidth": 2
       };
       drawScaleBar(scaleBarSetting);
-      if (enableVideoQualitySelector == true) {
+      if (enableVideoQualitySelector == true)
         displayVideoQuality(distance);
-      }
     };
     this.setScaleBar = setScaleBar;
-
-    var getScaleBarContainer = function() {
-      return scaleBarContainer;
-    };
-    this.getScaleBarContainer = getScaleBarContainer;
-
-    var getVideoQualityContainer = function() {
-      return videoQualityContainer;
-    };
-    this.getVideoQualityContainer = getVideoQualityContainer;
 
     var updateVideoSize = function() {
       var oldVideoDivHeight = videoDivHeight;
@@ -569,9 +534,8 @@ if (!org.gigapan.timelapse.Timelapse) {
     // Constructor code
     //
     createScaleBarElements();
-    if (enableVideoQualitySelector == true) {
+    if (enableVideoQualitySelector == true)
       createVideoQualityElements();
-    }
   };
   //end of org.gigapan.timelapse.ScaleBar
 })();

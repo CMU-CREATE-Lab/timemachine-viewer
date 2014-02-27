@@ -82,12 +82,12 @@
 
 .videoQualityContainer {
   position: absolute;
-  width: 330px;
+  width: 375px;
   height: 26px;
   z-index: 10;
   border: 1px solid #656565;
   top: 22px;
-  left: 100px;
+  left: 95px;
   box-shadow: 2px 2px 3px rgba(0,0,0,0.3);
   background-color: white;
   border-radius: 2px;
@@ -96,25 +96,21 @@
 .videoQualitySelector {
   font-family: Arial, Helvetica, sans-serif;
   font-size: 12px;
-  margin-top: 4px;
-  margin-bottom: 0px;
-  margin-right: 0px;
-  margin-left: 14px;
-  color: black;
-  width: 110px;
-}
-
-.videoQualitySelectorForm {
   position: absolute;
-  left: 45px;
-  top: 0px;
+  margin: 0;
+  padding: 0;
+  color: black;
+  width: 115px;
+  height: 18px;
+  left: 100px;
+  top: 4px;
 }
 
 .metersPerPixel_text {
   position: absolute;
-  left: 178px;
+  left: 224px;
   top: 4px;
-  font-size: 11px;
+  font-size: 12px;
   width: 55px;
   height: 12px;
   font-family: Arial, Helvetica, sans-serif;
@@ -122,11 +118,11 @@
 }
 
 .metersPerPixel_text_static {
-	vertical-align: middle;
+  vertical-align: middle;
   position: absolute;
   font-size: 12px;
   top: 6px;
-  left: 245px;
+  left: 290px;
   margin-top: 0px;
   margin-bottom: 0px;
   margin-right: 0px;
@@ -136,7 +132,7 @@
 }
 
 .videoQuality_text_static {
-	vertical-align: middle;
+  vertical-align: middle;
   position: absolute;
   font-size: 12px;
   top: 6px;

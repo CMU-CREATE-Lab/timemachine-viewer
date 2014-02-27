@@ -1142,17 +1142,6 @@ if (!org.gigapan.timelapse.Timelapse) {
       var customEditorModeToolbar = $('<div class="customEditorModeToolbar"></div>');
       $customEditorControl.append(customEditorModeToolbar);
       $("#" + viewerDivId).append($customEditorControl);
-      // Create play button
-      customEditorModeToolbar.append('<button class="playStopTimewarp" title="Play or stop a tour">Play</button>');
-      $("#" + viewerDivId + " .customEditorControl .playStopTimewarp").button({
-        icons: {
-          primary: "ui-icon-play"
-        },
-        text: true,
-        disabled: true
-      }).click(function() {
-        timelapse.getSnaplapse().getSnaplapseViewer().playStopSnaplapse();
-      });
       // Create add button
       customEditorModeToolbar.append('<button class="addTimetag" title="Add a keyframe">Add</button>');
       $("#" + viewerDivId + " .addTimetag").button({
@@ -1211,6 +1200,17 @@ if (!org.gigapan.timelapse.Timelapse) {
           return;
         timelapse.getSnaplapse().getSnaplapseViewer().loadNewSnaplapse(null);
         timelapse.handleEditorModeToolbarChange();
+      });
+      // Create play button
+      customEditorModeToolbar.append('<button class="playStopTimewarp" title="Play or stop a tour">Play Tour</button>');
+      $("#" + viewerDivId + " .customEditorControl .playStopTimewarp").button({
+        icons: {
+          primary: "ui-icon-play"
+        },
+        text: true,
+        disabled: true
+      }).click(function() {
+        timelapse.getSnaplapse().getSnaplapseViewer().playStopSnaplapse();
       });
       // Create mode toggle button
       if (showEditorModeButton) {
@@ -1446,7 +1446,7 @@ if (!org.gigapan.timelapse.Timelapse) {
         if (editorEnabled)
           timelapse.getDefaultUI().fitToWindow();
         else {
-        	// Earth Engine Case
+          // Earth Engine Case
           if (settings["presentationSliderDiv"] && $("#" + settings["presentationSliderDiv"]).length) {
             // If in presentation viewer-only mode
             var $presentationSliderKeyframeContainer = $("#" + settings["presentationSliderDiv"] + " .snaplapse_keyframe_container");

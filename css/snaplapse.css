@@ -496,14 +496,24 @@
   vertical-align: middle;
 }
 
-.snaplapsePlayingMask {
+.snaplapsePlayingMaskViewer {
   position: absolute;
-  opacity: 0.01;
+  opacity: 0;
   width: 100%;
   height: 100%;
   z-index: 19;
   top: 0px;
   background: white;
+}
+
+.snaplapsePlayingMask {
+  position: absolute;
+  opacity: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 19;
+  top: 0px;
+  background: black;
 }
 
 .snaplapseTourPlayBack {

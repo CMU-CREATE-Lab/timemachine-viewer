@@ -180,8 +180,20 @@
   height: 100%;
 }
 
+.customEditorModeToolbar .playStopTimewarp .ui-icon {
+  background-image: url(../images/ui-icons_custom_256x240.png) !important;
+  margin-left: 3px;
+}
+
 .customEditorModeToolbar .playStopTimewarp {
-  width: 70px !important;
+  width: 120px !important;
+  color: white !important;
+  background-color: #71AF71 !important;
+  border-right: 1px solid #656565 !important;
+}
+
+.customEditorModeToolbar .playStopTimewarp.isPlaying {
+  background-color: rgba(255,0,0,0.4) !important;
 }
 
 .customEditorModeToolbar .newTimewarp {
