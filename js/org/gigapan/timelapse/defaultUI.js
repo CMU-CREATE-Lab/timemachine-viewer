@@ -447,17 +447,6 @@ if (!org.gigapan.timelapse.Timelapse) {
     // Create the editor mode toolbar
     var createEditorModeToolbar = function() {
       var $editorModeToolbar = $("#" + viewerDivId + " .editorModeToolbar");
-      // Create play button
-      $editorModeToolbar.append('<button class="playStopTimewarp" title="Play or stop a tour">Play</button>');
-      $("#" + viewerDivId + " .playStopTimewarp").button({
-        icons: {
-          primary: "ui-icon-play"
-        },
-        text: true,
-        disabled: true
-      }).click(function() {
-        timelapse.getSnaplapse().getSnaplapseViewer().playStopSnaplapse();
-      });
       // Create add button
       $editorModeToolbar.append('<button class="addTimetag" title="Add a keyframe">Add</button>');
       $("#" + viewerDivId + " .addTimetag").button({
@@ -516,6 +505,17 @@ if (!org.gigapan.timelapse.Timelapse) {
           return;
         timelapse.getSnaplapse().getSnaplapseViewer().loadNewSnaplapse(null);
         handleEditorModeToolbarChange();
+      });
+      // Create play button
+      $editorModeToolbar.append('<button class="playStopTimewarp" title="Play or stop a tour">Play Tour</button>');
+      $("#" + viewerDivId + " .playStopTimewarp").button({
+        icons: {
+          primary: "ui-icon-play"
+        },
+        text: true,
+        disabled: true
+      }).click(function() {
+        timelapse.getSnaplapse().getSnaplapseViewer().playStopSnaplapse();
       });
       // Create mode toggle button and options
       if (showEditorModeButton) {
