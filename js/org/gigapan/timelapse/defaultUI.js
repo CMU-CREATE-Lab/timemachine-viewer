@@ -124,6 +124,7 @@ if (!org.gigapan.timelapse.Timelapse) {
     var startEditorFromPresentationMode = ( typeof (settings["startEditorFromPresentationMode"]) == "undefined") ? false : settings["startEditorFromPresentationMode"];
     var showEditorModeButton = ( typeof (settings["showEditorModeButton"]) == "undefined") ? true : settings["showEditorModeButton"];
     var showLogoOnDefaultUI = ( typeof (settings["showLogoOnDefaultUI"]) == "undefined") ? true : settings["showLogoOnDefaultUI"];
+    var showEditorOnLoad = ( typeof (settings["showEditorOnLoad"]) == "undefined") ? false : settings["showEditorOnLoad"];
     var editorEnabled = timelapse.getEditorEnabled();
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -189,6 +190,8 @@ if (!org.gigapan.timelapse.Timelapse) {
           visible: 3.5
         });
       }
+      if (showEditorOnLoad && editorEnabled && datasetType == undefined)
+        $("#" + viewerDivId + " .viewerModeCheckbox").trigger("click");
     };
 
     var createPanControl = function() {

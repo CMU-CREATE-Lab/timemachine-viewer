@@ -126,6 +126,7 @@ function playCachedSnaplapse(snaplapseId) {
     var maxSubtitleLength = 120;
     var datasetType = timelapse.getDatasetType();
     var startEditorFromPresentationMode = settings["startEditorFromPresentationMode"] ? settings["startEditorFromPresentationMode"] : false;
+    var showEditorOnLoad = ( typeof (settings["showEditorOnLoad"]) == "undefined") ? false : settings["showEditorOnLoad"];
     var rootURL;
     var rootEmbedURL;
     var embedWidth = 854;
@@ -487,10 +488,10 @@ function playCachedSnaplapse(snaplapseId) {
       });
       if (!usePresentationSlider) {
         if (!editorEnabled || !settings["enableCustomUI"]) {
-          $("#" + composerDivId).hide();
-          if (!settings["enableCustomUI"]) {
+          if (!showEditorOnLoad)
+            $("#" + composerDivId).hide();
+          if (!settings["enableCustomUI"])
             moveDescriptionBox("up");
-          }
         } else
           moveDescriptionBox("up");
       } else
