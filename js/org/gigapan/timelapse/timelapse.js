@@ -235,11 +235,6 @@ if (!window['$']) {
     var currentVideo = null;
     var animateInterval = null;
     var lastAnimationTime;
-    var minTranslateSpeedPixelsPerSecond = 25.0;
-    var animationFractionPerSecond = 3.0;
-    // goes 300% toward goal in 1 sec
-    var minZoomSpeedPerSecond = 0.25;
-    // in log2
     var keyIntervals = [];
     var targetViewChangeListeners = [];
     var viewChangeListeners = [];
@@ -268,12 +263,20 @@ if (!window['$']) {
     var translationSpeedConstant = 20;
     var leader;
 
+    // animateRate in milliseconds, 5 means 200Hz
+    var animateRate = isHyperwall ? 5 : 80;
+    // animationFractionPerSecond, 3 means goes 300% toward goal in 1 sec
+    var animationFractionPerSecond = 3.0;
+    // minTranslateSpeedPixelsPerSecond in pixels
+    var minTranslateSpeedPixelsPerSecond = 25.0;
+    // minZoomSpeedPerSecond in log2 scale
+    var minZoomSpeedPerSecond = 0.25;
+
     // Joystick Variables
     var isJoystickButtonPressed = [false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false];
     var joystickTimers = [0.0, 0.0];
 
     // levelThreshold sets the quality of display by deciding what level of tile to show for a given level of zoom:
-    //
     //  1.0: select a tile that's shown between 50% and 100% size  (never supersample)
     //  0.5: select a tile that's shown between 71% and 141% size
     //  0.0: select a tile that's shown between 100% and 200% size (never subsample)
@@ -321,6 +324,23 @@ if (!window['$']) {
     //
     // Public methods
     //
+    //debug
+    this.setMinZoomSpeedPerSecond = function(value) {
+      minZoomSpeedPerSecond = value;
+    };
+
+    this.setMinTranslateSpeedPixelsPerSecond = function(value) {
+      minTranslateSpeedPixelsPerSecond = value;
+    };
+
+    this.setAnimateRate = function(value) {
+      animateRate = value;
+    };
+
+    this.setAnimationFractionPerSecond = function(value) {
+      animationFractionPerSecond = value;
+    };
+
     this.getSettings = function() {
       return settings;
     };
@@ -1479,7 +1499,6 @@ if (!window['$']) {
       }
 
       // ~35Hz or 12.5Hz
-      var animateRate = isHyperwall ? 5 : 80;
       if (animateInterval == null) {
         animateInterval = setInterval(function() {
           animate(fromGoogleMapflag);
