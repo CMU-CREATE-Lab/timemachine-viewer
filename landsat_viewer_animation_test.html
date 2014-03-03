@@ -84,7 +84,7 @@
         setAnimationFractionPerSecond: 1,
         setAnimateRate: 1,
         setMinTranslateSpeedPixelsPerSecond: 1,
-        setMinZoomSpeedPerSecond: 0.1
+        setMinZoomSpeedPerSecond: 0.01
       };
       var max = {
         setAnimationFractionPerSecond: 50,
@@ -189,6 +189,14 @@
         </div>
         <div>
           &nbsp;&nbsp;The final translation value is this multiplied by the above animationFractionPerSecond.
+        </div></td>
+      </tr>
+      <tr style="height:70px; display:none;">
+        <td><input type="range" step="1" style="width:200px;" id="setMinZoomSpeedPerSecond_range" onchange="setValue('setMinZoomSpeedPerSecond', this.value)"/></td>
+        <td><input type="text" style="width:40px;" id="setMinZoomSpeedPerSecond_text" onchange="setValue('setMinZoomSpeedPerSecond', this.value, true)"/></td>
+        <td>
+        <div style="font-weight:bold; color:#C92E2E;">
+          &nbsp;&nbsp;setMinZoomSpeedPerSecond:
         </div></td>
       </tr>
     </table>
