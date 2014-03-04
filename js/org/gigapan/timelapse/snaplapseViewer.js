@@ -1241,21 +1241,25 @@ function playCachedSnaplapse(snaplapseId) {
               // Set the value of the last keyframe to null (need to use reference but not clone)
               // so swaping it with other keyframes will give a default value
               snaplapse.resetKeyframe();
-              if (!editorEnabled) {
-                // If the editor UI is not enabled, then we are in view-only mode
-                // and we need to seek to the first frame.
-                var firstFrame = snaplapse.getKeyframes()[0];
-                timelapse.warpToBoundingBox(firstFrame.bounds);
-                timelapse.seek(firstFrame.time);
-                displaySnaplapseFrameAnnotation(firstFrame);
+              if (usePresentationSlider) {
+                $("#" + composerDivId + " .snaplapse_keyframe_container").scrollLeft(0);
               } else {
-                if (useThumbnailServer) {
-                  // If we are using the thumbnail server, we aren't already seeking to each frame
-                  // so we need to seek to the last frame manually.
-                  timelapse.warpToBoundingBox(frame.bounds);
-                  timelapse.seek(frame.time);
+                if (!editorEnabled) {
+                  // If the editor UI is not enabled, then we are in view-only mode
+                  // and we need to seek to the first frame.
+                  var firstFrame = snaplapse.getKeyframes()[0];
+                  timelapse.warpToBoundingBox(firstFrame.bounds);
+                  timelapse.seek(firstFrame.time);
+                  displaySnaplapseFrameAnnotation(firstFrame);
+                } else {
+                  if (useThumbnailServer) {
+                    // If we are using the thumbnail server, we aren't already seeking to each frame
+                    // so we need to seek to the last frame manually.
+                    timelapse.warpToBoundingBox(frame.bounds);
+                    timelapse.seek(frame.time);
+                  }
+                  displaySnaplapseFrameAnnotation(frame);
                 }
-                displaySnaplapseFrameAnnotation(frame);
               }
               var listeners = eventListeners["snaplapse-loaded"];
               if (listeners) {
