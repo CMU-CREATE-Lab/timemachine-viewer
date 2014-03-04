@@ -42,7 +42,7 @@
       jQuery.support.cors = true;
 
       // Modis
-      var url = "http://commondatastorage.googleapis.com/earthengine-timelapse/seasonal-20131220";
+      var url = "http://commondatastorage.googleapis.com/earthengine-timelapse/seasonal-20140202";
 
       function init() {
         myHomeView = {
@@ -52,7 +52,6 @@
         };
         var viewerSettings = {
           url: url,
-          mediaType: ".mp4",
           composerDiv: "composer1",
           presentationSliderDiv: "presentationSlider1",
           enableCustomUI: "modis",
@@ -70,8 +69,7 @@
           },
           showAddressLookup: true,
           disableTourLooping: true,
-          newHomeView: myHomeView,
-          enableMetadataCacheBreaker: true
+          newHomeView: myHomeView
         };
         timelapse = new org.gigapan.timelapse.Timelapse("player1", viewerSettings);
       }

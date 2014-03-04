@@ -12,11 +12,38 @@
     <script src="js/jquery/plugins/touchPunch/jquery.ui.touch-punch.js" type="text/javascript"></script>
 
     <style type="text/css">
+      .noLeftBorder {
+        border-left: 0px !important;
+      }
       .editor {
         float: left;
-        background-color: red;
-        width: 190px;
+        background-color: transparent;
+        width: 150px;
         height: 133px;
+        border: 0px;
+        display: none;
+      }
+      .add {
+        position: absolute;
+        top: 2px;
+        left: 1px;
+        height: 127px;
+        width: 147px;
+      }
+      .ui-button {
+        border-radius: 0px;
+        color: white;
+        background: #656565;
+        border: 0px;
+        font-size: 35px;
+        font-family: Arial, Helvetica, sans-serif;
+        outline: none;
+        -webkit-user-select: none;
+        -khtml-user-select: none;
+        -moz-user-select: none;
+        -ms-user-select: none;
+        -o-user-select: none;
+        user-select: none;
       }
       .tourContainer {
         position: relative;
@@ -49,7 +76,6 @@
       .toursSlider {
         position: relative;
         padding: 0;
-        border: 0;
         margin: 0;
         background-color: black;
         height: 133px;
@@ -95,10 +121,11 @@
       var isSingleTap = false;
       var isDoubleTapHold = false;
       var $toursSlider;
+      var $editor;
       var tourContainerWidth;
       var numberOfTours;
       var isMobile = navigator.userAgent.match(/Android|BlackBerry|iPhone|iPad|iPod|Opera Mini|IEMobile/i);
-      var enableSorting = true;
+      var enableSorting = false;
       var mode = "player";
 
       // Auto mode variables
@@ -311,6 +338,25 @@
 
       var setMode = function(newMode) {
         mode = newMode;
+        refreshSlider();
+        if (mode == "player") {
+          $editor.hide();
+        } else if (mode == "editor") {
+          $editor.show();
+        }
+      };
+
+      var refreshSlider = function() {
+        $($toursSlider.children()).removeClass("noLeftBorder");
+        if (mode == "editor")
+          $($toursSlider.children().get(0)).addClass("noLeftBorder");
+      };
+
+      var createEditorControl = function() {
+        $editor = $(".editor");
+        $(".add").button().click(function() {
+          console.log("add");
+        });
       };
 
       var loadingToursComplete = function() {
@@ -345,6 +391,8 @@
         $toursSlider.on("mouseup touchend touchcancel", function() {
           startScreenIdleTimeout();
         });
+        // TODO: move this code to Android for toggling
+        //setMode("editor");
       };
 
       var debug = function(txt) {
@@ -366,6 +414,7 @@
             stopScreenIdleTimeout();
           });
           createThumbnailSlider(tourData);
+          createEditorControl();
         });
       }
 
@@ -373,7 +422,9 @@
     </script>
   </head>
   <body>
-    <!--    <div class="editor"></div>-->
+    <div class="editor">
+      <button type="button" class="add">+</button>
+    </div>
     <div class="toursSliderContainer">
       <div class="toursSlider"></div>
     </div>
