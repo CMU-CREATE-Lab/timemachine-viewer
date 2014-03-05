@@ -1543,7 +1543,17 @@ if (!org.gigapan.timelapse.Timelapse) {
       preProcessModis();
     else
       preProcessLandsat();
+
     createCustomControl();
+
+    if (timelapse.getPlayOnLoad()) {
+      $customPlay.click();
+      $customPlay.button({
+        icons: {
+          primary: "ui-icon-custom-pause"
+        }
+      });
+    }
   };
   //end of org.gigapan.timelapse.CustomUI
 })();

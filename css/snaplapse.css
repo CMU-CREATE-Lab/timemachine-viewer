@@ -288,9 +288,9 @@
 }
 
 .thumbnail_highlight {
-  -moz-box-shadow: inset 0 0 40px rgba(0,0,0,1);
-  -webkit-box-shadow: inset 0 0 40px rgba(0,0,0,1);
-  box-shadow: inset 0 0 40px rgba(0,0,0,1);
+  -moz-box-shadow: inset 0 0 40px black !important;
+  -webkit-box-shadow: inset 0 0 40px black !important;
+  box-shadow: inset 0 0 40px black !important;
 }
 
 .snaplapse_keyframe_list_item_thumbnail_overlay {
@@ -302,6 +302,9 @@
   width: 126px;
   height: 73px;
   border: solid 0px black;
+  -moz-box-shadow: inset 0 0 0px black;
+  -webkit-box-shadow: inset 0 0 0px black;
+  box-shadow: inset 0 0 0px black;
   -webkit-transition: all 0.2s linear;
   -o-transition: all 0.2s linear;
   -moz-transition: all 0.2s linear;
@@ -312,9 +315,9 @@
 }
 
 .snaplapse_keyframe_list_item_thumbnail_overlay:hover {
-  -moz-box-shadow: inset 0 0 80px black;
-  -webkit-box-shadow: inset 0 0 80px black;
-  box-shadow: inset 0 0 80px black;
+  -moz-box-shadow: inset 0 0 80px black !important;
+  -webkit-box-shadow: inset 0 0 80px black !important;
+  box-shadow: inset 0 0 80px black !important;
   /*
    background: black;
    opacity: 0.5;*/

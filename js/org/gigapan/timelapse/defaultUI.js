@@ -1240,6 +1240,9 @@ if (!org.gigapan.timelapse.Timelapse) {
         fitToWindow();
       }
     }
+
+    if (timelapse.getPlayOnLoad() && datasetType == undefined)
+      timelapse.play();
   };
   //end of org.gigapan.timelapse.DefaultUI
 })();
