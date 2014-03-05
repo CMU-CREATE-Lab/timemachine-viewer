@@ -16,15 +16,15 @@
 
 .modisTimeText {
   position: absolute;
+  top: 0px;
   width: 91px;
   height: 26px;
   font-size: 28pt;
-  /*box-shadow: 2px 2px 3px rgba(0,0,0,0.3);*/
   text-shadow: -1px 0 #656565, 0 1px #656565, 1px 0 #656565, 0 -1px #656565, 2px 2px 3px rgba(0,0,0,0.3);
   font-family: Arial, Helvetica, sans-serif;
   text-align: right;
   margin-top: -42px;
-  margin-left: -27px;
+  margin-left: 14px;
   color: white;
   font-weight: lighter;
   background-color: transparent;
@@ -293,6 +293,8 @@
 
 .timeText {
   position: absolute;
+  top: 0px;
+  left: 41px;
   width: 60px;
   height: 21px;
   font-size: 16pt;
@@ -301,6 +303,7 @@
   padding-top: 5px;
   padding-bottom: 5px;
   padding-left: 37px;
+  padding-right: 0px;
   color: #656565;
   font-weight: normal;
   background-color: white;
@@ -308,6 +311,13 @@
   z-index: 9;
   border-radius: 3px;
   cursor: default;
+  text-align: left;
+}
+
+.timeTextTour {
+  left: 23px;
+  width: 81px;
+  padding-left: 35px;
 }
 
 .timeTextHover {

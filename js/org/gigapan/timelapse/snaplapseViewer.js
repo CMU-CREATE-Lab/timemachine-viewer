@@ -191,11 +191,7 @@ function playCachedSnaplapse(snaplapseId) {
       $googleLogo.css("bottom", "-=" + 45 + "px");
       $customPlay.hide();
       $modisCustomPlay.hide();
-      $timeText.css({
-        "text-align": "center",
-        "left": "-=" + 14 + "px",
-        "padding-left": "12px"
-      });
+      $timeText.addClass("timeTextTour");
       $googleMapToggle.hide();
       $contextMapResizer.hide();
       $modisTimeText.css("top", "+=25px");
@@ -228,11 +224,7 @@ function playCachedSnaplapse(snaplapseId) {
       $googleLogo.css("bottom", "+=" + 45 + "px");
       $customPlay.show();
       $modisCustomPlay.show();
-      $timeText.css({
-        "text-align": "right",
-        "left": "+=" + 14 + "px",
-        "padding-left": "0px"
-      });
+      $timeText.removeClass("timeTextTour");
       $googleMapToggle.show();
       $contextMapResizer.show();
       $sideToolBar.show();

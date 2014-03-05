@@ -732,7 +732,7 @@ if (!org.gigapan.timelapse.Timelapse) {
         $timeText.toggleClass("timeText modisTimeText");
       $customTimeline = $(customTimeline);
       $customControl.append(timeText, customTimeline);
-      var extraSliderLeftMargin = (datasetType == "landsat") ? 30 : 60;
+      var extraSliderLeftMargin = (datasetType == "landsat") ? 50 : 60;
       sliderLeftMargin = $customPlay.width() + $timeText.width() + extraSliderLeftMargin;
       var extraSliderRightMargin;
       if (datasetType == "landsat") {
@@ -747,11 +747,6 @@ if (!org.gigapan.timelapse.Timelapse) {
       $customTimeline.css({
         "left": sliderLeftMargin + "px",
         "width": width_slider + "px"
-      });
-      var timeTextLeftRatio = 0.85;
-      $timeText.css({
-        "left": $customPlay.width() * timeTextLeftRatio + "px",
-        "top": $customTimeline.position().top + "px"
       });
 
       // Create left, right, and hover date text

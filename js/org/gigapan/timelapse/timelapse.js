@@ -1300,7 +1300,7 @@ if (!window['$']) {
       var tourJSON = getTourFromHash(unsafeHashVars);
       var presentationJSON = getPresentationFromHash(unsafeHashVars);
       var modisLock = getModisLockFromHash(unsafeHashVars);
-      if (newView || newTime || tourJSON || presentationJSON || ModisMonthLock) {
+      if (newView || newTime || tourJSON || presentationJSON || modisLock) {
         if (newView)
           _setNewView(newView, true);
         if (newTime)
