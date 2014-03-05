@@ -149,6 +149,7 @@ if (!org.gigapan.timelapse.Timelapse) {
     var monthLockPlaybackFrames = [];
     var monthLockPlaybackInterval;
     var monthLockPlaybackIdx = 0;
+    var monthLockPlaybackSpeed;
     var fps = timelapse.getFps();
     var firstYearFrameOffset;
     var spinnerRadius = 110;
@@ -618,7 +619,7 @@ if (!org.gigapan.timelapse.Timelapse) {
         } else if (status == "disable") {
           locker = "none";
           if (isPlaying) {
-            clearInterval(monthLockPlaybackInterval);
+            clearTimeout(monthLockPlaybackInterval);
             monthLockPlaybackInterval = null;
             timelapse.play();
           }
@@ -1108,6 +1109,8 @@ if (!org.gigapan.timelapse.Timelapse) {
 
     var doCustomHelpOverlay = function() {
       $("#" + viewerDivId + " .customInstructions").fadeIn(200);
+      if (locker == "month" && isPlaying)
+        stopMonthLockFrames();
       if ($defaultUIPlaybackButton.hasClass('pause')) {
         timelapse.handlePlayPause();
         $defaultUIPlaybackButton.removeClass("pause").addClass("play from_help");
@@ -1116,6 +1119,8 @@ if (!org.gigapan.timelapse.Timelapse) {
 
     var removeCustomHelpOverlay = function() {
       $("#" + viewerDivId + " .customInstructions").fadeOut(200);
+      if (locker == "month" && isPlaying)
+        playMonthLockFrames();
       if ($defaultUIPlaybackButton.hasClass('from_help')) {
         timelapse.handlePlayPause();
         $defaultUIPlaybackButton.addClass("pause").removeClass("play from_help");
@@ -1395,21 +1400,36 @@ if (!org.gigapan.timelapse.Timelapse) {
       });
     };
 
-    var updateMonthLockPlaybackInterval = function() {
-      clearInterval(monthLockPlaybackInterval);
-      monthLockPlaybackInterval = null;
-      computeMonthLockPlaybackFrames();
+    var setMonthLockPlaybackSpeed = function() {
       var speed = timelapse.getPlaybackRate();
-      monthLockPlaybackInterval = setInterval(function() {
+      var desiredSpeed = (1000 / (speed * fps)) * 2;
+      if (monthLockPlaybackIdx == 0 || monthLockPlaybackIdx == monthLockPlaybackFrames.length - 1)
+        monthLockPlaybackSpeed = 500 + desiredSpeed;
+      else
+        monthLockPlaybackSpeed = desiredSpeed;
+    };
+
+    var startMonthLockPlaybackInterval = function() {
+      monthLockPlaybackInterval = setTimeout(function() {
+        setMonthLockPlaybackSpeed();
         timelapse.seekToFrame(monthLockPlaybackFrames[monthLockPlaybackIdx]);
         monthLockPlaybackIdx++;
         if (monthLockPlaybackIdx >= monthLockPlaybackFrames.length)
           monthLockPlaybackIdx = 0;
-      }, 1000 / (speed * fps));
+        startMonthLockPlaybackInterval();
+      }, monthLockPlaybackSpeed);
+    };
+
+    var updateMonthLockPlaybackInterval = function() {
+      clearTimeout(monthLockPlaybackInterval);
+      setMonthLockPlaybackSpeed();
+      monthLockPlaybackInterval = null;
+      computeMonthLockPlaybackFrames();
+      startMonthLockPlaybackInterval();
     };
 
     var stopMonthLockFrames = function() {
-      clearInterval(monthLockPlaybackInterval);
+      clearTimeout(monthLockPlaybackInterval);
       monthLockPlaybackInterval = null;
       $customPlay.button({
         icons: {
@@ -1523,7 +1543,6 @@ if (!org.gigapan.timelapse.Timelapse) {
       preProcessModis();
     else
       preProcessLandsat();
-
     createCustomControl();
   };
   //end of org.gigapan.timelapse.CustomUI
