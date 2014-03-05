@@ -1031,6 +1031,23 @@ function playCachedSnaplapse(snaplapseId) {
           var thisKeyframeId = this.id.split("_")[3];
           var thisKeyframe = snaplapse.getKeyframeById(thisKeyframeId);
           setKeyframeCaptionUI(thisKeyframe, this, true);
+        }).click(function(event) {
+          var $element = $(this);
+          var containerOffset = $keyframeContainer.offset();
+          var containerWidth = $keyframeContainer.width();
+          var elementOffset = $element.offset();
+          var elementWidth = $element.width();
+          var distanceBetweenElementAndLeftEdge = elementOffset.left + elementWidth - containerOffset.left;
+          var distanceBetweenElementAndRightEdge = containerWidth - elementOffset.left + containerOffset.left;
+          if (distanceBetweenElementAndRightEdge < elementWidth) {
+            $keyframeContainer.animate({
+              scrollLeft: $keyframeContainer.scrollLeft() + elementWidth
+            }, 500);
+          } else if (distanceBetweenElementAndLeftEdge < elementWidth) {
+            $keyframeContainer.animate({
+              scrollLeft: $keyframeContainer.scrollLeft() - elementWidth
+            }, 500);
+          }
         });
       }
 
