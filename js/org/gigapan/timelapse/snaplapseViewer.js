@@ -902,7 +902,7 @@ function playCachedSnaplapse(snaplapseId) {
       var loopTextId = keyframeListItem.id + "_loopText";
       var titleId = keyframeListItem.id + "_title";
       var tableId = keyframeListItem.id + "_table";
-      var thumbnailButtonId = keyframeListItem.id + "_thumbnailButtonId";
+      var thumbnailButtonId = keyframeListItem.id + "_thumbnailButton";
       var keyframeTableId = keyframeListItem.id + "_keyframeTable";
       var transitionTableId = keyframeListItem.id + "_transitionTable";
 
@@ -1260,6 +1260,12 @@ function playCachedSnaplapse(snaplapseId) {
               snaplapse.resetKeyframe();
               if (usePresentationSlider) {
                 $("#" + composerDivId + " .snaplapse_keyframe_container").scrollLeft(0);
+                // Go to the first keyframe if there are no shared view
+                if ( typeof UTIL.getUnsafeHashVars().v == "undefined") {
+                  var firstFrame = snaplapse.getKeyframes()[0];
+                  var $firstFrameThumbnailButton = $("#" + composerDivId + "_snaplapse_keyframe_" + firstFrame.id + "_thumbnailButton");
+                  $firstFrameThumbnailButton.click();
+                }
               } else {
                 if (!editorEnabled) {
                   // If the editor UI is not enabled, then we are in view-only mode
