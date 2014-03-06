@@ -238,7 +238,11 @@
   margin-bottom: 0px;
   margin-top: 0px;
   margin-left: 0px;
-  height: 25px;
+  height: 147px;
+}
+
+.snaplapse_keyframe_list_item_presentation {
+  height: 70px;
 }
 
 .snaplapse_keyframe_list_item_table {

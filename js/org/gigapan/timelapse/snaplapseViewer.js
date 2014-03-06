@@ -976,6 +976,9 @@ function playCachedSnaplapse(snaplapseId) {
 
       $("#" + keyframeListItem.id).html(content).addClass("snaplapse_keyframe_list_item");
 
+      if (usePresentationSlider)
+        $("#" + keyframeListItem.id).addClass("snaplapse_keyframe_list_item_presentation");
+
       if (startEditorFromPresentationMode && !usePresentationSlider) {
         // Presentation editor only state
         $("#" + keyframeListItem.id).css("margin-left", "-1px");
