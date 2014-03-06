@@ -463,17 +463,6 @@ if (!org.gigapan.timelapse.Timelapse) {
         $("#" + viewerDivId + " .addTimetag").button("option", "disabled", true);
         timelapse.getSnaplapse().getSnaplapseViewer().recordKeyframe();
       });
-      // Create delete button
-      $editorModeToolbar.append('<button class="deleteTimetag" title="Delete a keyframe">Del</button>');
-      $("#" + viewerDivId + " .deleteTimetag").button({
-        icons: {
-          primary: "ui-icon-minus"
-        },
-        text: true,
-        disabled: true
-      }).click(function() {
-        timelapse.getSnaplapse().getSnaplapseViewer().deleteSelectedKeyframes();
-      });
       // Create save button
       $editorModeToolbar.append('<button class="saveTimewarp" title="Share a tour">Share</button>');
       $("#" + viewerDivId + " .saveTimewarp").button({
@@ -494,6 +483,17 @@ if (!org.gigapan.timelapse.Timelapse) {
         text: true
       }).click(function() {
         timelapse.getSnaplapse().getSnaplapseViewer().showLoadSnaplapseWindow();
+      });
+      // Create delete button
+      $editorModeToolbar.append('<button class="deleteTimetag" title="Delete a keyframe">Del</button>');
+      $("#" + viewerDivId + " .deleteTimetag").button({
+        icons: {
+          primary: "ui-icon-minus"
+        },
+        text: true,
+        disabled: true
+      }).click(function() {
+        timelapse.getSnaplapse().getSnaplapseViewer().deleteSelectedKeyframes();
       });
       // Create new button
       $editorModeToolbar.append('<button class="newTimewarp" title="Remove all keyframes">Clear</button>');
