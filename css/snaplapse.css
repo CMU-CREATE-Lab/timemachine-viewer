@@ -284,17 +284,58 @@
   width: 126px;
   height: 73px;
   position: relative;
-  border-top: solid 1px black;
-  border-left: solid 1px black;
-  border-bottom: solid 1px black;
   background: black;
   cursor: pointer;
+  border-left: 1px solid black;
+  border-right: 0px solid black;
+  border-top: 1px solid black;
+  border-bottom: 1px solid black;
 }
 
 .thumbnail_highlight {
-  -moz-box-shadow: inset 0 0 40px black !important;
-  -webkit-box-shadow: inset 0 0 40px black !important;
-  box-shadow: inset 0 0 40px black !important;
+  border: 3px solid #4d90fe !important;
+  /*border: 3px solid #fff !important;*/
+  -moz-box-shadow: inset 0 0 10px #000 !important;
+  -webkit-box-shadow: inset 0 0 10px #000 !important;
+  box-shadow: inset 0 0 10px #000 !important;
+  -webkit-transition: all 0.2s linear;
+  -o-transition: all 0.2s linear;
+  -moz-transition: all 0.2s linear;
+  -ms-transition: all 0.2s linear;
+  transition: all 0.2s linear;
+}
+
+.snaplapse_keyframe_list_item_thumbnail_overlay_presentation {
+  position: absolute;
+  top: 0px;
+  left: 0px;
+  margin: 0;
+  padding: 0;
+  width: 120px;
+  height: 67px;
+  border: 3px solid transparent;
+  -moz-box-shadow: inset 0 0 0px #000;
+  -webkit-box-shadow: inset 0 0 0px #000;
+  box-shadow: inset 0 0 0px #000;
+  background: transparent;
+  z-index: 4;
+  -webkit-transition: all 0.2s linear;
+  -o-transition: all 0.2s linear;
+  -moz-transition: all 0.2s linear;
+  -ms-transition: all 0.2s linear;
+  transition: all 0.2s linear;
+}
+
+.snaplapse_keyframe_list_item_thumbnail_overlay_presentation:hover {
+  border: 3px solid #fff !important;
+  -moz-box-shadow: inset 0 0 40px #000 !important;
+  -webkit-box-shadow: inset 0 0 40px #000 !important;
+  box-shadow: inset 0 0 40px #000 !important;
+  -webkit-transition: all 0.2s linear;
+  -o-transition: all 0.2s linear;
+  -moz-transition: all 0.2s linear;
+  -ms-transition: all 0.2s linear;
+  transition: all 0.2s linear;
 }
 
 .snaplapse_keyframe_list_item_thumbnail_overlay {
@@ -322,9 +363,6 @@
   -moz-box-shadow: inset 0 0 80px black !important;
   -webkit-box-shadow: inset 0 0 80px black !important;
   box-shadow: inset 0 0 80px black !important;
-  /*
-   background: black;
-   opacity: 0.5;*/
   -webkit-transition: all 0.2s linear;
   -o-transition: all 0.2s linear;
   -moz-transition: all 0.2s linear;
@@ -349,16 +387,18 @@
   position: absolute;
   left: 0px;
   bottom: 0px;
+  padding-top: 1px;
+  padding-bottom: 2px;
   font-family: Arial, Helvetica, sans-serif;
   font-size: 9pt;
   text-align: center;
   width: 126px;
-  background-color: black;
-  opacity: 0.6;
   overflow: hidden;
-  color: white;
+  color: rgba(255,255,255,0.8);
   z-index: 3;
   display: none;
+  background-color: rgba(0,0,0,0.6);
+  text-shadow: -1px 0 1px black, 0 1px 1px black, 1px 0 1px black, 0 -1px 1px black;
 }
 
 .snaplapse_keyframe_list_item_description {
@@ -592,11 +632,11 @@
 .keyframeSubtitleBoxForHovering {
   z-index: 1100;
   font-size: 12px;
-  color: #fff;
+  color: black;
   position: absolute;
   line-height: 18px;
-  background-color: #262626;
-  border: 1px solid #444;
+  background-color: white;
+  border: 1px solid #656565;
   border-radius: 2px;
   overflow: visible;
   -moz-box-shadow: 2px 2px 3px rgba(0,0,0,0.3);
@@ -616,12 +656,12 @@
   margin-bottom: -11px;
   margin-left: 0px;
   margin-right: 0px;
-  padding-top: 9px;
-  padding-bottom: 20px;
-  padding-left: 12px;
-  padding-right: 12px;
+  padding-top: 11px;
+  padding-bottom: 21px;
+  padding-left: 14px;
+  padding-right: 14px;
   background-repeat: no-repeat;
   background-position: 50% 100%;
-  background-image: url(../images/bubble_edge_horizontal.png);
+  background-image: url(../images/bubble_edge_horizontal_white.png);
   width: 230px;
 }

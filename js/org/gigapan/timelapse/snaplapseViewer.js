@@ -965,7 +965,7 @@ function playCachedSnaplapse(snaplapseId) {
       } else {
         // Presentation mode view only state
         content += '			<div id="' + thumbnailButtonId + '" class="snaplapse_keyframe_list_item_thumbnail_container_presentation" title="">';
-        content += '				<div class="snaplapse_keyframe_list_item_thumbnail_overlay"></div>';
+        content += '				<div class="snaplapse_keyframe_list_item_thumbnail_overlay_presentation"></div>';
         if (useThumbnailServer)
           content += '      	<img id="' + thumbnailId + '" width="' + KEYFRAME_THUMBNAIL_WIDTH + '" height="' + KEYFRAME_THUMBNAIL_HEIGHT + '" class="snaplapse_keyframe_list_item_thumbnail"></img>';
         else
@@ -1013,8 +1013,6 @@ function playCachedSnaplapse(snaplapseId) {
         var id = this.id;
         var keyframeId = id.split("_")[3];
         selectAndGo($("#" + keyframeListItem.id), keyframeId);
-        $sortable.children().children().children(".snaplapse_keyframe_list_item_thumbnail_overlay").removeClass("thumbnail_highlight");
-        $(this).children(".snaplapse_keyframe_list_item_thumbnail_overlay").addClass("thumbnail_highlight");
       });
 
       if (usePresentationSlider) {
@@ -1028,6 +1026,8 @@ function playCachedSnaplapse(snaplapseId) {
           setKeyframeCaptionUI(thisKeyframe, this, true);
         }).click(function(event) {
           var $element = $(this);
+          $sortable.children().children().children(".snaplapse_keyframe_list_item_thumbnail_overlay_presentation").removeClass("thumbnail_highlight");
+          $element.children(".snaplapse_keyframe_list_item_thumbnail_overlay_presentation").addClass("thumbnail_highlight");
           var containerOffset = $keyframeContainer.offset();
           var containerWidth = $keyframeContainer.width();
           var elementOffset = $element.offset();
@@ -1384,7 +1384,9 @@ function playCachedSnaplapse(snaplapseId) {
         "top": "-=" + heightOffset + "px",
         "min-height": "73px",
         "overflow-x": "auto",
-        "border": "1px solid black",
+        "border-left": "1px solid black",
+        "border-bottom": "1px solid black",
+        "border-right": "1px solid black",
         "height": "inherit"
       });
       if (!isMaxWindowSize) {
@@ -1397,7 +1399,7 @@ function playCachedSnaplapse(snaplapseId) {
         "height": "75px",
         "margin-left": "-1px",
         "margin-right": "0",
-        "margin-top": "-1px",
+        "margin-top": "0px",
         "margin-bottom": "0"
       });
     };
