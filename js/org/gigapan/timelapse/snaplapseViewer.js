@@ -1034,14 +1034,24 @@ function playCachedSnaplapse(snaplapseId) {
           var elementWidth = $element.width();
           var distanceBetweenElementAndLeftEdge = elementOffset.left + elementWidth - containerOffset.left;
           var distanceBetweenElementAndRightEdge = containerWidth - elementOffset.left + containerOffset.left;
-          if (distanceBetweenElementAndRightEdge < elementWidth) {
+          if (distanceBetweenElementAndRightEdge < elementWidth * 1.5) {
             $keyframeContainer.animate({
-              scrollLeft: $keyframeContainer.scrollLeft() + elementWidth
-            }, 500);
-          } else if (distanceBetweenElementAndLeftEdge < elementWidth) {
+              scrollLeft: $keyframeContainer.scrollLeft() + (elementWidth * 1.5 - distanceBetweenElementAndRightEdge)
+            }, {
+              duration: 500,
+              start: function() {
+                setKeyframeCaptionUI(undefined, undefined, true);
+              }
+            });
+          } else if (distanceBetweenElementAndLeftEdge < elementWidth * 1.5) {
             $keyframeContainer.animate({
-              scrollLeft: $keyframeContainer.scrollLeft() - elementWidth
-            }, 500);
+              scrollLeft: $keyframeContainer.scrollLeft() - (elementWidth * 1.5 - distanceBetweenElementAndLeftEdge)
+            }, {
+              duration: 500,
+              start: function() {
+                setKeyframeCaptionUI(undefined, undefined, true);
+              }
+            });
           }
         });
       }
