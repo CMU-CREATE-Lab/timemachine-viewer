@@ -2553,6 +2553,8 @@ if (!window['$']) {
       if (!defaultUI)
         setupTimelapse();
 
+      $("#" + viewerDivId + " .timelineSlider").slider("option", "max", frames - 1);
+
       _seek(thisObj.getCurrentTime() + 0.01);
 
       if (visualizer) {
