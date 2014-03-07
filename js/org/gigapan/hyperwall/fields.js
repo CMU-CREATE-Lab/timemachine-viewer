@@ -10,6 +10,6 @@ var fields = function () {
         out_fields[raw[0]] = raw[1];
     }
   }
-  console.log( out_fields );
+  //console.log( out_fields );
   return out_fields;
 }();

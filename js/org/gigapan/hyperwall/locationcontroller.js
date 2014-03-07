@@ -9,13 +9,11 @@ if (fields.master) {
   controlReciever.on('connect', function() {
     console.log('controlReciever connected');
     timelapse.addVideoPlayListener(function() {
-      //console.log("isPlaying", !timelapse.isPaused());
       if (timelapse.isDoingLoopingDwell())
         return;
       controlReciever.emit('handlePlayPauseController', true);
     });
     timelapse.addVideoPauseListener(function() {
-      //console.log("isPlaying", !timelapse.isPaused());
       if (timelapse.isDoingLoopingDwell())
         return;
       controlReciever.emit('handlePlayPauseController', false);
@@ -23,7 +21,6 @@ if (fields.master) {
   });
 
   controlReciever.on('sync setControllerPlayButton', function() {
-    //console.log("timelapse.isPaused()", timelapse.isPaused());
     if (timelapse.isDoingLoopingDwell())
       return;
     if (!timelapse.isPaused())
@@ -33,13 +30,22 @@ if (fields.master) {
   });
 
   controlReciever.on('sync setLocation', function(centerView) {
-    //console.log("sync setLocation", centerView);
     cancelZoomGracefully();
     setViewGracefully(JSON.parse(centerView), false, false)
   });
 
+  controlReciever.on('sync recordKeyframe', function(title) {
+    var snaplapse = timelapse.getSnaplapse();
+    var snaplapseViewer = snaplapse.getSnaplapseViewer();
+    var keyframe = snaplapse.recordKeyframe();
+    var settings = timelapse.getSettings();
+    keyframe.unsafe_string_frameTitle = title;
+    keyframe.centerView = timelapse.pixelBoundingBoxToLatLngCenter(keyframe.bounds);
+    keyframe.thumbnailURL = snaplapseViewer.generateThumbnailURL(settings["url"], keyframe.bounds, 260, 185, keyframe.time);
+    controlReciever.emit('returnKeyframe', keyframe);
+  });
+
   controlReciever.on('sync playTour', function(tourFragment) {
-    //console.log("sync playTour tourFragment", tourFragment);
     var snaplapse = timelapse.getSnaplapse();
     var snaplapseViewer = snaplapse.getSnaplapseViewer();
     var tourJSON = snaplapse.urlStringToJSON(tourFragment);
@@ -50,7 +56,6 @@ if (fields.master) {
   });
 
   controlReciever.on('sync decodeTour', function(tourURL) {
-    //console.log("sync decodeTour tourFragment", tourFragment);
     var snaplapse = timelapse.getSnaplapse();
     var snaplapseViewer = snaplapse.getSnaplapseViewer();
     var match = tourURL.match(/(presentation)=([^#?&]*)/);
@@ -67,7 +72,6 @@ if (fields.master) {
   });
 
   controlReciever.on('sync mapViewUpdate', function(data) {
-    //console.log("sync mapViewUpdate", data);
     var snaplapse = timelapse.getSnaplapse();
     if (snaplapse.isPlaying())
       snaplapse.stop();
@@ -80,7 +84,6 @@ if (fields.master) {
   });
 
   controlReciever.on('sync mapZoomTo', function(data) {
-    //console.log("sync mapZoomTo", data);
     var snaplapse = timelapse.getSnaplapse();
     if (snaplapse.isPlaying())
       snaplapse.stop();
@@ -98,7 +101,6 @@ if (fields.master) {
   });
 
   controlReciever.on('sync handlePlayPauseServer', function(data) {
-    //console.log("sync handlePlayPauseServer", data);
     if (timelapse.isDoingLoopingDwell())
       controlReciever.emit('handlePlayPauseController', false);
     timelapse.handlePlayPause();

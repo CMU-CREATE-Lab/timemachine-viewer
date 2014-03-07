@@ -771,6 +771,8 @@ if (!Math.uuid) {
           }
         }
       }
+
+      return keyframe;
     };
 
     var moveOneKeyframe = function(moveIdx) {

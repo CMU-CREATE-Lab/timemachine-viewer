@@ -2238,7 +2238,7 @@ if (!window['$']) {
     }
 
     var handleLeavePage = function() {
-      if ((snaplapse && snaplapse.getKeyframes().length > 0) || (annotator && annotator.getAnnotationList().length > 0)) {
+      if ((editorEnabled && snaplapse && snaplapse.getKeyframes().length > 0) || (annotator && annotator.getAnnotationList().length > 0)) {
         return "You are attempting to leave this page while creating a tour.";
       }
     };
