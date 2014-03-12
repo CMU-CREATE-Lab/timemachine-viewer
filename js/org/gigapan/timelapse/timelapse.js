@@ -2549,13 +2549,17 @@ if (!window['$']) {
       var newViewportGeometry = computeViewportGeometry(data);
       fitVideoToViewport(newViewportGeometry.width, newViewportGeometry.height);
 
-      // Only do once
+      // Setup the UI if this is the first time we are loading a videoset. Else recreate the time slider for the new set,
+      // since it depends upon values from the old set.
       if (!defaultUI)
         setupTimelapse();
-
-      $("#" + viewerDivId + " .timelineSlider").slider("option", "max", frames - 1);
-
-      _seek(thisObj.getCurrentTime() + 0.01);
+      else {
+        timelapseCurrentCaptureTimeIndex = Math.min(frames - 1, Math.floor(thisObj.getCurrentTime() * _getFps()));
+        var $timeSlider = $("#" + viewerDivId + " .timelineSlider");
+        $timeSlider.slider("destroy");
+        defaultUI.createTimelineSlider();
+        _seek(0);
+      }
 
       if (visualizer) {
         topLevelVideo.src = getTileidxUrl(0);
@@ -2614,12 +2618,15 @@ if (!window['$']) {
 
       $(videoDiv).mousewheel(thisObj.handleMousescrollEvent);
 
-      $(viewerDiv).bind("click", function() {
-        $(document).unbind('keydown.tm_keydown keyup.tm_keyup');
-        $(document).bind("keydown.tm_keydown", handleKeydownEvent);
-        $(document).bind("keyup.tm_keyup", handleKeyupEvent);
+      $(viewerDiv).on("click", function() {
+        $(document).off('keydown.tm_keydown keyup.tm_keyup');
+        $(document).on("keydown.tm_keydown", handleKeydownEvent);
+        $(document).on("keyup.tm_keyup", handleKeyupEvent);
       });
 
+      // Remove focus from other UI elements (such as the timeline) when
+      // the view port is clicked. This ensures when, for example, keyboard shortcuts
+      // are used that the view port is the one that receives the events.
       $(videoDiv).attr("tabindex", 2013).on("click", function() {
         $(this).focus();
       });
@@ -2633,19 +2640,20 @@ if (!window['$']) {
     }
 
     function setupSliderHandlers(viewerDivId) {
-      $("#" + viewerDivId + " .ui-slider-handle").bind("mouseover mouseup", function() {
+      var $viewerDiv = $("#" + viewerDivId);
+      $viewerDiv.on("mouseover mouseup", ".ui-slider-handle", function() {
         $(this).removeClass("openHand closedHand").addClass("openHand");
       });
 
-      $("#" + viewerDivId + " .ui-slider").bind({
+      $viewerDiv.on({
         slide: function() {
           $(this).removeClass("openHand closedHand").addClass("closedHand");
-          $("#" + viewerDivId + " .ui-slider-handle").bind("mousemove", function() {
+          $viewerDiv.on("mousemove", ".ui-slider-handle", function() {
             $(this).removeClass("openHand closedHand").addClass("closedHand");
           });
         },
         slidestop: function() {
-          $("#" + viewerDivId + " .ui-slider-handle").bind("mousemove", function() {
+          $viewerDiv.on("mousemove", ".ui-slider-handle", function() {
             $(this).removeClass("openHand closedHand").addClass("openHand");
           });
         },

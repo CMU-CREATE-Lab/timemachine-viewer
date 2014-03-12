@@ -994,44 +994,6 @@ if (!org.gigapan.timelapse.Timelapse) {
       $("#" + viewerDivId + " .zoomSlider .ui-slider-handle").attr("title", "Drag to zoom");
     }
 
-    function createTimelineSlider() {
-      var numFrames = timelapse.getNumFrames();
-      var FPS = timelapse.getFps();
-      var captureTimes = timelapse.getCaptureTimes();
-
-      $("#" + viewerDivId + " .currentTime").html(org.gigapan.Util.formatTime(timelapse.getTimelapseCurrentTimeInSeconds(), true));
-      $("#" + viewerDivId + " .totalTime").html(org.gigapan.Util.formatTime(timelapse.getDuration(), true));
-      $("#" + viewerDivId + " .currentCaptureTime").html(org.gigapan.Util.htmlForTextWithEmbeddedNewlines(captureTimes[timelapse.getTimelapseCurrentCaptureTimeIndex()]));
-
-      var $timelineSlider = $("#" + viewerDivId + " .timelineSlider");
-      $timelineSlider.slider({
-        min: 0,
-        max: numFrames - 1, // this way the time scrubber goes exactly to the end of timeline
-        range: "min",
-        step: 1,
-        slide: function(e, ui) {
-          // $(this).slider('value')  --> previous value
-          // ui.value                 --> current value
-          // If we are manually using the slider and we are pulling it back to the start
-          // we wont actually get to time 0 because of how we are snapping.
-          // Manually seek to position 0 when this happens.
-          if (($(this).slider('value') > ui.value) && ui.value == 0)
-            timelapse.seek(0);
-          else
-            timelapse.seek((ui.value + 0.3) / FPS);
-        }
-      }).removeClass("ui-corner-all").children().removeClass("ui-corner-all");
-      $("#" + viewerDivId + " .timelineSlider .ui-slider-handle").attr("title", "Drag to go to a different point in time");
-
-      $timelineSlider.bind("mousedown", function() {
-        if (window && (window.self !== window.top)) {
-          $("body").one("mouseleave", function(event) {
-            $timelineSlider.trigger("mouseup");
-          });
-        };
-      });
-    }
-
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////
     //
     // Public methods
@@ -1206,6 +1168,45 @@ if (!org.gigapan.timelapse.Timelapse) {
       timelapse.updateTagInfo_locationData();
     };
     this.fitToWindow = fitToWindow;
+
+    var createTimelineSlider = function() {
+      var numFrames = timelapse.getNumFrames();
+      var FPS = timelapse.getFps();
+      var captureTimes = timelapse.getCaptureTimes();
+
+      $("#" + viewerDivId + " .currentTime").html(org.gigapan.Util.formatTime(timelapse.getTimelapseCurrentTimeInSeconds(), true));
+      $("#" + viewerDivId + " .totalTime").html(org.gigapan.Util.formatTime(timelapse.getDuration(), true));
+      $("#" + viewerDivId + " .currentCaptureTime").html(org.gigapan.Util.htmlForTextWithEmbeddedNewlines(captureTimes[timelapse.getTimelapseCurrentCaptureTimeIndex()]));
+
+      var $timelineSlider = $("#" + viewerDivId + " .timelineSlider");
+      $timelineSlider.slider({
+        min: 0,
+        max: numFrames - 1, // this way the time scrubber goes exactly to the end of timeline
+        range: "min",
+        step: 1,
+        slide: function(e, ui) {
+          // $(this).slider('value')  --> previous value
+          // ui.value                 --> current value
+          // If we are manually using the slider and we are pulling it back to the start
+          // we wont actually get to time 0 because of how we are snapping.
+          // Manually seek to position 0 when this happens.
+          if (($(this).slider('value') > ui.value) && ui.value == 0)
+            timelapse.seek(0);
+          else
+            timelapse.seek((ui.value + 0.3) / FPS);
+        }
+      }).removeClass("ui-corner-all").children().removeClass("ui-corner-all");
+      $("#" + viewerDivId + " .timelineSlider .ui-slider-handle").attr("title", "Drag to go to a different point in time");
+
+      $timelineSlider.bind("mousedown", function() {
+        if (window && (window.self !== window.top)) {
+          $("body").one("mouseleave", function(event) {
+            $timelineSlider.trigger("mouseup");
+          });
+        };
+      });
+    };
+    this.createTimelineSlider = createTimelineSlider;
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////
     //
