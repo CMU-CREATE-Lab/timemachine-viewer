@@ -5,6 +5,7 @@
     <link href="css/jquery-ui/smoothness/jquery-ui.custom.css" rel="stylesheet" type="text/css"/>
 
     <script src="js/jquery/jquery.min.js" type="text/javascript"></script>
+    <script src="js/jquery/jquery.mobile.min.js" type="text/javascript"></script>
     <script src="js/jquery/jquery-ui.custom.min.js" type="text/javascript"></script>
     <script src="/socket.io/socket.io.js" type="text/javascript"></script>
     <script src="js/org/gigapan/hyperwall/fields.js" type="text/javascript"></script>
@@ -12,30 +13,41 @@
     <script src="js/jquery/plugins/touchPunch/jquery.ui.touch-punch.js" type="text/javascript"></script>
 
     <style type="text/css">
+      .ui-loader {
+        display: none;
+      }
       .noLeftBorder {
         border-left: 0px !important;
       }
       .editor {
         float: left;
         background-color: transparent;
-        width: 150px;
+        width: 235px;
         height: 133px;
         border: 0px;
         display: none;
       }
       .add {
         position: absolute;
-        top: 2px;
         left: 1px;
-        height: 127px;
-        width: 147px;
+      }
+      .delete {
+        position: absolute;
+        left: 79px;
+      }
+      .update {
+        position: absolute;
+        left: 157px;
       }
       .ui-button {
-        border-radius: 0px !important;
+        top: 2px;
+        line-height: 80px;
+        height: 80px;
+        width: 75px;
+        border-radius: 3px !important;
         color: #656565;
         background: white;
         border: 0px;
-        font-size: 35px;
         font-family: Arial, Helvetica, sans-serif;
         outline: none;
         -webkit-user-select: none;
@@ -45,6 +57,34 @@
         -o-user-select: none;
         user-select: none;
         -webkit-tap-highlight-color: rgba(0,0,0,0.5);
+      }
+      .ui-button-text {
+        font-family: Arial, Helvetica, sans-serif;
+        padding: 0 !important;
+        border-radius: 0px !important;
+        width: inherit !important;
+        height: inherit !important;
+        line-height: inherit !important;
+        font-size: 14px;
+      }
+      .editTitle_txt {
+        font-family: Arial, Helvetica, sans-serif;
+        position: absolute;
+        color: white;
+        left: 1px;
+        top: 85px;
+        font-size: 14px;
+        outline: none;
+      }
+      .editTitle {
+        position: absolute;
+        top: 103px;
+        left: 1px;
+        height: 20px;
+        width: 227px;
+        font-size: 14px;
+        outline: 0;
+        border-radius: 3px;
       }
       .tourContainer {
         position: relative;
@@ -77,7 +117,6 @@
       .toursSlider {
         position: relative;
         padding: 0;
-        margin: 0;
         background-color: black;
         height: 133px;
         white-space: nowrap;
@@ -109,6 +148,18 @@
         -ms-transition: all 0.2s linear;
         transition: all 0.2s linear;
       }
+      .tourOverlayHighlightSkipGo {
+        border: 3px solid #4d90fe !important;
+        -moz-box-shadow: inset 0 0 15px #000;
+        -webkit-box-shadow: inset 0 0 15px #000;
+        box-shadow: inset 0 0 15px #000;
+        z-index: 1;
+        -webkit-transition: all 0.2s linear;
+        -o-transition: all 0.2s linear;
+        -moz-transition: all 0.2s linear;
+        -ms-transition: all 0.2s linear;
+        transition: all 0.2s linear;
+      }
       .tourOverlay {
         position: absolute;
         border: 3px solid transparent;
@@ -119,6 +170,9 @@
         -moz-transition: all 0.2s linear;
         -ms-transition: all 0.2s linear;
         transition: all 0.2s linear;
+      }
+      .ui-page {
+        outline: none;
       }
       #debug {
         color: white;
@@ -133,18 +187,23 @@
 
     <script>
       var controller;
-      var singleTapTimeout;
-      var doubleTapHoldTimeout;
-      var isSingleTap = false;
-      var isDoubleTapHold = false;
+      var tourContainerWidth;
+      var isMobile = navigator.userAgent.match(/Android|BlackBerry|iPhone|iPad|iPod|Opera Mini|IEMobile/i);
+      var mode = "player";
+      var tourJSON;
+      var originalPageX;
+      var locationServiceID_exploratorium = "6220332415320064";
+      var locationServiceID_test = "5634387206995968";
+      var currentLocationServiceID = locationServiceID_exploratorium;
+
+      // DOM elements
       var $toursSliderContainer;
       var $toursSlider;
       var $editor;
-      var tourContainerWidth;
-      var isMobile = navigator.userAgent.match(/Android|BlackBerry|iPhone|iPad|iPod|Opera Mini|IEMobile/i);
-      var enableSorting = false;
-      var mode = "player";
-      var tourJSON;
+      var $editTitle;
+
+      // Touch event config
+      $.event.special.tap.tapholdThreshold = 750;
 
       // Auto mode variables
       var isAutoModeDelayTimeoutRunning = false;
@@ -155,7 +214,7 @@
       // These three values below are stored on the Android tablet, but for debugging purposes on the Desktop
       // we still need default values to pull from. Thus changing these values *will not have an affect* if
       // you are using the tablet. Instead, change the values in the settings menu there on the tablet.
-      var doAutoMode = true;
+      var doAutoMode = false;
       var screenIdleTime = 90000;
       var autoModeDelayTime = 25000;
 
@@ -230,19 +289,18 @@
       };
 
       var createThumbnailSlider = function(tourData) {
-        var encodedTour = tourData.items[0].fragment;
+        var encodedTour = tourData.fragment;
         $toursSlider = $(".toursSlider");
         $toursSliderContainer = $(".toursSliderContainer");
         // Call the server to decode the tour url
         controller.emit("decodeTour", encodedTour);
       };
 
-      var setLocation = function(event) {
-        var locationElem = $(event.currentTarget);
-        if (locationElem.attr('disabled') == "disabled")
+      var setLocation = function($element) {
+        if ($element.attr('disabled') == "disabled")
           return;
-        locationElem.attr('disabled', 'disabled');
-        var centerView = locationElem.attr("data-centerView");
+        $element.attr('disabled', 'disabled');
+        var centerView = $element.attr("data-centerView");
         if (centerView) {
           controller.emit("setLocation", centerView);
           // Set the location of android object
@@ -256,12 +314,12 @@
           // Prevent overclicking with a timeout.
           // Would be best to detect when the final action actuallycompletes though.
           setTimeout(function() {
-            locationElem.removeAttr('disabled');
+            $element.removeAttr('disabled');
           }, 4000);
         }
       };
 
-      var addThumbnail = function(keyframe) {
+      var addThumbnail = function(keyframe, selectAndScroll, insertIndex) {
         var $tourContainer = $('<div />').attr({
           "class": "tourContainer",
           "data-bounds": JSON.stringify(keyframe.bounds),
@@ -276,89 +334,62 @@
         });
         var $tourOverlay = $('<div class="tourOverlay"></div>');
         // Attach events
-        if (isMobile && enableSorting == true) {
-          $tourContainer.on("touchstart", function(event) {
-            clearTimeout(doubleTapHoldTimeout);
-            if (!isDoubleTapHold) {
-              // Is likely to become a single tap
-              singleTapTimeout = setTimeout(function() {
-                isSingleTap = true;
-              }, 100);
-            }
-          }).on("touchend", function(event) {
-            clearTimeout(singleTapTimeout);
-            if (isSingleTap) {
-              // Consume the single tap
-              isSingleTap = false;
-              setLocation(event);
-              var $currentTarget = $(event.currentTarget);
-              currentLocationIdx = $currentTarget.index();
-              $toursSlider.children().children(".tourOverlay").removeClass("tourOverlayHighlight");
-              $currentTarget.children(".tourOverlay").addClass("tourOverlayHighlight");
-              // Scroll to the position
-              if (isAutoModeDelayTimeoutRunning)
-                $(document).scrollLeft(Math.round($currentTarget.position().left - $(window).width() / 2 + tourContainerWidth / 2));
-            }
-            if (isDoubleTapHold) {
-              // Consume the double tap hold
-              isDoubleTapHold = false;
-              $toursSlider.sortable("disable");
-            }
-          }).on("touchcancel", function(event) {
-            clearTimeout(singleTapTimeout);
-            isSingleTap = false;
-            if (isDoubleTapHold) {
-              // Consume the double tap hold
-              isDoubleTapHold = false;
-              $toursSlider.sortable("disable");
-            }
-          }).on("click", function(event) {
-            // Is likely to be a double tap hold
-            isSingleTap = false;
-            clearTimeout(singleTapTimeout);
-            isDoubleTapHold = true;
-            $toursSlider.sortable("enable");
-            doubleTapHoldTimeout = setTimeout(function() {
-              // Too late to be a double tap hold
-              isDoubleTapHold = false;
-              $toursSlider.sortable("disable");
-            }, 200);
-          });
-        } else {
-          $tourContainer.on("click", function(event) {
-            setLocation(event);
-            var $currentTarget = $(event.currentTarget);
-            currentLocationIdx = $currentTarget.index();
-            $toursSlider.children().children(".tourOverlay").removeClass("tourOverlayHighlight");
-            $currentTarget.children(".tourOverlay").addClass("tourOverlayHighlight");
-            // Scroll to the position
-            var containerOffset = $toursSliderContainer.offset();
-            var containerWidth = $toursSliderContainer.width();
-            var elementOffset = $currentTarget.offset();
-            var elementWidth = $currentTarget.width();
-            var distanceBetweenElementAndLeftEdge = elementOffset.left + elementWidth - containerOffset.left;
-            var distanceBetweenElementAndRightEdge = containerWidth - elementOffset.left + containerOffset.left;
-            if (distanceBetweenElementAndRightEdge < elementWidth * 1.5) {
-              $toursSliderContainer.animate({
-                scrollLeft: $toursSliderContainer.scrollLeft() + (elementWidth * 1.5 - distanceBetweenElementAndRightEdge)
-              }, 200);
-            } else if (distanceBetweenElementAndLeftEdge < elementWidth * 1.5) {
-              $toursSliderContainer.animate({
-                scrollLeft: $toursSliderContainer.scrollLeft() - (elementWidth * 1.5 - distanceBetweenElementAndLeftEdge)
-              }, 200);
-            }
-          });
-        }// Append elements
+        $tourContainer.on("click", function(event) {
+          var skipGo = false;
+          if (mode == "editor") {
+            if (!$tourContainer.children(".tourOverlay").hasClass("tourOverlayHighlightSkipGo") && !$tourContainer.children(".tourOverlay").hasClass("tourOverlayHighlight"))
+              skipGo = true;
+          }
+          selectElementAndGo($(event.currentTarget), skipGo);
+        });
+        // Append elements
         $tourContainer.append($tourOverlay, $tourImg, $tourTxt);
-        $toursSlider.append($tourContainer);
+        if (insertIndex == undefined)
+          $toursSlider.append($tourContainer);
+        else
+          $tourContainer.insertAfter($toursSlider.children().eq(insertIndex));
+        // This is used for the bug that some browsers do not fill the background while scrolling.
         if (tourContainerWidth == undefined) {
           tourContainerWidth = $tourContainer.width() + 2;
-          // This is used for the bug that some browsers do not fill the background while scrolling.
           $toursSlider.css("width", tourJSON.keyframes.length * tourContainerWidth);
+        }
+        // Scroll
+        if (selectAndScroll == true)
+          selectElementAndGo($tourContainer, true);
+      };
+
+      var selectElementAndGo = function($element, skipGo) {
+        if (skipGo != true && event != undefined)
+          setLocation($element);
+        currentLocationIdx = $element.index();
+        $toursSlider.children().children(".tourOverlay").removeClass("tourOverlayHighlight");
+        $toursSlider.children().children(".tourOverlay").removeClass("tourOverlayHighlightSkipGo");
+        if (skipGo != true)
+          $element.children(".tourOverlay").addClass("tourOverlayHighlight");
+        else {
+          $element.children(".tourOverlay").addClass("tourOverlayHighlightSkipGo");
+          $editTitle.val($element.children(".tourTxt").text());
+        }
+        // Scroll to the position
+        var containerOffset = $toursSliderContainer.offset();
+        var containerWidth = $toursSliderContainer.width();
+        var elementOffset = $element.offset();
+        var elementWidth = $element.width();
+        var distanceBetweenElementAndLeftEdge = elementOffset.left + elementWidth - containerOffset.left;
+        var distanceBetweenElementAndRightEdge = containerWidth - elementOffset.left + containerOffset.left;
+        if (distanceBetweenElementAndRightEdge < elementWidth * 1.5) {
+          $toursSliderContainer.animate({
+            scrollLeft: $toursSliderContainer.scrollLeft() + (elementWidth * 1.5 - distanceBetweenElementAndRightEdge)
+          }, 200);
+        } else if (distanceBetweenElementAndLeftEdge < elementWidth * 1.5) {
+          $toursSliderContainer.animate({
+            scrollLeft: $toursSliderContainer.scrollLeft() - (elementWidth * 1.5 - distanceBetweenElementAndLeftEdge)
+          }, 200);
         }
       };
 
-      var createThumbnails = function() {
+      var createThumbnails = function(json) {
+        tourJSON = json;
         // Prevent adding repeatedly from multiple masters
         if ($toursSlider.children().length >= tourJSON.keyframes.length)
           return;
@@ -382,11 +413,76 @@
           $($toursSlider.children().get(0)).addClass("noLeftBorder");
       };
 
+      var getSelectedElement = function() {
+        return $toursSlider.children().children(".tourOverlayHighlight, .tourOverlayHighlightSkipGo").parent();
+      };
+
+      var deleteKeyframe = function() {
+        var $selectedElement = getSelectedElement();
+        if ($selectedElement.length == 1) {
+          var index = $selectedElement.index();
+          $selectedElement.remove();
+          tourJSON.keyframes.splice(index, 1);
+          $toursSlider.css("width", tourJSON.keyframes.length * tourContainerWidth);
+          controller.emit("encodeTour", tourJSON);
+        }
+      };
+
+      var addKeyframe = function(keyframe) {
+        var $selectedElement = getSelectedElement();
+        if ($selectedElement.length == 1) {
+          var index = $selectedElement.index();
+          addThumbnail(keyframe, true, index);
+          tourJSON.keyframes.splice(index + 1, 0, keyframe);
+        } else {
+          addThumbnail(keyframe, true);
+          tourJSON.keyframes.push(keyframe);
+        }
+        $toursSlider.css("width", tourJSON.keyframes.length * tourContainerWidth);
+        controller.emit("encodeTour", tourJSON);
+      };
+
+      var updateKeyframe = function(keyframe) {
+        var $selectedElement = getSelectedElement();
+        if ($selectedElement.length == 1) {
+          var index = $selectedElement.index();
+          $selectedElement.attr("data-bounds", JSON.stringify(keyframe.bounds));
+          $selectedElement.attr("data-centerView", JSON.stringify(keyframe.centerView));
+          $selectedElement.children(".tourImg").attr("src", keyframe.thumbnailURL);
+          $selectedElement.children(".tourTxt").text(keyframe.unsafe_string_frameTitle);
+          tourJSON.keyframes.splice(index, 1, keyframe);
+          controller.emit("encodeTour", tourJSON);
+        }
+      };
+
+      var changeKeyframeTitle = function() {
+        var $selectedElement = getSelectedElement();
+        if ($selectedElement.length == 1) {
+          var index = $selectedElement.index();
+          var newTitle = $editTitle.val();
+          $selectedElement.children(".tourTxt").text(newTitle);
+          tourJSON.keyframes[index].unsafe_string_frameTitle = newTitle;
+          controller.emit("encodeTour", tourJSON);
+        }
+      };
+
       var createEditorControl = function() {
         $editor = $(".editor");
-        $(".add").button().click(function() {
-          var title = "Custom Title";
-          controller.emit("recordKeyframe", title);
+        $editTitle = $(".editTitle");
+        $(".add").button().click(function(event) {
+          controller.emit("addKeyframe", $editTitle.val());
+        });
+        $(".delete").button().click(function() {
+          deleteKeyframe();
+        });
+        $(".update").button().click(function() {
+          controller.emit("updateKeyframe", $editTitle.val());
+        });
+        $editTitle.keyup(function(event) {
+          if (event.which == 13) {
+            $editTitle.blur();
+            changeKeyframeTitle();
+          }
         });
       };
 
@@ -400,7 +496,6 @@
           scrollSensitivity: 150,
           scrollSpeed: 50,
           delay: 100,
-          revert: true,
           start: function(event, ui) {
             ui.item.animate({
               "opacity": "0.5"
@@ -412,8 +507,7 @@
             }, 500);
           }
         }).disableSelection();
-        if (isMobile)
-          $toursSlider.sortable("disable").sortable("option", "revert", false);
+        $toursSlider.sortable("disable");
         // Auto Mode
         startScreenIdleTimeout();
         $toursSlider.on("mousedown touchstart", function() {
@@ -422,65 +516,119 @@
         $toursSlider.on("mouseup touchend touchcancel", function() {
           startScreenIdleTimeout();
         });
-        // TODO: move this code to Android for toggling
-        //setMode("editor");
       };
 
       var debug = function(txt) {
-        $("#debug").text(txt);
+        var $debug = $("#debug");
+        $debug.text($debug.text() + " " + txt);
+      };
+
+      var setUpThumbnailSlider = function(tourData) {
+        controller.on('sync returnDecodeTour', function(decodedTour) {
+          createThumbnails(decodedTour);
+        });
+        controller.on('sync returnEncodeTour', function(encodeTour) {
+          encodeTour = "presentation=" + encodeTour;
+          loginAndUpdateServer(encodeTour);
+        });
+        controller.on('sync returnAndAddKeyframe', function(keyframe) {
+          addKeyframe(keyframe);
+        });
+        controller.on('sync returnAndUpdateKeyframe', function(keyframe) {
+          updateKeyframe(keyframe);
+        });
+        controller.on('sync stopScreenIdleTimeout', function() {
+          stopScreenIdleTimeout();
+        });
+        controller.on('sync setMode', function(newMode) {
+          setMode(newMode);
+        });
+        createThumbnailSlider(tourData);
+        createEditorControl();
+      };
+
+      var readDataFromNodeJS = function() {
+        $.ajax({
+          url: "tour.json"
+        }).done(function(tourData) {
+          setUpThumbnailSlider(tourData);
+        });
+      };
+
+      var updateServerData = function(token, user_id, encodedTour) {
+        $.ajax({
+          type: "PUT",
+          url: 'https://timemachine-hyperwall.appspot.com/tours/' + currentLocationServiceID,
+          crossDomain: true,
+          data: {
+            fragment: encodedTour,
+            user_id: user_id,
+            token: token
+          },
+          success: function(data) {
+            console.log("Location server data updated:", data);
+          },
+          error: function() {
+            console.log("Location server data updating failed.");
+          }
+        });
+      };
+
+      var loginAndUpdateServer = function(encodedTour) {
+        $.ajax({
+          type: "POST",
+          url: "https://timemachine-hyperwall.appspot.com/login",
+          data: {
+            sitename: "createlab",
+            password: "f0b5d537"
+          },
+          crossDomain: true,
+          success: function(data) {
+            updateServerData(data.token, data.user_id, encodedTour);
+            //createTourOnServer(data.token, data.user_id);
+          },
+          error: function() {
+            console.log("Location server login failed.");
+          }
+        });
+      };
+
+      var readServerData = function() {
+        $.ajax({
+          type: "GET",
+          url: 'https://timemachine-hyperwall.appspot.com/tours/' + currentLocationServiceID + '.json',
+          crossDomain: true,
+          success: function(tourData) {
+            console.log("Location server connecting succeed.");
+            setUpThumbnailSlider(tourData);
+          },
+          error: function() {
+            console.log("Location server connecting failed. Read data from node.js server (tour.json).");
+            readDataFromNodeJS();
+          }
+        });
+      };
+
+      var createTourOnServer = function(token, user_id) {
+        $.ajax({
+          type: "POST",
+          url: 'https://timemachine-hyperwall.appspot.com/tour',
+          dataType: 'text',
+          crossDomain: true,
+          data: {
+            fragment: 'presentation=EcDkDPWPyXs9wR6gB_Rondonia_DkDT37Hawc4T8V_Tucurui%20Dam_BkDTiTRWWTmR6gB_Meander_DkDK9ySWib2R2d_Bolivia%20Avulsion_DkDU28jbt4xTkc_Mouth%20of%20Amazon_DkDcOeLoWayQ6gB_South%20Cape%20Cod_BkDPt3KmUZ3P6gB_Outer%20Banks%20NC_DkDFGq9mKcYi8V_Lake%20Urmia_DkDOcGQprwpkmR_Aral%20Sea_DkDSq1joU5sk6gB_Aral%20Expansion_BkDcM7nkdxUhgZ_Saudi%20Irrigation_CkDWmblQtbBxuX_Australia%20Bushfire_DkDWZuFgTJ1tyc_Pinatubo_DkDWIsJrwdDg5hB%20_Cherynobyl_DkDF_LTtQz7G5hB_Mendenhall%20Glacier_DkDLGbHuiHCFkc_Columbia%20Glacier_DkDGCdvtHr_Fla_Malaspina%20Glacier_DkDXxE-kaI_t0Y_Shanghai_DkDHodbiXXyspY_Pearl%20River%20Delta_DkDcKBJj6S4jgc_Dubai_DkDVPMgliPrMmZ_DFW_DkDWCYinIO9K5hB_Rifle%2C%20CO_DkDWMOMoe_8P5hB_PA%20Fracking_DkDY3fAnOd-O5hB_Mountaintop%20Removal_DkDa3XwoK0ZL5hB_WyomingCoal_DkDWbY3sswbK5hB_Tar%20Sands%20%2F%20Alberta_DkDc2s7sgHgK5hB_Alberta%20Logging_BALnGwp7xnI1b_Washington%20Logging_Landsat_B',
+            user_id: user_id,
+            token: token
+          },
+          success: function(data) {
+            console.log(data);
+          }
+        });
       };
 
       function init() {
         controller = io.connect('/controller');
-        // Get tour from server
-        $.ajax({
-          //url: "http://timemachine-hyperwall.appspot.com/createlab/tours.json"
-          url: "tour.json"
-        }).done(function(tourData) {
-          // Server calls this function after decoding the tour URL
-          controller.on('sync returnTour', function(data) {
-            tourJSON = data;
-            if ($toursSlider.children().length == 0)
-              createThumbnails();
-          });
-          controller.on('sync returnKeyframe', function(keyframe) {
-            addThumbnail(keyframe);
-          });
-          controller.on('sync stopScreenIdleTimeout', function() {
-            stopScreenIdleTimeout();
-          });
-          createThumbnailSlider(tourData);
-          createEditorControl();
-        });
-      }
-
-      // Unused
-      function createTour() {
-        $.ajax({
-          url: "https://timemachine-hyperwall.appspot.com/tour",
-          type: "POST",
-          data: {
-            fragment: "Hey Paul"
-          }
-        }).done(function(data) {
-          console.log(data);
-        });
-      }
-
-      // Unused
-      function init_() {
-        controller = io.connect('/controller');
-        $.ajax({
-          url: "https://timemachine-hyperwall.appspot.com/login",
-          type: "POST",
-          data: {
-            sitename: "createlab",
-            password: "f0b5d537"
-          }
-        }).done(function(data) {
-          console.log(data);
-          createTour();
-        });
+        readServerData();
       }
 
       $(init);
@@ -488,7 +636,13 @@
   </head>
   <body>
     <div class="editor">
-      <button type="button" class="add">+</button>
+      <button type="button" class="add">Add</button>
+      <button type="button" class="delete">Del</button>
+      <button type="button" class="update">Update</button>
+      <div class="editTitle_txt">
+        Thumbnail Title:
+      </div>
+      <input type="text" class="editTitle" value="Untitled">
     </div>
     <div class="toursSliderContainer">
       <div class="toursSlider"></div>

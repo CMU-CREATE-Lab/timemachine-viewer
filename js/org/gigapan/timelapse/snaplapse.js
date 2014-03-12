@@ -432,21 +432,23 @@ if (!Math.uuid) {
       }
     });
 
-    this.getAsUrlString = function() {
+    this.getAsUrlString = function(desiredKeyframes) {
+      if (desiredKeyframes == undefined)
+        desiredKeyframes = keyframes;
       try {
         var encoder = new org.gigapan.timelapse.UrlEncoder();
         var tmJSON = timelapse.getTmJSON();
         // Version
         encoder.write_uint(TOUR_SHARING_VERSION);
         // Number of keyframes
-        encoder.write_uint(keyframes.length);
-        for (var i = 0; i < keyframes.length; i++) {
+        encoder.write_uint(desiredKeyframes.length);
+        for (var i = 0; i < desiredKeyframes.length; i++) {
           // Number of loops
           var loopTimes;
-          var buildConstraint = keyframes[i]['buildConstraint'];
+          var buildConstraint = desiredKeyframes[i]['buildConstraint'];
           if (buildConstraint == "speed") {
             // Use the trick to save the build constraint to speed
-            loopTimes = keyframes[i]['loopTimes'] ? keyframes[i]['loopTimes'] + 1 : 1;
+            loopTimes = desiredKeyframes[i]['loopTimes'] ? desiredKeyframes[i]['loopTimes'] + 1 : 1;
           } else if (buildConstraint == "duration") {
             // Use the trick to save the build constraint to duration
             loopTimes = 0;
@@ -454,19 +456,19 @@ if (!Math.uuid) {
           encoder.write_uint(loopTimes);
           // Duration OR speed
           if (buildConstraint == "duration") {
-            var duration = ( typeof keyframes[i]['duration'] == 'undefined') ? 0 : keyframes[i]['duration'];
+            var duration = ( typeof desiredKeyframes[i]['duration'] == 'undefined') ? 0 : desiredKeyframes[i]['duration'];
             encoder.write_udecimal(duration, 2);
           } else if (buildConstraint == "speed") {
-            var speed = ( typeof keyframes[i]['speed'] == 'undefined') ? 100 : keyframes[i]['speed'];
+            var speed = ( typeof desiredKeyframes[i]['speed'] == 'undefined') ? 100 : desiredKeyframes[i]['speed'];
             encoder.write_uint(speed);
           }
           // Frame Number
-          encoder.write_uint(Math.floor(keyframes[i]['time'] * timelapse.getFps()));
+          encoder.write_uint(Math.floor(desiredKeyframes[i]['time'] * timelapse.getFps()));
           var viewCenter;
           if (tmJSON['projection-bounds']) {
             var projection = timelapse.getProjection();
             // Lat/Lng center view
-            viewCenter = timelapse.computeViewFit(keyframes[i]['bounds']);
+            viewCenter = timelapse.computeViewFit(desiredKeyframes[i]['bounds']);
             var latLng = projection.pointToLatlng({
               x: viewCenter.x,
               y: viewCenter.y
@@ -475,19 +477,21 @@ if (!Math.uuid) {
             encoder.write_lon(latLng.lng);
           } else {
             // x/y center view
-            viewCenter = timelapse.computeViewFit(keyframes[i]['bounds']);
+            viewCenter = timelapse.computeViewFit(desiredKeyframes[i]['bounds']);
             encoder.write_udecimal(viewCenter.x.toFixed(5), 5);
             encoder.write_udecimal(viewCenter.y.toFixed(5), 5);
           }
           var zoom = timelapse.scaleToZoom(viewCenter.scale);
           encoder.write_udecimal(zoom, 2);
           // Keyframe description
-          encoder.write_string(keyframes[i]['unsafe_string_description']);
+          encoder.write_string(desiredKeyframes[i]['unsafe_string_description']);
           // Keyframe title
-          encoder.write_string(keyframes[i]['unsafe_string_frameTitle']);
+          encoder.write_string(desiredKeyframes[i]['unsafe_string_frameTitle']);
         }
         // Tour title
         var title = $("#" + composerDivId + " .saveTimewarpWindow_tourTitleInput").val();
+        if (title == undefined)
+          title = "Untitled"
         encoder.write_string(title);
         // Checksum
         encoder.write_uint(1);

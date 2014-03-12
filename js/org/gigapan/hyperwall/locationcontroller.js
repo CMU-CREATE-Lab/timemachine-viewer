@@ -5,6 +5,16 @@ if (fields.master) {
     "lng": 99999
   };
   var controlReciever = io.connect('/controller');
+  var getKeyframeFromCurrentHyperwallView = function(frameTitle) {
+    var snaplapse = timelapse.getSnaplapse();
+    var snaplapseViewer = snaplapse.getSnaplapseViewer();
+    var keyframe = snaplapse.recordKeyframe();
+    var settings = timelapse.getSettings();
+    keyframe.unsafe_string_frameTitle = frameTitle;
+    keyframe.centerView = timelapse.pixelBoundingBoxToLatLngCenter(keyframe.bounds);
+    keyframe.thumbnailURL = snaplapseViewer.generateThumbnailURL(settings["url"], keyframe.bounds, 260, 185, keyframe.time);
+    return keyframe;
+  };
 
   controlReciever.on('connect', function() {
     console.log('controlReciever connected');
@@ -34,15 +44,12 @@ if (fields.master) {
     setViewGracefully(JSON.parse(centerView), false, false)
   });
 
-  controlReciever.on('sync recordKeyframe', function(title) {
-    var snaplapse = timelapse.getSnaplapse();
-    var snaplapseViewer = snaplapse.getSnaplapseViewer();
-    var keyframe = snaplapse.recordKeyframe();
-    var settings = timelapse.getSettings();
-    keyframe.unsafe_string_frameTitle = title;
-    keyframe.centerView = timelapse.pixelBoundingBoxToLatLngCenter(keyframe.bounds);
-    keyframe.thumbnailURL = snaplapseViewer.generateThumbnailURL(settings["url"], keyframe.bounds, 260, 185, keyframe.time);
-    controlReciever.emit('returnKeyframe', keyframe);
+  controlReciever.on('sync addKeyframe', function(frameTitle) {
+    controlReciever.emit('returnAndAddKeyframe', getKeyframeFromCurrentHyperwallView(frameTitle));
+  });
+
+  controlReciever.on('sync updateKeyframe', function(frameTitle) {
+    controlReciever.emit('returnAndUpdateKeyframe', getKeyframeFromCurrentHyperwallView(frameTitle));
   });
 
   controlReciever.on('sync playTour', function(tourFragment) {
@@ -53,6 +60,10 @@ if (fields.master) {
     snaplapseViewer.addEventListener('snaplapse-loaded', function() {
       snaplapse.play();
     });
+  });
+
+  controlReciever.on('sync encodeTour', function(tourJSON) {
+    controlReciever.emit('returnEncodeTour', timelapse.getSnaplapse().getAsUrlString(tourJSON.keyframes));
   });
 
   controlReciever.on('sync decodeTour', function(tourURL) {
@@ -68,7 +79,7 @@ if (fields.master) {
       keyframe.centerView = timelapse.pixelBoundingBoxToLatLngCenter(keyframe.bounds);
       keyframe.thumbnailURL = snaplapseViewer.generateThumbnailURL(settings["url"], keyframe.bounds, 260, 185, keyframe.time);
     }
-    controlReciever.emit('returnTour', tourJSON);
+    controlReciever.emit('returnDecodeTour', tourJSON);
   });
 
   controlReciever.on('sync mapViewUpdate', function(data) {
