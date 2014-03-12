@@ -168,8 +168,8 @@ if (!org.gigapan.timelapse.Timelapse) {
         });
       }
       // Create mode switch button
+      createModeSwitchButton();
       if (settings["composerDiv"] || settings["annotatorDiv"]) {
-        createModeSwitchButton();
         if (settings["composerDiv"])
           createEditorModeToolbar();
         if (settings["annotatorDiv"])
