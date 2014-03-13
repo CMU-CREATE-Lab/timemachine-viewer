@@ -214,7 +214,7 @@
       // These three values below are stored on the Android tablet, but for debugging purposes on the Desktop
       // we still need default values to pull from. Thus changing these values *will not have an affect* if
       // you are using the tablet. Instead, change the values in the settings menu there on the tablet.
-      var doAutoMode = false;
+      var doAutoMode = true;
       var screenIdleTime = 90000;
       var autoModeDelayTime = 25000;
 
@@ -256,7 +256,7 @@
         try {
           androidObject.setIsAutoModeDelayTimeoutRunning(true);
         } catch(err) {
-          console.log("androidObject is undefined for function runAutoMode(). Reference error!");
+          console.log("androidObject is undefined in function runAutoMode(). Reference error!");
         }
         triggerAutoModeClick();
       };
@@ -266,7 +266,7 @@
         try {
           androidObject.setIsAutoModeDelayTimeoutRunning(false);
         } catch(err) {
-          console.log("androidObject is undefined for function stopAutoMode(). Reference error!");
+          console.log("androidObject is undefined in function stopAutoMode(). Reference error!");
         }
         clearTimeout(autoModeDelayTimeout);
       };
@@ -309,7 +309,7 @@
           try {
             androidObject.setMapLocation(viewForAndroid);
           } catch(err) {
-            console.log("androidObject is undefined for function setLocation(). Reference error!");
+            console.log("androidObject is undefined in function setLocation(). Reference error!");
           }
           // Prevent overclicking with a timeout.
           // Would be best to detect when the final action actuallycompletes though.
@@ -359,7 +359,7 @@
       };
 
       var selectElementAndGo = function($element, skipGo) {
-        if (skipGo != true && event != undefined)
+        if (skipGo != true)
           setLocation($element);
         currentLocationIdx = $element.index();
         $toursSlider.children().children(".tourOverlay").removeClass("tourOverlayHighlight");
@@ -628,6 +628,25 @@
 
       function init() {
         controller = io.connect('/controller');
+        controller.on('connect', function() {
+          controller.emit("registerControllerOnServer");
+        }).on('disconnect', function() {
+          console.log("Disconnected from server.");
+          // Remove all listeners to prevent the socket from reconnecting to the server
+          controller.removeAllListeners();
+          // Set the controller socket to null to prevent it from reconnecting to the server
+          controller = null;
+          // Remove the UI
+          $(document.body).remove();
+          // Tell the android to disconnect
+          try {
+            androidObject.disconnectController();
+          } catch(err) {
+            console.log("androidObject is undefined in function controller.on('disconnect'). Reference error!");
+          }
+          // Stop the auto mode
+          setDoAutoMode(false);
+        });
         readServerData();
       }
 
