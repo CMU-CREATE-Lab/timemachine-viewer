@@ -90,8 +90,7 @@ if (!org.gigapan.timelapse.snaplapse) {
 // CODE
 //
 
-var activeSnaplapse;
-
+// Legacy code for wiki
 function playCachedSnaplapse(snaplapseId) {
   org.gigapan.Util.log("playCachedSnaplapse(" + snaplapseId + ")");
   var s = cachedSnaplapses[snaplapseId];
@@ -253,7 +252,7 @@ function playCachedSnaplapse(snaplapseId) {
         $("#" + timelapseViewerDivId + " .snaplapseTourPlayBack").show();
         $("#" + timelapseViewerDivId + " .tourLoadOverlayTitleContainer").animate({
           top: "20px",
-          left: "-440px",
+          left: "-440px"
         }, 500, function() {
           $(this).css({
             'text-align': 'left',
@@ -433,9 +432,7 @@ function playCachedSnaplapse(snaplapseId) {
             "Finish and Close": function() {
               $(this).dialog("close");
             }
-          },
-          close: function() {
-          },
+          }
         });
         // Display the text annotation when you focus on the description field.
         $(".subtitle_textarea").on("focus", function(event) {
@@ -468,7 +465,6 @@ function playCachedSnaplapse(snaplapseId) {
       // Set the position
       var $tiledContentHolder = $("#" + timelapseViewerDivId + " .tiledContentHolder");
       var playerOffset = $tiledContentHolder.offset();
-      var timelineSliderFillerHeight = $("#" + composerDivId + " .timelineSliderFiller").outerHeight() || 12;
       var newTop = $("#" + timelapseViewerDivId + " .toolbar").outerHeight() + $tiledContentHolder.outerHeight() + playerOffset.top - 1;
       var newLeft = playerOffset.left;
       var newWidth = $tiledContentHolder.width();
@@ -1527,14 +1523,12 @@ function playCachedSnaplapse(snaplapseId) {
     this.saveSnaplapse = saveSnaplapse;
 
     var showLoadSnaplapseWindow = function() {
-      activeSnaplapse = thisObj;
       $("#" + composerDivId + " .loadTimewarpWindow").dialog("open");
       $("#" + composerDivId + " .loadTimewarpWindow_JSON").val("");
     };
     this.showLoadSnaplapseWindow = showLoadSnaplapseWindow;
 
     var showSetSnaplapseWindow = function() {
-      activeSnaplapse = thisObj;
       $("#" + composerDivId + " .setTimewarpWindow").dialog("open");
     };
     this.showSetSnaplapseWindow = showSetSnaplapseWindow;

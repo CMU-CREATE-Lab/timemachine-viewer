@@ -491,7 +491,7 @@ if (!Math.uuid) {
         // Tour title
         var title = $("#" + composerDivId + " .saveTimewarpWindow_tourTitleInput").val();
         if (title == undefined)
-          title = "Untitled"
+          title = "Untitled";
         encoder.write_string(title);
         // Checksum
         encoder.write_uint(1);
@@ -783,7 +783,7 @@ if (!Math.uuid) {
       // Rearrange keyframes
       var from = moveIdx.from;
       var to = moveIdx.to;
-      var elementToMove = keyframes[from]
+      var elementToMove = keyframes[from];
       var elementToBuild_1 = keyframes[from - 1];
 
       // Update the visualizer
@@ -811,7 +811,7 @@ if (!Math.uuid) {
     var resetKeyframe = function(keyframe) {
       if ( typeof (keyframe) == "undefined") {
         // Reset the last keyframe if keyframe is undefined
-        var keyframe = keyframes[keyframes.length - 1];
+        keyframe = keyframes[keyframes.length - 1];
         keyframe['speed'] = null;
         keyframe['loopTimes'] = null;
         if (settings["enableCustomUI"])

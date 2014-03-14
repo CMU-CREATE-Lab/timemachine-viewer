@@ -212,7 +212,7 @@ if (!org.gigapan.timelapse.Timelapse) {
       navigationMap_stage = new Kinetic.Stage({
         container: navigationMap.id,
         width: navigationMap_width,
-        height: navigationMap_height,
+        height: navigationMap_height
       });
       navigationMap_layer_background = new Kinetic.Layer();
       navigationMap_layer_mask = new Kinetic.Layer();
@@ -229,7 +229,7 @@ if (!org.gigapan.timelapse.Timelapse) {
       // Initialize kineticJS for navigation map background layer
       navigationMap_background = new Kinetic.Image({
         x: 0,
-        y: 0,
+        y: 0
       });
       navigationMap_layer_background.add(navigationMap_background);
       navigationMap_layer_background.draw();
@@ -359,7 +359,7 @@ if (!org.gigapan.timelapse.Timelapse) {
           fill: arrowHeadColor,
           strokeWidth: 0,
           id: id + "_arrowHead",
-          name: name + "_arrowHead",
+          name: name + "_arrowHead"
         });
         kineticLayer.add(arrowHead);
       }
@@ -384,7 +384,7 @@ if (!org.gigapan.timelapse.Timelapse) {
       var connection = {
         "pEnd": {
           "x": undefined,
-          "y": undefined,
+          "y": undefined
         },
         "tagEndId": undefined,
         "color": undefined
@@ -414,11 +414,11 @@ if (!org.gigapan.timelapse.Timelapse) {
       var connection = {
         "pStart": {
           "x": undefined,
-          "y": undefined,
+          "y": undefined
         },
         "pEnd": {
           "x": undefined,
-          "y": undefined,
+          "y": undefined
         },
         "tagStartId": undefined,
         "tagEndId": undefined,
@@ -475,7 +475,7 @@ if (!org.gigapan.timelapse.Timelapse) {
         fillLinearGradientStartPoint: [gradientStartPoint.x, gradientStartPoint.y],
         fillLinearGradientEndPoint: [gradientEndPoint.x, gradientEndPoint.y],
         fillLinearGradientColorStops: [0, color1, 1, color2],
-        strokeWidth: 0,
+        strokeWidth: 0
       });
       // Add the shape to the layer
       kineticLayer.add(linearGradPolygon);
@@ -720,7 +720,7 @@ if (!org.gigapan.timelapse.Timelapse) {
         }, {
           "x": 0,
           "y": 0
-        }],
+        }]
       });
       navigationMap_layer_navigation.draw();
       navigationMap_layer_mask.draw();

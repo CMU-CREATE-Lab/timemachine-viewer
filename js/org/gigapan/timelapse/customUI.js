@@ -142,8 +142,6 @@ if (!org.gigapan.timelapse.Timelapse) {
     var firstYear;
     var endYear;
     var isPlaying = !timelapse.isPaused();
-    var $yearLock;
-    var $monthLock;
     var $noLock;
     var $withLock;
     var monthLockPlaybackFrames = [];
@@ -181,7 +179,6 @@ if (!org.gigapan.timelapse.Timelapse) {
     var timeTickGrow_width = 2;
     var timeTickGrow_height = currentTimeTick_height;
     var originalIsPaused;
-    var isOpera = org.gigapan.Util.isOpera();
     var isSafari = org.gigapan.Util.isSafari();
     var editorEnabled = timelapse.getEditorEnabled();
     var timeTickSpan;
@@ -352,7 +349,6 @@ if (!org.gigapan.timelapse.Timelapse) {
         });
         timelapse.addVideoPlayListener(function() {
           if (locker == "year") {
-            var currentFrame = timelapse.getCurrentFrameNumber();
             var currentYear = getCurrentYear();
             yearLockMinPlaybackFrame = yearDictionary[currentYear]["previousStackEndIdx"] + 1;
             yearLockMaxPlaybackFrame = yearDictionary[currentYear]["currentStackEndIdx"];
@@ -414,9 +410,9 @@ if (!org.gigapan.timelapse.Timelapse) {
         },
         draw: function() {
           var angleOffset = 0.14;
-          var a = this.angle(this.cv)// Angle
-          var sat = this.startAngle - angleOffset// Start angle
-          var eat = sat + a - angleOffset// End angle
+          var a = this.angle(this.cv); // Angle
+          var sat = this.startAngle - angleOffset; // Start angle
+          var eat = sat + a - angleOffset; // End angle
           var offset = 4;
 
           // Background
@@ -566,7 +562,7 @@ if (!org.gigapan.timelapse.Timelapse) {
         if (snaplapse && snaplapse.isPlaying())
           return;
         if (!fromUI) {
-          $("#" + viewerDivId + " .toggleSpeed").hide()
+          $("#" + viewerDivId + " .toggleSpeed").hide();
           if (rate >= 1) {
             $fastSpeed.show();
             $mediumSpeed.hide();
@@ -601,7 +597,6 @@ if (!org.gigapan.timelapse.Timelapse) {
         if (status == "enable") {
           locker = "year";
           timelapse.setLoopPlayback(false, true);
-          var currentFrame = timelapse.getCurrentFrameNumber();
           var currentYear = getCurrentYear();
           yearLockMinPlaybackFrame = yearDictionary[currentYear]["previousStackEndIdx"] + 1;
           yearLockMaxPlaybackFrame = yearDictionary[currentYear]["currentStackEndIdx"];
@@ -1286,11 +1281,9 @@ if (!org.gigapan.timelapse.Timelapse) {
         type: "textbox",
         "placeholder": "Enter the name of a place to zoom to..."
       }).addClass("addressLookup");
-      var addressLookupElem = $addressLookupElem.get(0);
       $customEditorControl.append($addressLookupElem);
 
       var autocomplete = new google.maps.places.Autocomplete($addressLookupElem.get(0));
-      var didLocationChange = false;
       var geocoder = new google.maps.Geocoder();
 
       google.maps.event.addListener(autocomplete, 'place_changed', function() {

@@ -89,7 +89,7 @@ if (!org.gigapan.timelapse.Timelapse) {
 // CODE
 //
 (function() {
-  org.gigapan.timelapse.ScaleBar = function(scaleBarOptions, timelapse, settings) {
+  org.gigapan.timelapse.ScaleBar = function(scaleBarOptions, timelapse) {
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////
     //
     // Class variables

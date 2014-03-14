@@ -133,7 +133,7 @@ if (!window['$']) {
     var viewportGeometry = {
       width: ( typeof (settings["viewportGeometry"]) == "undefined" || typeof (settings["viewportGeometry"]['width']) == "undefined") ? undefined : settings["viewportGeometry"]['width'],
       height: ( typeof (settings["viewportGeometry"]) == "undefined" || typeof (settings["viewportGeometry"]['height']) == "undefined") ? undefined : settings["viewportGeometry"]['height'],
-      max: ( typeof (settings["viewportGeometry"]) == "undefined" || typeof (settings["viewportGeometry"]['max']) == "undefined") ? false : settings["viewportGeometry"]['max'],
+      max: ( typeof (settings["viewportGeometry"]) == "undefined" || typeof (settings["viewportGeometry"]['max']) == "undefined") ? false : settings["viewportGeometry"]['max']
     };
     var skippedFramesAtEnd = ( typeof (settings["skippedFramesAtEnd"]) == "undefined" || settings["skippedFramesAtEnd"] < 0) ? 0 : settings["skippedFramesAtEnd"];
     var skippedFramesAtStart = ( typeof (settings["skippedFramesAtStart"]) == "undefined" || settings["skippedFramesAtStart"] < 0) ? 0 : settings["skippedFramesAtStart"];
@@ -187,18 +187,9 @@ if (!window['$']) {
     var canvasTmpContext;
 
     // Full screen variables
-    var originalViewportWidth;
-    var originalViewportHeight;
-    var resizeTimeout;
     var fullScreen = false;
     var videoStretchRatio = 1;
     var scaleRatio = 1;
-    var paraBeforeFullScreen = {
-      offset: {
-        left: undefined,
-        top: undefined
-      }
-    };
 
     // Flags
     var isSplitVideo = false;
@@ -956,7 +947,7 @@ if (!window['$']) {
           width = 126;
         if (!height)
           height = 73;
-        return snaplapseViewer.generateThumbnailURL(tileRootPath, thisObj.getBoundingBoxForCurrentView(), width, height, thisObj.getCurrentTime().toFixed(2))
+        return snaplapseViewer.generateThumbnailURL(tileRootPath, thisObj.getBoundingBoxForCurrentView(), width, height, thisObj.getCurrentTime().toFixed(2));
       }
     };
 
@@ -1375,49 +1366,6 @@ if (!window['$']) {
       return null;
     };
 
-    var updateEditor = function() {
-      var newScale;
-      if (scaleRatio > 1) {
-        newScale = 1 + (scaleRatio - 1) * 0.3;
-      } else {
-        newScale = 1;
-      }
-      var newHeight = 65 * newScale;
-      subtitle_DOM.style.height = newHeight + "px";
-      subtitle_DOM_child.style.fontSize = 14 * newScale + "pt";
-    };
-
-    var saveParaBeforeFullScreen = function() {
-      var currentOffset = $("#" + viewerDivId).offset();
-      paraBeforeFullScreen.offset.top = currentOffset.top;
-      paraBeforeFullScreen.offset.left = currentOffset.left;
-    };
-
-    var setParaBeforeFullScreen = function() {
-      // If the viewer has an offset, we need to move it to the corner
-      $("#" + viewerDivId).css({
-        "top": "0px",
-        "left": "0px"
-      });
-      if (snaplapse && $("#" + settings["composerDiv"]).is(':visible'))
-        updateEditor();
-      if (scaleBar)
-        scaleBar.updateVideoSize();
-    };
-
-    var resetParaBeforeFullScreen = function() {
-      if (paraBeforeFullScreen.offset.top != undefined) {
-        $("#" + viewerDivId).css({
-          "top": paraBeforeFullScreen.offset.top + "px",
-          "left": paraBeforeFullScreen.offset.left + "px"
-        });
-        if (snaplapse)
-          updateEditor();
-        if (scaleBar)
-          scaleBar.updateVideoSize();
-      }
-    };
-
     var handleMousedownEvent = function(event) {
       if (event.which != 1 || (annotator && (event.metaKey || event.ctrlKey || event.altKey || annotator.getCanMoveAnnotation())))
         return;
@@ -1567,7 +1515,6 @@ if (!window['$']) {
       var joystickError = 0.15;
       var scalingConstant = 0.94;
       var secondaryFunctionsEnabled = true;
-      var timeSpeedConstant = timelapseDurationInSeconds / 400.0;
 
       if (gamepad == null) {
         return false;
@@ -1808,7 +1755,7 @@ if (!window['$']) {
           "lng": latLng.lng
         },
         "zoom": scaleToZoom(centerView.scale)
-      }
+      };
     };
     this.pixelBoundingBoxToLatLngCenter = pixelBoundingBoxToLatLngCenter;
 
@@ -2436,7 +2383,7 @@ if (!window['$']) {
       //handlePluginVideoTagOverride(); //TODO
 
       if (settings["scaleBarOptions"] && tmJSON['projection-bounds'])
-        scaleBar = new org.gigapan.timelapse.ScaleBar(settings["scaleBarOptions"], thisObj, settings);
+        scaleBar = new org.gigapan.timelapse.ScaleBar(settings["scaleBarOptions"], thisObj);
       // Must be placed after TimelineSlider is created
 
       if (isHyperwall)
@@ -2513,7 +2460,7 @@ if (!window['$']) {
       if (settings["url"].charAt(settings["url"].length - 1) != "/")
         settings["url"] += "/";
       UTIL.ajax("json", settings["url"], "tm.json" + getMetadataCacheBreaker(), loadTimelapseCallback);
-    }
+    };
     this.loadTimelapse = loadTimelapse;
 
     var loadTimelapseCallback = function(json) {
@@ -2754,20 +2701,6 @@ if (!window['$']) {
       $("#" + viewerDivId + " .spinnerOverlay").hide();
     };
     this.hideSpinner = hideSpinner;
-
-    function getTileHostUrlPrefix() {
-      // Get the tile host URL prefixes from the JSON, or use a default if undefined
-      var prefixes = ["http://g7.gigapan.org/alpha/timelapses/"];
-      if ( typeof gigapanDatasetsJSON["tile-host-url-prefixes"] != "undefined" && $.isArray(gigapanDatasetsJSON["tile-host-url-prefixes"]) && gigapanDatasetsJSON["tile-host-url-prefixes"].length > 0) {
-        prefixes = gigapanDatasetsJSON["tile-host-url-prefixes"];
-      }
-      // Now pick one at random
-      //return prefixes[Math.floor(Math.random() * prefixes.length)];
-      return prefixes;
-    }
-
-
-    this.getTileHostUrlPrefix = getTileHostUrlPrefix;
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////
     //

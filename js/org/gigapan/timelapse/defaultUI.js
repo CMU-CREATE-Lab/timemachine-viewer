@@ -97,7 +97,6 @@ if (!org.gigapan.timelapse.Timelapse) {
     var mode = "player";
     var viewerDivId = timelapse.getViewerDivId();
     var videoDivId = timelapse.getVideoDivId();
-    var $videoDiv = $("#" + videoDivId);
     var tmJSON = timelapse.getTmJSON();
     var panInterval;
     var translationSpeedConstant = 20;
@@ -988,7 +987,7 @@ if (!org.gigapan.timelapse.Timelapse) {
           $("body").one("mouseleave", function(event) {
             $zoomSlider.trigger("mouseup");
           });
-        };
+        }
       });
 
       $("#" + viewerDivId + " .zoomSlider .ui-slider-handle").attr("title", "Drag to zoom");
@@ -1203,7 +1202,7 @@ if (!org.gigapan.timelapse.Timelapse) {
           $("body").one("mouseleave", function(event) {
             $timelineSlider.trigger("mouseup");
           });
-        };
+        }
       });
     };
     this.createTimelineSlider = createTimelineSlider;
