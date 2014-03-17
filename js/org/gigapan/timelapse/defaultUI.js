@@ -175,9 +175,6 @@ if (!org.gigapan.timelapse.Timelapse) {
           createAnnotatorModeToolbar();
       }
 
-      if (!showFullScreenBtn && !$("#" + viewerDivId + ".viewerModeBtnContainer").is(":visible"))
-        $("#" + viewerDivId + " .instructions span.speedhelp p").css("background-position", "bottom center");
-
       // Layers for a dataset
       if (tmJSON["layers"]) {
         $("#" + viewerDivId + " .layerSlider").show();

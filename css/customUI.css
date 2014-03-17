@@ -461,7 +461,7 @@
 
 .customInstructions span {
   font-size: 12px;
-  color: #fff;
+  color: black;
   position: absolute;
   display: block;
   line-height: 18px;
@@ -476,71 +476,63 @@
   left: 110px;
   width: 140px;
   padding: 68px 0px 0px 0px;
+  color: white !important;
   background-repeat: no-repeat;
   background-position: center top;
-  background-image: url(../images/drag_mouse.png);
+  background-image: url(../images/drag_mouse_white.png);
 }
 
 .customInstructions span.customZoomhelp {
-  background-color: #262626;
-  border: 1px solid #444;
+  background-color: white;
+  border: 1px solid #656565;
   top: 150px;
   left: 67px;
   overflow: visible;
   border-radius: 3px;
 }
 
-/*.customInstructions span.customZoomallhelp {
- background-color: #262626;
- border: 1px solid #444;
- top: 248px;
- left: 67px;
- overflow: visible;
- border-radius: 3px;
- }*/
-
 .customInstructions span.modisCustomSpeedhelp {
-  background-color: #262626;
-  border: 1px solid #444;
-  bottom: 35px;
-  left: 112px;
+  background-color: white;
+  border: 1px solid #656565;
+  bottom: 32px;
+  left: 105px;
   overflow: visible;
   border-radius: 3px;
 }
 
 .customInstructions span.customSpeedhelp {
-  background-color: #262626;
-  border: 1px solid #444;
+  background-color: white;
+  border: 1px solid #656565;
   bottom: 35px;
-  left: 82px;
+  left: 74px;
   overflow: visible;
   border-radius: 3px;
 }
 
-.customInstructions span.customZoomhelp p, .customInstructions span.customZoomallhelp p {
-  margin: 0px 0px 0px -11px;
-  padding: 12px 0px 12px 36px;
+.customInstructions span.customZoomhelp p {
+  margin: 0px -6px 0px -11px;
+  padding: 12px 0px 12px 30px;
   background-repeat: no-repeat;
   background-position: center left;
-  background-image: url(../images/bubble_edge_vertical.png);
+  background-image: url(../images/bubble_edge_vertical_white.png);
   width: 190px;
 }
 
 .customInstructions span.modisCustomSpeedhelp p {
-  margin: 0px 0px -11px 10px;
+  margin: 0px 0px -11px 0px;
   padding: 12px 15px 22px 15px;
   background-repeat: no-repeat;
-  background-position: bottom left;
-  background-image: url(../images/bubble_edge_horizontal.png);
+  background-position: 20px 100%;
+  background-image: url(../images/bubble_edge_horizontal_white.png);
   width: 190px;
 }
 
 .customInstructions span.customSpeedhelp p {
-  margin: 0px 0px -11px 10px;
+  margin: 0px 0px -11px 0px;
   padding: 12px 15px 22px 15px;
   background-repeat: no-repeat;
-  background-position: bottom left;
-  background-image: url(../images/bubble_edge_horizontal.png);
+  background-position: 20px 100%;
+  background-image: url(../images/bubble_edge_horizontal_white.png);
   width: 190px;
 }
 

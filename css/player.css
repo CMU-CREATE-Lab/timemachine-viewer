@@ -323,7 +323,7 @@ body, html {
 
 .instructions span {
   font-size: 12px;
-  color: #fff;
+  color: black;
   position: absolute;
   display: block;
   line-height: 18px;
@@ -337,55 +337,56 @@ body, html {
   top: 30px;
   left: 110px;
   width: 140px;
+  color: white !important;
   padding: 68px 0px 0px 0px;
   background-repeat: no-repeat;
   background-position: center top;
-  background-image: url(../images/drag_mouse.png);
+  background-image: url(../images/drag_mouse_white.png);
 }
 
 .instructions span.zoomhelp {
-  background-color: #262626;
-  border: 1px solid #444;
+  background-color: white;
+  border: 1px solid #656565;
   top: 150px;
-  left: 70px;
+  left: 67px;
   overflow: visible;
+  border-radius: 3px;
 }
 
 .instructions span.zoomallhelp {
-  background-color: #262626;
-  border: 1px solid #444;
+  background-color: white;
+  border: 1px solid #656565;
   top: 250px;
-  left: 70px;
+  left: 67px;
   overflow: visible;
+  border-radius: 3px;
 }
 
 .instructions span.zoomhelp p, .instructions span.zoomallhelp p {
-  margin: 0px 0px 0px -11px;
-  padding: 12px 16px 12px 28px;
+  margin: 0px -6px 0px -11px;
+  padding: 12px 0px 12px 30px;
   background-repeat: no-repeat;
   background-position: center left;
-  background-image: url(../images/bubble_edge_vertical.png);
+  background-image: url(../images/bubble_edge_vertical_white.png);
   width: 190px;
 }
 
 .instructions span.speedhelp {
-  width: 250px;
-  background-color: #262626;
-  border: 1px solid #444;
-  height: 19px;
+  background-color: white;
+  border: 1px solid #656565;
   overflow: visible;
   bottom: 47px;
-  left: 20px;
-  padding: 13px 15px 15px;
+  left: 88px;
+  border-radius: 3px;
 }
 
 .instructions span.speedhelp p {
-  margin: 0;
-  padding: 0;
+	margin: 0px 0px -11px 0px;
+	padding: 12px 15px 22px 15px;
   background-repeat: no-repeat;
-  background-position: bottom left;
-  background-image: url(../images/bubble_edge_horizontal.png);
-  height: 46px;
+  background-position: 70px 100%;
+  background-image: url(../images/bubble_edge_horizontal_white.png);
+  width: 250px;
 }
 
 .videoTime {
@@ -807,4 +808,45 @@ body, html {
   margin-left: auto;
   margin-right: auto;
   z-index: 10;
+}
+
+#browser_not_supported {
+  display: block;
+  height: 348px;
+  left: 34px;
+  position: fixed;
+  top: 100px;
+  width: 514px;
+}
+
+#html5_overridden_message {
+  height: 348px;
+  left: 34px;
+  position: fixed;
+  top: 65px;
+  width: 514px;
+  z-index: 1000;
+}
+
+.warning, .error {
+  border: 1px solid;
+  width: 400px;
+  margin-left: auto;
+  margin-right: auto;
+  margin-top: 50px;
+  padding: 15px 10px 15px 60px;
+  background-repeat: no-repeat;
+  background-position: 10px center;
+}
+
+.warning {
+  color: #9F6000;
+  background-color: #FEEFB3;
+  background-image: url('../images/alert.png');
+}
+
+.error {
+  color: #D8000C;
+  background-color: #FFBABA;
+  background-image: url('../images/error.png');
 }

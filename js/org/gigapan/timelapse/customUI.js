@@ -410,9 +410,12 @@ if (!org.gigapan.timelapse.Timelapse) {
         },
         draw: function() {
           var angleOffset = 0.14;
-          var a = this.angle(this.cv); // Angle
-          var sat = this.startAngle - angleOffset; // Start angle
-          var eat = sat + a - angleOffset; // End angle
+          // Angle
+          var a = this.angle(this.cv);
+          // Start angle
+          var sat = this.startAngle - angleOffset;
+          // End angle
+          var eat = sat + a - angleOffset;
           var offset = 4;
 
           // Background
@@ -484,8 +487,12 @@ if (!org.gigapan.timelapse.Timelapse) {
       });
 
       // Handle mouse leave iframe
-      $("body").bind("mouseleave", function(event) {
-        $monthSpinner.trigger("mouseup");
+      $monthSpinnerContainer.bind("mousedown", function() {
+        if (window && (window.self !== window.top)) {
+          $("body").one("mouseleave", function(event) {
+            $monthSpinnerContainer.trigger("mouseup");
+          });
+        }
       });
     };
 
@@ -1112,8 +1119,8 @@ if (!org.gigapan.timelapse.Timelapse) {
       if (locker == "month" && isPlaying)
         playMonthLockFrames();
       if ($defaultUIPlaybackButton.hasClass('from_help')) {
-        timelapse.handlePlayPause();
         $defaultUIPlaybackButton.addClass("pause").removeClass("play from_help");
+        timelapse.handlePlayPause();
       }
     };
 
