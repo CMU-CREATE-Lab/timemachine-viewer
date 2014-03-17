@@ -2496,6 +2496,9 @@ if (!window['$']) {
       var newViewportGeometry = computeViewportGeometry(data);
       fitVideoToViewport(newViewportGeometry.width, newViewportGeometry.height);
 
+      // The UI is ready now and we can display it
+      $("#" + viewerDivId).css("visibility", "visible");
+
       // Setup the UI if this is the first time we are loading a videoset. Else recreate the time slider for the new set,
       // since it depends upon values from the old set.
       if (!defaultUI)
@@ -2522,6 +2525,9 @@ if (!window['$']) {
 
     function loadPlayerControlsTemplate(html) {
       var viewerDiv = document.getElementById(viewerDivId);
+
+      // Hide the UI because it is not ready yet
+      $(viewerDiv).css("visibility", "hidden");
 
       $(viewerDiv).html(html);
       var tmp = document.getElementById("{REPLACE}");
@@ -2618,9 +2624,6 @@ if (!window['$']) {
       }
     }
 
-
-    this.handlePluginVideoTagOverride = handlePluginVideoTagOverride;
-
     function setViewportSize(newWidth, newHeight) {
       thisObj.updateDimensions(newWidth, newHeight);
 
@@ -2650,14 +2653,15 @@ if (!window['$']) {
       }
 
       // Spinner
-      var spinnerCenterHeight = newHeight / 2 - $("#" + viewerDivId + " .spinner").height() / 2 + "px";
-      var spinnerCenterWidth = newWidth / 2 - $("#" + viewerDivId + " .spinner").width() / 2 + "px";
+      var spinnerCenterHeight = newHeight / 2 - $("#" + viewerDivId + " .spinner").height() / 2;
+      var spinnerCenterWidth = newWidth / 2 - $("#" + viewerDivId + " .spinner").width() / 2;
 
       // Controls
       $("#" + viewerDivId + " .controls").width(newWidth);
 
       $("#" + viewerDivId + " .spinnerOverlay").css({
-        "margin": spinnerCenterHeight + " " + spinnerCenterWidth
+        "top": spinnerCenterHeight + "px",
+        "left": spinnerCenterWidth + "px"
       });
 
       // Extra 2px for the borders
@@ -2686,9 +2690,6 @@ if (!window['$']) {
       }
       // End wiki specific css
     }
-
-
-    this.setViewportSize = setViewportSize;
 
     var showSpinner = function(viewerDivId) {
       UTIL.log("showSpinner");
@@ -2744,7 +2745,6 @@ if (!window['$']) {
     }
 
     UTIL.log('Timelapse("' + settings["url"] + '")');
-    showSpinner(viewerDivId);
     UTIL.ajax("html", "", "player_template.html", loadPlayerControlsTemplate);
   };
 })();
