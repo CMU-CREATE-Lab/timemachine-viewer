@@ -663,5 +663,5 @@
   background-repeat: no-repeat;
   background-position: 50% 100%;
   background-image: url(../images/bubble_edge_horizontal_white.png);
-  width: 230px;
+  max-width: 260px;
 }
