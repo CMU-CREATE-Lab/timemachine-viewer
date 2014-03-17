@@ -73,7 +73,7 @@ if (!org.gigapan) {
   var isChromeUserAgent = navigator.userAgent.match(/Chrome/) != null;
   // The Chrome user agent actually has the word "Safari" in it too!
   var isSafariUserAgent = navigator.userAgent.match(/Safari/) != null && !isChromeUserAgent;
-  var isMSIEUserAgent = navigator.userAgent.match(/MSIE/) != null;
+  var isMSIEUserAgent = navigator.userAgent.match(/MSIE|Trident/) != null;
   var matchIEVersion = navigator.userAgent.match(/MSIE\s([\d]+)/);
   var isFirefoxUserAgent = navigator.userAgent.match(/Firefox/) != null;
   var isChromeOS = navigator.userAgent.match(/CrOS/) != null;
@@ -137,7 +137,7 @@ if (!org.gigapan) {
   };
 
   org.gigapan.Util.isIE9 = function() {
-    return (isMSIEUserAgent && matchIEVersion[1] == 9);
+    return (isMSIEUserAgent && matchIEVersion && matchIEVersion[1] == 9);
   };
 
   org.gigapan.Util.isOpera = function() {
