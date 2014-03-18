@@ -986,6 +986,10 @@ if (!Math.uuid) {
       return snaplapseViewer;
     };
 
+    this.getPresentationSliderViewer = function() {
+      return snaplapseViewer;
+    };
+
     var cloneFrame = function(frame) {
       return $.extend({}, frame);
     };

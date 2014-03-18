@@ -890,9 +890,9 @@ function playCachedSnaplapse(snaplapseId) {
       var loopTextId = keyframeListItem.id + "_loopText";
       var titleId = keyframeListItem.id + "_title";
       var tableId = keyframeListItem.id + "_table";
-      var thumbnailButtonId = keyframeListItem.id + "_thumbnailButton";
       var keyframeTableId = keyframeListItem.id + "_keyframeTable";
       var transitionTableId = keyframeListItem.id + "_transitionTable";
+      var thumbnailButtonId = keyframeListItem.id + "_thumbnailButton";
 
       var duration = typeof frame['duration'] != 'undefined' && frame['duration'] != null ? frame['duration'] : '';
       var speed = typeof frame['speed'] != 'undefined' && frame['speed'] != null ? frame['speed'] : 100;
@@ -1006,18 +1006,17 @@ function playCachedSnaplapse(snaplapseId) {
 
       $thumbnailButton.click(function(event) {
         event.stopPropagation();
-        var id = this.id;
-        var keyframeId = id.split("_")[3];
+        var keyframeId = $(this).parent().attr("id").split("_")[3];
         selectAndGo($("#" + keyframeListItem.id), keyframeId);
       });
 
       if (usePresentationSlider) {
         $thumbnailButton.hover(function() {
-          var thisKeyframeId = this.id.split("_")[3];
+          var thisKeyframeId = $(this).parent().attr("id").split("_")[3];
           var thisKeyframe = snaplapse.getKeyframeById(thisKeyframeId);
           setKeyframeCaptionUI(thisKeyframe, this);
         }, function() {
-          var thisKeyframeId = this.id.split("_")[3];
+          var thisKeyframeId = $(this).parent().attr("id").split("_")[3];
           var thisKeyframe = snaplapse.getKeyframeById(thisKeyframeId);
           setKeyframeCaptionUI(thisKeyframe, this, true);
         }).click(function(event) {
@@ -1050,6 +1049,7 @@ function playCachedSnaplapse(snaplapseId) {
             });
           }
         });
+        $thumbnailButton.attr("id", frame.unsafe_string_frameTitle.split(' ').join('_'));
       }
 
       if (disableTourLooping) {
@@ -1261,11 +1261,20 @@ function playCachedSnaplapse(snaplapseId) {
               snaplapse.resetKeyframe();
               if (usePresentationSlider) {
                 $("#" + composerDivId + " .snaplapse_keyframe_container").scrollLeft(0);
-                // Go to the first keyframe if there are no shared view
-                if ( typeof UTIL.getUnsafeHashVars().v == "undefined") {
-                  var firstFrame = snaplapse.getKeyframes()[0];
-                  var $firstFrameThumbnailButton = $("#" + composerDivId + "_snaplapse_keyframe_" + firstFrame.id + "_thumbnailButton");
-                  $firstFrameThumbnailButton.click();
+                var unsafeHashVars = UTIL.getUnsafeHashVars();
+                // Go to the desired keyframe if there is no shared view
+                if ( typeof unsafeHashVars.v == "undefined") {
+                  var $desiredSlide;
+                  if ( typeof unsafeHashVars.slide != "undefined")
+                    $desiredSlide = $("#" + unsafeHashVars.slide);
+                  if ($desiredSlide && $desiredSlide.length > 0)
+                    $desiredSlide[0].click();
+                  else {
+                    // Go to the first keyframe if there is no desired keyframe
+                    var firstFrame = snaplapse.getKeyframes()[0];
+                    var $firstFrameThumbnailButton = $("#" + composerDivId + "_snaplapse_keyframe_" + firstFrame.id).children(".snaplapse_keyframe_list_item_thumbnail_container_presentation");
+                    $firstFrameThumbnailButton.click();
+                  }
                 }
               } else {
                 if (!editorEnabled) {
@@ -1325,6 +1334,18 @@ function playCachedSnaplapse(snaplapseId) {
           else
             timelapse.warpToBoundingBox(frame['bounds']);
           timelapse.seek(frame['time']);
+          if (usePresentationSlider) {
+            var listeners = eventListeners["slide-changed"];
+            if (listeners) {
+              for (var i = 0; i < listeners.length; i++) {
+                try {
+                  listeners[i](frame.unsafe_string_frameTitle);
+                } catch(e) {
+                  UTIL.error(e.name + " while calling presentationSlider slide-changed event listener: " + e.message, e);
+                }
+              }
+            }
+          }
         }
       }
     };
