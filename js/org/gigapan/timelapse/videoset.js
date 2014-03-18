@@ -169,7 +169,7 @@ if (!window['$']) {
 
     var isIE = UTIL.isIE();
     var isIE9 = UTIL.isIE9();
-    var isOpera = UTIL.isOpera();
+    var isOperaLegacy = UTIL.isOperaLegacy();
     var isChrome = UTIL.isChrome();
     var isSafari = UTIL.isSafari();
     var isFirefox = UTIL.isFirefox();
@@ -383,8 +383,8 @@ if (!window['$']) {
           target: video
         });
       }
-      if (isOpera) {
-        // Opera seems to queue too many videos and then gets stuck in the stalling state.
+      if (isOperaLegacy) {
+        // Opera <= 12 seems to queue too many videos and then gets stuck in the stalling state.
         // This ensures that we remove old videos that are no longer necessary, specifically
         // *really* old ones that never got removed for some reason.
         if (viewerType == "canvas") {
@@ -396,7 +396,7 @@ if (!window['$']) {
             }
           }
         }
-        // Videos in Opera often seem to get stuck in a state of always seeking.
+        // Videos in Opera <= 12 often seem to get stuck in a state of always seeking.
         // This will ensure that if we are stuck, we reload the video.
         video.addEventListener('seeking', videoSeeking, false);
       }
@@ -686,8 +686,8 @@ if (!window['$']) {
       // Safari *can* go slower than -2x, but playback becomes questionable and sometimes stops entirely
       if (isSafari)
         return 0.0 == rate || (0.5 <= Math.abs(rate) && Math.abs(rate) <= 2.0);
-      // Opera does not support rates slower than 1x
-      if (isOpera)
+      // Opera <= 12 does not support rates slower than 1x
+      if (isOperaLegacy)
         return 0.0 == rate || 1.0 <= rate;
       // Firefox bounds rates to be between 0.25x and 5x
       if (isFirefox)
@@ -985,7 +985,7 @@ if (!window['$']) {
     var videoSeeking = function(event) {
       window.clearInterval(videoIsSeekingIntervalCheck);
       videoIsSeekingIntervalCheck = window.setInterval(function() {
-        UTIL.error("We're still seeking after 250ms, so let's reload the video. This is an Opera only workaround.");
+        UTIL.error("We're still seeking after 250ms, so let's reload the video. This is an Opera <= 12 only workaround.");
         event.target.load();
       }, 250);
     };

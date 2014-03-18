@@ -75,7 +75,10 @@ if (!org.gigapan) {
   var isSafariUserAgent = navigator.userAgent.match(/Safari/) != null && !isChromeUserAgent;
   var isMSIEUserAgent = navigator.userAgent.match(/MSIE|Trident/) != null;
   var matchIEVersion = navigator.userAgent.match(/MSIE\s([\d]+)/);
+  var isIE9UserAgent = (isMSIEUserAgent && matchIEVersion && matchIEVersion[1] == 9);
   var isFirefoxUserAgent = navigator.userAgent.match(/Firefox/) != null;
+  var isOperaLegacyUserAgent = typeof (window.opera) !== "undefined";
+  var isOperaUserAgent = navigator.userAgent.match(/OPR/) != null;
   var isChromeOS = navigator.userAgent.match(/CrOS/) != null;
   var mediaType = ".mp4";
   var viewerType = (isSafariUserAgent || isChromeOS) ? "video" : "canvas";
@@ -137,11 +140,15 @@ if (!org.gigapan) {
   };
 
   org.gigapan.Util.isIE9 = function() {
-    return (isMSIEUserAgent && matchIEVersion && matchIEVersion[1] == 9);
+    return isIE9UserAgent;
+  };
+
+  org.gigapan.Util.isOperaLegacy = function() {
+    return isOperaLegacyUserAgent;
   };
 
   org.gigapan.Util.isOpera = function() {
-    return typeof (window.opera) !== "undefined";
+    return isOperaUserAgent;
   };
 
   org.gigapan.Util.getMediaType = function() {
