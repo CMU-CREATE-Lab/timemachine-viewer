@@ -381,8 +381,8 @@ body, html {
 }
 
 .instructions span.speedhelp p {
-	margin: 0px 0px -11px 0px;
-	padding: 12px 15px 22px 15px;
+  margin: 0px 0px -11px 0px;
+  padding: 12px 15px 22px 15px;
   background-repeat: no-repeat;
   background-position: 70px 100%;
   background-image: url(../images/bubble_edge_horizontal_white.png);
@@ -849,4 +849,10 @@ body, html {
   color: #D8000C;
   background-color: #FFBABA;
   background-image: url('../images/error.png');
+}
+
+.ui-dialog-titlebar {
+  background: #959595;
+  border: 0;
+  color: white;
 }
