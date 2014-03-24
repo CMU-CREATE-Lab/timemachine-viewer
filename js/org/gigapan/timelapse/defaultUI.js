@@ -96,7 +96,6 @@ if (!org.gigapan.timelapse.Timelapse) {
     //
     var mode = "player";
     var viewerDivId = timelapse.getViewerDivId();
-    var videoDivId = timelapse.getVideoDivId();
     var tmJSON = timelapse.getTmJSON();
     var panInterval;
     var translationSpeedConstant = 20;
@@ -924,22 +923,6 @@ if (!org.gigapan.timelapse.Timelapse) {
         timelapse.handlePlayPause();
         $playbackButton.addClass("pause").removeClass("play from_help");
       }
-    }
-
-    // Unused
-    function populateSizes() {
-      // Populate the player size dropdown
-      var html = "";
-      var numSizes = tmJSON["sizes"].length;
-      for (var i = 0; i < numSizes; i++) {
-        html += '<li><a href="javascript:void(0);" data-index=\'' + i + '\'>' + tmJSON["sizes"][i] + '</a></li>';
-      }
-      $("#" + viewerDivId + " .sizeOptions").append(html);
-
-      // Set the size dropdown
-      $("#" + viewerDivId + " .sizeOptions li a").bind("click", function() {
-        timelapse.switchSize($(this).attr("data-index"));
-      });
     }
 
     function populateLayers() {

@@ -593,7 +593,7 @@ if (!window['$']) {
       var bboxViewNE = bboxView.bbox.ne;
       var bboxViewSW = bboxView.bbox.sw;
       if (( typeof (tmJSON['projection-bounds']) !== 'undefined') && bboxViewNE && bboxViewSW && UTIL.isNumber(bboxViewNE.lat) && UTIL.isNumber(bboxViewNE.lng) && UTIL.isNumber(bboxViewSW.lat) && UTIL.isNumber(bboxViewSW.lng)) {
-        newView = latLngBoundingBoxViewToPixelCenter(bboxView);
+        newView = latLngBoundingBoxToPixelCenter(bboxView);
       } else if (UTIL.isNumber(bboxView.bbox.xmin) && UTIL.isNumber(bboxView.bbox.xmax) && UTIL.isNumber(bboxView.bbox.ymin) && UTIL.isNumber(bboxView.bbox.ymax)) {
         newView = pixelBoundingBoxToPixelCenter(bboxView);
       } else {
@@ -738,12 +738,12 @@ if (!window['$']) {
     };
     this.handleMousescrollEvent = handleMousescrollEvent;
 
-    var _warpTo = function(newView, fromGoogleMapflag) {
-      setTargetView(newView, fromGoogleMapflag);
+    var _warpTo = function(newView) {
+      setTargetView(newView);
       view.x = targetView.x;
       view.y = targetView.y;
       view.scale = targetView.scale;
-      refresh(fromGoogleMapflag);
+      refresh();
     };
     this.warpTo = _warpTo;
 
@@ -906,7 +906,7 @@ if (!window['$']) {
           thisObj.handlePlayPause();
         if (typeof (callBack) === "function")
           callBack();
-      }
+      };
 
       if (doWarp) {
         _addViewEndChangeListener(defaultEndViewCallback);
@@ -950,7 +950,7 @@ if (!window['$']) {
         var newViewBboxNE = newViewBbox.ne;
         var newViewBboxSW = newViewBbox.sw;
         if (( typeof (tmJSON['projection-bounds']) !== 'undefined') && newViewBboxNE && newViewBboxSW && UTIL.isNumber(newViewBboxNE.lat) && UTIL.isNumber(newViewBboxNE.lng) && UTIL.isNumber(newViewBboxSW.lat) && UTIL.isNumber(newViewBboxSW.lng)) {
-          newView = latLngBoundingBoxViewToPixelCenter(newView);
+          newView = latLngBoundingBoxToPixelCenter(newView);
         } else if (UTIL.isNumber(newViewBbox.xmin) && UTIL.isNumber(newViewBbox.xmax) && UTIL.isNumber(newViewBbox.ymin) && UTIL.isNumber(newViewBbox.ymax)) {
           newView = pixelBoundingBoxToPixelCenter(newView);
         } else {
@@ -1531,7 +1531,7 @@ if (!window['$']) {
       return "[view x:" + view.x + " y:" + view.y + " scale:" + view.scale + "]";
     };
 
-    var setTargetView = function(newView, fromGoogleMapflag, offset) {
+    var setTargetView = function(newView, offset) {
       if (newView) {
         var tempView = {};
         tempView.scale = limitScale(newView.scale);
@@ -1556,12 +1556,12 @@ if (!window['$']) {
       // ~35Hz or 12.5Hz
       if (animateInterval == null) {
         animateInterval = setInterval(function() {
-          animate(fromGoogleMapflag);
+          animate();
         }, animateRate);
         lastAnimationTime = UTIL.getCurrentTimeInSecs();
       }
 
-      refresh(fromGoogleMapflag);
+      refresh();
 
       for (var i = 0; i < targetViewChangeListeners.length; i++)
         targetViewChangeListeners[i](targetView);
@@ -1673,7 +1673,7 @@ if (!window['$']) {
       return true;
     };
 
-    var animate = function(fromGoogleMapflag) {
+    var animate = function() {
       //var isJoystickWorking = checkForJoystick();
 
       // Compute deltaT between this animation frame and last
@@ -1716,7 +1716,7 @@ if (!window['$']) {
       } else {
         view = pixelBoundingBoxToPixelCenter(_computeMotion(pixelCenterToPixelBoundingBoxView(view).bbox, pixelCenterToPixelBoundingBoxView(targetView).bbox, t));
       }
-      refresh(fromGoogleMapflag);
+      refresh();
       // Run listeners as the view changes
       for (i = 0; i < viewChangeListeners.length; i++)
         viewChangeListeners[i](view);
@@ -2020,7 +2020,7 @@ if (!window['$']) {
     };
 
     // Update tag information of location data
-    var updateTagInfo_locationData = function(dragFromGoogleMapflag) {
+    var updateTagInfo_locationData = function() {
       if (!defaultUI)
         return null;
       var mode = defaultUI.getMode();
@@ -2090,12 +2090,8 @@ if (!window['$']) {
           }
           // Update the small google map
           if (smallGoogleMap && enableSmallGoogleMap == true) {
-            if (dragFromGoogleMapflag) {
-              smallGoogleMap.setSmallMapBoxLocation(tagLatLngNE_nav, tagLatLngSW_nav);
-            } else {
-              smallGoogleMap.setSmallGoogleMap(tagLatLngCenter_nav, videoViewer_centerPoint.scale);
-              smallGoogleMap.setSmallMapBoxLocation(tagLatLngNE_nav, tagLatLngSW_nav);
-            }
+            smallGoogleMap.setSmallGoogleMap(tagLatLngCenter_nav, videoViewer_centerPoint.scale);
+            smallGoogleMap.setSmallMapBoxLocation(tagLatLngNE_nav, tagLatLngSW_nav);
           }
           if (visualizer) {
             // Calculate the position on the navigation map

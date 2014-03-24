@@ -404,8 +404,7 @@ if (!org.gigapan.timelapse.Timelapse) {
       // Need to get the projection dynamically when the viewer size changes
       var movePoint = timelapse.getProjection().latlngToPoint(moveLatLng);
       movePoint.scale = timelapse.getView().scale;
-      var fromGoogleMapflag = true;
-      timelapse.warpTo(movePoint, fromGoogleMapflag);
+      timelapse.warpTo(movePoint);
     };
 
     // Create small google map DOM elements
