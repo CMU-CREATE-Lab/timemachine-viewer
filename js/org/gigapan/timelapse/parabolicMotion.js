@@ -215,6 +215,7 @@ org.gigapan.timelapse.parabolicMotion.MotionController = function(settings) {
   var parabolicMotion = org.gigapan.timelapse.parabolicMotion, Point3 = parabolicMotion.Point3;
   this.animationFPS = settings.animationFPS || 30;
   this.animateCallback = settings.animateCallback;
+  this.onCompleteCallback = settings.onCompleteCallback;
   this.moveAlongPath = function(path) {
     this.path = path;
     this.pathProgress = 0;
@@ -238,6 +239,7 @@ org.gigapan.timelapse.parabolicMotion.MotionController = function(settings) {
     else if (this.path.length == 1) {
       this.animateCallback(this.path.shift());
       this._disableAnimation();
+      this.onCompleteCallback();
     } else {
       this.animateCallback(parabolicMotion.zoomInterpolate(this.path[0], this.path[1], this.pathProgress));
     }

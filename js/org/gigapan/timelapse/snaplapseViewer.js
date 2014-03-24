@@ -1330,9 +1330,8 @@ function playCachedSnaplapse(snaplapseId) {
         }
         if (skipGo != true) {
           if (usePresentationSlider && datasetType != undefined)
-            setViewGracefully(timelapse.pixelBoundingBoxToLatLngCenterView(frame['bounds']), false, false);
+            timelapse.setNewView(timelapse.pixelBoundingBoxToLatLngCenterView(frame['bounds']), false, false);
           else
-            //setViewGracefully(timelapse.pixelBoundingBoxToPixelCenterView(frame['bounds']), false, false);
             timelapse.warpToBoundingBox(frame['bounds']);
           timelapse.seek(frame['time']);
           if (usePresentationSlider) {

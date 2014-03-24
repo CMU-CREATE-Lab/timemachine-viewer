@@ -95,11 +95,11 @@ if (!org.gigapan.timelapse.Videoset) {
   alert(noVideosetMsg);
   throw new Error(noVideosetMsg);
 }
-//if (!org.gigapan.timelapse.VideosetStats) {
-//  var noVideosetStatsMsg = "The org.gigapan.timelapse.VideosetStats library is required by org.gigapan.timelapse.Timelapse";
-//  alert(noVideosetStatsMsg);
-//  throw new Error(noVideosetStatsMsg);
-//}
+if (!org.gigapan.timelapse.parabolicMotion) {
+  var noVideosetMsg = "The org.gigapan.timelapse.parabolicMotion library is required by org.gigapan.timelapse.Timelapse";
+  alert(noVideosetMsg);
+  throw new Error(noVideosetMsg);
+}
 if (!window['$']) {
   var nojQueryMsg = "The jQuery library is required by org.gigapan.timelapse.Timelapse";
   alert(nojQueryMsg);
@@ -229,6 +229,7 @@ if (!window['$']) {
     var keyIntervals = [];
     var targetViewChangeListeners = [];
     var viewChangeListeners = [];
+    var viewEndChangeListeners = [];
     var playbackRateChangeListeners = [];
     var thisObj = this;
     var tmJSON;
@@ -253,6 +254,8 @@ if (!window['$']) {
     var originalLoopPlayback = loopPlayback;
     var translationSpeedConstant = 20;
     var leader;
+    var parabolicMotionController;
+    var parabolicMotionObj = org.gigapan.timelapse.parabolicMotion;
 
     // animateRate in milliseconds, 5 means 200Hz
     var animateRate = isHyperwall ? 5 : 80;
@@ -741,8 +744,6 @@ if (!window['$']) {
       view.y = targetView.y;
       view.scale = targetView.scale;
       refresh(fromGoogleMapflag);
-      for (var i = 0; i < viewChangeListeners.length; i++)
-        viewChangeListeners[i](view);
     };
     this.warpTo = _warpTo;
 
@@ -799,10 +800,45 @@ if (!window['$']) {
     };
     this.addTargetViewChangeListener = _addTargetViewChangeListener;
 
+    var _removeTargetViewChangeListener = function(listener) {
+      for (var i = 0; i < targetViewChangeListeners.length; i++) {
+        if (targetViewChangeListeners[i] == listener[0]) {
+          targetViewChangeListeners.splice(i, 1);
+          break;
+        }
+      }
+    };
+    this.removeTargetViewChangeListener = _removeTargetViewChangeListener;
+
     var _addViewChangeListener = function(listener) {
       viewChangeListeners.push(listener);
     };
     this.addViewChangeListener = _addViewChangeListener;
+
+    var _removeViewChangeListener = function(listener) {
+      for (var i = 0; i < viewChangeListeners.length; i++) {
+        if (viewChangeListeners[i] == listener[0]) {
+          viewChangeListeners.splice(i, 1);
+          break;
+        }
+      }
+    };
+    this.removeViewChangeListener = _removeViewChangeListener;
+
+    var _addViewEndChangeListener = function(listener) {
+      viewEndChangeListeners.push(listener);
+    };
+    this.addViewEndChangeListener = _addViewEndChangeListener;
+
+    var _removEndViewChangeListener = function(listener) {
+      for (var i = 0; i < viewEndChangeListeners.length; i++) {
+        if (viewEndChangeListeners[i] == listener[0]) {
+          viewEndChangeListeners.splice(i, 1);
+          break;
+        }
+      }
+    };
+    this.removEndViewChangeListener = _removEndViewChangeListener;
 
     var _addVideoPauseListener = function(listener) {
       videoset.addEventListener('videoset-pause', listener);
@@ -857,15 +893,45 @@ if (!window['$']) {
     };
     this.getViewStr = _getViewStr;
 
-    var _setNewView = function(newView, doWarp) {
+    var _setNewView = function(newView, doWarp, doPlay, callBack) {
       if ( typeof (newView) === 'undefined' || newView == null)
         return;
 
       newView = _normalizeView(newView);
-      if (doWarp)
+
+      var defaultEndViewCallback = function() {
+        _removEndViewChangeListener(this);
+        parabolicMotionController = null;
+        if (doPlay)
+          thisObj.handlePlayPause();
+        if (typeof (callBack) === "function")
+          callBack();
+      }
+
+      if (doWarp) {
+        _addViewEndChangeListener(defaultEndViewCallback);
         _warpTo(newView);
-      else
-        setTargetView(newView);
+      } else {
+        // If we are really close to our current location, just slide there rather than do a very short parabolic curve.
+        if (newView.scale && newView.scale.toFixed(17) == view.scale.toFixed(17) && (Math.abs(newView.x - view.x) <= 1000 && Math.abs(newView.y - view.y) <= 1000)) {
+          _addViewEndChangeListener(defaultEndViewCallback);
+          setTargetView(newView);
+        } else {
+          if (!parabolicMotionController) {
+            parabolicMotionController = new parabolicMotionObj.MotionController({
+              animationFPS: 12,
+              animateCallback: function(pt) {
+                _warpTo(parabolicMotionObj.pixelPointToView(viewportWidth, viewportHeight, pt));
+              },
+              onCompleteCallback: defaultEndViewCallback
+            });
+          }
+          var a = parabolicMotionObj.viewToPixelPoint(viewportWidth, viewportHeight, view);
+          var b = parabolicMotionObj.viewToPixelPoint(viewportWidth, viewportHeight, newView);
+          var path = org.gigapan.timelapse.parabolicMotion.computeParabolicPath(a, b);
+          parabolicMotionController.moveAlongPath(path);
+        }
+      }
     };
     this.setNewView = _setNewView;
 
@@ -1644,14 +1710,15 @@ if (!window['$']) {
         clearInterval(animateInterval);
         animateInterval = null;
         //}
-        for ( i = 0; i < viewChangeListeners.length; i++)
-          viewChangeListeners[i](view);
+        // We are done changing the view, run listeners specific to this.
+        for (i = 0; i < viewEndChangeListeners.length; i++)
+          viewEndChangeListeners[i](view);
       } else {
         view = pixelBoundingBoxToPixelCenter(_computeMotion(pixelCenterToPixelBoundingBoxView(view).bbox, pixelCenterToPixelBoundingBoxView(targetView).bbox, t));
       }
       refresh(fromGoogleMapflag);
-      // Run listeners
-      for ( i = 0; i < viewChangeListeners.length; i++)
+      // Run listeners as the view changes
+      for (i = 0; i < viewChangeListeners.length; i++)
         viewChangeListeners[i](view);
     };
 

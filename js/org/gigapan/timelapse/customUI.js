@@ -1310,7 +1310,7 @@ if (!org.gigapan.timelapse.Timelapse) {
                 },
                 "zoom": 10
               };
-              setViewGracefully(newView, false, true);
+              timelapse.setNewView(newView, false, true);
             } else {
               console.log("Geocode failed: " + status);
             }
@@ -1323,7 +1323,7 @@ if (!org.gigapan.timelapse.Timelapse) {
             },
             "zoom": 10
           };
-          setViewGracefully(newView, false, true);
+          timelapse.setNewView(newView, false, true);
         }
       });
     };
