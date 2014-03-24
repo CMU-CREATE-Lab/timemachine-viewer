@@ -11,7 +11,7 @@ if (fields.master) {
     var keyframe = snaplapse.recordKeyframe();
     var settings = timelapse.getSettings();
     keyframe.unsafe_string_frameTitle = frameTitle;
-    keyframe.centerView = timelapse.pixelBoundingBoxToLatLngCenter(keyframe.bounds);
+    keyframe.centerView = timelapse.pixelBoundingBoxToLatLngCenterView(keyframe.bounds);
     keyframe.thumbnailURL = snaplapseViewer.generateThumbnailURL(settings["url"], keyframe.bounds, 260, 185, keyframe.time);
     return keyframe;
   };
@@ -76,7 +76,7 @@ if (fields.master) {
     var settings = timelapse.getSettings();
     for (var i = 0; i < tourJSON.keyframes.length; i++) {
       var keyframe = tourJSON.keyframes[i];
-      keyframe.centerView = timelapse.pixelBoundingBoxToLatLngCenter(keyframe.bounds);
+      keyframe.centerView = timelapse.pixelBoundingBoxToLatLngCenterView(keyframe.bounds);
       keyframe.thumbnailURL = snaplapseViewer.generateThumbnailURL(settings["url"], keyframe.bounds, 260, 185, keyframe.time);
     }
     controlReciever.emit('returnDecodeTour', tourJSON);

@@ -311,6 +311,23 @@ if (!window['$']) {
       "tagPointRadius_nav": undefined
     };
 
+    // Constants
+    var CONSTANTS = {
+      MOTION_TYPES : {
+        WARP : 0,
+        PARABOLIC : 1
+      },
+      COORDINATE_SYSTEM : {
+        PIXEL : 0,
+        LAT_LNG : 1
+      },
+      VIEW_FIT : {
+        CENTER : 0,
+        BOUNDING_BOX : 1
+      }
+    };
+    this.CONSTANTS = CONSTANTS;
+
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////
     //
     // Public methods
@@ -573,9 +590,9 @@ if (!window['$']) {
       var bboxViewNE = bboxView.bbox.ne;
       var bboxViewSW = bboxView.bbox.sw;
       if (( typeof (tmJSON['projection-bounds']) !== 'undefined') && bboxViewNE && bboxViewSW && UTIL.isNumber(bboxViewNE.lat) && UTIL.isNumber(bboxViewNE.lng) && UTIL.isNumber(bboxViewSW.lat) && UTIL.isNumber(bboxViewSW.lng)) {
-        newView = computeViewLatLngFit(bboxView);
+        newView = latLngBoundingBoxViewToPixelCenter(bboxView);
       } else if (UTIL.isNumber(bboxView.bbox.xmin) && UTIL.isNumber(bboxView.bbox.xmax) && UTIL.isNumber(bboxView.bbox.ymin) && UTIL.isNumber(bboxView.bbox.ymax)) {
-        newView = computeViewFit(bboxView);
+        newView = pixelBoundingBoxToPixelCenter(bboxView);
       } else {
         newView = view;
       }
@@ -733,9 +750,9 @@ if (!window['$']) {
       if (homeView == undefined || !UTIL.isNumber(homeView.scale)) {
         if (settings["newHomeView"] != undefined) {
           // Store the home view so we don't need to compute it every time
-          homeView = computeViewFit(computeBoundingBox(settings["newHomeView"]));
+          homeView = pixelBoundingBoxToPixelCenter(pixelCenterToPixelBoundingBoxView(settings["newHomeView"]).bbox);
         } else {
-          homeView = computeViewFit({
+          homeView = pixelBoundingBoxToPixelCenter({
             xmin: 0,
             ymin: 0,
             xmax: panoWidth,
@@ -748,11 +765,15 @@ if (!window['$']) {
     this.homeView = _homeView;
 
     this.getBoundingBoxForCurrentView = function() {
-      return computeBoundingBox(view);
+      var bboxView = pixelCenterToPixelBoundingBoxView(view);
+      if (bboxView == null)
+        return null;
+      else
+        return bboxView.bbox;
     };
 
     this.warpToBoundingBox = function(bbox) {
-      this.warpTo(computeViewFit(bbox));
+      this.warpTo(pixelBoundingBoxToPixelCenter(bbox));
     };
 
     this.resetPerf = function() {
@@ -852,9 +873,9 @@ if (!window['$']) {
       if (newView.center) {// Center view
         var newCenterView = newView.center;
         if (( typeof (tmJSON['projection-bounds']) !== 'undefined') && UTIL.isNumber(newCenterView.lat) && UTIL.isNumber(newCenterView.lng) && UTIL.isNumber(newView.zoom)) {
-          newView = computeViewLatLngCenter(newView);
+          newView = latLngCenterViewToPixelCenter(newView);
         } else if (UTIL.isNumber(newCenterView.x) && UTIL.isNumber(newCenterView.y) && UTIL.isNumber(newView.zoom)) {
-          newView = computeViewPointCenter(newView);
+          newView = pixelCenterViewToPixelCenter(newView);
         } else {
           newView = view;
         }
@@ -863,9 +884,9 @@ if (!window['$']) {
         var newViewBboxNE = newViewBbox.ne;
         var newViewBboxSW = newViewBbox.sw;
         if (( typeof (tmJSON['projection-bounds']) !== 'undefined') && newViewBboxNE && newViewBboxSW && UTIL.isNumber(newViewBboxNE.lat) && UTIL.isNumber(newViewBboxNE.lng) && UTIL.isNumber(newViewBboxSW.lat) && UTIL.isNumber(newViewBboxSW.lng)) {
-          newView = computeViewLatLngFit(newView);
+          newView = latLngBoundingBoxViewToPixelCenter(newView);
         } else if (UTIL.isNumber(newViewBbox.xmin) && UTIL.isNumber(newViewBbox.xmax) && UTIL.isNumber(newViewBbox.ymin) && UTIL.isNumber(newViewBbox.ymax)) {
-          newView = computeViewFit(newView);
+          newView = pixelBoundingBoxToPixelCenter(newView);
         } else {
           newView = view;
         }
@@ -1624,7 +1645,7 @@ if (!window['$']) {
         for ( i = 0; i < viewChangeListeners.length; i++)
           viewChangeListeners[i](view);
       } else {
-        view = computeViewFit(_computeMotion(computeBoundingBox(view), computeBoundingBox(targetView), t));
+        view = pixelBoundingBoxToPixelCenter(_computeMotion(pixelCenterToPixelBoundingBoxView(view).bbox, pixelCenterToPixelBoundingBoxView(targetView).bbox, t));
       }
       refresh(fromGoogleMapflag);
       // Run listeners
@@ -1632,9 +1653,15 @@ if (!window['$']) {
         viewChangeListeners[i](view);
     };
 
-    // Convert pixel bounding box to center view (x, y, scale)
-    var computeViewFit = function(bbox) {
-      if ( typeof (bbox.bbox) != 'undefined')
+    //// Views with scale ////
+
+    // Convert {bbox:{xmin, xmax, ymin, ymax}} OR {xmin, xmax, ymin, ymax} to {x, y, scale}
+    var pixelBoundingBoxToPixelCenter = function(bbox) {
+      if (!bbox)
+        return null;
+
+      // If input happens to be of the form {bbox:{xmin, xmax, ymin, ymax}}
+      if ( typeof (bbox.bbox) !== 'undefined')
         bbox = bbox.bbox;
 
       var scale = Math.min(viewportWidth / (bbox.xmax - bbox.xmin), viewportHeight / (bbox.ymax - bbox.ymin));
@@ -1645,21 +1672,28 @@ if (!window['$']) {
         scale: scale
       };
     };
-    this.computeViewFit = computeViewFit;
+    this.pixelBoundingBoxToPixelCenter = pixelBoundingBoxToPixelCenter;
 
-    // Convert lat/Lng bounding box to center view (x, y, scale)
-    var computeViewLatLngFit = function(newView) {
+    // Convert {bbox:{ne:{lat:val,lng:val},sw:{lat:val,lng:val}}} OR {ne:{lat:val,lng:val},sw:{lat:val,lng:val}} to {x, y, scale}
+    var latLngBoundingBoxToPixelCenter = function(bbox) {
+      if (!bbox)
+        return null;
+
+      // If input happens to be of the form {bbox:{...}}
+      if ( typeof (bbox.bbox) !== 'undefined')
+        bbox = bbox.bbox;
+
       var projection = _getProjection();
-      var newViewBboxNE = newView.bbox.ne;
-      var newViewBboxSW = newView.bbox.sw;
+      var newViewBboxNE = bbox.ne;
+      var newViewBboxSW = bbox.sw;
 
       var a = projection.latlngToPoint({
-        "lat": newViewBboxNE.lat,
-        "lng": newViewBboxNE.lng
+        lat: newViewBboxNE.lat,
+        lng: newViewBboxNE.lng
       });
       var b = projection.latlngToPoint({
-        "lat": newViewBboxSW.lat,
-        "lng": newViewBboxSW.lng
+        lat: newViewBboxSW.lat,
+        lng: newViewBboxSW.lng
       });
 
       var xmax = Math.max(a.x, b.x);
@@ -1675,50 +1709,131 @@ if (!window['$']) {
         scale: scale
       };
     };
-    this.computeViewLatLngFit = computeViewLatLngFit;
+    this.latLngBoundingBoxToPixelCenter = latLngBoundingBoxToPixelCenter;
 
-    // Convert {center:{x, y}, zoom:z} to center view (x, y, scale)
-    var computeViewPointCenter = function(newView) {
+    // Convert {center:{x:val, y:val}, zoom:val} to {x, y, scale}
+    var pixelCenterViewToPixelCenter = function(theView) {
+      if (!theView)
+        return null;
+
       return {
-        x: newView.center.x,
-        y: newView.center.y,
-        scale: Math.pow(2, newView.zoom) * _homeView().scale
+        x: theView.center.x,
+        y: theView.center.y,
+        scale: Math.pow(2, theView.zoom) * _homeView().scale
       };
     };
-    this.computeViewPointCenter = computeViewPointCenter;
+    this.pixelCenterViewToPixelCenter = pixelCenterViewToPixelCenter;
 
-    // Convert {center:{lat, lng}, zoom:z} to center view (x, y, scale)
-    var computeViewLatLngCenter = function(newView) {
+    // Convert {center:{lat:val, lng:val}, zoom:val} to {x, y, scale}
+    var latLngCenterViewToPixelCenter = function(theView) {
+      if (!theView)
+        return null;
+
       var point = _getProjection().latlngToPoint({
-        "lat": newView.center.lat,
-        "lng": newView.center.lng
+        lat: theView.center.lat,
+        lng: theView.center.lng
       });
       return {
         x: point.x,
         y: point.y,
-        scale: Math.pow(2, newView.zoom) * _homeView().scale
+        scale: Math.pow(2, theView.zoom) * _homeView().scale
       };
     };
-    this.computeViewLatLngCenter = computeViewLatLngCenter;
+    this.latLngCenterViewToPixelCenter = latLngCenterViewToPixelCenter;
 
-    // Convert center view (x, y, scale) to pixel bounding box
-    var computeBoundingBox = function(theView) {
+
+    //// Views with zoom ////
+
+    // Convert {x, y, scale} OR {center:{x:val, y:val}, zoom:val} to {center:{lat:val, lng:val}, zoom:val}
+    var pixelCenterToLatLngCenterView = function(theView) {
+      if (!theView)
+        return null;
+      if (!theView.scale)
+        theView = _normalizeView(theView);
+
+      var projection = _getProjection();
+      var latLng = projection.pointToLatlng({
+        x: theView.x,
+        y: theView.y
+      });
+      return {
+        center: {
+          lat: latLng.lat,
+          lng: latLng.lng
+        },
+        zoom: scaleToZoom(theView.scale)
+      };
+    };
+    this.pixelCenterToLatLngCenterView = pixelCenterToLatLngCenterView;
+
+    // Convert pixel bounding box to {center:{lat, lng}, zoom:z}
+    var pixelBoundingBoxToLatLngCenterView = function(bbox) {
+      if (!bbox)
+        return null;
+
+      // bbox will be normalized if it is in the form {bbox:{...}}
+      var centerView = pixelBoundingBoxToPixelCenter(bbox);
+      var projection = _getProjection();
+      var latLng = projection.pointToLatlng({
+        x: centerView.x,
+        y: centerView.y
+      });
+      return {
+        center: {
+          lat: latLng.lat,
+          lng: latLng.lng
+        },
+        zoom: scaleToZoom(centerView.scale)
+      };
+    };
+    this.pixelBoundingBoxToLatLngCenterView = pixelBoundingBoxToLatLngCenterView;
+
+    // Convert {xmin:val, xmax:val, ymin:val, ymax:val} OR {bbox:{xmin:{x:val,y:val},xmax:{x:val,y:val}}} to {center:{x:val, y:val}, zoom:val}
+    var pixelBoundingBoxToPixelCenterView = function(bbox) {
+      if (!bbox)
+        return null;
+      if (bbox.bbox)
+        bbox = _normalizeView(bbox);
+
+      var pixelFit = pixelBoundingBoxToPixelCenter(bbox);
+      return {
+        center: {
+          x: pixelFit.x,
+          y: pixelFit.y
+        },
+        zoom: scaleToZoom(pixelFit.scale)
+      };
+    };
+    this.pixelBoundingBoxToPixelCenterView = pixelBoundingBoxToPixelCenterView;
+
+    // Convert {x, y, scale} OR {center:{x:val, y:val}, zoom:val} to {bbox:{xmin:val,xmax:val,ymin:val,ymax:val}}
+    var pixelCenterToPixelBoundingBoxView = function(theView) {
+      if (!theView)
+        return null;
+      if (!theView.scale)
+        theView = _normalizeView(theView);
+
       var halfWidth = 0.5 * viewportWidth / theView.scale;
       var halfHeight = 0.5 * viewportHeight / theView.scale;
       return {
-        xmin: theView.x - halfWidth,
-        xmax: theView.x + halfWidth,
-        ymin: theView.y - halfHeight,
-        ymax: theView.y + halfHeight
+        bbox: {
+          xmin: theView.x - halfWidth,
+          xmax: theView.x + halfWidth,
+          ymin: theView.y - halfHeight,
+          ymax: theView.y + halfHeight
+        }
       };
     };
-    this.computeBoundingBox = computeBoundingBox;
+    this.pixelCenterToPixelBoundingBoxView = pixelCenterToPixelBoundingBoxView;
 
-    // Convert center view (x, y, scale) to lat/lng bounding box
-    var computeBoundingBoxLatLng = function(theView) {
-      if (theView == undefined)
-        theView = view;
-      var pixelBound = computeBoundingBox(theView);
+    // Convert {x, y, scale} OR {center:{x:val, y:val}, zoom:val} to {bbox:{ne:{lat:val,lng:val},sw:{lat:val,lng:val}}}
+    var pixelCenterToLatLngBoundingBoxView = function(theView) {
+      if (!theView)
+        return null;
+      if (!theView.scale)
+        theView = _normalizeView(theView);
+
+      var pixelBound = pixelCenterToPixelBoundingBoxView(theView).bbox;
       var projection = _getProjection();
       var min = projection.pointToLatlng({
         x: pixelBound.xmin,
@@ -1729,35 +1844,21 @@ if (!window['$']) {
         y: pixelBound.ymax
       });
       return {
-        min: min,
-        max: max
+        bbox: {
+          ne: min,
+          sw: max
+        }
       };
     };
-    this.computeBoundingBoxLatLng = computeBoundingBoxLatLng;
+    this.pixelCenterToLatLngBoundingBoxView = pixelCenterToLatLngBoundingBoxView;
 
-    // Convert pixel bounding box to lat/lng bounding box
-    var pixelBoundingBoxToLatLngBoundingBox = function(bbox) {
-      return computeBoundingBoxLatLng(computeViewFit(bbox));
+    // Convert {xmin:val, xmax:val, ymin:val, ymax:val} OR {bbox:{xmin:{x:val,y:val},xmax:{x:val,y:val}}} to {bbox:{ne:{lat:val,lng:val},sw:{lat:val,lng:val}}}
+    var pixelBoundingBoxToLatLngBoundingBoxView = function(bbox) {
+      if (!bbox)
+        return null;
+      return pixelCenterToLatLngBoundingBoxView(pixelBoundingBoxToPixelCenter(bbox));
     };
-    this.pixelBoundingBoxToLatLngBoundingBox = pixelBoundingBoxToLatLngBoundingBox;
-
-    // Convert pixel bounding box to {center:{lat, lng}, zoom:z}
-    var pixelBoundingBoxToLatLngCenter = function(bbox) {
-      var centerView = computeViewFit(bbox);
-      var projection = _getProjection();
-      var latLng = projection.pointToLatlng({
-        x: centerView.x,
-        y: centerView.y
-      });
-      return {
-        center: {
-          "lat": latLng.lat,
-          "lng": latLng.lng
-        },
-        "zoom": scaleToZoom(centerView.scale)
-      };
-    };
-    this.pixelBoundingBoxToLatLngCenter = pixelBoundingBoxToLatLngCenter;
+    this.pixelBoundingBoxToLatLngBoundingBoxView = pixelBoundingBoxToLatLngBoundingBoxView;
 
     var onPanoLoadSuccessCallback = function(data, desiredView, doWarp) {
       UTIL.log('onPanoLoadSuccessCallback(' + JSON.stringify(data) + ', ' + view + ', ' + ')');
@@ -1838,7 +1939,7 @@ if (!window['$']) {
 
     // Initialize the tag info with location data
     var initializeTagInfo_locationData = function() {
-      var boundingBox = computeBoundingBox(homeView);
+      var boundingBox = pixelCenterToPixelBoundingBoxView(homeView).bbox;
       tagInfo_locationData.homeView.xmin = boundingBox.xmin;
       tagInfo_locationData.homeView.ymin = boundingBox.ymin;
       tagInfo_locationData.homeView.scale = homeView.scale;
@@ -1900,7 +2001,7 @@ if (!window['$']) {
         }
         if (visualizer || smallGoogleMap) {
           // Get the location bound of the video viewer
-          var bbox = computeBoundingBox(desiredView);
+          var bbox = pixelCenterToPixelBoundingBoxView(desiredView).bbox;
           var videoViewer_leftTopPoint = {
             "x": bbox.xmin,
             "y": bbox.ymin

@@ -349,9 +349,9 @@ if (!org.gigapan.timelapse.Timelapse) {
       // Compute the zoom offset
       var maxView = timelapse.getView();
       maxView.scale = timelapse.getMaxScale();
-      var maxViewBound = timelapse.computeBoundingBoxLatLng(maxView);
-      var googleMapLatlngSW = new google.maps.LatLng(maxViewBound.max.lat, maxViewBound.max.lng);
-      var googleMapLatlngNE = new google.maps.LatLng(maxViewBound.min.lat, maxViewBound.min.lng);
+      var maxViewBound = timelapse.pixelCenterToLatLngBoundingBoxView(maxView).bbox;
+      var googleMapLatlngSW = new google.maps.LatLng(maxViewBound.sw.lat, maxViewBound.sw.lng);
+      var googleMapLatlngNE = new google.maps.LatLng(maxViewBound.ne.lat, maxViewBound.ne.lng);
       var googleMapLatlngBound = new google.maps.LatLngBounds(googleMapLatlngNE, googleMapLatlngSW);
       googleMap.fitBounds(googleMapLatlngBound);
       google.maps.event.addListenerOnce(googleMap, 'bounds_changed', function() {

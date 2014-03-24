@@ -468,7 +468,7 @@ if (!Math.uuid) {
           if (tmJSON['projection-bounds']) {
             var projection = timelapse.getProjection();
             // Lat/Lng center view
-            viewCenter = timelapse.computeViewFit(desiredKeyframes[i]['bounds']);
+            viewCenter = timelapse.pixelBoundingBoxToPixelCenter(desiredKeyframes[i]['bounds']);
             var latLng = projection.pointToLatlng({
               x: viewCenter.x,
               y: viewCenter.y
@@ -477,7 +477,7 @@ if (!Math.uuid) {
             encoder.write_lon(latLng.lng);
           } else {
             // x/y center view
-            viewCenter = timelapse.computeViewFit(desiredKeyframes[i]['bounds']);
+            viewCenter = timelapse.pixelBoundingBoxToPixelCenter(desiredKeyframes[i]['bounds']);
             encoder.write_udecimal(viewCenter.x.toFixed(5), 5);
             encoder.write_udecimal(viewCenter.y.toFixed(5), 5);
           }
@@ -579,7 +579,7 @@ if (!Math.uuid) {
             "y": pointCenter.y,
             "scale": timelapse.zoomToScale(zoom)
           };
-          var bbox = timelapse.computeBoundingBox(centerView);
+          var bbox = timelapse.pixelCenterToPixelBoundingBoxView(centerView).bbox;
           frame["bounds"] = {};
           frame["bounds"]["xmin"] = bbox.xmin;
           frame["bounds"]["ymin"] = bbox.ymin;

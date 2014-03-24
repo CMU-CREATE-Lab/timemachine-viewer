@@ -756,7 +756,7 @@ if (!org.gigapan.timelapse.Timelapse) {
         navigationMap_circle_y = keyframe.timeTagNavigation.y;
         navigationMap_circle_radius = keyframe.timeTagNavigation.r;
       } else if (isKeyframeFromLoad) {
-        var mapXY = timelapse.viewPointToContextMapPoint(timelapse.computeViewFit(keyframe.bounds));
+        var mapXY = timelapse.viewPointToContextMapPoint(timelapse.pixelBoundingBoxToPixelCenter(keyframe.bounds));
         var contextMapPointInfo = timelapse.boundingBoxToContextMapPointInfo(keyframe.bounds);
         navigationMap_circle_x = mapXY.x;
         navigationMap_circle_y = mapXY.y;
