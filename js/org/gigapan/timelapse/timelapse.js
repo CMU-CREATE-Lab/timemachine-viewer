@@ -1250,6 +1250,8 @@ if (!window['$']) {
     var fitVideoToViewport = function(newViewportWidth, newViewportHeight) {
       if (newViewportHeight == undefined)
         newViewportHeight = viewportHeight;
+      if (newViewportWidth == undefined)
+        newViewportWidth = viewportWidth;
       var originalVideoStretchRatio = videoStretchRatio;
       var originalVideoWidth = datasetJSON["video_width"] - datasetJSON["tile_width"];
       var originalVideoHeight = datasetJSON["video_height"] - datasetJSON["tile_height"];
