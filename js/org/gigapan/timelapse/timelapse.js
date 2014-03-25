@@ -138,15 +138,10 @@ if (!window['$']) {
     var skippedFramesAtEnd = ( typeof (settings["skippedFramesAtEnd"]) == "undefined" || settings["skippedFramesAtEnd"] < 0) ? 0 : settings["skippedFramesAtEnd"];
     var skippedFramesAtStart = ( typeof (settings["skippedFramesAtStart"]) == "undefined" || settings["skippedFramesAtStart"] < 0) ? 0 : settings["skippedFramesAtStart"];
     var mediaType = ( typeof (settings["mediaType"]) == "undefined") ? null : settings["mediaType"];
-    var visualizerScale = ( typeof (settings["visualizerScale"]) == "undefined") ? 1 : settings["visualizerScale"];
     var enableMetadataCacheBreaker = settings["enableMetadataCacheBreaker"] || false;
-    var defaultVisualizerGeometry = {
-      width: viewportGeometry.width / 4.3,
-      height: viewportGeometry.height / 4.3
-    };
     var visualizerGeometry = {
-      width: defaultVisualizerGeometry.width * visualizerScale,
-      height: defaultVisualizerGeometry.height * visualizerScale
+      width: undefined,
+      height: undefined
     };
     var minViewportHeight = 400;
     var minViewportWidth = 700;
@@ -316,13 +311,13 @@ if (!window['$']) {
 
     // Constants
     var CONSTANTS = {
-      COORDINATE_SYSTEM : {
-        PIXEL : 0,
-        LAT_LNG : 1
+      COORDINATE_SYSTEM: {
+        PIXEL: 0,
+        LAT_LNG: 1
       },
-      VIEW_FIT : {
-        CENTER : 0,
-        BOUNDING_BOX : 1
+      VIEW_FIT: {
+        CENTER: 0,
+        BOUNDING_BOX: 1
       }
     };
     this.CONSTANTS = CONSTANTS;
@@ -902,7 +897,7 @@ if (!window['$']) {
         parabolicMotionController = null;
         if (doPlay)
           thisObj.handlePlayPause();
-        if (typeof (callBack) === "function")
+        if ( typeof (callBack) === "function")
           callBack();
       };
 
@@ -1704,14 +1699,14 @@ if (!window['$']) {
         animateInterval = null;
         //}
         // We are done changing the view, run listeners specific to this.
-        for (i = 0; i < viewEndChangeListeners.length; i++)
+        for (var i = 0; i < viewEndChangeListeners.length; i++)
           viewEndChangeListeners[i](view);
       } else {
         view = pixelBoundingBoxToPixelCenter(_computeMotion(pixelCenterToPixelBoundingBoxView(view).bbox, pixelCenterToPixelBoundingBoxView(targetView).bbox, t));
       }
       refresh();
       // Run listeners as the view changes
-      for (i = 0; i < viewChangeListeners.length; i++)
+      for (var i = 0; i < viewChangeListeners.length; i++)
         viewChangeListeners[i](view);
     };
 
@@ -1802,7 +1797,6 @@ if (!window['$']) {
       };
     };
     this.latLngCenterViewToPixelCenter = latLngCenterViewToPixelCenter;
-
 
     //// Views with zoom ////
 
@@ -2587,14 +2581,17 @@ if (!window['$']) {
           viewportGeometry.width = data["video_width"] - data["tile_width"];
         if (viewportGeometry.height == undefined)
           viewportGeometry.height = data["video_height"] - data["tile_height"];
+        if (visualizerGeometry.height == undefined)
+          visualizerGeometry.height = viewportGeometry.height / 4.3;
+        if (visualizerGeometry.width == undefined)
+          visualizerGeometry.width = viewportGeometry.width / 4.3;
         if (viewportGeometry.height < minViewportHeight) {
           viewportGeometry.height = minViewportHeight;
-          visualizerGeometry.height = defaultVisualizerGeometry.height;
+          visualizerGeometry.height = visualizerGeometry.height;
           visualizerGeometry.width = visualizerGeometry.height * (data["video_width"] / data["video_height"]);
         }
-        if (viewportGeometry.width < minViewportWidth) {
+        if (viewportGeometry.width < minViewportWidth)
           viewportGeometry.width = minViewportWidth;
-        }
       } else {
         $("#" + viewerDivId).css({
           "position": "absolute",
@@ -2746,7 +2743,7 @@ if (!window['$']) {
       // When you do a path from an external css file in IE, it is actually relative to the document and not the css file. This is against the spec. ARGH!
       // So we have a choice: Do multiple paths in the css file, getting a 404 in Chrome for invalid relative paths OR we do the style in the document itself,
       // which in any browser will reslove relative paths correctly. We choose the latter to keep the message console clean.
-      $('<style type="text/css">.closedHand {cursor: url("' + rootAppURL + 'css/cursors/closedhand.cur"), move !important;} .openHand {cursor: url("' + rootAppURL + 'css/cursors/openhand.cur"), move !important;} .tiledContentHolder {cursor: url("' + rootAppURL +'css/cursors/openhand.cur"), move;}</style>').appendTo($('head'));
+      $('<style type="text/css">.closedHand {cursor: url("' + rootAppURL + 'css/cursors/closedhand.cur"), move !important;} .openHand {cursor: url("' + rootAppURL + 'css/cursors/openhand.cur"), move !important;} .tiledContentHolder {cursor: url("' + rootAppURL + 'css/cursors/openhand.cur"), move;}</style>').appendTo($('head'));
 
       loadTimelapse(settings["url"]);
     }
