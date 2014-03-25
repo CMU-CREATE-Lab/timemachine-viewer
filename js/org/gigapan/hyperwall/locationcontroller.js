@@ -40,8 +40,7 @@ if (fields.master) {
   });
 
   controlReciever.on('sync setLocation', function(centerView) {
-    cancelZoomGracefully();
-    setViewGracefully(JSON.parse(centerView), false, false)
+    timelapse.setNewView(JSON.parse(centerView), false, false)
   });
 
   controlReciever.on('sync addKeyframe', function(frameTitle) {
@@ -108,7 +107,7 @@ if (fields.master) {
       },
       "zoom": viewArray[2]
     };
-    setViewGracefully(newView, false, false);
+    timelapse.setNewView(newView, false, false);
   });
 
   controlReciever.on('sync handlePlayPauseServer', function(data) {

@@ -259,7 +259,11 @@ if (!org.gigapan) {
         // perhaps it is relative and in the form of "./foo.bar"
         ajaxUrl = "./" + path;
         if ( typeof (cached_ajax[ajaxUrl]) === "undefined") {
-          doNormalAjax = true;
+          // Lastly, remove rootPath from path and try again.
+          ajaxUrl = path.substr(path.indexOf(rootPath) + 1);
+          if ( typeof (cached_ajax[ajaxUrl]) === "undefined") {
+            doNormalAjax = true;
+          }
         }
       }
 
@@ -379,5 +383,10 @@ if (!org.gigapan) {
     if ($element.hasClass("snaplapse_keyframe_list_item"))
       $element.find(".keyframe_table").css("background-color", colorStr);
   };
+
+  org.gigapan.Util.getRootAppURL = function() {
+    var tmpURL = $('script[src*="util.js"]').attr("src");
+    return tmpURL.substr(0, tmpURL.indexOf("js/"));
+  }
 
 })();

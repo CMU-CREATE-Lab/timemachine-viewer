@@ -134,6 +134,7 @@ if (!Math.uuid) {
     var currentWaitForExtraStart = false;
     var extraWaitForStartDuration = 0;
     var startingPlaybackRate = 1;
+    var rootAppURL = org.gigapan.Util.getRootAppURL();
 
     var TOUR_SHARING_VERSION = 4;
 
@@ -154,7 +155,7 @@ if (!Math.uuid) {
           snaplapseViewer.showViewerUI();
 
         $("#" + viewerDivId + " .tourLoadOverlay").remove();
-        $("#" + viewerDivId).append('<div class="tourLoadOverlay"><div class="tourLoadOverlayTitleContainer"><div class="tourLoadOverlayTitle"></div></div><img class="tourLoadOverlayPlay" title="Click to start the tour" src="images/tour_play_outline.png"></div></div>');
+        $("#" + viewerDivId).append('<div class="tourLoadOverlay"><div class="tourLoadOverlayTitleContainer"><div class="tourLoadOverlayTitle"></div></div><img class="tourLoadOverlayPlay" title="Click to start the tour" src="' + rootAppURL + 'images/tour_play_outline.png"></div>');
         snaplapseViewer.initializeTourOverlyUI();
       }
 
@@ -1164,7 +1165,7 @@ if (!Math.uuid) {
     // Constructor code
     //
 
-    org.gigapan.Util.ajax("html", "", "time_warp_composer.html", function(html) {
+    org.gigapan.Util.ajax("html", rootAppURL, "time_warp_composer.html", function(html) {
       $composerDivObj.html(html);
       snaplapseViewer = new org.gigapan.timelapse.snaplapse.SnaplapseViewer(thisObj, timelapse, settings, usePresentationSlider);
     });

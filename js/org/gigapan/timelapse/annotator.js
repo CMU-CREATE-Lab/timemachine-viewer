@@ -117,6 +117,8 @@ if (!window['$']) {
     var canMoveAnnotation = false;
     var tagColorDefault = [0, 0, 0];
 
+    var rootAppURL = org.gigapan.Util.getRootAppURL();
+
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////
     //
     // Public methods
@@ -854,7 +856,7 @@ if (!window['$']) {
     //
     // Constructor code
     //
-    org.gigapan.Util.ajax("html", "", "annotation_editor.html", function(html) {
+    org.gigapan.Util.ajax("html", rootAppURL, "annotation_editor.html", function(html) {
       $annotatorDivObj.html(html);
       setupAnnotationLayer();
     });

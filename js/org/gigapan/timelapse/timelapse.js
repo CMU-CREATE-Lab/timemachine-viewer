@@ -316,10 +316,6 @@ if (!window['$']) {
 
     // Constants
     var CONSTANTS = {
-      MOTION_TYPES : {
-        WARP : 0,
-        PARABOLIC : 1
-      },
       COORDINATE_SYSTEM : {
         PIXEL : 0,
         LAT_LNG : 1
@@ -330,6 +326,8 @@ if (!window['$']) {
       }
     };
     this.CONSTANTS = CONSTANTS;
+
+    var rootAppURL = org.gigapan.Util.getRootAppURL();
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////
     //
@@ -1458,11 +1456,6 @@ if (!window['$']) {
     var handleMousedownEvent = function(event) {
       if (event.which != 1 || (annotator && (event.metaKey || event.ctrlKey || event.altKey || annotator.getCanMoveAnnotation())))
         return;
-      // TODO: Revisit when we refactor view code
-      try {
-        cancelZoomGracefully();
-      } catch(err) {
-      }
       var mouseIsDown = true;
       var lastEvent = event;
       var saveMouseMove = document.onmousemove;
@@ -2753,7 +2746,7 @@ if (!window['$']) {
       // When you do a path from an external css file in IE, it is actually relative to the document and not the css file. This is against the spec. ARGH!
       // So we have a choice: Do multiple paths in the css file, getting a 404 in Chrome for invalid relative paths OR we do the style in the document itself,
       // which in any browser will reslove relative paths correctly. We choose the latter to keep the message console clean.
-      $('<style type="text/css">.closedHand {cursor: url("./css/cursors/closedhand.cur"), move !important;} .openHand {cursor: url("./css/cursors/openhand.cur"), move !important;} .tiledContentHolder {cursor: url("./css/cursors/openhand.cur"), move;}</style>').appendTo($('head'));
+      $('<style type="text/css">.closedHand {cursor: url("' + rootAppURL + 'css/cursors/closedhand.cur"), move !important;} .openHand {cursor: url("' + rootAppURL + '/css/cursors/openhand.cur"), move !important;} .tiledContentHolder {cursor: url("' + rootAppURL +'css/cursors/openhand.cur"), move;}</style>').appendTo($('head'));
 
       loadTimelapse(settings["url"]);
     }
@@ -2876,7 +2869,7 @@ if (!window['$']) {
     browserSupported = UTIL.browserSupported();
 
     if (!browserSupported) {
-      UTIL.ajax("html", "", "browser_not_supported_template.html", function(html) {
+      UTIL.ajax("html", rootAppURL, "browser_not_supported_template.html", function(html) {
         $("#" + viewerDivId).html(html);
         $("#browser_not_supported").show();
       });
@@ -2911,6 +2904,6 @@ if (!window['$']) {
     }
 
     UTIL.log('Timelapse("' + settings["url"] + '")');
-    UTIL.ajax("html", "", "player_template.html", loadPlayerControlsTemplate);
+    UTIL.ajax("html", rootAppURL, "player_template.html", loadPlayerControlsTemplate);
   };
 })();

@@ -32,8 +32,6 @@
 // Authors:
 // Paul Dille (pdille@andrew.cmu.edu)
 
-var geocoder, newView, newZoom, doPlay, zoomGracefullyTimeout;
-
 function setupPostMessageHandlers() {
   // Handles the cross-domain iframe request to see whether a time machine is supported by the current user.
   pm.bind("timemachine-is-supported", function() {
@@ -71,11 +69,9 @@ function setupPostMessageHandlers() {
   });
 
   // Handles the cross-domain iframe request to change the view of a time machine.
-  // There is logic here to make the change to a new view happen gracefully
-  // and give the user context of where they were and where they are going.
   pm.bind("timemachine-set-view", function(data) {
     if (timelapse) {
-      setViewGracefully(data.view, data.doWarp, data.doPlay);
+      timelapse.setNewView(data.view, data.doWarp, data.doPlay);
     }
   });
 
@@ -97,36 +93,6 @@ function setupPostMessageHandlers() {
   });
 }
 
-// Set the view, animating smoothly if doWarp is false.
-function setViewGracefully(toView, doWarp, doPlayParam) {
-  cancelZoomGracefully();
-
-  newView = toView;
-  newZoom = toView.zoom;
-  doPlay = doPlayParam ? doPlayParam : false;
-
-  var currentView = timelapse.getViewStr().split(",");
-  var homeView = {
-    center: {
-      "lat": currentView[0],
-      "lng": currentView[1]
-    },
-    "zoom": currentView[2]
-  };
-
-  if (doWarp) {
-    timelapse.setNewView(newView, true);
-    if (doPlay)
-      timelapse.play();
-  } else {
-    newView.zoom = 0;
-    if (currentView[0] == "0" && currentView[1] == "0" && currentView[2] == "0")
-      zoomGracefully(newView);
-    else
-      zoomHome(homeView);
-  }
-}
-
 // Handles the sending of cross-domain iframe requests.
 function post(type, data) {
   pm({
@@ -136,44 +102,4 @@ function post(type, data) {
     url: document.referrer, // needed for hash fallback in older browsers
     origin: document.referrer // TODO: Change this (and above) to explicity set a domain we'll be receiving requests from
   });
-}
-
-// Zoom out before moving to the new view.
-function zoomHome(view) {
-  if (view.zoom > 0) {
-    var doWarp = false;
-    timelapse.setNewView(view, doWarp);
-    view.zoom -= 0.5;
-    zoomGracefullyTimeout = setTimeout(function() {
-      zoomHome(view);
-    }, 150);
-  } else {
-    zoomGracefullyTimeout = setTimeout(function() {
-      zoomGracefully(newView);
-    }, 550);
-  }
-}
-
-// This function, combined with zoomHome() above, will change the view of a time machine gracefully, since
-// just calling setNewView(), even with the animation flag set, will update the view too quickly.
-function zoomGracefully(view) {
-  if ((newZoom != 0 && newZoom > view.zoom) || (newZoom == 0 && view.zoom <= 10)) {
-    var doWarp = false;
-    var zoomDiff = newZoom - view.zoom;
-    if (zoomDiff >= 0.5)
-      view.zoom += 0.5;
-    else
-      view.zoom += zoomDiff;
-    timelapse.setNewView(view, doWarp);
-    zoomGracefullyTimeout = setTimeout(function() {
-      zoomGracefully(view);
-    }, 150);
-  } else {
-    if (doPlay)
-      timelapse.play();
-  }
-}
-
-function cancelZoomGracefully() {
-  clearTimeout(zoomGracefullyTimeout);
 }

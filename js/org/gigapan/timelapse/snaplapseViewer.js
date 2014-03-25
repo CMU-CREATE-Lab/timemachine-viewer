@@ -144,6 +144,8 @@ function playCachedSnaplapse(snaplapseId) {
     var eventListeners = {};
     var editorEnabled = timelapse.getEditorEnabled();
 
+    var rootAppURL = org.gigapan.Util.getRootAppURL();
+
     this.addEventListener = function(eventName, listener) {
       if (eventName && listener && typeof (listener) == "function") {
         if (!eventListeners[eventName]) {
@@ -283,7 +285,7 @@ function playCachedSnaplapse(snaplapseId) {
           $("#" + timelapseViewerDivId + " .tourLoadOverlayTitleContainer").appendTo($("#" + timelapseViewerDivId + " .snaplapseTourPlayBack"));
           $("#" + timelapseViewerDivId + " .tourLoadOverlay").hide();
           $(this).attr({
-            "src": "images/tour_stop_outline.png",
+            "src": rootAppURL + "images/tour_stop_outline.png",
             "title": ""
           });
           $("#" + timelapseViewerDivId + " .snaplapseTourPlayBack").attr("title", "Click to stop tour playback");
@@ -715,7 +717,7 @@ function playCachedSnaplapse(snaplapseId) {
           $("#" + timelapseViewerDivId + ' .stopTimeWarp').show();
           $("#" + timelapseViewerDivId + ' .addressLookup').attr("disabled", "disabled");
           $("#" + timelapseViewerDivId + ' .timelineSlider').slider("disable");
-          $("#" + timelapseViewerDivId + " .tourLoadOverlayPlay").attr("src", "images/tour_stop_outline.png").css("opacity", "1.0");
+          $("#" + timelapseViewerDivId + " .tourLoadOverlayPlay").attr("src", rootAppURL + "images/tour_stop_outline.png").css("opacity", "1.0");
           $("#" + timelapseViewerDivId + " .snaplapseTourPlayBack").css("left", "0px").toggleClass("playTour stopTour").attr("title", "Click to stop this tour");
           $("#" + timelapseViewerDivId + " .videoQualityContainer").css("left", "20px");
           $sortable.css("opacity", "0.5");
@@ -763,7 +765,7 @@ function playCachedSnaplapse(snaplapseId) {
           $("#" + timelapseViewerDivId + ' .addressLookup').removeAttr("disabled");
           hideAnnotationBubble();
           $("#" + timelapseViewerDivId + ' .timelineSlider').slider("enable");
-          $("#" + timelapseViewerDivId + " .tourLoadOverlayPlay").attr("src", "images/tour_replay_outline.png").css("opacity", "1.0");
+          $("#" + timelapseViewerDivId + " .tourLoadOverlayPlay").attr("src", rootAppURL + "images/tour_replay_outline.png").css("opacity", "1.0");
           $("#" + timelapseViewerDivId + " .snaplapseTourPlayBack").css("left", "60px").toggleClass("stopTour playTour").attr("title", "Click to replay this tour");
           $("#" + timelapseViewerDivId + " .videoQualityContainer").css("left", "95px");
           $sortable.css("opacity", "1");
@@ -1593,7 +1595,7 @@ function playCachedSnaplapse(snaplapseId) {
     //
     if ($("#" + timelapseViewerDivId + " .customEditorControl").length == 0 && !usePresentationSlider) {
       $("#" + timelapseViewerDivId).append('<div class="snaplapseTourPlayBack playTour"></div>');
-      $("#" + timelapseViewerDivId).append('<div class="tourLoadOverlay"><div class="tourLoadOverlayTitleContainer"><div class="tourLoadOverlayTitle"></div></div><img class="tourLoadOverlayPlay" title="Click to start the tour" src="images/tour_play_outline.png"></div></div>');
+      $("#" + timelapseViewerDivId).append('<div class="tourLoadOverlay"><div class="tourLoadOverlayTitleContainer"><div class="tourLoadOverlayTitle"></div></div><img class="tourLoadOverlayPlay" title="Click to start the tour" src="' + rootAppURL + 'images/tour_play_outline.png"></div>');
     }
     timelapse.setSnaplapseViewer(thisObj);
     initializeSnaplapseUI();

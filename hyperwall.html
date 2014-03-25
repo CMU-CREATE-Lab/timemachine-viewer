@@ -49,6 +49,10 @@
       // Landsat ("https" will casue the thumbnail loading from the server fail)
       var url = "http://earthengine.google.org/timelapse/data/20130507/";
 
+      // Use local files
+      // Be sure to uncomment mediaType: ".mp4" below
+      //var url = "/global_1080p_mp4_1920x1080/";
+
       function init() {
         myHomeView = {
           x: 677982.255550633,
@@ -59,6 +63,7 @@
           url: url,
           composerDiv: "composer1",
           enableCustomUI: "landsat",
+          //mediaType: ".mp4",
           viewportGeometry: {
             width: 1068,
             height: 600,
