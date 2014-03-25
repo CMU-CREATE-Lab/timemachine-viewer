@@ -130,7 +130,7 @@ function playCachedSnaplapse(snaplapseId) {
     var rootEmbedURL;
     var embedWidth = 854;
     var embedHeight = 480;
-    var useThumbnailServer = settings["useThumbnailServer"] ? settings["useThumbnailServer"] : true;
+    var useThumbnailServer =  ( typeof (settings["useThumbnailServer"]) == "undefined") ? true : settings["useThumbnailServer"];
     var $sortable;
     var sortingStartDistance = 30;
     var moveOneKeyframeIdx = {

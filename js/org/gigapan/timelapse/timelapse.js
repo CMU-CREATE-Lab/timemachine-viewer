@@ -2746,7 +2746,7 @@ if (!window['$']) {
       // When you do a path from an external css file in IE, it is actually relative to the document and not the css file. This is against the spec. ARGH!
       // So we have a choice: Do multiple paths in the css file, getting a 404 in Chrome for invalid relative paths OR we do the style in the document itself,
       // which in any browser will reslove relative paths correctly. We choose the latter to keep the message console clean.
-      $('<style type="text/css">.closedHand {cursor: url("' + rootAppURL + 'css/cursors/closedhand.cur"), move !important;} .openHand {cursor: url("' + rootAppURL + '/css/cursors/openhand.cur"), move !important;} .tiledContentHolder {cursor: url("' + rootAppURL +'css/cursors/openhand.cur"), move;}</style>').appendTo($('head'));
+      $('<style type="text/css">.closedHand {cursor: url("' + rootAppURL + 'css/cursors/closedhand.cur"), move !important;} .openHand {cursor: url("' + rootAppURL + 'css/cursors/openhand.cur"), move !important;} .tiledContentHolder {cursor: url("' + rootAppURL +'css/cursors/openhand.cur"), move;}</style>').appendTo($('head'));
 
       loadTimelapse(settings["url"]);
     }
