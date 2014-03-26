@@ -913,6 +913,7 @@ if (!window['$']) {
           if (!parabolicMotionController) {
             parabolicMotionController = new parabolicMotionObj.MotionController({
               animationFPS: 1000 / animateRate,
+              pathSpeed: isHyperwall ? 2.5 : 1.5,
               animateCallback: function(pt) {
                 _warpTo(parabolicMotionObj.pixelPointToView(viewportWidth, viewportHeight, pt));
               },
