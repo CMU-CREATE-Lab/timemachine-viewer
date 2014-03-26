@@ -252,12 +252,12 @@ if (!window['$']) {
     var parabolicMotionController;
     var parabolicMotionObj = org.gigapan.timelapse.parabolicMotion;
 
-    // animateRate in milliseconds, 5 means 200Hz
-    var animateRate = isHyperwall ? 5 : 80;
+    // animateRate in milliseconds, 20 means 50 FPS
+    var animateRate = isHyperwall ? 5 : 40;
     // animationFractionPerSecond, 3 means goes 300% toward goal in 1 sec
-    var animationFractionPerSecond = 3.0;
+    var animationFractionPerSecond = isHyperwall ? 3 : 5;
     // minTranslateSpeedPixelsPerSecond in pixels
-    var minTranslateSpeedPixelsPerSecond = 25.0;
+    var minTranslateSpeedPixelsPerSecond = isHyperwall ? 25 : 25;
     // minZoomSpeedPerSecond in log2 scale
     var minZoomSpeedPerSecond = 0.25;
 
@@ -912,7 +912,7 @@ if (!window['$']) {
         } else {
           if (!parabolicMotionController) {
             parabolicMotionController = new parabolicMotionObj.MotionController({
-              animationFPS: 12,
+              animationFPS: 1000 / animateRate,
               animateCallback: function(pt) {
                 _warpTo(parabolicMotionObj.pixelPointToView(viewportWidth, viewportHeight, pt));
               },
