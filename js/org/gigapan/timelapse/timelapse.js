@@ -254,8 +254,8 @@ if (!window['$']) {
     var parabolicMotionController;
     var parabolicMotionObj = org.gigapan.timelapse.parabolicMotion;
 
-    // animateRate in milliseconds, 20 means 50 FPS
-    var animateRate = isHyperwall ? 5 : 40;
+    // animateRate in milliseconds, 40 means 25 FPS
+    var animateRate = isHyperwall ? 10 : 40;
     // animationFractionPerSecond, 3 means goes 300% toward goal in 1 sec
     var animationFractionPerSecond = isHyperwall ? 3 : 5;
     // minTranslateSpeedPixelsPerSecond in pixels

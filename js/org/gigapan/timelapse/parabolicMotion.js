@@ -223,7 +223,7 @@ org.gigapan.timelapse.parabolicMotion.MotionController = function(settings) {
     this.path = path;
     this.pathProgress = 0;
     this.pathSpeed = settings.pathSpeed || 1.5; // screen fraction per second
-    this.animateLastTime = new Date();
+    this.animateLastTime = new Date().getTime();
     //console.log('MotionController.moveAlongPath(' + path.map(function(x) {return x.toString()}).join(',') + ')');
     this._animate();
     this._enableAnimation();
