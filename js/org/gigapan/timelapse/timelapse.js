@@ -261,7 +261,10 @@ if (!window['$']) {
     // minTranslateSpeedPixelsPerSecond in pixels
     var minTranslateSpeedPixelsPerSecond = isHyperwall ? 25 : 25;
     // minZoomSpeedPerSecond in log2 scale
-    var minZoomSpeedPerSecond = 0.25;
+    // If animateRate is halved, minZoomSpeedPerSecond should also be halved.
+    var minZoomSpeedPerSecond = isHyperwall ? 0.0001 : 0.125;
+    // How fast we move the camera along the parabolic path
+    var parabolicMotionPathSpeed = 1.35;
 
     // Joystick Variables
     var isJoystickButtonPressed = [false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false];
@@ -915,7 +918,7 @@ if (!window['$']) {
           if (!parabolicMotionController) {
             parabolicMotionController = new parabolicMotionObj.MotionController({
               animationFPS: 1000 / animateRate,
-              pathSpeed: isHyperwall ? 2.5 : 1.5,
+              pathSpeed: parabolicMotionPathSpeed,
               animateCallback: function(pt) {
                 _warpTo(parabolicMotionObj.pixelPointToView(viewportWidth, viewportHeight, pt));
               },
