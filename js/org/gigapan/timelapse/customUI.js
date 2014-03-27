@@ -36,7 +36,9 @@
 
  Authors:
  Yen-Chia Hsu (legenddolphin@gmail.com)
- */"use strict";
+*/
+
+"use strict";
 
 //
 // VERIFY NAMESPACE
