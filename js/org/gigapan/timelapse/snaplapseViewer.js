@@ -130,7 +130,7 @@ function playCachedSnaplapse(snaplapseId) {
     var rootEmbedURL;
     var embedWidth = 854;
     var embedHeight = 480;
-    var useThumbnailServer =  ( typeof (settings["useThumbnailServer"]) == "undefined") ? true : settings["useThumbnailServer"];
+    var useThumbnailServer = ( typeof (settings["useThumbnailServer"]) == "undefined") ? true : settings["useThumbnailServer"];
     var $sortable;
     var sortingStartDistance = 30;
     var moveOneKeyframeIdx = {
@@ -1023,8 +1023,6 @@ function playCachedSnaplapse(snaplapseId) {
           setKeyframeCaptionUI(thisKeyframe, this, true);
         }).click(function(event) {
           var $element = $(this);
-          $sortable.children().children().children(".snaplapse_keyframe_list_item_thumbnail_overlay_presentation").removeClass("thumbnail_highlight");
-          $element.children(".snaplapse_keyframe_list_item_thumbnail_overlay_presentation").addClass("thumbnail_highlight");
           var containerOffset = $keyframeContainer.offset();
           var containerWidth = $keyframeContainer.width();
           var elementOffset = $element.offset();
@@ -1322,8 +1320,12 @@ function playCachedSnaplapse(snaplapseId) {
       }
     };
 
-    var selectAndGo = function($select, keyframeId, skipAnnotation, skipGo) {
+    var selectAndGo = function($select, keyframeId, skipAnnotation, skipGo, doNotFireListener) {
       UTIL.selectSortableElements($sortable, $select);
+      if (usePresentationSlider) {
+        $sortable.children().children().children(".snaplapse_keyframe_list_item_thumbnail_overlay_presentation").removeClass("thumbnail_highlight");
+        $select.children().children(".snaplapse_keyframe_list_item_thumbnail_overlay_presentation").addClass("thumbnail_highlight");
+      }
       if ( typeof (keyframeId) != "undefined") {
         var frame = snaplapse.getKeyframeById(keyframeId);
         if (skipAnnotation != true) {
@@ -1336,7 +1338,7 @@ function playCachedSnaplapse(snaplapseId) {
           else
             timelapse.warpToBoundingBox(frame['bounds']);
           timelapse.seek(frame['time']);
-          if (usePresentationSlider) {
+          if (usePresentationSlider && doNotFireListener != true) {
             var listeners = eventListeners["slide-changed"];
             if (listeners) {
               for (var i = 0; i < listeners.length; i++) {

@@ -91,6 +91,14 @@ function setupPostMessageHandlers() {
         timelapse.seek(time);
     }
   });
+
+  // Handles the cross-domain iframe request of going to a location on the presentation slider
+  pm.bind("timemachine-goto-presentation-slide", function(slideTitle) {
+    var slideId = slideTitle.split(' ').join('_');
+    var $slideContainer = $("#" + slideId).parent();
+    var keyframeId = $slideContainer.attr("id").split("_")[3];
+    timelapse.getPresentationSlider().getPresentationSliderViewer().selectAndGo($slideContainer, keyframeId, undefined, undefined, true);
+  });
 }
 
 // Handles the sending of cross-domain iframe requests.
