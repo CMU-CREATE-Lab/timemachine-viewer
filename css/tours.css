@@ -1,0 +1,142 @@
+body, html {
+  padding: 10px;
+}
+
+#earthTimePlayer {
+  display: none;
+}
+
+#youtubePlayer {
+  width: 818px;
+  height: 495px;
+  position: absolute;
+}
+
+#earthTimePlayer .helpmsg {
+  display: none;
+  position: relative;
+  width: 105px;
+  background-color: #262626;
+  border: 1px solid #444;
+  height: 41px;
+  overflow: visible;
+  bottom: 125px;
+  left: 745px;
+  padding: 12px 16px 16px;
+  z-index: 55;
+  color: #fff;
+  font-size: 13px;
+}
+
+#earthTimePlayer .helpmsg p {
+  position: relative;
+  margin: 0;
+  padding: 0;
+  background-repeat: no-repeat;
+  background-position: bottom left;
+  background-image: url("../images/bubble_edge_horizontal.png");
+  height: 68px;
+  z-index: 56;
+}
+
+.overlay {
+  position: absolute;
+  top: 471px;
+  /*top: 491px;*/
+  right: 95px;
+  /*left:642px;*/
+  margin: 0px;
+  width: 70px;
+  height: 20px;
+}
+
+#earthTimePlayer .captureTime {
+  left: 90px;
+  font-size: 17px;
+  bottom: 0px;
+  right: auto;
+  color: #333333;
+  font-family: Arial, sans-serif;
+  font-weight: bold;
+  height: 56px;
+}
+
+#earthTimePlayer .captureTimeMain {
+  font-size: 27px;
+}
+
+#earthTimePlayer .captureTimeSub1 {
+  font-size: 12px;
+  border-top: 1px solid black;
+  padding: 2px 0px 0px 0px;
+}
+
+#earthTimePlayer .currentCaptureTime {
+  height: 56px;
+  display: table-cell;
+  vertical-align: middle;
+}
+
+#earthTimePlayer a.tourToggle {
+  padding: 8px 0px 0px 0px;
+  position: absolute;
+  margin: 6px 0px 0px -110px;
+  width: 100px;
+  height: 21px;
+  text-align: center;
+  text-indent: 0px;
+  background-repeat: no-repeat;
+  background-position: top left;
+  background-image: url("../images/buttons/toggletour.png");
+}
+
+#earthTimePlayer a.tourToggle:hover {
+  background-image: url("../images/buttons/toggletour_hover.png");
+}
+
+#earthTimePlayer a.tourToggle:active {
+  background-image: url("../images/buttons/toggletour_down.png");
+}
+
+.flashToggleMap {
+  background-color: #6b6b6b;
+  -moz-border-radius: 6px;
+  -webkit-border-radius: 6px;
+  border-radius: 6px;
+  display: inline-block;
+  color: #000000;
+  font-family: arial;
+  border: 2px solid #202020;
+  font-size: 9px;
+  font-weight: bold;
+  padding: 2px 4px;
+  text-decoration: none;
+}
+.flashToggleMap:hover {
+  background-color: #c4c4c4;
+}
+.flashToggleMap:active {
+  position: relative;
+  top: 1px;
+}
+
+#earthTimePlayer .instructions span.speedhelp {
+  left: 490px;
+  bottom: -10px;
+}
+
+#earthTimePlayer .instructions span.movehelp {
+  width: 148px;
+}
+
+#earthTimePlayer a.playbackspeed {
+  margin: 6px 0px 0px -263px;
+}
+
+#earthTimePlayer li.playbackSpeedOptions {
+  margin: 1px 0px 0px -272px !important;
+}
+
+#earthTimePlayer .share {
+  margin: 6px 0px 0px -450px !important;
+}

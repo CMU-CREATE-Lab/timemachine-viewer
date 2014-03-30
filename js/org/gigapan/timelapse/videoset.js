@@ -1107,7 +1107,7 @@ if (!window['$']) {
         // this way.
         window.clearTimeout(spinnerTimeoutId);
         spinnerTimeoutId = window.setTimeout(function() {
-          showSpinner(viewerDivId);
+          timelapse.showSpinner(viewerDivId);
         }, 250);
         // TODO: stop streaming old videos
         if (viewerType == "canvas") {
@@ -1136,7 +1136,7 @@ if (!window['$']) {
       }
       UTIL.log("Video unstalled...");
       stalled = false;
-      hideSpinner(viewerDivId);
+      timelapse.hideSpinner(viewerDivId);
       notifyStallEventListeners();
       _updateVideoAdvance();
     };

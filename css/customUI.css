@@ -1,0 +1,313 @@
+@charset "UTF-8";
+
+.customEditorControl {
+  display: block;
+  width: inherit;
+  height: 40px;
+  background-color: rgb(220,220,220);
+  position: relative;
+  border-right: 1px solid #656565;
+  border-left: 1px solid #656565;
+  border-top: 0px solid #656565;
+  border-bottom: 1px solid #656565;
+  z-index: 20;
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 12px;
+  -webkit-user-select: none;
+  -khtml-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  -o-user-select: none;
+  user-select: none;
+}
+
+.customEditorModeToolbar .ui-state-default {
+  background: white;
+}
+
+.customEditorModeToolbar .ui-state-active {
+  border: 0px solid #959595;
+  background: #959595/*{bgColorActive}*/;
+  color: white;
+}
+
+.customEditorModeToolbar .ui-state-active .ui-icon {
+  background-image: url(../images/ui-icons_custom_256x240.png)/*{iconsActive}*/;
+}
+
+.customEditorModeToolbar {
+  margin-top: 0px;
+  margin-left: 0px;
+  margin-right: 0px;
+  margin-bottom: 0px;
+  padding: 0;
+  float: right;
+  height: 100%;
+}
+
+.customEditorModeToolbar .playStopTimewarp {
+	width: 70px !important;
+}
+
+.customEditorModeToolbar .ui-button {
+  min-width: 35px;
+  margin-right: 0px;
+  margin-left: 1px;
+  border-radius: 0px !important;
+  vertical-align: middle;
+  border: 0px solid white;
+  height: 100%;
+  border-left: 0px solid #656565;
+}
+
+.googleLogo {
+  width: 78px;
+  position: absolute;
+  bottom: 69px;
+  right: 15px;
+}
+
+.customControl {
+  position: absolute;
+  background-color: rgba(255,255,255,0);
+  height: 60px;
+  z-index: 19;
+  -webkit-user-select: none;
+  -khtml-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  -o-user-select: none;
+  user-select: none;
+}
+
+.customTimeline {
+  position: absolute;
+  height: inherit;
+}
+
+.timeTextLeft {
+  position: absolute;
+  font-size: 10pt;
+  text-shadow: -1px 0 #656565, 0 1px #656565, 1px 0 #656565, 0 -1px #656565, 2px 2px 3px rgba(0,0,0,0.3);
+  font-family: Arial, Helvetica, sans-serif;
+  text-align: center;
+  color: white;
+  font-weight: normal;
+  cursor: default;
+}
+
+.timeTextRight {
+  position: absolute;
+  font-size: 10pt;
+  text-shadow: -1px 0 #656565, 0 1px #656565, 1px 0 #656565, 0 -1px #656565, 2px 2px 3px rgba(0,0,0,0.3);
+  font-family: Arial, Helvetica, sans-serif;
+  text-align: center;
+  color: white;
+  font-weight: normal;
+  cursor: default;
+}
+
+.timeText {
+  position: absolute;
+  width: 85px;
+  height: 27px;
+  font-size: 16pt;
+  box-shadow: 2px 2px 3px rgba(0,0,0,0.3);
+  font-family: Arial, Helvetica, sans-serif;
+  text-align: right;
+  padding-top: 5px;
+  padding-right: 12px;
+  color: #656565;
+  font-weight: normal;
+  background-color: white;
+  border: 1px solid #656565;
+  z-index: 9;
+  border-radius: 3px;
+  cursor: default;
+}
+
+.timeTextHover {
+  position: absolute;
+  font-size: 10pt;
+  text-shadow: -1px 0 #656565, 0 1px #656565, 1px 0 #656565, 0 -1px #656565, 2px 2px 3px rgba(0,0,0,0.3);
+  font-family: Arial, Helvetica, sans-serif;
+  text-align: center;
+  color: white;
+  font-weight: normal;
+  cursor: default;
+  z-index: 1;
+  opacity: 1;
+  cursor: pointer;
+  display: none;
+}
+
+.timeTickContainer {
+  position: absolute;
+  border: 0px;
+}
+
+.timeTickGrow {
+  border: 1px solid white !important;
+  background-color: transparent !important;
+}
+
+.timeTick {
+  margin: 0px auto;
+  border: 1px solid #656565;
+  background-color: white;
+  opacity: 1;
+  box-shadow: 2px 2px 3px rgba(0,0,0,0.3);
+  border-radius: 2px;
+}
+
+.timeTickClickRegion:focus {
+  outline: 0;
+}
+
+.currentTimeTick {
+  position: absolute;
+  border: 1px solid #656565;
+  background-color: white;
+  box-shadow: 2px 2px 3px rgba(0,0,0,0.3);
+  border-radius: 2px;
+  z-index: 5;
+}
+
+.timeTickClickRegion {
+  position: absolute;
+  border: 0px;
+  opacity: 0;
+  cursor: pointer;
+  z-index: 6;
+}
+
+.toggleSpeed.ui-button {
+  position: absolute;
+  width: 55px;
+  height: 23px;
+  top: 30px;
+  left: 75px;
+  background: white;
+  border: 1px solid #656565;
+  border-radius: 3px !important;
+  box-shadow: 2px 2px 3px rgba(0,0,0,0.3);
+  z-index: 9;
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 8pt;
+  color: #656565;
+  display: none;
+}
+
+.toggleSpeed .ui-button-text {
+  text-align: center;
+  padding: 0px;
+  padding-top: 3px;
+}
+
+.customPlay.ui-button {
+  position: absolute;
+  width: 50px;
+  height: 50px;
+  bottom: 20px;
+  left: 20px;
+  background: white;
+  border: 1px solid #656565;
+  border-radius: 35px !important;
+  box-shadow: 2px 2px 3px rgba(0,0,0,0.3);
+  z-index: 10;
+}
+
+.customHelpLabel.ui-button {
+  position: absolute;
+  width: 25px;
+  height: 25px;
+  bottom: 30px;
+  right: 20px;
+  background: white;
+  border: 1px solid #656565;
+  border-radius: 15px !important;
+  box-shadow: 2px 2px 3px rgba(0,0,0,0.3);
+}
+
+.customHelpLabel .ui-icon {
+  margin-top: -9px;
+}
+
+.customInstructions {
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  position: absolute;
+  top: 0px;
+  left: 0px;
+  margin: auto;
+  z-index: 999;
+  display: none;
+}
+
+.customInstructions span {
+  font-size: 12px;
+  color: #fff;
+  position: absolute;
+  display: block;
+  line-height: 18px;
+}
+
+.customInstructions p {
+  font-size: 12px;
+}
+
+.customInstructions span.customMovehelp {
+  top: 30px;
+  left: 110px;
+  width: 140px;
+  padding: 68px 0px 0px 0px;
+  background-repeat: no-repeat;
+  background-position: center top;
+  background-image: url(../images/drag_mouse.png);
+}
+
+.customInstructions span.customZoomhelp {
+  background-color: #262626;
+  border: 1px solid #444;
+  top: 150px;
+  left: 67px;
+  overflow: visible;
+  border-radius: 3px;
+}
+
+/*.customInstructions span.customZoomallhelp {
+ background-color: #262626;
+ border: 1px solid #444;
+ top: 248px;
+ left: 67px;
+ overflow: visible;
+ border-radius: 3px;
+ }*/
+
+.customInstructions span.customSpeedhelp {
+  background-color: #262626;
+  border: 1px solid #444;
+  bottom: 75px;
+  left: 82px;
+  overflow: visible;
+  border-radius: 3px;
+}
+
+.customInstructions span.customZoomhelp p, .customInstructions span.customZoomallhelp p {
+  margin: 0px 0px 0px -11px;
+  padding: 12px 0px 12px 36px;
+  background-repeat: no-repeat;
+  background-position: center left;
+  background-image: url(../images/bubble_edge_vertical.png);
+  width: 190px;
+}
+
+.customInstructions span.customSpeedhelp p {
+  margin: 0px 0px -11px 10px;
+  padding: 12px 15px 22px 15px;
+  background-repeat: no-repeat;
+  background-position: bottom left;
+  background-image: url(../images/bubble_edge_horizontal.png);
+  width: 190px;
+}

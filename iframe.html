@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8"/>
+    <script src="../timelapse-20120407/js/jquery/jquery.min.js" type="text/javascript"></script>
+    <script src="../timelapse-20120407/js/jquery/jquery-ui.custom.min.js" type="text/javascript"></script>
+    <script src="../timelapse-20120407/js/jquery/plugins/mouse/jquery.mousewheel.js" type="text/javascript"></script>
+    <script src="../timelapse-20120407/js/jquery/plugins/slider/selectToUISlider.jQuery.js" type="text/javascript"></script>
+    <script src="../timelapse-20120407/js/jquery/plugins/query/jquery.query-2.1.7.js" type="text/javascript"></script>
+    <script src="../timelapse-20120407/js/jquery/plugins/carousel/jcarousellite.min.js" type="text/javascript"></script>
+    <script src="../timelapse-20120407/js/jquery/plugins/mouse/jquery.mousecapture.js" type="text/javascript"></script>
+    <script type="text/javascript">
+      var timelapseMetadataJSON = {};
+      var urlVars;
+
+      function loadSelectedGigapan() {
+        console.log(urlVars['id']);
+        timelapseMetadataJSON["id"] = urlVars['id'];
+        timelapseMetadataJSON["dataset"] = urlVars['dataset']
+        timelapseMetadataJSON["host"] = urlVars['host'];
+        timelapseMetadataJSON["has_layers"] = $.parseJSON(urlVars['has_layers'])
+        timelapseMetadataJSON["repeat"] = $.parseJSON(urlVars['repeat']);
+      }
+
+      function getUrlVars() {
+        var vars = [], hash;
+        var hashes = window.location.href.slice(window.location.href.indexOf('?') + 1).split('&');
+        for (var i = 0; i < hashes.length; i++) {
+          hash = hashes[i].split('=');
+          vars.push(hash[0]);
+          vars[hash[0]] = hash[1];
+        }
+        return vars;
+      }
+
+      function init() {
+        urlVars = getUrlVars();
+        loadSelectedGigapan();
+      }
+      $(init);
+
+    </script>
+    <script src="../timelapse-20120407/js/org/gigapan/util.js" type="text/javascript"></script>
+    <script src="../timelapse-20120407/js/org/gigapan/timelapse/videoset_stats.js" type="text/javascript"></script>
+    <script src="../timelapse-20120407/js/org/gigapan/timelapse/videoset.js" type="text/javascript"></script>
+    <script src="../timelapse-20120407/js/org/gigapan/timelapse/timelapse.js" type="text/javascript"></script>
+    <script src="../timelapse-20120407/js/Math.uuid.js" type="text/javascript"></script>
+    <script src="../timelapse-20120407/js/org/gigapan/timelapse/snaplapse.js" type="text/javascript"></script>
+    <script src="../timelapse-20120407/js/org/gigapan/timelapse/snaplapseViewer.js" type="text/javascript"></script>
+    <script src="../timelapse-20120407/js/org/gigapan/timelapse/timelapseViewer.js" type="text/javascript"></script>
+    <script src="../timelapse-20120407/js/jwplayer/jwplayer.js" type="text/javascript"></script>
+    <script src="../timelapse-20120407/js/org/gigapan/timelapse/flashViewer.js" type="text/javascript"></script>
+    <link href="../timelapse-20120407/css/timelapse.css" rel="stylesheet" type="text/css"/>
+    <link href="../timelapse-20120407/css/videoset_stats.css" rel="stylesheet" type="text/css"/>
+    <link href="../timelapse-20120407/css/snaplapse.css" rel="stylesheet" type="text/css"/>
+    <link href="../timelapse-20120407/css/jquery-ui/smoothness/jquery-ui.custom.css" rel="stylesheet" type="text/css"/>
+    <link href="../timelapse-20120407/css/ui.slider.extras.css" rel="stylesheet" type="text/css"/>
+    <link href="../timelapse-20120407/css/player.css" rel="stylesheet" type="text/css"/>
+    <style type="text/css">
+      /*override the css since things are shifted in the viewer outside the wiki*/
+      #playerSizeText {
+        top: 0px;
+      }
+      #helpText {
+        top: 0px;
+      }
+      a#playbackspeed {
+        padding: 7px 0px 0px 0px;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="browser_not_supported" style="display: none;">
+        <div class="warning">We're sorry, but it looks like your browser isn't currently supported by our viewer.
+        At this time, only <a href="http://www.apple.com/safari/">Safari 5.0+</a> and
+        <a href="http://www.google.com/chrome/intl/en/make/download.html">Chrome 7.0+</a> are known to be fully
+        compatible.<br/><br/>
+
+        Firefox 8+ support will be coming soon. Please keep checking back or
+        <a href="http://groups.google.com/group/gigapan-time-machine-announcements/subscribe">join our mailing list</a> to stay up-to-date.
+      </div>
+    </div>
+
+    <div id="player">
+      <div id="zoom">
+        <a href="javascript:void(0);" id="zoom_in" title="Zoom in" class="zoomin" onclick="return false;"></a>
+        <a href="javascript:void(0);" id="zoom_out" title="Zoom out" class="zoomout" onclick="return false;"></a>
+        <div id="zoomSlider" title="Click to zoom"></div>
+        <a href="javascript:void(0);" id="home" title="Home" class="zoomall" onclick="return false;"></a>
+      </div>
+
+      <div id="instructions">
+        <span class="zoomhelp"><p>Zoom in &amp; out to explore in greater detail. Click or use the scroll wheel.</p></span>
+        <span class="zoomallhelp"><p>Click to view the whole gigapan.</p></span>
+        <span class="speedhelp"><p>Drag to change playback speed.</p></span>
+        <span class="movehelp"><p>Click and drag to explore.</p></span>
+      </div>
+
+      <div id="spinnerOverlay"><img id="spinner" src="images/loading.gif" width="32" height="32"></div>
+      <div id="timelapse" style="position: relative; width:512px; height:288px; background:black; overflow:hidden; border: 1px solid black;"></div>
+
+      <div id="filler">
+        <div id="timelineSlider" title="Click to go to a different point in time"></div>
+      </div>
+
+      <div id="controls">
+        <a href="javascript:void(0);" title="Play" class="play" id="mainbutton"></a>
+        <a href="javascript:void(0);" title="Stop time warp" class="stop" id="mainbutton" style="display: none;"></a>
+        <a href="javascript:void(0);" title="Repeat" class="inactive" id="repeat"></a>
+        <ul id="sidebuttons">
+
+          <li id="playbackSpeedOptions" style="display: none;">
+            <ul id="playbackSpeedChoices">
+              <li>Playback Speed:</li>
+            </ul>
+          </li>
+          <li>
+            <a href="javascript:void(0);" title="Playback Speed" id="playbackspeed">
+              <span id="playbackSpeedText"></span>
+            </a>
+          </li>
+
+          <li id="sizeoptions" style="display: none;">
+            <ul id="sizechoices">
+              <li>Player Size</li>
+            </ul>
+          </li>
+          <li>
+            <a href="javascript:void(0);" title="Player size" id="size" onclick="return false;">
+              <div id="playerSizeText"></div>
+            </a>
+          </li>
+          <li>
+            <a href="javascript:void(0);" title="Instructions" id="help" class="enabled" onclick="return false;">
+              <div id="helpText">Help</div>
+            </a>
+          </li>
+        </ul>
+
+        <div id="captureTime" title="Capture time"><b><span id="currentCaptureTime"></span></b></div>
+        <div id="videoTime" title="Video time"><span id="currentTime">00:00.00</span>/<span id="totalTime">00:00.00</span></div>
+
+      </div>
+
+      <div class="carousel layerSlider" style="position: absolute; display: none;">
+        <a href="javascript:void(0);" class="prev">&nbsp</a>
+        <div class="jCarouselLite">
+          <ul id="layerChoices"></ul>
+        </div>
+        <a href="javascript:void(0);" class="next">&nbsp</a>
+        <div class="clear"></div>
+      </div>
+      <span id="snaplapse-annotation-description"><p></p></span>
+    </div>
+
+    <div id="flash_video_player" style="display: none;">
+      <div id="container">Loading the player ...</div>
+      <div id="flash_video_controls">
+        <label for="flash_video_sizes">Player Size: </label>
+        <select id="flash_video_sizes" name="video_sizes" onchange="resizeFlashPlayer(this.value);">
+          <option value="small">Small</option>
+          <option value="large">Large</option>
+        </select>
+      </div>
+    </div>
+
+    <div id="html5_overridden_message" style="display: none;">
+      <div class="warning">
+        Oops, it looks like some extension you have installed has taken control of the videos
+        on this page.
+        <br/><br/>
+        Most likely, the DivX Web Player is at fault here. In order to use GigaPan Time Machine properly,
+        you must first disable the 'DivX Plus Web Player HTML5 video' extension. You can disable it by typing
+        <b>chrome://extensions/</b> in your browser location bar. Once on that page, click disable under the
+        'DivX Plus Web Player HTML5 video' entry.
+        <br/> <br/>
+        Once you do this, you must refresh the Time Machine window for the change to take affect.
+        <br/><br/>
+        Sorry for this inconvenience. It isn't our fault...
+      </div>
+    </div>
+  </body>
+</html>

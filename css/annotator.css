@@ -1,0 +1,106 @@
+#annotationStage {
+  z-index: 10;
+  position: absolute !important;
+  left: 0px !important;
+  top: 0px !important;
+}
+
+.annotation_container {
+  width: 1079px;
+  min-height: 168px;
+  display: block;
+  padding: 0;
+  margin: 0;
+  overflow-x: auto;
+  overflow-y: scroll;
+  border-left: solid 1px #656565;
+  border-right: solid 1px #656565;
+  border-bottom: solid 1px #656565;
+  background-color: white;
+  font-size: 12px;
+  overflow-x: scroll;
+  overflow-y: hidden;
+  position: absolute;
+  -moz-user-select: none;
+  -khtml-user-select: none;
+  -webkit-user-select: none;
+  -o-user-select: none;
+}
+
+.annotation_list {
+  /*	min-width: 365px;*/
+  position: relative;
+  white-space: nowrap;
+}
+
+.annotation_list .ui-selecting {
+  /*	background: #eeeeff;*/
+}
+
+.annotation_list .ui-selected {
+  /*
+   background: #ddddff;
+   color: black;*/
+
+}
+
+.annotation_list_item {
+  display: table-cell;
+  padding: 10px;
+  cursor: pointer;
+  border-right: solid 1px #656565;
+  border-bottom: solid 1px #656565;
+  border-left: solid 0px #656565;
+  border-top: solid 0px #656565;
+  background-color: white;
+  min-width: 100px;
+  height: 100%;
+}
+
+.loadAnnotatorButton {
+  left: 9px;
+  top: 9px;
+  height: 35px;
+  width: 100px;
+  position: absolute;
+}
+
+.loadAnnotatorWindow_txt {
+  position: absolute;
+  top: 11px;
+  left: 120px;
+  right: 5px;
+}
+
+.saveAnnotatorWindow_txt {
+  position: absolute;
+  top: 11px;
+  left: 10px;
+  right: 5px;
+}
+
+.loadAnnotatorWindow_JSON {
+  position: absolute;
+  left: 5px;
+  top: 50px;
+  right: 5px;
+  bottom: 5px;
+  resize: none;
+}
+
+.saveAnnotatorWindow_JSON {
+  position: absolute;
+  left: 5px;
+  top: 50px;
+  right: 5px;
+  bottom: 5px;
+  resize: none;
+}
+
+.annotation_instructions {
+  font-size: 12px;
+}
+
+.hideAnnotationLabel .ui-button-text {
+  height: 0px;
+}
