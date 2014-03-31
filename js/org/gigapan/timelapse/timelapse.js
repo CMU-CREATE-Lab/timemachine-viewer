@@ -1462,6 +1462,8 @@ if (!window['$']) {
       var saveMouseMove = document.onmousemove;
       var saveMouseUp = document.onmouseup;
       $(videoDiv).removeClass("openHand closedHand").addClass('closedHand');
+      if (parabolicMotionController)
+        parabolicMotionController._disableAnimation();
       document.onmousemove = function(event) {
         if (mouseIsDown) {
           //if (videoset.isStalled()) return;
