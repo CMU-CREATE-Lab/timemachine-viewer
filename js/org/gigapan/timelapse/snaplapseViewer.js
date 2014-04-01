@@ -1391,10 +1391,10 @@ function playCachedSnaplapse(snaplapseId) {
     };
 
     var setToPresentationViewOnlyMode = function() {
-      var $editorControl;
-      if (datasetType == undefined)
-        $editorControl = $("#" + timelapseViewerDivId + " .toolbar");
-      else
+      // This is used to solve a race condition that customEditorControl is sometimes undefined
+      // TODO: there will be a problem if toolbar and customEditorControl do not have the same height
+      var $editorControl = $("#" + timelapseViewerDivId + " .toolbar");
+      if ($editorControl == undefined)
         $editorControl = $("#" + timelapseViewerDivId + " .customEditorControl");
       var heightOffset = $editorControl.height() - 3;
       var isMaxWindowSize = settings["viewportGeometry"] && settings["viewportGeometry"]["max"];
@@ -1607,7 +1607,7 @@ function playCachedSnaplapse(snaplapseId) {
     if (!usePresentationSlider)
       $keyframeContainer.css("z-index", "5");
 
-    // TODO: There is sometimes a race condition that customUI is created before the snaplapseViewer
+    // TODO: There is sometimes a race condition that defaultUI and customUI is created before snaplapseViewer
     if ( typeof settings["enableCustomUI"] != "undefined" && settings["enableCustomUI"] != false) {
       var customUI = timelapse.getCustomUI();
       if (customUI)

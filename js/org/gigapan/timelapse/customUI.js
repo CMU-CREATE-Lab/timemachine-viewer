@@ -36,9 +36,7 @@
 
  Authors:
  Yen-Chia Hsu (legenddolphin@gmail.com)
-*/
-
-"use strict";
+ */"use strict";
 
 //
 // VERIFY NAMESPACE
@@ -1459,7 +1457,7 @@ if (!org.gigapan.timelapse.Timelapse) {
     // Public methods
     //
     var fitToWindow = function() {
-      if (settings["viewportGeometry"] && settings["viewportGeometry"]["max"])
+      if (settings["viewportGeometry"] && settings["viewportGeometry"]["max"]) {
         if (editorEnabled)
           timelapse.getDefaultUI().fitToWindow();
         else {
@@ -1476,6 +1474,7 @@ if (!org.gigapan.timelapse.Timelapse) {
           }
           timelapse.fitVideoToViewport(window.innerWidth - 2, window.innerHeight - extraHeight);
         }
+      }
       viewerWidth = $viewer.width();
       sliderLeftMargin_pct = (sliderLeftMargin / viewerWidth) * 100;
       sliderRightMargin_pct = (sliderRightMargin / viewerWidth) * 100;
