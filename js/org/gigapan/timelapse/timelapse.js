@@ -142,8 +142,8 @@ if (!window['$']) {
     var mediaType = ( typeof (settings["mediaType"]) == "undefined") ? null : settings["mediaType"];
     var enableMetadataCacheBreaker = settings["enableMetadataCacheBreaker"] || false;
     var visualizerGeometry = {
-      width: undefined,
-      height: undefined
+      width: 250,
+      height: 142
     };
     var minViewportHeight = 400;
     var minViewportWidth = 700;

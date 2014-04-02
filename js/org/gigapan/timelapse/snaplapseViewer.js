@@ -1367,7 +1367,11 @@ function playCachedSnaplapse(snaplapseId) {
       var boundsFlag = "boundsLTRB=" + bounds.xmin + "," + bounds.ymin + "," + bounds.xmax + "," + bounds.ymax + "&";
       var sizeFlag = "width=" + width + "&height=" + height + "&";
       var timeFlag = "frameTime=" + time;
-      return serverURL + rootFlag + boundsFlag + sizeFlag + timeFlag;
+      var thumbnailURL = serverURL + rootFlag + boundsFlag + sizeFlag + timeFlag;
+      var mediaType = ( typeof (settings["mediaType"]) == "undefined") ? null : settings["mediaType"];
+      if (mediaType)
+        thumbnailURL += "&tileFormat=" + mediaType.split(".")[1];
+      return thumbnailURL;
     };
     this.generateThumbnailURL = generateThumbnailURL;
 

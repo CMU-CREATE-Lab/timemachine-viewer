@@ -558,6 +558,8 @@ if (!org.gigapan.timelapse.Timelapse) {
             setPresentationMode(true);
           $("#" + viewerDivId + " .toggleMode span").text(selectedModeTxt);
         });
+        if (startEditorFromPresentationMode)
+          setPresentationMode(true);
       } else {
         $("#" + viewerDivId + " .toggleMode").remove();
         $("#" + viewerDivId + " .editorModeOptions").remove();
