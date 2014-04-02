@@ -1525,8 +1525,9 @@ if (!org.gigapan.timelapse.Timelapse) {
         $customPlay.remove();
         $timeText.css({
           "text-align": "center",
-          "left": "-=" + 14 + "px",
-          "padding-left": "12px"
+          "left": "-=" + 18 + "px",
+          "padding-left": "30px",
+          "padding-right": "25px",
         });
       }
     };
