@@ -40,9 +40,7 @@
  VERIFY NAMESPACE
 
  Create the global symbol "org" if it doesn't exist.  Throw an error if it does exist but is not an object.
-*/
-
-"use strict";
+ */"use strict";
 
 // Create the global symbol "org" if it doesn't exist.  Throw an error if it does exist but is not an object.
 var org;
@@ -91,8 +89,8 @@ if (!org.gigapan.timelapse.Timelapse) {
 // CODE
 //
 (function() {
+  var UTIL = org.gigapan.Util;
   org.gigapan.timelapse.SmallGoogleMap = function(smallGoogleMapOptions, timelapse, settings) {
-
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////
     //
     // Class variables
@@ -313,6 +311,7 @@ if (!org.gigapan.timelapse.Timelapse) {
           document.addEventListener('mousemove', resizeSmallMap, false);
           document.addEventListener('mouseup', addSmallMapMouseupEvents, false);
           $("body").bind("mouseleave", addSmallMapMouseupEvents);
+          UTIL.addGoogleAnalyticEvent('button', 'click', 'viewer-resize-context-map');
         }, false);
       }
       // Create toggle button
@@ -334,6 +333,7 @@ if (!org.gigapan.timelapse.Timelapse) {
               },
               text: false
             }).children(".ui-icon").css("margin-left", "-8px");
+            UTIL.addGoogleAnalyticEvent('button', 'click', 'viewer-show-context-map');
           } else if ($icon.hasClass("ui-icon-arrowthick-1-ne")) {
             $toggleGoogleMapBtn.button({
               icons: {
@@ -341,6 +341,7 @@ if (!org.gigapan.timelapse.Timelapse) {
               },
               text: false
             }).children(".ui-icon").css("margin-left", "-8px");
+            UTIL.addGoogleAnalyticEvent('button', 'click', 'viewer-hide-context-map');
           }
         }).css({
           position: "absolute",

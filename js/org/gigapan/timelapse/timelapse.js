@@ -1141,7 +1141,6 @@ if (!window['$']) {
 
       for (var i = 0; i < playbackRateChangeListeners.length; i++)
         playbackRateChangeListeners[i](rate, fromUI);
-
     };
 
     this.toggleMainControls = function() {
@@ -1386,8 +1385,10 @@ if (!window['$']) {
           _seek(newTime);
         if (snaplapse && tourJSON) {
           var snaplapseViewer = snaplapse.getSnaplapseViewer();
-          if (snaplapseViewer)
+          if (snaplapseViewer) {
             snaplapseViewer.loadNewSnaplapse(tourJSON);
+            UTIL.addGoogleAnalyticEvent('window', 'onHashChange', 'url-load-tour');
+          }
         }
         if (presentationSlider && presentationJSON) {
           var presentationSliderViewer = presentationSlider.getSnaplapseViewer();
@@ -1395,8 +1396,10 @@ if (!window['$']) {
             // Prevent the editor leave page alert from showing if only the presentation mode is enabled from the hash
             window.onbeforeunload = null;
           }
-          if (presentationSliderViewer)
+          if (presentationSliderViewer) {
             presentationSliderViewer.loadNewSnaplapse(presentationJSON);
+            UTIL.addGoogleAnalyticEvent('window', 'onHashChange', 'url-load-presentation');
+          }
         }
         if (datasetType == "modis" && modisLock == "month")
           $("#noLock").click();
@@ -2310,7 +2313,7 @@ if (!window['$']) {
     var changePlaybackRate = function(obj) {
       // Convert to number
       var rate = $(obj).attr("data-speed") - 0;
-      thisObj.setPlaybackRate(rate);
+      thisObj.setPlaybackRate(rate, false, true);
       playbackSpeed = rate;
     };
     this.changePlaybackRate = changePlaybackRate;

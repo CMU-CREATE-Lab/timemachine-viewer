@@ -473,18 +473,6 @@ body, html {
   opacity: 0.4;
 }
 
-.stopTimeWarp.ui-button {
-  margin: 0px;
-  padding: 0px;
-  display: block;
-  width: 55px;
-  height: 100%;
-  border: 0px solid #656565;
-  border-right: 1px solid #656565;
-  background: white;
-  border-radius: 0px;
-}
-
 .zoomall {
   margin-top: 5px !important;
 }

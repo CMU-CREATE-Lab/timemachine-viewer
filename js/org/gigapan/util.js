@@ -389,4 +389,14 @@ if (!org.gigapan) {
     return tmpURL.substr(0, tmpURL.indexOf("js/"));
   }
 
+  org.gigapan.Util.addGoogleAnalyticEvent = function(category, action, label) {
+    var settings, isGoogleAnalyticEventTrackingEnabled;
+    if ( typeof timelapse != "undefined") {
+      settings = timelapse.getSettings();
+      if ( typeof settings != "undefined")
+        isGoogleAnalyticEventTrackingEnabled = ( typeof (settings["isGoogleAnalyticEventTrackingEnabled"]) == "undefined") ? false : settings["isGoogleAnalyticEventTrackingEnabled"];
+    }
+    if ( typeof (ga) != "undefined" && isGoogleAnalyticEventTrackingEnabled)
+      ga('send', 'event', category, action, label);
+  };
 })();

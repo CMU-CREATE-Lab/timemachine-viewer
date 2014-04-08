@@ -41,9 +41,7 @@
  VERIFY NAMESPACE
 
  Create the global symbol "org" if it doesn't exist.  Throw an error if it does exist but is not an object.
-*/
-
-"use strict";
+ */"use strict";
 
 // Create the global symbol "org" if it doesn't exist.  Throw an error if it does exist but is not an object.
 var org;
@@ -92,6 +90,7 @@ if (!org.gigapan.timelapse.Timelapse) {
 // CODE
 //
 (function() {
+  var UTIL = org.gigapan.Util;
   org.gigapan.timelapse.Visualizer = function(timelapse, snaplapse, visualizerGeometry) {
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////
     //
@@ -190,6 +189,7 @@ if (!org.gigapan.timelapse.Timelapse) {
               secondary: "ui-icon-arrowthick-1-sw"
             }
           });
+          UTIL.addGoogleAnalyticEvent('button', 'click', 'viewer-hide-context-map');
         } else {
           showNavigationMap();
           $hideMapCheckbox.button({
@@ -197,6 +197,7 @@ if (!org.gigapan.timelapse.Timelapse) {
               secondary: "ui-icon-arrowthick-1-ne"
             }
           });
+          UTIL.addGoogleAnalyticEvent('button', 'click', 'viewer-show-context-map');
         }
       });
       // Set position and size

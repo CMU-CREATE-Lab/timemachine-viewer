@@ -351,6 +351,7 @@ function playCachedSnaplapse(snaplapseId) {
         if (match) {
           var tour = match[2];
           thisObj.loadSnaplapse(snaplapse.urlStringToJSON(tour));
+          UTIL.addGoogleAnalyticEvent('button', 'click', 'editor-load-keyframes');
         } else {
           alert("Error: Invalid tour");
         }
@@ -377,9 +378,6 @@ function playCachedSnaplapse(snaplapseId) {
         $(this).removeClass('ui-state-hover');
       });
 
-      // Hide the snaplapse Stop button
-      $("#" + timelapseViewerDivId + ' .stopTimeWarp').hide();
-
       // Configure the keyframe list's selectable handlers
       $sortable = $("#" + composerDivId + " .snaplapse_keyframe_list");
       $sortable.sortable({
@@ -395,6 +393,7 @@ function playCachedSnaplapse(snaplapseId) {
           ui.item.animate({
             "opacity": "0.5"
           }, 300);
+          UTIL.addGoogleAnalyticEvent('button', 'drag', 'editor-sort-keyframes');
         },
         stop: function(event, ui) {
           var newIdx = $(ui.item).index();
@@ -410,12 +409,6 @@ function playCachedSnaplapse(snaplapseId) {
         change: function(event, ui) {
           $sortable.sortable("refreshPositions").sortable("refresh");
         }
-      });
-
-      // Add mouse event handlers to the Play/Stop button in the viewer
-      $("#" + timelapseViewerDivId + ' .stopTimeWarp').click(function() {
-        _playStopSnaplapse();
-        return false;
       });
 
       // Finally, set up the snaplapse links
@@ -695,15 +688,6 @@ function playCachedSnaplapse(snaplapseId) {
             },
             label: "Stop Tour"
           }).addClass("isPlaying");
-          if (timelapse.getMode() != "player") {
-            // Stop timewarp playback if we aren't using the editor controls
-            $("#" + timelapseViewerDivId + " .stopTimeWarp").button("option", {
-              icons: {
-                primary: "ui-icon-custom-play"
-              },
-              disabled: true
-            });
-          }
 
           $("#" + timelapseViewerDivId + ' .help').removeClass("enabled").addClass("disabled");
           $("#" + timelapseViewerDivId + " .instructions").stop(true, true).fadeOut(50);
@@ -714,7 +698,6 @@ function playCachedSnaplapse(snaplapseId) {
             $controls.stop(true, true).fadeOut(100);
             moveDescriptionBox("down");
           }
-          $("#" + timelapseViewerDivId + ' .stopTimeWarp').show();
           $("#" + timelapseViewerDivId + ' .addressLookup').attr("disabled", "disabled");
           $("#" + timelapseViewerDivId + ' .timelineSlider').slider("disable");
           $("#" + timelapseViewerDivId + " .tourLoadOverlayPlay").attr("src", rootAppURL + "images/tour_stop_outline.png").css("opacity", "1.0");
@@ -744,15 +727,6 @@ function playCachedSnaplapse(snaplapseId) {
             },
             label: "Play Tour"
           }).removeClass("isPlaying");
-          if (timelapse.getMode() != "player") {
-            $("#" + timelapseViewerDivId + " .stopTimeWarp").button("option", {
-              icons: {
-                primary: "ui-icon-custom-stop"
-              },
-              disabled: false
-            });
-          }
-          $("#" + timelapseViewerDivId + ' .stopTimeWarp').hide();
           $playbackButton.removeClass("pause").addClass("play");
           $playbackButton.attr("title", "Play");
           if (datasetType == undefined) {
@@ -990,6 +964,7 @@ function playCachedSnaplapse(snaplapseId) {
       $keyframeTable.mousedown(function(event) {
         selectAndGo($("#" + keyframeListItem.id));
         displaySnaplapseFrameAnnotation(null);
+        UTIL.addGoogleAnalyticEvent('button', 'click', 'editor-select-keyframe');
       });
 
       if (!usePresentationSlider) {
@@ -1010,6 +985,9 @@ function playCachedSnaplapse(snaplapseId) {
         event.stopPropagation();
         var keyframeId = $(this).parent().attr("id").split("_")[3];
         selectAndGo($("#" + keyframeListItem.id), keyframeId);
+        UTIL.addGoogleAnalyticEvent('button', 'click', 'editor-go-to-keyframe');
+      }).mousedown(function() {
+        event.stopPropagation();
       });
 
       if (usePresentationSlider) {
@@ -1065,9 +1043,11 @@ function playCachedSnaplapse(snaplapseId) {
         if (id.indexOf("speedBlock") !== -1) {
           // Using speed as the main constraint
           snaplapse.resetSpeedBlockForKeyframe(thisKeyframeId);
+          UTIL.addGoogleAnalyticEvent('radio', 'click', 'editor-set-transition-to-speed-for-keyframe');
         } else {
           // Using duration as the main constraint
           snaplapse.resetDurationBlockForKeyframe(thisKeyframeId);
+          UTIL.addGoogleAnalyticEvent('radio', 'click', 'editor-set-transition-to-duration-for-keyframe');
         }
         resetKeyframeTransitionUI(this.value, composerDivId + "_snaplapse_keyframe_" + thisKeyframeId);
       });
@@ -1100,6 +1080,7 @@ function playCachedSnaplapse(snaplapseId) {
           displaySnaplapseFrameAnnotation(null);
           setKeyframeTitleUI(thisKeyframe, true);
         }
+        UTIL.addGoogleAnalyticEvent('button', 'click', 'editor-set-metadata-for-keyframe');
       }).mousedown(function(event) {
         // For preventing the parent table from getting the click event
         // this is the first step for a checkbox
@@ -1125,6 +1106,9 @@ function playCachedSnaplapse(snaplapseId) {
         var thisKeyframeId = this.id.split("_")[3];
         snaplapse.updateTimeAndPositionForKeyframe(thisKeyframeId);
         selectAndGo($("#" + keyframeListItem.id), thisKeyframeId, false, true);
+        UTIL.addGoogleAnalyticEvent('button', 'click', 'editor-update-keyframe');
+      }).mousedown(function() {
+        event.stopPropagation();
       });
 
       // Create duplicate button
@@ -1138,6 +1122,9 @@ function playCachedSnaplapse(snaplapseId) {
         var thisKeyframeId = this.id.split("_")[3];
         snaplapse.duplicateKeyframe(thisKeyframeId);
         selectAndGo($("#" + keyframeListItem.id), thisKeyframeId, false, true);
+        UTIL.addGoogleAnalyticEvent('button', 'click', 'editor-duplicate-keyframe');
+      }).mousedown(function() {
+        event.stopPropagation();
       });
 
       // Create play button
@@ -1154,6 +1141,9 @@ function playCachedSnaplapse(snaplapseId) {
         }
         var thisKeyframeId = this.id.split("_")[3];
         snaplapse.play(thisKeyframeId);
+        UTIL.addGoogleAnalyticEvent('button', 'click', 'editor-play-tour-from-keyframe');
+      }).mousedown(function() {
+        event.stopPropagation();
       });
 
       // Create buttonset
@@ -1167,6 +1157,7 @@ function playCachedSnaplapse(snaplapseId) {
         var keyframe = snaplapse.setDurationForKeyframe(thisKeyframeId, newDuration);
         if (timelapse.getVisualizer())
           timelapse.getVisualizer().updateTagPaths(keyframeListItem.id, keyframe);
+        UTIL.addGoogleAnalyticEvent('textbox', 'change', 'editor-change-duration-for-keyframe');
       });
 
       $("#" + speedId).on("change", function() {
@@ -1188,6 +1179,7 @@ function playCachedSnaplapse(snaplapseId) {
         var keyframe = snaplapse.setSpeedForKeyframe(thisKeyframeId, newSpeed);
         if (timelapse.getVisualizer())
           timelapse.getVisualizer().updateTagPaths(keyframeListItem.id, keyframe);
+        UTIL.addGoogleAnalyticEvent('textbox', 'change', 'editor-change-speed-for-keyframe');
       });
 
       $("#" + loopTimesId).change(function() {
@@ -1199,6 +1191,7 @@ function playCachedSnaplapse(snaplapseId) {
         var keyframe = snaplapse.setLoopTimesForKeyframe(thisKeyframeId, newLoopTimes);
         if (timelapse.getVisualizer())
           timelapse.getVisualizer().updateTagPaths(keyframeListItem.id, keyframe);
+        UTIL.addGoogleAnalyticEvent('textbox', 'change', 'editor-change-loop-for-keyframe');
       });
 
       // Override the color of keyframe items
@@ -1521,13 +1514,16 @@ function playCachedSnaplapse(snaplapseId) {
       });
     };
 
-    var _playStopSnaplapse = function() {
-      if (snaplapse.isPlaying())
+    var playStopSnaplapseOnButtonClicked = function() {
+      if (snaplapse.isPlaying()) {
         snaplapse.stop();
-      else
+        UTIL.addGoogleAnalyticEvent('button', 'click', 'editor-stop-tour');
+      } else {
         snaplapse.play();
+        UTIL.addGoogleAnalyticEvent('button', 'click', 'editor-play-tour');
+      }
     };
-    this.playStopSnaplapse = _playStopSnaplapse;
+    this.playStopSnaplapseOnButtonClicked = playStopSnaplapseOnButtonClicked;
 
     var saveSnaplapse = function() {
       if (snaplapse && (snaplapse.getNumKeyframes() >= 1)) {

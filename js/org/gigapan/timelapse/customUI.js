@@ -89,6 +89,7 @@ if (!org.gigapan.timelapse.Timelapse) {
 // CODE
 //
 (function() {
+  var UTIL = org.gigapan.Util;
   org.gigapan.timelapse.CustomUI = function(timelapse, settings) {
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////
     //
@@ -533,6 +534,7 @@ if (!org.gigapan.timelapse.Timelapse) {
         $fastSpeed.slideUp(300);
         if (locker == "month" && isPlaying)
           playMonthLockFrames();
+        UTIL.addGoogleAnalyticEvent('button', 'click', 'viewer-set-speed-to-medium');
       });
 
       $mediumSpeed.button({
@@ -543,10 +545,12 @@ if (!org.gigapan.timelapse.Timelapse) {
           timelapse.setPlaybackRate(1, null, true);
           $customControl.prepend($fastSpeed);
           $fastSpeed.stop(true, true).show();
+          UTIL.addGoogleAnalyticEvent('button', 'click', 'viewer-set-speed-to-fast');
         } else {
           timelapse.setPlaybackRate(0.25, null, true);
           $customControl.prepend($slowSpeed);
           $slowSpeed.stop(true, true).show();
+          UTIL.addGoogleAnalyticEvent('button', 'click', 'viewer-set-speed-to-slow');
         }
         $mediumSpeed.slideUp(300);
         if (locker == "month" && isPlaying)
@@ -562,6 +566,7 @@ if (!org.gigapan.timelapse.Timelapse) {
         $slowSpeed.slideUp(300);
         if (locker == "month" && isPlaying)
           playMonthLockFrames();
+        UTIL.addGoogleAnalyticEvent('button', 'click', 'viewer-set-speed-to-fast');
       });
 
       timelapse.addPlaybackRateChangeListener(function(rate, fromUI) {
@@ -645,6 +650,7 @@ if (!org.gigapan.timelapse.Timelapse) {
         $customControl.prepend($withLock);
         $withLock.stop(true, true).slideDown();
         $noLock.slideUp(300);
+        UTIL.addGoogleAnalyticEvent('button', 'click', 'viewer-enable-month-lock');
       });
 
       $withLock.button({
@@ -657,6 +663,7 @@ if (!org.gigapan.timelapse.Timelapse) {
         $customControl.prepend($noLock);
         $noLock.stop(true, true).slideDown();
         $withLock.slideUp(300);
+        UTIL.addGoogleAnalyticEvent('button', 'click', 'viewer-disable-month-lock');
       });
 
       $noLock.show();
@@ -696,6 +703,10 @@ if (!org.gigapan.timelapse.Timelapse) {
         else
           timelapse.handlePlayPause();
         isPlaying = !isPlaying;
+        if (isPlaying)
+          UTIL.addGoogleAnalyticEvent('button', 'click', 'viewer-play');
+        else
+          UTIL.addGoogleAnalyticEvent('button', 'click', 'viewer-pause');
       });
       if (datasetType == "modis")
         $customPlay.toggleClass("customPlay modisCustomPlay");
@@ -719,6 +730,7 @@ if (!org.gigapan.timelapse.Timelapse) {
             if ($("#" + viewerDivId + " .customHelpCheckbox").has(e.target).length == 0)
               $customHelpCheckbox.prop("checked", false).button("refresh").change();
           });
+          UTIL.addGoogleAnalyticEvent('button', 'click', 'viewer-show-help');
         } else {
           removeCustomHelpOverlay();
         }
@@ -954,6 +966,7 @@ if (!org.gigapan.timelapse.Timelapse) {
         $viewer.off("mousemove", trackMouseAndSlide);
         isShowHoverEffect = true;
       });
+      UTIL.addGoogleAnalyticEvent('slider', 'click', 'viewer-seek');
     };
 
     var handleTimeTickMouseover = function(event) {
@@ -1146,19 +1159,20 @@ if (!org.gigapan.timelapse.Timelapse) {
       $("#" + viewerDivId).append($customEditorControl);
       // Create add button
       customEditorModeToolbar.append('<button class="addTimetag" title="Add a keyframe">Add</button>');
-      $("#" + viewerDivId + " .addTimetag").button({
+      $("#" + viewerDivId + " .customEditorControl .addTimetag").button({
         icons: {
           primary: "ui-icon-plus"
         },
         text: true
       }).click(function() {
         // The button will be enabled at the end of addSnaplapseKeyframeListItem() in snaplapseViewer
-        $("#" + viewerDivId + " .addTimetag").button("option", "disabled", true);
+        $("#" + viewerDivId + " .customEditorControl .addTimetag").button("option", "disabled", true);
         timelapse.getSnaplapse().getSnaplapseViewer().recordKeyframe();
+        UTIL.addGoogleAnalyticEvent('button', 'click', 'editor-add-keyframe');
       });
       // Create save button
       customEditorModeToolbar.append('<button class="saveTimewarp" title="Share a tour">Share</button>');
-      $("#" + viewerDivId + " .saveTimewarp").button({
+      $("#" + viewerDivId + " .customEditorControl .saveTimewarp").button({
         icons: {
           primary: "ui-icon-person"
         },
@@ -1166,20 +1180,22 @@ if (!org.gigapan.timelapse.Timelapse) {
         disabled: true
       }).click(function() {
         timelapse.getSnaplapse().getSnaplapseViewer().saveSnaplapse();
+        UTIL.addGoogleAnalyticEvent('button', 'click', 'editor-show-share-dialog');
       });
       // Create load button
       customEditorModeToolbar.append('<button class="loadTimewarp" title="Load a tour">Load</button>');
-      $("#" + viewerDivId + " .loadTimewarp").button({
+      $("#" + viewerDivId + " .customEditorControl .loadTimewarp").button({
         icons: {
           primary: "ui-icon-folder-open"
         },
         text: true
       }).click(function() {
         timelapse.getSnaplapse().getSnaplapseViewer().showLoadSnaplapseWindow();
+        UTIL.addGoogleAnalyticEvent('button', 'click', 'editor-show-load-dialog');
       });
       // Create delete button
       customEditorModeToolbar.append('<button class="deleteTimetag" title="Delete a keyframe">Del</button>');
-      $("#" + viewerDivId + " .deleteTimetag").button({
+      $("#" + viewerDivId + " .customEditorControl .deleteTimetag").button({
         icons: {
           primary: "ui-icon-minus"
         },
@@ -1187,21 +1203,24 @@ if (!org.gigapan.timelapse.Timelapse) {
         disabled: true
       }).click(function() {
         timelapse.getSnaplapse().getSnaplapseViewer().deleteSelectedKeyframes();
+        UTIL.addGoogleAnalyticEvent('button', 'click', 'editor-delete-keyframe');
       });
       // Create new button
       customEditorModeToolbar.append('<button class="newTimewarp" title="Remove all keyframes">Clear</button>');
-      $("#" + viewerDivId + " .newTimewarp").button({
+      $("#" + viewerDivId + " .customEditorControl .newTimewarp").button({
         icons: {
           primary: "ui-icon-trash"
         },
         text: true,
         disabled: true
       }).click(function() {
+        UTIL.addGoogleAnalyticEvent('button', 'click', 'editor-show-clear-dialog');
         var confirmClearAlert = confirm("Are you sure you want to delete all keyframes");
         if (!confirmClearAlert)
           return;
         timelapse.getSnaplapse().getSnaplapseViewer().loadNewSnaplapse(null);
         timelapse.handleEditorModeToolbarChange();
+        UTIL.addGoogleAnalyticEvent('button', 'click', 'editor-clear-keyframes');
       });
       // Create play button
       customEditorModeToolbar.append('<button class="playStopTimewarp" title="Play or stop a tour">Play Tour</button>');
@@ -1212,7 +1231,7 @@ if (!org.gigapan.timelapse.Timelapse) {
         text: true,
         disabled: true
       }).click(function() {
-        timelapse.getSnaplapse().getSnaplapseViewer().playStopSnaplapse();
+        timelapse.getSnaplapse().getSnaplapseViewer().playStopSnaplapseOnButtonClicked();
       });
       // Create mode toggle button
       if (showEditorModeButton) {
@@ -1224,7 +1243,7 @@ if (!org.gigapan.timelapse.Timelapse) {
         var $editorModeOptions = $("#" + viewerDivId + " .editorModeOptions").append(editorModeOptions);
         // Create button
         $customEditorControl.append('<button class="toggleMode" title="Toggle between tour and presentation mode">Change Mode</button>');
-        $("#" + viewerDivId + " .toggleMode").button({
+        $("#" + viewerDivId + " .customEditorControl .toggleMode").button({
           icons: {
             secondary: "ui-icon-triangle-1-s"
           },
@@ -1246,18 +1265,21 @@ if (!org.gigapan.timelapse.Timelapse) {
           }
         });
         if (startEditorFromPresentationMode)
-          $("#" + viewerDivId + " .toggleMode .ui-button-text").text(getCustomEditorModeText("presentation"));
+          $("#" + viewerDivId + " .customEditorControl .toggleMode .ui-button-text").text(getCustomEditorModeText("presentation"));
         else
-          $("#" + viewerDivId + " .toggleMode .ui-button-text").text(getCustomEditorModeText("tour"));
+          $("#" + viewerDivId + " .customEditorControl .toggleMode .ui-button-text").text(getCustomEditorModeText("tour"));
         $editorModeOptions.hide().menu();
         // Set the dropdown
-        $("#" + viewerDivId + " .editorModeOptions li a").click(function() {
+        $("#" + viewerDivId + " .customEditorControl .editorModeOptions li a").click(function() {
           var selectedModeTxt = $(this).text();
-          if (selectedModeTxt == getCustomEditorModeText("tour"))
+          if (selectedModeTxt == getCustomEditorModeText("tour")) {
             setPresentationMode(false);
-          else if (selectedModeTxt == getCustomEditorModeText("presentation"))
+            UTIL.addGoogleAnalyticEvent('button', 'click', 'editor-set-to-tour-mode');
+          } else if (selectedModeTxt == getCustomEditorModeText("presentation")) {
             setPresentationMode(true);
-          $("#" + viewerDivId + " .toggleMode span").text(selectedModeTxt);
+            UTIL.addGoogleAnalyticEvent('button', 'click', 'editor-set-to-presentation-mode');
+          }
+          $("#" + viewerDivId + " .customEditorControl .toggleMode span").text(selectedModeTxt);
         });
       }
       // Create buttonset
@@ -1310,7 +1332,8 @@ if (!org.gigapan.timelapse.Timelapse) {
                 },
                 "zoom": 10
               };
-              timelapse.setNewView(newView, false, true);
+              timelapse.setNewView(newView, false, false);
+              UTIL.addGoogleAnalyticEvent('textbox', 'search', 'go-to-searched-place');
             } else {
               console.log("Geocode failed: " + status);
             }
@@ -1323,7 +1346,8 @@ if (!org.gigapan.timelapse.Timelapse) {
             },
             "zoom": 10
           };
-          timelapse.setNewView(newView, false, true);
+          timelapse.setNewView(newView, false, false);
+          UTIL.addGoogleAnalyticEvent('textbox', 'search', 'go-to-searched-place');
         }
       });
     };
