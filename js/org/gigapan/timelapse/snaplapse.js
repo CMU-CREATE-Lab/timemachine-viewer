@@ -123,16 +123,17 @@ if (!Math.uuid) {
 
     var loadJSON;
     var loadKeyframesLength;
-    var waitFor_timeout;
-    var waitForSeek_timeout;
-    var waitForStart = false;
-    var waitForEnd = true;
-    var currentWaitDuration = {
+    var doLoopDwellTimeout;
+    var waitForSeekTimeout;
+    var doStartDwell = false;
+    var doEndDwell = true;
+    var currentLoopDwell = {
       start: 0,
       end: 0
     };
-    var currentWaitForExtraStart = false;
-    var extraWaitForStartDuration = 0;
+    var defaultLoopTimes = 2;
+    var doExtraStartDwell = false;
+    var extraStartDwell = 0;
     var startingPlaybackRate = 1;
     var rootAppURL = org.gigapan.Util.getRootAppURL();
 
@@ -176,10 +177,10 @@ if (!Math.uuid) {
 
     // This is used for pausing the video at the beginning or end
     var resetWaitFlags = function() {
-      clearTimeout(waitFor_timeout);
-      clearTimeout(waitForSeek_timeout);
-      waitForStart = false;
-      waitForEnd = true;
+      clearTimeout(doLoopDwellTimeout);
+      clearTimeout(waitForSeekTimeout);
+      doStartDwell = false;
+      doEndDwell = true;
     };
 
     // Hide the transition area for the last key frame on the UI
@@ -205,7 +206,6 @@ if (!Math.uuid) {
     // TODO: change the function of buildPreviousFlag to buildCurrentAndPreviousFlag
     var tryBuildKeyframeInterval_refreshKeyframeParas = function(keyframeId, buildPreviousFlag) {
       var idx;
-      var isFirstKeyframe = false;
       for (var i = 0; i < keyframes.length; i++) {
         if (keyframeId == keyframes[i]['id']) {
           idx = i;
@@ -214,20 +214,14 @@ if (!Math.uuid) {
       }
       var keyframeInterval, keyframeToBuild;
       if (buildPreviousFlag) {
-        if (idx == 1) {
-          isFirstKeyframe = true;
-        }
         keyframeToBuild = keyframes[idx - 1];
         if ( typeof (keyframeToBuild) != "undefined" && keyframeToBuild != null && typeof (keyframes[idx]) != "undefined" && keyframes[idx] != null) {
-          keyframeInterval = new org.gigapan.timelapse.KeyframeInterval(keyframeToBuild, keyframes[idx], null, timelapse.getDuration(), composerDivId, keyframeToBuild['buildConstraint'], isFirstKeyframe, timelapse, settings);
+          keyframeInterval = new org.gigapan.timelapse.KeyframeInterval(keyframeToBuild, keyframes[idx], null, timelapse.getDuration(), composerDivId, keyframeToBuild['buildConstraint'], timelapse, settings);
         }
       } else {
-        if (idx == 0) {
-          isFirstKeyframe = true;
-        }
         keyframeToBuild = keyframes[idx];
         if ( typeof (keyframeToBuild) != "undefined" && keyframeToBuild != null && typeof (keyframes[idx + 1]) != "undefined" && keyframes[idx + 1] != null) {
-          keyframeInterval = new org.gigapan.timelapse.KeyframeInterval(keyframeToBuild, keyframes[idx + 1], null, timelapse.getDuration(), composerDivId, keyframeToBuild['buildConstraint'], isFirstKeyframe, timelapse, settings);
+          keyframeInterval = new org.gigapan.timelapse.KeyframeInterval(keyframeToBuild, keyframes[idx + 1], null, timelapse.getDuration(), composerDivId, keyframeToBuild['buildConstraint'], timelapse, settings);
         }
       }
     };
@@ -254,16 +248,6 @@ if (!Math.uuid) {
       }
       tryBuildKeyframeInterval_refreshKeyframeParas(keyframeId);
       return keyframesById[keyframeId];
-    };
-
-    this.setLoopDwellTimeForKeyframe = function(keyframeId, startDwell, endDwell) {
-      if (keyframeId && keyframesById[keyframeId]) {
-        if (startDwell)
-          keyframesById[keyframeId]['waitStart'] = startDwell;
-        if (endDwell)
-          keyframesById[keyframeId]['waitEnd'] = endDwell;
-      }
-      tryBuildKeyframeInterval_refreshKeyframeParas(keyframeId);
     };
 
     this.setTextAnnotationForKeyframe = function(keyframeId, description, isDescriptionVisible) {
@@ -299,6 +283,10 @@ if (!Math.uuid) {
       return null;
     };
 
+    this.getDefaultLoopTimes = function() {
+      return defaultLoopTimes;
+    };
+
     this.setDurationForKeyframe = function(keyframeId, duration) {
       if (keyframeId && keyframesById[keyframeId]) {
         keyframesById[keyframeId]['duration'] = sanitizeDuration(duration);
@@ -310,8 +298,6 @@ if (!Math.uuid) {
     this.resetDurationBlockForKeyframe = function(keyframeId) {
       if (keyframeId && keyframesById[keyframeId]) {
         keyframesById[keyframeId]['buildConstraint'] = "duration";
-        keyframesById[keyframeId]['waitStart'] = 0.5;
-        keyframesById[keyframeId]['waitEnd'] = 0.5;
         keyframesById[keyframeId]['speed'] = null;
         keyframesById[keyframeId]['loopTimes'] = 0;
         if (settings["enableCustomUI"])
@@ -326,12 +312,10 @@ if (!Math.uuid) {
     this.resetSpeedBlockForKeyframe = function(keyframeId) {
       if (keyframeId && keyframesById[keyframeId]) {
         keyframesById[keyframeId]['buildConstraint'] = "speed";
-        keyframesById[keyframeId]['waitStart'] = 0.5;
-        keyframesById[keyframeId]['waitEnd'] = 0.5;
         keyframesById[keyframeId]['duration'] = null;
         keyframesById[keyframeId]['speed'] = 100;
         if (settings["enableCustomUI"])
-          keyframesById[keyframeId]['loopTimes'] = 2;
+          keyframesById[keyframeId]['loopTimes'] = defaultLoopTimes;
         else
           keyframesById[keyframeId]['loopTimes'] = 0;
       }
@@ -448,14 +432,14 @@ if (!Math.uuid) {
           var loopTimes;
           var buildConstraint = desiredKeyframes[i]['buildConstraint'];
           if (buildConstraint == "speed") {
-            // Use the trick to save the build constraint to speed
+            // Use the trick to save the build constraint to speed (add one to loopTimes)
             loopTimes = desiredKeyframes[i]['loopTimes'] ? desiredKeyframes[i]['loopTimes'] + 1 : 1;
           } else if (buildConstraint == "duration") {
             // Use the trick to save the build constraint to duration
             loopTimes = 0;
           }
           encoder.write_uint(loopTimes);
-          // Duration OR speed
+          // Duration or speed
           if (buildConstraint == "duration") {
             var duration = ( typeof desiredKeyframes[i]['duration'] == 'undefined') ? 0 : desiredKeyframes[i]['duration'];
             encoder.write_udecimal(duration, 2);
@@ -554,8 +538,6 @@ if (!Math.uuid) {
             frame["speed"] = encoder.read_uint();
             frame["duration"] = null;
           }
-          frame["waitStart"] = 0.5;
-          frame["waitEnd"] = 0.5;
           // Decode frame number
           var frameNumber = encoder.read_uint();
           frame["time"] = frameNumber / fps;
@@ -679,7 +661,7 @@ if (!Math.uuid) {
           if ( typeof keyframe['time'] != 'undefined' && typeof keyframe['bounds'] != 'undefined' && typeof keyframe['bounds']['xmin'] != 'undefined' && typeof keyframe['bounds']['ymin'] != 'undefined' && typeof keyframe['bounds']['xmax'] != 'undefined' && typeof keyframe['bounds']['ymax'] != 'undefined') {
             // NOTE: if is-description-visible is undefined, then we define it as *true* in order to maintain
             // backward compatibility with older time warps which don't have this property.
-            this.recordKeyframe(null, keyframe['time'], keyframe['bounds'], keyframe['unsafe_string_description'], ( typeof keyframe['is-description-visible'] == 'undefined') ? true : keyframe['is-description-visible'], keyframe['duration'], true, keyframe['buildConstraint'], keyframe['speed'], keyframe['loopTimes'], keyframe['waitStart'], keyframe['waitEnd'], loadKeyframesLength, keyframe['unsafe_string_frameTitle']);
+            this.recordKeyframe(null, keyframe['time'], keyframe['bounds'], keyframe['unsafe_string_description'], ( typeof keyframe['is-description-visible'] == 'undefined') ? true : keyframe['is-description-visible'], keyframe['duration'], true, keyframe['buildConstraint'], keyframe['speed'], keyframe['loopTimes'], loadKeyframesLength, keyframe['unsafe_string_frameTitle']);
           } else {
             UTIL.error("Ignoring invalid keyframe during snaplapse load.");
           }
@@ -700,10 +682,10 @@ if (!Math.uuid) {
 
     this.duplicateKeyframe = function(idOfSourceKeyframe) {
       var keyframeCopy = cloneFrame(keyframesById[idOfSourceKeyframe]);
-      this.recordKeyframe(idOfSourceKeyframe, keyframeCopy['time'], keyframeCopy['bounds'], keyframeCopy['unsafe_string_description'], keyframeCopy['is-description-visible'], keyframeCopy['duration'], false, keyframeCopy['buildConstraint'], keyframeCopy['speed'], keyframeCopy['loopTimes'], keyframeCopy['waitStart'], keyframeCopy['waitEnd'], undefined, keyframeCopy['unsafe_string_frameTitle']);
+      this.recordKeyframe(idOfSourceKeyframe, keyframeCopy['time'], keyframeCopy['bounds'], keyframeCopy['unsafe_string_description'], keyframeCopy['is-description-visible'], keyframeCopy['duration'], false, keyframeCopy['buildConstraint'], keyframeCopy['speed'], keyframeCopy['loopTimes'], undefined, keyframeCopy['unsafe_string_frameTitle']);
     };
 
-    this.recordKeyframe = function(idOfKeyframeToAppendAfter, time, bounds, description, isDescriptionVisible, duration, isFromLoad, buildConstraint, speed, loopTimes, waitStart, waitEnd, loadKeyframesLength, frameTitle) {
+    this.recordKeyframe = function(idOfKeyframeToAppendAfter, time, bounds, description, isDescriptionVisible, duration, isFromLoad, buildConstraint, speed, loopTimes, loadKeyframesLength, frameTitle) {
       if ( typeof bounds == 'undefined') {
         bounds = timelapse.getBoundingBoxForCurrentView();
       }
@@ -716,8 +698,6 @@ if (!Math.uuid) {
       keyframe['buildConstraint'] = ( typeof buildConstraint == 'undefined') ? "speed" : buildConstraint;
       keyframe['loopTimes'] = loopTimes;
       keyframe['speed'] = speed;
-      keyframe['waitStart'] = waitStart;
-      keyframe['waitEnd'] = waitEnd;
       keyframe['time'] = org.gigapan.timelapse.Snaplapse.normalizeTime(( typeof time == 'undefined') ? timelapse.getCurrentTime() : time);
       var frameNumber = Math.floor(keyframe['time'] * timelapse.getFps());
       keyframe['captureTime'] = captureTimes[frameNumber];
@@ -842,13 +822,9 @@ if (!Math.uuid) {
       var intervals = [];
       for (var k = startingKeyframeIndex + 1; k < keyframes.length; k++) {
         var previousKeyframeInterval = (intervals.length > 0) ? intervals[intervals.length - 1] : null;
-        var isFirstKeyframe = false;
-        if (k == startingKeyframeIndex + 1) {
-          isFirstKeyframe = true;
-        }
-        var keyframeInterval = new org.gigapan.timelapse.KeyframeInterval(keyframes[k - 1], keyframes[k], previousKeyframeInterval, timelapse.getDuration(), composerDivId, undefined, isFirstKeyframe, timelapse, settings);
+        var keyframeInterval = new org.gigapan.timelapse.KeyframeInterval(keyframes[k - 1], keyframes[k], previousKeyframeInterval, timelapse.getDuration(), composerDivId, undefined, timelapse, settings);
         intervals[intervals.length] = keyframeInterval;
-        UTIL.log("   buildKeyframeIntervals(): created keyframe interval (" + (intervals.length - 1) + "): between time [" + keyframes[k - 1]['time'] + "] and [" + keyframes[k]['time'] + "]: " + keyframeInterval);
+        UTIL.log("buildKeyframeIntervals(): created keyframe interval (" + (intervals.length - 1) + "): between time [" + keyframes[k - 1]['time'] + "] and [" + keyframes[k]['time'] + "]: " + keyframeInterval);
       }
       return intervals;
     };
@@ -874,7 +850,7 @@ if (!Math.uuid) {
           timelapse.seek(keyframes[startingKeyframeIndex].time);
 
           // This is a hack to wait for seeking
-          waitForSeek_timeout = setTimeout(function() {
+          waitForSeekTimeout = setTimeout(function() {
             isCurrentlyPlaying = true;
             // Compute the keyframe intervals
             keyframeIntervals = buildKeyframeIntervals(startingKeyframeIndex);
@@ -1005,15 +981,15 @@ if (!Math.uuid) {
         timelapse.setPlaybackRate(rate);
 
         // When we set the current keyframe interval,
-        // ask if we need to do an extra pausing at the beginning of playing the timewarp
-        currentWaitForExtraStart = currentKeyframeInterval.getWaitForExtraStartFlag();
-        if (currentWaitForExtraStart) {
+        // ask if we need to do an extra pausing at the beginning of playing the tour
+        doExtraStartDwell = currentKeyframeInterval.doExtraStartDwell();
+        if (doExtraStartDwell) {
           // If yes, get the duration
-          extraWaitForStartDuration = currentKeyframeInterval.getExtraWaitForStartDuration();
-          waitForStart = false;
-          waitForEnd = false;
+          extraStartDwell = currentKeyframeInterval.getExtraStartDwell();
+          doStartDwell = false;
+          doEndDwell = false;
         }
-        currentWaitDuration = currentKeyframeInterval.getWaitDuration();
+        currentLoopDwell = currentKeyframeInterval.getLoopDwell();
         var currentFrame = currentKeyframeInterval.getStartingFrame();
         if (currentFrame)
           UTIL.selectSortableElements($("#" + composerDivId + " .snaplapse_keyframe_list"), $("#" + composerDivId + "_snaplapse_keyframe_" + currentFrame.id), true);
@@ -1082,32 +1058,32 @@ if (!Math.uuid) {
       var currentTime = timelapse.getCurrentTime();
       var videoDuration = timelapse.getDuration();
 
-      // If we need to do an extra pausing at the beginning of playing the timewarp
-      if (currentWaitForExtraStart) {
+      // If we need to do an extra pausing at the beginning of playing the tour
+      if (doExtraStartDwell) {
         // Set the flag to false to prevent pausing again
-        currentWaitForExtraStart = false;
-        clearTimeout(waitFor_timeout);
-        waitFor_timeout = timelapse.waitFor(extraWaitForStartDuration, function() {
-          waitForEnd = true;
-          waitForStart = false;
+        doExtraStartDwell = false;
+        clearTimeout(doLoopDwellTimeout);
+        doLoopDwellTimeout = timelapse.waitFor(extraStartDwell, function() {
+          doEndDwell = true;
+          doStartDwell = false;
         });
       }
 
       // When the video time is at the end, we pause the video for a user specified duration and loop it
-      // waitForEnd is initially set to true
-      if (currentTime >= videoDuration && waitForEnd == true) {
+      // doEndDwell is initially set to true
+      if (currentTime >= videoDuration && doEndDwell == true) {
         // We are going to pause the video, so we set the "pausing at the end" flag to false to prevent pausing again
-        waitForEnd = false;
+        doEndDwell = false;
         // Calculate the overshooting time
         var desync = currentTime - videoDuration;
         // Pause at the end
-        clearTimeout(waitFor_timeout);
-        var waitTime = currentWaitDuration.end + desync;
-        waitFor_timeout = timelapse.waitFor(waitTime, function() {
+        clearTimeout(doLoopDwellTimeout);
+        var waitTime = currentLoopDwell.end + desync;
+        doLoopDwellTimeout = timelapse.waitFor(waitTime, function() {
           // Now we are going to pause at the beginning when we loop the video
           // so we set the "pausing at the beginning" flag to true
           // TODO: Bug where if a keyframe is at the end and we set a duration, then it seeks back to the beginning before it waits at that keyframe
-          waitForStart = true;
+          doStartDwell = true;
           if (waitTime > 0)
             timelapse.seek(0);
           timelapse.play();
@@ -1115,13 +1091,13 @@ if (!Math.uuid) {
       }
 
       // When the video time is at the beginning when we looped, we want to pause for a user specified duration
-      if (waitForStart == true) {
+      if (doStartDwell == true) {
         // We are going to pause the video, so we set the "pausing at the beginning" flag to false to prevent pausing again
-        waitForStart = false;
-        clearTimeout(waitFor_timeout);
-        waitFor_timeout = timelapse.waitFor(currentWaitDuration.start, function() {
+        doStartDwell = false;
+        clearTimeout(doLoopDwellTimeout);
+        doLoopDwellTimeout = timelapse.waitFor(currentLoopDwell.start, function() {
           // Reset the "pausing at the end" flag after pausing
-          waitForEnd = true;
+          doEndDwell = true;
         });
       }
 
@@ -1176,28 +1152,28 @@ if (!Math.uuid) {
     return parseFloat(t.toFixed(6));
   };
 
-  org.gigapan.timelapse.KeyframeInterval = function(startingFrame, endingFrame, previousKeyframeInterval, videoDuration, composerDivId, constraintParaName, isFirstKeyframe, timelapse, settings) {
+  org.gigapan.timelapse.KeyframeInterval = function(startingFrame, endingFrame, previousKeyframeInterval, videoDuration, composerDivId, constraintParaName, timelapse, settings) {
     var nextKeyframeInterval = null;
     var playbackRate = null;
     var itemIdHead = composerDivId + "_snaplapse_keyframe_" + startingFrame.id;
     var desiredSpeed = startingFrame['speed'] == null ? 100 : startingFrame['speed'];
     var timeDirection = (startingFrame['time'] <= endingFrame['time']) ? 1 : -1;
-    var waitDuration = {
-      start: 0,
-      end: 0
+    // TODO: loopDwell needs to be a setting inside snaplapse json
+    var loopDwell = {
+      start: timelapse.getStartDwell(),
+      end: timelapse.getEndDwell()
     };
-    var waitForExtraStart = false;
-    var extraWaitForStartDuration = 0;
+    var doExtraStartDwell = false;
+    var extraStartDwell = 0;
     var loopTimes = startingFrame['loopTimes'];
     var playbackTime_withoutLooping;
     var playbackTime_eachLoop;
     var actualDuration;
     var desiredDuration;
-    var defaultLoopDwellTime = 0.5;
     var disableTourLooping = ( typeof settings['disableTourLooping'] == "undefined") ? false : settings['disableTourLooping'];
-    var defaultLoopTimes = 2;
+    var defaultLoopTimes = timelapse.getSnaplapse().getDefaultLoopTimes();
 
-    // Determine loop dwell time and validate loop times
+    // Determine and validate loop times and loop dwell time
     // Loop dwell time is the time that users want to pause the video at the begining or end while looping
     if (constraintParaName) {
       // Updating mode:
@@ -1209,39 +1185,20 @@ if (!Math.uuid) {
           loopTimes = defaultLoopTimes;
         else if (loopTimes < 0)
           loopTimes = 0;
-        // Set loop dwell time
-        if (loopTimes > 0) {
-          waitDuration = {
-            start: startingFrame['waitStart'] == null ? defaultLoopDwellTime : startingFrame['waitStart'],
-            end: startingFrame['waitEnd'] == null ? defaultLoopDwellTime : startingFrame['waitEnd']
-          };
-        }
-        startingFrame['waitStart'] = waitDuration.start;
-        startingFrame['waitEnd'] = waitDuration.end;
       } else if (constraintParaName == "duration") {
         // In duration mode, looping is not allowed.
         loopTimes = 0;
-        startingFrame['waitStart'] = 0;
-        startingFrame['waitEnd'] = 0;
       }
-    } else {
-      // Playing mode:
-      waitDuration = {
-        start: startingFrame['waitStart'],
-        end: startingFrame['waitEnd']
-      };
     }
 
     // Determine extra loop dwell time at the beginning
-    if (isFirstKeyframe == true) {
-      if (startingFrame['time'] == 0) {
-        waitForExtraStart = true;
-        // extraWaitForStartDuration is used when users want to pause the keyframe starting at the begining of the video
-        // This is an exception for the loop dwelling math
-        // If the first keyframe starts at source time zero, we still need to pause it (using waitForExtraStart flag)
-        // we compute the duration in KeyframeInterval class and use it in snaplapse
-        extraWaitForStartDuration = startingFrame['waitStart'];
-      }
+    if (startingFrame['time'] == 0 && desiredSpeed != 0 && endingFrame['time'] != startingFrame['time'] && startingFrame['duration'] != 0) {
+      doExtraStartDwell = true;
+      // extraStartDwell is used when users want to pause the keyframe starting at the begining of the video
+      // This is an exception for the loop dwelling math
+      // If the first keyframe starts at source time zero, we still need to pause it (using doExtraStartDwell flag)
+      // we compute the duration in KeyframeInterval class and use it in snaplapse
+      extraStartDwell = timelapse.getStartDwell();
     }
 
     // Main function
@@ -1251,7 +1208,7 @@ if (!Math.uuid) {
       // this mode is for adding, deleting, and refreshing keyframes
 
       // Compute the duration of source time
-      actualDuration = Math.abs(parseFloat(Math.abs(endingFrame['time'] - startingFrame['time'])));
+      actualDuration = parseFloat(Math.abs(endingFrame['time'] - startingFrame['time']));
       // Compute the duration of playback time (include looping)
       desiredDuration = startingFrame['duration'] == null ? actualDuration : startingFrame['duration'];
 
@@ -1274,16 +1231,16 @@ if (!Math.uuid) {
         // Compute other parameters
         playbackRate = desiredSpeed / 100;
         playbackTime_withoutLooping = actualDuration / playbackRate;
-        playbackTime_eachLoop = videoDuration / playbackRate + waitDuration.start + waitDuration.end;
+        playbackTime_eachLoop = videoDuration / playbackRate + loopDwell.start + loopDwell.end;
         if (timeDirection == 1) {
           // This means that the time goes forward
-          desiredDuration = extraWaitForStartDuration + loopTimes * playbackTime_eachLoop + playbackTime_withoutLooping;
+          desiredDuration = extraStartDwell + loopTimes * playbackTime_eachLoop + playbackTime_withoutLooping;
         } else {
           // This means that the time goes backward
           if (loopTimes > 0)
-            desiredDuration = extraWaitForStartDuration + loopTimes * playbackTime_eachLoop - playbackTime_withoutLooping;
+            desiredDuration = extraStartDwell + loopTimes * playbackTime_eachLoop - playbackTime_withoutLooping;
           else
-            desiredDuration = playbackTime_withoutLooping;
+            desiredDuration = extraStartDwell + playbackTime_withoutLooping;
         }
         if (isNaN(desiredDuration) || desiredSpeed == 0)
           desiredDuration = 0;
@@ -1302,9 +1259,7 @@ if (!Math.uuid) {
               //desiredDuration = actualDuration / 100;
               desiredDuration = 0;
             }
-            //playbackRate = actualDuration / desiredDuration;
-            //desiredSpeed = playbackRate * 100;
-            playbackRate = (desiredDuration == 0) ? 0 : actualDuration / desiredDuration;
+            playbackRate = (desiredDuration == 0) ? 0 : actualDuration / (desiredDuration - extraStartDwell);
             desiredSpeed = (desiredDuration == 0) ? 10000 : playbackRate * 100;
           }
         } else {
@@ -1326,7 +1281,7 @@ if (!Math.uuid) {
         timeDirection = 1;
       }
       var startingFrameTimes = startingFrame['time'];
-      var endingFrameTimes = endingFrame['time'] + loopTimes * (videoDuration + waitDuration.start + waitDuration.end) + extraWaitForStartDuration;
+      var endingFrameTimes = endingFrame['time'] + loopTimes * (videoDuration + loopDwell.start + loopDwell.end) + extraStartDwell;
       actualDuration = parseFloat(Math.abs(endingFrameTimes - startingFrameTimes).toFixed(6));
       desiredDuration = startingFrame['duration'] == null ? actualDuration : startingFrame['duration'];
 
@@ -1347,16 +1302,16 @@ if (!Math.uuid) {
       }
     }
 
-    this.getWaitDuration = function() {
-      return waitDuration;
+    this.getLoopDwell = function() {
+      return loopDwell;
     };
 
-    this.getWaitForExtraStartFlag = function() {
-      return waitForExtraStart;
+    this.doExtraStartDwell = function() {
+      return doExtraStartDwell;
     };
 
-    this.getExtraWaitForStartDuration = function() {
-      return extraWaitForStartDuration;
+    this.getExtraStartDwell = function() {
+      return extraStartDwell;
     };
 
     this.getPreviousKeyframeInterval = function() {

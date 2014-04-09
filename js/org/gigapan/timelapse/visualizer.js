@@ -319,9 +319,9 @@ if (!org.gigapan.timelapse.Timelapse) {
     // Compute the span for dash lines on the visualizer
     var computeDashSpan = function(keyframe, lineW, lineLength) {
       var loopTimes = typeof keyframe['loopTimes'] == 'undefined' ? 0 : keyframe['loopTimes'];
-      var waitStart = typeof keyframe['waitStart'] == 'undefined' ? 0 : keyframe['waitStart'];
-      var waitEnd = typeof keyframe['waitEnd'] == 'undefined' ? 0 : keyframe['waitEnd'];
-      var duration_withoutWaiting = keyframe['duration'] - loopTimes * (waitStart + waitEnd);
+      var startDwell = timelapse.getStartDwell();
+      var endDwell = timelapse.getEndDwell();
+      var duration_withoutWaiting = keyframe['duration'] - loopTimes * (startDwell + endDwell);
       var dashSpan;
       if (duration_withoutWaiting == 0) {
         dashSpan = lineW / 1.5;

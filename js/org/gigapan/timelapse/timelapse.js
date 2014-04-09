@@ -148,6 +148,7 @@ if (!window['$']) {
     var minViewportHeight = 400;
     var minViewportWidth = 700;
     var datasetType;
+    var defaultLoopDwellTime = 0.5;
 
     // If the user requested a tour editor AND has a div in the DOM for the editor,
     // then do all related edtior stuff (pull thumbnails for keyframes, etc.)
@@ -333,6 +334,14 @@ if (!window['$']) {
     //
     // Public methods
     //
+    this.getStartDwell = function() {
+      return startDwell;
+    };
+
+    this.getEndDwell = function() {
+      return endDwell;
+    };
+
     this.getPlayOnLoad = function() {
       return playOnLoad;
     };
@@ -2902,13 +2911,14 @@ if (!window['$']) {
         datasetType = "modis";
     }
 
+    // Set default loop dwell time
     if (datasetType == "landsat" && loopDwell == undefined) {
       loopDwell = {
-        "startDwell": 0.5,
-        "endDwell": 0.5
+        "startDwell": defaultLoopDwellTime,
+        "endDwell": defaultLoopDwellTime
       };
-      startDwell = 0.5;
-      endDwell = 0.5;
+      startDwell = defaultLoopDwellTime;
+      endDwell = defaultLoopDwellTime;
     }
 
     UTIL.log('Timelapse("' + settings["url"] + '")');
