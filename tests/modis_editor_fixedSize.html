@@ -59,7 +59,9 @@
           viewportGeometry: {
             width: 1068,
             height: 600
-            //max: true
+          },
+          onTimeMachinePlayerReady: function() {
+            console.log("Time Machine player is ready.");
           },
           scaleBarOptions: {
             scaleBarDiv: "scaleBar1"
@@ -72,9 +74,6 @@
           newHomeView: myHomeView
         };
         timelapse = new org.gigapan.timelapse.Timelapse("player1", viewerSettings);
-      }
-
-      function onTimeMachinePlayerReady(viewerDivId) {
       }
 
       $(init);

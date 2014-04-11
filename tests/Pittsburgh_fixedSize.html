@@ -71,13 +71,13 @@
             width: 1068,
             height: 600
           },
+          onTimeMachinePlayerReady: function() {
+            console.log("Time Machine player is ready.");
+          },
           disableTourLooping: true,
           isGoogleAnalyticEventTrackingEnabled: true
         };
         timelapse = new org.gigapan.timelapse.Timelapse("player1", viewerSettings);
-      }
-
-      function onTimeMachinePlayerReady(viewerDivId) {
       }
 
       $(init);

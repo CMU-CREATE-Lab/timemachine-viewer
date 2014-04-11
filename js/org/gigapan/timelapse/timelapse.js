@@ -615,7 +615,6 @@ if (!window['$']) {
       // If we are focused on a text field or the slider handlers, do not run any player specific controls.
       if ($("#" + viewerDivId + " .timelineSlider .ui-slider-handle:focus").length || $("#" + viewerDivId + " .zoomSlider .ui-slider-handle:focus").length || activeElement == "[object HTMLInputElement]" || activeElement == "[object HTMLTextAreaElement]")
         return;
-
       var moveFn;
       switch (event.which) {
         // Left arrow
@@ -680,6 +679,7 @@ if (!window['$']) {
           break;
         // Minus
         case 173:
+        case 109:
         case 189:
           moveFn = function() {
             if (event.shiftKey) {
@@ -692,6 +692,7 @@ if (!window['$']) {
           break;
         // Plus
         case 61:
+        case 107:
         case 187:
           moveFn = function() {
             if (event.shiftKey) {
@@ -731,9 +732,9 @@ if (!window['$']) {
       //UTIL.log('mousescroll delta  ' + delta);
       if (event.shiftKey) {
         if (delta > 0) {
-          zoomAbout(1 / 0.999, event.pageX, event.pageY);
+          zoomAbout(1 / 0.99, event.pageX, event.pageY);
         } else if (delta < 0) {
-          zoomAbout(0.999, event.pageX, event.pageY);
+          zoomAbout(0.99, event.pageX, event.pageY);
         }
       } else {
         if (delta > 0) {
@@ -2528,8 +2529,8 @@ if (!window['$']) {
             }
           }
           // Fire onTimeMachinePlayerReady when the first video is ready
-          if ( typeof (onTimeMachinePlayerReady) === "function") {
-            onTimeMachinePlayerReady(viewerDivId);
+          if ( typeof (settings["onTimeMachinePlayerReady"]) === "function") {
+            settings["onTimeMachinePlayerReady"](viewerDivId);
           }
           updateTagInfo_locationData();
         }

@@ -1142,11 +1142,13 @@ if (!org.gigapan.timelapse.Timelapse) {
       if (status == true) {
         startEditorFromPresentationMode = true;
         $("#" + viewerDivId + " .customEditorControl .playStopTimewarp").hide();
+        $("#" + viewerDivId + " .videoQualityContainer").hide();
         if (snaplapseViewer)
           snaplapseViewer.setPresentationMode(true);
       } else {
         startEditorFromPresentationMode = false;
         $("#" + viewerDivId + " .customEditorControl .playStopTimewarp").show();
+        $("#" + viewerDivId + " .videoQualityContainer").show();
         if (snaplapseViewer)
           snaplapseViewer.setPresentationMode(false);
       }

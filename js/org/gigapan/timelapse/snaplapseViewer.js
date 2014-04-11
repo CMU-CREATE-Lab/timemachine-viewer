@@ -702,7 +702,7 @@ function playCachedSnaplapse(snaplapseId) {
           $("#" + timelapseViewerDivId + ' .timelineSlider').slider("disable");
           $("#" + timelapseViewerDivId + " .tourLoadOverlayPlay").attr("src", rootAppURL + "images/tour_stop_outline.png").css("opacity", "1.0");
           $("#" + timelapseViewerDivId + " .snaplapseTourPlayBack").css("left", "0px").toggleClass("playTour stopTour").attr("title", "Click to stop this tour");
-          $("#" + timelapseViewerDivId + " .videoQualityContainer").css("left", "20px");
+          $("#" + timelapseViewerDivId + " .videoQualityContainer").css("left", "23px");
           $sortable.css("opacity", "0.5");
         });
 
