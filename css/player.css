@@ -15,8 +15,8 @@ body, html {
   right: 64px;
   border: 0px;
   background-image: url("../images/createLabLogo.png");
-  -ms-transform: scale(0.647); /* IE 9 */
-  -webkit-transform: scale(0.647); /* Chrome, Safari, Opera */
+  -ms-transform: scale(0.647);
+  -webkit-transform: scale(0.647);
   transform: scale(0.647);
   display: none;
 }
@@ -199,32 +199,6 @@ body, html {
   outline: 0;
 }
 
-.playbackSpeed {
-  position: absolute;
-  width: 152px;
-  height: 17px;
-  bottom: 24px;
-  left: 89px;
-  background: white;
-  border: 1px solid #656565;
-  border-radius: 2px !important;
-  box-shadow: 2px 2px 3px rgba(0,0,0,0.3);
-  z-index: 30;
-  outline: none;
-}
-
-.playbackSpeed .ui-button-text {
-  text-align: center;
-  padding: 0;
-  font-size: 10px;
-  margin-top: -1px;
-  margin-left: -13px;
-}
-
-.playbackSpeed .ui-icon {
-  margin-right: -4px;
-}
-
 .viewerModeBtn {
   position: absolute;
   width: 58px;
@@ -258,7 +232,7 @@ body, html {
 }
 
 .viewerModeBtn.ui-state-active .ui-icon {
-  background-image: url(../images/ui-icons_custom_256x240.png)/*{iconsActive}*/;
+  background-image: url(../images/ui-icons_custom_256x240.png);
 }
 
 .share {
@@ -405,7 +379,7 @@ body, html {
   position: absolute;
   left: 90px;
   bottom: 43px;
-  font-size: 14px;
+  font-size: 16px;
   text-shadow: -1px 0 #656565, 0 1px #656565, 1px 0 #656565, 0 -1px #656565, 2px 2px 3px rgba(0,0,0,0.3);
   font-family: Arial, Helvetica, sans-serif;
   text-align: center;
@@ -431,7 +405,7 @@ body, html {
 .timelineSliderFiller {
   position: absolute;
   bottom: 26px;
-  left: 258px;
+  left: 160px;
   right: 100px;
   width: auto;
   box-shadow: 2px 2px 3px rgba(0,0,0,0.3);
@@ -559,47 +533,6 @@ body, html {
   margin-top: 11px;
 }
 
-.playbackSpeedOptions {
-  border-radius: 2px;
-  font-size: 11px;
-  box-shadow: 2px 2px 3px rgba(0,0,0,0.3);
-}
-
-.playbackSpeedOptions .ui-corner-all {
-  border-radius: 2px;
-}
-
-.playbackSpeedOptions.ui-menu {
-  position: absolute;
-  width: 130px;
-  padding: 10px;
-  border: 1px solid #656565;
-  z-index: 27;
-}
-
-.playbackSpeedOptions.ui-state-focus {
-  padding: 10px;
-}
-
-.sizeOptions {
-  border-radius: 2px;
-}
-
-.sizeOptions .ui-corner-all {
-  border-radius: 2px;
-}
-
-.sizeOptions.ui-menu {
-  position: absolute;
-  width: 75px;
-  padding: 10px;
-  border: 1px solid #656565;
-}
-
-.sizeOptions.ui-state-focus {
-  padding: 10px;
-}
-
 .controls {
   position: absolute;
   left: 0px;
@@ -675,10 +608,6 @@ body, html {
 
 .editorModeToolbar .ui-button:hover:not(
 [disabled]) {
-  /*
-   -moz-box-shadow: 0 0 12px #656565;
-   -webkit-box-shadow: 0 0 12px #656565;
-   box-shadow: 0 0 12px #656565;*/
   border-right: 1px solid #656565;
   border-left: 1px solid #656565;
   z-index: 999;
@@ -731,7 +660,6 @@ body, html {
 
 .carousel {
   margin: 0 0 20px 10px;
-  /*position: relative;*/
 }
 
 .layerSlider {
@@ -843,4 +771,26 @@ body, html {
   background: #959595;
   border: 0;
   color: white;
+}
+
+.toggleSpeed.ui-button {
+  position: absolute;
+  width: 55px;
+  height: 17px;
+  top: 19px;
+  left: 89px;
+  background: white;
+  border: 1px solid #656565;
+  border-radius: 3px !important;
+  box-shadow: 2px 2px 3px rgba(0,0,0,0.3);
+  z-index: 9;
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 8pt;
+  color: #656565;
+  display: none;
+}
+
+.toggleSpeed .ui-button-text {
+  text-align: center;
+  padding: 0px;
 }

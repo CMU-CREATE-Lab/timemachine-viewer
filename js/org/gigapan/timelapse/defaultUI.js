@@ -105,10 +105,14 @@ if (!org.gigapan.timelapse.Timelapse) {
     var $controls = $("#" + viewerDivId + " .controls");
     var $editorModeToolbar = $("#" + viewerDivId + " .editorModeToolbar");
     var $annotatorModeToolbar = $("#" + viewerDivId + " .annotatorModeToolbar");
+    var $fastSpeed = $("#fastSpeed");
+    var $mediumSpeed = $("#mediumSpeed");
+    var $slowSpeed = $("#slowSpeed");
     var toolbarHeight = $toolbar.outerHeight();
     var minViewportHeight = timelapse.getMinViewportHeight();
     var minViewportWidth = timelapse.getMinViewportWidth();
     var datasetType = timelapse.getDatasetType();
+    var isSafari = org.gigapan.Util.isSafari();
 
     var visualizer = timelapse.getVisualizer();
     var annotator = timelapse.getAnnotator();
@@ -135,6 +139,7 @@ if (!org.gigapan.timelapse.Timelapse) {
     var createToolbar = function() {
       createPlayerModeToolbar();
       createSideToolBar();
+      createSpeedControl();
       // Play button
       $playbackButton.button({
         icons: {
@@ -178,7 +183,6 @@ if (!org.gigapan.timelapse.Timelapse) {
         if (settings["annotatorDiv"])
           createAnnotatorModeToolbar();
       }
-
       // Layers for a dataset
       if (tmJSON["layers"]) {
         $("#" + viewerDivId + " .layerSlider").show();
@@ -192,6 +196,84 @@ if (!org.gigapan.timelapse.Timelapse) {
       }
       if (showEditorOnLoad && editorEnabled && datasetType == undefined)
         $("#" + viewerDivId + " .viewerModeCheckbox").trigger("click");
+    };
+
+    var createSpeedControl = function() {
+      // Speeds < 0.5x in Safari, even if emulated, result in broken playback, so do not include the "slow" (0.25x) speed option
+      if (isSafari)
+        $slowSpeed.remove();
+
+      $fastSpeed.button({
+        text: true
+      }).click(function() {
+        timelapse.setPlaybackRate(0.5, null, true);
+        $controls.prepend($mediumSpeed);
+        $mediumSpeed.stop(true, true).show();
+        $fastSpeed.slideUp(300);
+        UTIL.addGoogleAnalyticEvent('button', 'click', 'viewer-set-speed-to-medium');
+      });
+
+      $mediumSpeed.button({
+        text: true
+      }).click(function() {
+        // Due to playback issues, we are not allowing the "slow" option for Safari users
+        if (isSafari) {
+          timelapse.setPlaybackRate(1, null, true);
+          $controls.prepend($fastSpeed);
+          $fastSpeed.stop(true, true).show();
+          UTIL.addGoogleAnalyticEvent('button', 'click', 'viewer-set-speed-to-fast');
+        } else {
+          timelapse.setPlaybackRate(0.25, null, true);
+          $controls.prepend($slowSpeed);
+          $slowSpeed.stop(true, true).show();
+          UTIL.addGoogleAnalyticEvent('button', 'click', 'viewer-set-speed-to-slow');
+        }
+        $mediumSpeed.slideUp(300);
+      });
+
+      $slowSpeed.button({
+        text: true
+      }).click(function() {
+        timelapse.setPlaybackRate(1, null, true);
+        $controls.prepend($fastSpeed);
+        $fastSpeed.stop(true, true).show();
+        $slowSpeed.slideUp(300);
+        UTIL.addGoogleAnalyticEvent('button', 'click', 'viewer-set-speed-to-fast');
+      });
+
+      timelapse.addPlaybackRateChangeListener(function(rate, fromUI) {
+        if (!fromUI) {
+          var snaplapse = timelapse.getSnaplapse();
+          if (snaplapse && snaplapse.isPlaying())
+            return;
+          $("#" + viewerDivId + " .toggleSpeed").hide();
+          if (rate >= 1) {
+            $fastSpeed.show();
+            $mediumSpeed.hide();
+            $slowSpeed.hide();
+          } else if ((rate < 1 && rate >= 0.5) || (isSafari && rate < 0.5)) {
+            $mediumSpeed.show();
+            $fastSpeed.hide();
+            $slowSpeed.hide();
+          } else {
+            $slowSpeed.show();
+            $mediumSpeed.hide();
+            $fastSpeed.hide();
+          }
+        }
+      });
+
+      // Since the call to set the playback rate when first creating the timelapse
+      // happens before the UI is setup, we need to run it again below to properly
+      // update the UI.
+      var playbackRate = timelapse.getPlaybackRate();
+      if (playbackRate >= 1) {
+        $fastSpeed.show();
+      } else if (playbackRate < 1 && playbackRate >= 0.5) {
+        $mediumSpeed.show();
+      } else {
+        $slowSpeed.show();
+      }
     };
 
     var createPanControl = function() {
@@ -408,31 +490,6 @@ if (!org.gigapan.timelapse.Timelapse) {
           });
         }
       }).parent().appendTo($("#" + viewerDivId));
-      // Create playbackSpeed menu and button
-      createPlaybackSpeedMenu();
-      var $playbackSpeed = $("#" + viewerDivId + " .playbackSpeed");
-      var $playbackSpeedOptions = $("#" + viewerDivId + " .playbackSpeedOptions");
-      $playbackSpeed.button({
-        icons: {
-          secondary: "ui-icon-triangle-1-s"
-        },
-        text: true
-      }).click(function() {
-        if ($playbackSpeedOptions.is(":visible")) {
-          $playbackSpeedOptions.hide();
-        } else {
-          $playbackSpeedOptions.show().position({
-            my: "center bottom",
-            at: "center top",
-            of: $playbackSpeed
-          });
-          $(document).one("mouseup", function(e) {
-            var targetGroup = $(e.target).parents().addBack();
-            if (!targetGroup.is(".playbackSpeed"))
-              $playbackSpeedOptions.hide();
-          });
-        }
-      });
       // Create help button
       var helpPlayerCheckbox = $("#" + viewerDivId + " .helpPlayerCheckbox");
       helpPlayerCheckbox.attr("id", viewerDivId + "_helpPlayerCheckbox");
@@ -874,69 +931,6 @@ if (!org.gigapan.timelapse.Timelapse) {
       });
       $("#" + viewerDivId + " .shareView").dialog("open");
     };
-
-    function createPlaybackSpeedMenu() {
-      // Populate playback speed dropdown (the function is in timelapseViewer.js)
-      populateSpeedPlaybackChoices();
-
-      var $playbackSpeedOptionsSelection = $("#" + viewerDivId + " .playbackSpeedOptions li a");
-      $playbackSpeedOptionsSelection.bind("click", function() {
-        timelapse.changePlaybackRate(this);
-      });
-      $("#" + viewerDivId + " .playbackSpeedOptions").hide().menu();
-
-      timelapse.addPlaybackRateChangeListener(function(rate, fromUI) {
-        var speedChoice;
-        // Set the playback speed dropdown
-        var $playbackSpeedOptionsSelection = $("#" + viewerDivId + " .playbackSpeedOptions li a");
-        $playbackSpeedOptionsSelection.each(function() {
-          speedChoice = $(this);
-          if (speedChoice.attr("data-speed") == rate) {
-            return false;
-          }
-        });
-        $("#" + viewerDivId + " .playbackSpeed span").text(speedChoice.text());
-        if (fromUI)
-          UTIL.addGoogleAnalyticEvent('button', 'click', 'viewer-set-speed-to-(' + rate + ')');
-      });
-    }
-
-    function populateSpeedPlaybackChoices() {
-      var choices = [];
-
-      // Only show backward playback options for non-split video datasets
-      // Backward playback - emulated since Chrome/Safari doesn't properly handle it
-      if ( typeof (timelapse.getDatasetJSON()["frames_per_fragment"]) == "undefined") {
-        choices.push({
-          "name": "Backward, Full Speed",
-          "value": -1.0
-        }, {
-          "name": "Backward, &#189; Speed",
-          "value": -0.5
-        }, {
-          "name": "Backward, &#188; Speed",
-          "value": -0.25
-        });
-      }
-
-      // Forward playback - 1/4 speed is emulated on Safari but we still give the option
-      choices.push({
-        "name": "Forward, &#188; Speed",
-        "value": 0.25
-      }, {
-        "name": "Forward, &#189; Speed",
-        "value": 0.5
-      }, {
-        "name": "Forward, Full Speed",
-        "value": 1.0
-      });
-      var html = "";
-      var numChoices = choices.length;
-      for (var i = 0; i < numChoices; i++) {
-        html += '<li><a href="javascript:void(0);" data-speed=\'' + choices[i]["value"] + '\'>' + choices[i]["name"] + '</a></li>';
-      }
-      $("#" + viewerDivId + " .playbackSpeedOptions").append(html);
-    }
 
     function doHelpOverlay() {
       $("#" + viewerDivId + " .instructions").fadeIn(200);

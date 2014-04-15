@@ -168,8 +168,8 @@ function playCachedSnaplapse(snaplapseId) {
     };
 
     var hideViewerUI = function() {
-      var $speedControl = $("#" + timelapseViewerDivId + " .toggleSpeed");
-      var $modisSpeedControl = $("#" + timelapseViewerDivId + " .modisToggleSpeed");
+      var $speedControl = $("#" + timelapseViewerDivId + " .customToggleSpeed");
+      var $modisSpeedControl = $("#" + timelapseViewerDivId + " .modisCustomToggleSpeed");
       var $googleLogo = $("#" + timelapseViewerDivId + " .googleLogo");
       var $googleMapToggle = $("#" + timelapseViewerDivId + " .toggleGoogleMapBtn");
       var $contextMapResizer = $("#" + timelapseViewerDivId + " .smallMapResizer");

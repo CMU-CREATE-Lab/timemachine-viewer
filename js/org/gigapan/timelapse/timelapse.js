@@ -2320,14 +2320,6 @@ if (!window['$']) {
       return "{l:" + getTileidxLevel(t) + ",c:" + getTileidxColumn(t) + ",r:" + getTileidxRow(t) + "}";
     };
 
-    var changePlaybackRate = function(obj) {
-      // Convert to number
-      var rate = $(obj).attr("data-speed") - 0;
-      thisObj.setPlaybackRate(rate, false, true);
-      playbackSpeed = rate;
-    };
-    this.changePlaybackRate = changePlaybackRate;
-
     // TODO: Need to make sure viewport actually changes size.
     // Need to change logic in fitVideoToViewport()
     this.switchSize = function(index) {

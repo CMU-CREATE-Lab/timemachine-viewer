@@ -306,9 +306,9 @@ if (!org.gigapan.timelapse.Timelapse) {
 
       var $speedControl;
       if (datasetType == "landsat")
-        $speedControl = $("#" + viewerDivId + " .toggleSpeed");
+        $speedControl = $("#" + viewerDivId + " .customToggleSpeed");
       else
-        $speedControl = $("#" + viewerDivId + " .modisToggleSpeed");
+        $speedControl = $("#" + viewerDivId + " .modisCustomToggleSpeed");
 
       // Set event listeners
       var snaplapse = timelapse.getSnaplapse();
@@ -508,14 +508,14 @@ if (!org.gigapan.timelapse.Timelapse) {
 
     var createSpeedControl = function() {
       // Toggle speed
-      $fastSpeed = $('<button class="toggleSpeed" id="fastSpeed" title="Toggle playback speed">Fast</button>');
-      $mediumSpeed = $('<button class="toggleSpeed" id="mediumSpeed" title="Toggle playback speed">Medium</button>');
-      $slowSpeed = $('<button class="toggleSpeed" id="slowSpeed" title="Toggle playback speed">Slow</button>');
+      $fastSpeed = $('<button class="customToggleSpeed" title="Toggle playback speed">Fast</button>');
+      $mediumSpeed = $('<button class="customToggleSpeed" title="Toggle playback speed">Medium</button>');
+      $slowSpeed = $('<button class="customToggleSpeed" title="Toggle playback speed">Slow</button>');
 
       if (datasetType == "modis") {
-        $fastSpeed.toggleClass("toggleSpeed modisToggleSpeed");
-        $mediumSpeed.toggleClass("toggleSpeed modisToggleSpeed");
-        $slowSpeed.toggleClass("toggleSpeed modisToggleSpeed");
+        $fastSpeed.toggleClass("customToggleSpeed modisCustomToggleSpeed");
+        $mediumSpeed.toggleClass("customToggleSpeed modisCustomToggleSpeed");
+        $slowSpeed.toggleClass("customToggleSpeed modisCustomToggleSpeed");
       }
 
       var speedOptions = [$slowSpeed, $fastSpeed, $mediumSpeed];
@@ -570,11 +570,11 @@ if (!org.gigapan.timelapse.Timelapse) {
       });
 
       timelapse.addPlaybackRateChangeListener(function(rate, fromUI) {
-        var snaplapse = timelapse.getSnaplapse();
-        if (snaplapse && snaplapse.isPlaying())
-          return;
         if (!fromUI) {
-          $("#" + viewerDivId + " .toggleSpeed").hide();
+          var snaplapse = timelapse.getSnaplapse();
+          if (snaplapse && snaplapse.isPlaying())
+            return;
+          $("#" + viewerDivId + " .customToggleSpeed").hide();
           if (rate >= 1) {
             $fastSpeed.show();
             $mediumSpeed.hide();
@@ -1546,7 +1546,7 @@ if (!org.gigapan.timelapse.Timelapse) {
       }
 
       if (!isFullControls) {
-        $("#" + viewerDivId + " .toggleSpeed").remove();
+        $("#" + viewerDivId + " .customToggleSpeed").remove();
         $customHelpLabel.remove();
         $customPlay.remove();
         $timeText.css({

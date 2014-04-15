@@ -34,11 +34,10 @@
   cursor: default;
 }
 
-.modisToggleSpeed.ui-button {
+.modisCustomToggleSpeed.ui-button {
   position: absolute;
   width: 56px;
   height: 16px;
-  /*  bottom: 82px;*/
   top: 36px;
   left: 105px;
   background: white;
@@ -52,7 +51,7 @@
   display: none;
 }
 
-.modisToggleSpeed .ui-button-text {
+.modisCustomToggleSpeed .ui-button-text {
   text-align: center;
   padding: 0px;
   padding-top: 0px;
@@ -225,10 +224,6 @@
 
 .customEditorModeToolbar .ui-button:hover:not(
 [disabled]) {
-  /*
-   -moz-box-shadow: 0 0 12px #656565;
-   -webkit-box-shadow: 0 0 12px #656565;
-   box-shadow: 0 0 12px #656565;*/
   border-right: 1px solid #656565;
   border-left: 1px solid #656565;
   z-index: 999;
@@ -396,7 +391,7 @@
   z-index: 6;
 }
 
-.toggleSpeed.ui-button {
+.customToggleSpeed.ui-button {
   position: absolute;
   width: 55px;
   height: 23px;
@@ -413,7 +408,7 @@
   display: none;
 }
 
-.toggleSpeed .ui-button-text {
+.customToggleSpeed .ui-button-text {
   text-align: center;
   padding: 0px;
   padding-top: 3px;
