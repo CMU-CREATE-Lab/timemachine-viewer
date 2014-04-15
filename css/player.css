@@ -349,7 +349,7 @@ body, html {
   background-color: white;
   border: 1px solid #656565;
   overflow: visible;
-  bottom: 47px;
+  bottom: 50px;
   left: 88px;
   border-radius: 3px;
 }
@@ -358,9 +358,9 @@ body, html {
   margin: 0px 0px -11px 0px;
   padding: 12px 15px 22px 15px;
   background-repeat: no-repeat;
-  background-position: 70px 100%;
+  background-position: 20px 100%;
   background-image: url(../images/bubble_edge_horizontal_white.png);
-  width: 250px;
+  width: 172px;
 }
 
 .videoTime {
