@@ -111,7 +111,6 @@ if (!org.gigapan.timelapse.Timelapse) {
     var toolbarHeight = $toolbar.outerHeight();
     var minViewportHeight = timelapse.getMinViewportHeight();
     var minViewportWidth = timelapse.getMinViewportWidth();
-    var datasetType = timelapse.getDatasetType();
     var isSafari = org.gigapan.Util.isSafari();
 
     var visualizer = timelapse.getVisualizer();
@@ -129,6 +128,7 @@ if (!org.gigapan.timelapse.Timelapse) {
     var showLogoOnDefaultUI = ( typeof (settings["showLogoOnDefaultUI"]) == "undefined") ? true : settings["showLogoOnDefaultUI"];
     var showEditorOnLoad = ( typeof (settings["showEditorOnLoad"]) == "undefined") ? false : settings["showEditorOnLoad"];
     var editorEnabled = timelapse.getEditorEnabled();
+    var useCustomUI = timelapse.useCustomUI();
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////
     //
@@ -194,7 +194,7 @@ if (!org.gigapan.timelapse.Timelapse) {
           visible: 3.5
         });
       }
-      if (showEditorOnLoad && editorEnabled && datasetType == undefined)
+      if (showEditorOnLoad && editorEnabled && !useCustomUI)
         $("#" + viewerDivId + " .viewerModeCheckbox").trigger("click");
     };
 
@@ -1227,7 +1227,7 @@ if (!org.gigapan.timelapse.Timelapse) {
     if (!showPanControls)
       $("#" + viewerDivId + " .pan").hide();
 
-    if (!showMainControls || datasetType != undefined) {
+    if (!showMainControls || useCustomUI) {
       $("#" + viewerDivId + " .controls").hide();
       $("#" + viewerDivId + " .timelineSliderFiller").hide();
     }
@@ -1239,8 +1239,8 @@ if (!org.gigapan.timelapse.Timelapse) {
       $("#" + viewerDivId + " .zoomall").hide();
 
     if (settings["viewportGeometry"] && settings["viewportGeometry"]["max"]) {
-      // We already add a resizing handler in customUI.js, so don't add it again.
-      if ( typeof settings["enableCustomUI"] == "undefined" || settings["enableCustomUI"] == false) {
+      // We already add a resizing handler in customUI.js, so don't add it again for landsat and modis.
+      if (!useCustomUI) {
         window.onresize = function() {
           fitToWindow();
         };
@@ -1248,7 +1248,7 @@ if (!org.gigapan.timelapse.Timelapse) {
       }
     }
 
-    if (timelapse.getPlayOnLoad() && datasetType == undefined)
+    if (timelapse.getPlayOnLoad() && !useCustomUI)
       timelapse.play();
   };
   //end of org.gigapan.timelapse.DefaultUI

@@ -120,6 +120,7 @@ if (!Math.uuid) {
     var $composerDivObj = $("#" + composerDivId);
     var viewerDivId = timelapse.getViewerDivId();
     var captureTimes = timelapse.getCaptureTimes();
+    var useCustomUI = timelapse.useCustomUI();
 
     var loadJSON;
     var loadKeyframesLength;
@@ -300,7 +301,7 @@ if (!Math.uuid) {
         keyframesById[keyframeId]['buildConstraint'] = "duration";
         keyframesById[keyframeId]['speed'] = null;
         keyframesById[keyframeId]['loopTimes'] = 0;
-        if (settings["enableCustomUI"])
+        if (useCustomUI)
           keyframesById[keyframeId]['duration'] = 2;
         else
           keyframesById[keyframeId]['duration'] = null;
@@ -314,7 +315,7 @@ if (!Math.uuid) {
         keyframesById[keyframeId]['buildConstraint'] = "speed";
         keyframesById[keyframeId]['duration'] = null;
         keyframesById[keyframeId]['speed'] = 100;
-        if (settings["enableCustomUI"])
+        if (useCustomUI)
           keyframesById[keyframeId]['loopTimes'] = defaultLoopTimes;
         else
           keyframesById[keyframeId]['loopTimes'] = 0;
@@ -795,7 +796,7 @@ if (!Math.uuid) {
         keyframe = keyframes[keyframes.length - 1];
         keyframe['speed'] = null;
         keyframe['loopTimes'] = null;
-        if (settings["enableCustomUI"])
+        if (useCustomUI)
           keyframe['duration'] = 2;
         else
           keyframe['duration'] = null;

@@ -141,13 +141,14 @@ if (!window['$']) {
     var skippedFramesAtStart = ( typeof (settings["skippedFramesAtStart"]) == "undefined" || settings["skippedFramesAtStart"] < 0) ? 0 : settings["skippedFramesAtStart"];
     var mediaType = ( typeof (settings["mediaType"]) == "undefined") ? null : settings["mediaType"];
     var enableMetadataCacheBreaker = settings["enableMetadataCacheBreaker"] || false;
+    var datasetType = settings["datasetType"];
+    var useCustomUI = (settings["datasetType"] == "landsat" || settings["datasetType"] == "modis");
     var visualizerGeometry = {
       width: 250,
       height: 142
     };
     var minViewportHeight = 400;
     var minViewportWidth = 700;
-    var datasetType;
     var defaultLoopDwellTime = 0.5;
 
     // If the user requested a tour editor AND has a div in the DOM for the editor,
@@ -338,6 +339,14 @@ if (!window['$']) {
     //
     // Public methods
     //
+    this.getDatasetType = function() {
+      return datasetType;
+    };
+
+    this.useCustomUI = function() {
+      return useCustomUI;
+    };
+
     this.getStartDwell = function() {
       return startDwell;
     };
@@ -376,10 +385,6 @@ if (!window['$']) {
 
     this.getEditorEnabled = function() {
       return editorEnabled;
-    };
-
-    this.getDatasetType = function() {
-      return datasetType;
     };
 
     this.getDefaultUI = function() {
@@ -978,8 +983,7 @@ if (!window['$']) {
       var shareStr = '#v=' + _getViewStr() + '&t=' + thisObj.getCurrentTime().toFixed(2);
       if (datasetType == "modis" && customUI.getLocker() != "none")
         shareStr += '&l=' + customUI.getLocker();
-      // TODO(yenchiah): This setting will be renamed to something that actually makes sense.
-      if (settings["enableCustomUI"] == "breathecam")
+      if (datasetType == "breathecam")
         shareStr += '&d=' + settings["url"].match(/\d\d\d\d-\d\d-\d\d/);
       return shareStr;
     };
@@ -1973,7 +1977,7 @@ if (!window['$']) {
 
       if (loadTimelapseWithPreviousViewAndTime && captureTimes.length > 0 && captureTimes[timelapseCurrentCaptureTimeIndex].length >= 11) {
         var captureTimeStamp = captureTimes[timelapseCurrentCaptureTimeIndex].substring(11);
-        previousCaptureTime = new Date("2000/01/01 " + captureTimeStamp).toTimeString().substr(0,5);
+        previousCaptureTime = new Date("2000/01/01 " + captureTimeStamp).toTimeString().substr(0, 5);
       }
 
       // Set capture time
@@ -2567,7 +2571,7 @@ if (!window['$']) {
       //hasLayers = timelapseMetadataJSON["has_layers"] || false;
       setupUIHandlers();
       defaultUI = new org.gigapan.timelapse.DefaultUI(thisObj, settings);
-      if (settings["enableCustomUI"] && settings["enableCustomUI"] != false)
+      if (useCustomUI)
         customUI = new org.gigapan.timelapse.CustomUI(thisObj, settings);
 
       //handlePluginVideoTagOverride(); //TODO
@@ -2699,7 +2703,7 @@ if (!window['$']) {
         if (captureTimes[i].length < 11)
           return 0;
         var captureTimeStamp = captureTimes[i].substring(11);
-        var newCompare = new Date("2000/01/01 " + captureTimeStamp).toTimeString().substr(0,5);
+        var newCompare = new Date("2000/01/01 " + captureTimeStamp).toTimeString().substr(0, 5);
         if (newCompare < timeToFind) {
           low = i + 1;
           continue;
@@ -2971,14 +2975,8 @@ if (!window['$']) {
     viewerType = UTIL.getViewerType();
     targetView = {};
 
-    if ( typeof settings["enableCustomUI"] != "undefined" && settings["enableCustomUI"] != false) {
-      if (settings["enableCustomUI"] != "modis")
-        datasetType = "landsat";
-      else
-        datasetType = "modis";
-    }
-
     // Set default loop dwell time
+    // TODO: this should be set to not just for andsat, but for all short datasets
     if (datasetType == "landsat" && loopDwell == undefined) {
       loopDwell = {
         "startDwell": defaultLoopDwellTime,

@@ -126,6 +126,7 @@ function playCachedSnaplapse(snaplapseId) {
     var datasetType = timelapse.getDatasetType();
     var startEditorFromPresentationMode = settings["startEditorFromPresentationMode"] ? settings["startEditorFromPresentationMode"] : false;
     var showEditorOnLoad = ( typeof (settings["showEditorOnLoad"]) == "undefined") ? false : settings["showEditorOnLoad"];
+    var useCustomUI = timelapse.useCustomUI();
     var rootURL;
     var rootEmbedURL;
     var embedWidth = 854;
@@ -140,10 +141,8 @@ function playCachedSnaplapse(snaplapseId) {
     var $videoSizeSelect;
     var $createSubtitle_dialog = $("#" + composerDivId + " .createSubtitle_dialog");
     var $keyframeContainer = $("#" + composerDivId + " .snaplapse_keyframe_container");
-
     var eventListeners = {};
     var editorEnabled = timelapse.getEditorEnabled();
-
     var rootAppURL = org.gigapan.Util.getRootAppURL();
 
     this.addEventListener = function(eventName, listener) {
@@ -470,10 +469,10 @@ function playCachedSnaplapse(snaplapseId) {
         "width": newWidth + "px"
       });
       if (!usePresentationSlider) {
-        if (!editorEnabled || !settings["enableCustomUI"]) {
+        if (!editorEnabled || !useCustomUI) {
           if (!showEditorOnLoad)
             $("#" + composerDivId).hide();
-          if (!settings["enableCustomUI"])
+          if (!useCustomUI)
             moveDescriptionBox("up");
         } else
           moveDescriptionBox("up");
@@ -483,7 +482,7 @@ function playCachedSnaplapse(snaplapseId) {
 
     var moveDescriptionBox = function(direction) {
       var descriptionOffset;
-      if (datasetType == undefined) {
+      if (!useCustomUI) {
         descriptionOffset = 47;
       } else {
         var customEditorControlOuterHeight = $("#" + timelapseViewerDivId + " .customEditorControl").outerHeight() || 41;
@@ -693,7 +692,7 @@ function playCachedSnaplapse(snaplapseId) {
           $("#" + timelapseViewerDivId + " .instructions").stop(true, true).fadeOut(50);
           $("#" + timelapseViewerDivId + " .instructions").removeClass('on');
           $("#" + timelapseViewerDivId + ' .repeatCheckbox').button("disable");
-          if (datasetType == undefined) {
+          if (!useCustomUI) {
             $sideToolbar.stop(true, true).fadeOut(100);
             $controls.stop(true, true).fadeOut(100);
             moveDescriptionBox("down");
@@ -729,7 +728,7 @@ function playCachedSnaplapse(snaplapseId) {
           }).removeClass("isPlaying");
           $playbackButton.removeClass("pause").addClass("play");
           $playbackButton.attr("title", "Play");
-          if (datasetType == undefined) {
+          if (!useCustomUI) {
             $sideToolbar.stop(true, true).fadeIn(100);
             $controls.stop(true, true).fadeIn(100);
             moveDescriptionBox("up");
@@ -779,7 +778,7 @@ function playCachedSnaplapse(snaplapseId) {
           timelapse.pause();
         if (usePresentationSlider) {
           $("#" + composerDivId).show();
-          if (settings["enableCustomUI"] && editorEnabled) {
+          if (useCustomUI && editorEnabled) {
             $("#" + settings["composerDiv"]).hide();
             $("#" + timelapseViewerDivId + " .customEditorControl").css("visibility", "hidden");
           }
@@ -1326,7 +1325,7 @@ function playCachedSnaplapse(snaplapseId) {
           setKeyframeTitleUI(frame);
         }
         if (skipGo != true) {
-          if (usePresentationSlider && datasetType != undefined)
+          if (usePresentationSlider && useCustomUI)
             timelapse.setNewView(timelapse.pixelBoundingBoxToLatLngCenterView(frame['bounds']), false, false);
           else
             timelapse.warpToBoundingBox(frame['bounds']);
@@ -1608,7 +1607,7 @@ function playCachedSnaplapse(snaplapseId) {
       $keyframeContainer.css("z-index", "5");
 
     // TODO: There is sometimes a race condition that defaultUI and customUI is created before snaplapseViewer
-    if ( typeof settings["enableCustomUI"] != "undefined" && settings["enableCustomUI"] != false) {
+    if (useCustomUI) {
       var customUI = timelapse.getCustomUI();
       if (customUI)
         customUI.fitToWindow();
