@@ -2522,7 +2522,7 @@ if (!window['$']) {
 
       _makeVideoVisibleListener(function(videoId) {
         if (videoId == firstVideoId) {
-          if (didFirstTimeOnLoad)
+          if (!didFirstTimeOnLoad)
             didHashChangeFirstTimeOnLoad = handleHashChange();
 
           // Hash params override the view set during initialization
