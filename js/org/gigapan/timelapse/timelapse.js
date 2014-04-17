@@ -199,6 +199,9 @@ if (!window['$']) {
     var enableSmallGoogleMap = true;
     var enablePanoVideo = true;
     var isChrome = UTIL.isChrome();
+    var loadTimelapseWithPreviousViewAndTime = false;
+    var didHashChangeFirstTimeOnLoad = false;
+    var didFirstTimeOnLoad = false;
 
     // Viewer
     var viewerType;
@@ -254,6 +257,7 @@ if (!window['$']) {
     var leader;
     var parabolicMotionController;
     var parabolicMotionObj = org.gigapan.timelapse.parabolicMotion;
+    var previousCaptureTime;
 
     // animateRate in milliseconds, 40 means 25 FPS
     var animateRate = isHyperwall ? 10 : 40;
@@ -974,6 +978,9 @@ if (!window['$']) {
       var shareStr = '#v=' + _getViewStr() + '&t=' + thisObj.getCurrentTime().toFixed(2);
       if (datasetType == "modis" && customUI.getLocker() != "none")
         shareStr += '&l=' + customUI.getLocker();
+      // TODO(yenchiah): This setting will be renamed to something that actually makes sense.
+      if (settings["enableCustomUI"] == "breathecam")
+        shareStr += '&d=' + settings["url"].match(/\d\d\d\d-\d\d-\d\d/);
       return shareStr;
     };
     this.getShareView = getShareView;
@@ -1964,6 +1971,11 @@ if (!window['$']) {
 
       readVideoDivSize();
 
+      if (loadTimelapseWithPreviousViewAndTime && captureTimes.length > 0 && captureTimes[timelapseCurrentCaptureTimeIndex].length >= 11) {
+        var captureTimeStamp = captureTimes[timelapseCurrentCaptureTimeIndex].substring(11);
+        previousCaptureTime = new Date("2000/01/01 " + captureTimeStamp).toTimeString().substr(0,5);
+      }
+
       // Set capture time
       if (tmJSON["capture-times"]) {
         tmJSON["capture-times"].splice(tmJSON["capture-times"].length - framesToSkipAtEnd, framesToSkipAtEnd);
@@ -2028,6 +2040,9 @@ if (!window['$']) {
     };
 
     // Update tag information of location data
+    // TODO(yenchiah): This seems to be run several times (~6) when the time machine object is first created.
+    // Another bug is that the position of the pano video on the context map is incorrect.
+    // This seems to happens when the aspect ratio of the viewport and the context map are not the same.
     var updateTagInfo_locationData = function() {
       if (!defaultUI)
         return null;
@@ -2507,10 +2522,11 @@ if (!window['$']) {
 
       _makeVideoVisibleListener(function(videoId) {
         if (videoId == firstVideoId) {
+          if (didFirstTimeOnLoad)
+            didHashChangeFirstTimeOnLoad = handleHashChange();
+
           // Hash params override the view set during initialization
-          if (handleHashChange()) {
-            // handleHashChange() already did what we wanted
-          } else {
+          if (!didHashChangeFirstTimeOnLoad) {
             // Set the initial view
             if (initialView) {
               _setNewView(initialView, true);
@@ -2520,10 +2536,18 @@ if (!window['$']) {
               _seek(initialTime);
             }
           }
-          // Fire onTimeMachinePlayerReady when the first video is ready
-          if ( typeof (settings["onTimeMachinePlayerReady"]) === "function") {
-            settings["onTimeMachinePlayerReady"](viewerDivId);
+          // Set to false if we ever load a new timelapse at a later time
+          // We do not want to parse anything in the hash in this case.
+          didHashChangeFirstTimeOnLoad = false;
+
+          if (!didFirstTimeOnLoad) {
+            didFirstTimeOnLoad = true;
+            // Fire onTimeMachinePlayerReady the first time the page is loaded.
+            if ( typeof (settings["onTimeMachinePlayerReady"]) === "function") {
+              settings["onTimeMachinePlayerReady"](viewerDivId);
+            }
           }
+
           updateTagInfo_locationData();
         }
       });
@@ -2622,12 +2646,28 @@ if (!window['$']) {
       };
     };
 
-    var loadTimelapse = function(url) {
+    var loadTimelapse = function(url, desiredView, desiredTime, preserveCurrentViewAndTime) {
       showSpinner(viewerDivId);
       settings["url"] = url;
       // Add trailing slash to url if it was omitted
       if (settings["url"].charAt(settings["url"].length - 1) != "/")
         settings["url"] += "/";
+      if (desiredView && typeof (desiredView) === "object") {
+        initialView = desiredView;
+        settings["initialView"] = desiredView;
+      }
+      if (desiredTime && typeof (desiredTime) === "number") {
+        initialTime = desiredTime;
+        settings["initialTime"] = desiredTime;
+      }
+      loadTimelapseWithPreviousViewAndTime = !!preserveCurrentViewAndTime;
+      // We are loading a new timelapse and in order for code that should only be run when the
+      // first video of a timelapse is displayed, we need to reset the firstVideoId to the next
+      // id that the videoset class will use. See _makeVideoVisibleListener() where we check for
+      // first time videos.
+      if (didFirstTimeOnLoad) {
+        firstVideoId = videoDivId + "_" + (videoset.getCurrentVideoId() + 1);
+      }
       UTIL.ajax("json", settings["url"], "tm.json" + getMetadataCacheBreaker(), loadTimelapseCallback);
     };
     this.loadTimelapse = loadTimelapse;
@@ -2651,11 +2691,35 @@ if (!window['$']) {
       UTIL.ajax("json", settings["url"], path + "r.json" + getMetadataCacheBreaker(), loadVideoSetCallback);
     };
 
+    // Assumes dates are being used as capture times.
+    function findExactOrClosestCaptureTime(timeToFind) {
+      var low = 0, high = captureTimes.length - 1, i, comparison;
+      while (low <= high) {
+        i = Math.floor((low + high) / 2);
+        if (captureTimes[i].length < 11)
+          return 0;
+        var captureTimeStamp = captureTimes[i].substring(11);
+        var newCompare = new Date("2000/01/01 " + captureTimeStamp).toTimeString().substr(0,5);
+        if (newCompare < timeToFind) {
+          low = i + 1;
+          continue;
+        };
+        if (newCompare > timeToFind) {
+          high = i - 1;
+          continue;
+        };
+        return i;
+      }
+      return i;
+    };
+
     var loadVideoSetCallback = function(data) {
       datasetJSON = data;
 
       homeView = null;
-      view = null;
+      if (!loadTimelapseWithPreviousViewAndTime)
+        view = null;
+
       // Reset currentIdx so that we'll load in the new tile with the different resolution.  We don't null the
       // currentVideo here because 1) it will be assigned in the refresh() method when it compares the bestIdx
       // and the currentIdx; and 2) we want currentVideo to be non-null so that the VideosetStats can keep
@@ -2669,7 +2733,7 @@ if (!window['$']) {
       $("#" + viewerDivId).css("visibility", "visible");
 
       // Setup the UI if this is the first time we are loading a videoset. Else recreate the time slider for the new set,
-      // since it depends upon values from the old set.
+      // since it still depends upon values from the old set.
       if (!defaultUI)
         setupTimelapse();
       else {
@@ -2677,7 +2741,17 @@ if (!window['$']) {
         var $timeSlider = $("#" + viewerDivId + " .timelineSlider");
         $timeSlider.slider("destroy");
         defaultUI.createTimelineSlider();
-        _seek(0);
+        if (loadTimelapseWithPreviousViewAndTime) {
+          var closestFrame = findExactOrClosestCaptureTime(previousCaptureTime);
+          seekToFrame(closestFrame);
+          // Sometimes the time change event is not fired (though it should have since the video did seek)
+          // So we manually update the UI.
+          $timeSlider.slider("option", "value", closestFrame);
+        } else {
+          // Seek to the beginning, even if we are already there to ensure that variables keeping track of time
+          // are properly set for the newly loaded timelapse.
+          _seek(0);
+        }
       }
 
       if (visualizer) {

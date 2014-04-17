@@ -183,6 +183,10 @@ if (!window['$']) {
     //
     // Public methods
     //
+    this.getCurrentVideoId = function() {
+      return id;
+    };
+
     this.getCurrentActiveVideo = function() {
       return activeVideos[currentVideoId];
     };
