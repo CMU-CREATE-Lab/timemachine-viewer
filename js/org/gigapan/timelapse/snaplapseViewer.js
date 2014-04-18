@@ -411,7 +411,7 @@ function playCachedSnaplapse(snaplapseId) {
       });
 
       // Finally, set up the snaplapse links
-      setupSnaplapseLinks();
+      //setupSnaplapseLinks();
 
       if (usePresentationSlider)
         $createSubtitle_dialog.remove();
@@ -459,8 +459,9 @@ function playCachedSnaplapse(snaplapseId) {
       // Set the position
       var $tiledContentHolder = $("#" + timelapseViewerDivId + " .tiledContentHolder");
       var playerOffset = $tiledContentHolder.offset();
-      var newTop = $("#" + timelapseViewerDivId + " .toolbar").outerHeight() + $tiledContentHolder.outerHeight() + playerOffset.top - 1;
-      var newLeft = playerOffset.left;
+      var playerParentOffset = $("#" + timelapseViewerDivId).parent().offset();
+      var newTop = $("#" + timelapseViewerDivId + " .toolbar").outerHeight() + $tiledContentHolder.outerHeight() + playerOffset.top - playerParentOffset.top - 1;
+      var newLeft = playerOffset.left - playerParentOffset.left;
       var newWidth = $tiledContentHolder.width();
       $("#" + composerDivId + " .snaplapse_keyframe_container").css({
         "position": "absolute",
