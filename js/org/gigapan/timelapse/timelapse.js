@@ -113,7 +113,6 @@ if (!window['$']) {
 //
 (function() {
   var UTIL = org.gigapan.Util;
-
   org.gigapan.timelapse.Timelapse = function(viewerDivId, settings) {
     availableTimelapses.push(this);
 

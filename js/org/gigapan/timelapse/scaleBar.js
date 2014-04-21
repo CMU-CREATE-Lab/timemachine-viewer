@@ -91,6 +91,7 @@ if (!org.gigapan.timelapse.Timelapse) {
 // CODE
 //
 (function() {
+  var UTIL = org.gigapan.Util;
   org.gigapan.timelapse.ScaleBar = function(scaleBarOptions, timelapse) {
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////
     //
@@ -438,20 +439,6 @@ if (!org.gigapan.timelapse.Timelapse) {
     };
     this.setVideoRatioBar = setVideoRatioBar;
 
-    // Hide the video quality
-    var hideVideoQualityBar = function() {
-      if ($videoQualityContainer.is(":visible"))
-        $videoQualityContainer.fadeOut(200);
-    };
-    this.hideVideoQualityBar = hideVideoQualityBar;
-
-    // Show the video quality
-    var showVideoQualityBar = function() {
-      if (!$videoQualityContainer.is(":visible"))
-        $videoQualityContainer.fadeIn(200);
-    };
-    this.showVideoQualityBar = showVideoQualityBar;
-
     // Set the scale bar
     var setScaleBar = function(distance_pixel_lng, tagLatLngCenter) {
       // Calculate the distance of 2 center pixels in longitude
@@ -536,7 +523,7 @@ if (!org.gigapan.timelapse.Timelapse) {
     // Constructor code
     //
     createScaleBarElements();
-    if (enableVideoQualitySelector == true)
+    if (enableVideoQualitySelector == true && UTIL.getUnsafeHashVars().presentation == undefined)
       createVideoQualityElements();
   };
   //end of org.gigapan.timelapse.ScaleBar
