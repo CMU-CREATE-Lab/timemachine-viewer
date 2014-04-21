@@ -37,6 +37,9 @@
         var viewerSettings = {
           url: url,
           composerDiv: "composer1",
+          onTimeMachinePlayerReady: function(viewerDivId) {
+            console.log("Time Machine player is ready.");
+          },
           disableTourLooping: true,
           mediaType: ".mp4",
           showFullScreenBtn: false,
