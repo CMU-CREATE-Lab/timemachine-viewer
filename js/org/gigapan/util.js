@@ -388,7 +388,25 @@ if (!org.gigapan) {
   function computeRootAppURL() {
     var jsFiles = $("script");
     var pathOfCurrentScript = $(jsFiles[jsFiles.length - 1]).attr("src");
-    return pathOfCurrentScript.substr(0, pathOfCurrentScript.substring(1).indexOf('/') + 1) + "/";
+    var isAbsoluteURL = pathOfCurrentScript.indexOf('://');
+    // Include is an absolute URL "http(s)://..."
+    if (isAbsoluteURL > 0) {
+      var absoluteURLIndex = pathOfCurrentScript.indexOf('/', pathOfCurrentScript.indexOf('://') + 3);
+      absoluteURLName = pathOfCurrentScript.substring(0, absoluteURLIndex) + '/';
+      var absoluteURLFolderIndex = pathOfCurrentScript.indexOf('/', pathOfCurrentScript.indexOf(absoluteURLName) + absoluteURLName.length);
+      if (absoluteURLFolderIndex < 0) {
+        return absoluteURLName;
+      } else {
+        return pathOfCurrentScript.substring(0, absoluteURLFolderIndex) + "/";
+      }
+    // Include is a relative URL
+    } else {
+      var relativeURL = pathOfCurrentScript.substr(0, pathOfCurrentScript.substring(1).indexOf('/') + 1);
+      if (relativeURL === "" || (relativeURL.substr(0,1) !== "/" && relativeURL.substr(0,1) !== "." && relativeURL.substr(0,2) !== ".."))
+        return "";
+      else
+        return relativeURL + "/";
+    }
   }
 
   org.gigapan.Util.getRootAppURL = function() {
