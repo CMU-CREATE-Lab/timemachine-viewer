@@ -63,38 +63,50 @@ function setupPostMessageHandlers() {
   });
 
   // Handles the cross-domain iframe request to seek a time machine to the specified time.
-  pm.bind("timemachine-seek", function(data) {
-    if (timelapse)
-      timelapse.seek(data);
+  pm.bind("timemachine-seek", function(unsafe_data) {
+    if (unsafe_data && typeof(unsafe_data) !== 'undefined' && timelapse)
+      timelapse.seek(unsafe_data);
   });
 
   // Handles the cross-domain iframe request to change the view of a time machine.
-  pm.bind("timemachine-set-view", function(data) {
-    if (timelapse) {
-      timelapse.setNewView(data.view, data.doWarp, data.doPlay);
+  pm.bind("timemachine-set-view", function(unsafe_data) {
+    if (unsafe_data && typeof(unsafe_data) !== 'undefined' && timelapse) {
+      // Sanitize data
+      var safe_data = {};
+      safe_data.view = timelapse.unsafeViewToView(unsafe_data.view);
+      safe_data.doWarp = !!unsafe_data.doWarp;
+      safe_data.doPlay = !!unsafe_data.doPlay;
+      timelapse.setNewView(safe_data.view, safe_data.doWarp, safe_data.doPlay);
     }
   });
 
-  // Handles the cross-domain iframe request of changing the view of a time machine based
-  // on a share URL.
-  pm.bind("timemachine-set-share-view", function(data) {
-    if (timelapse) {
-      var viewArray = data.v.split(",");
-      var view;
-      var doWarp = true;
-      if (viewArray)
-        view = timelapse.unsafeViewToView(viewArray);
-      if (view)
-        timelapse.setNewView(view, doWarp);
-      var time = data.t;
-      if (time)
-        timelapse.seek(time);
+  // Handles the cross-domain iframe request of changing the view of a time machine based on a share URL.
+  pm.bind("timemachine-set-share-view", function(unsafe_data) {
+    if (unsafe_data && typeof(unsafe_data) !== 'undefined' && timelapse) {
+      // If a share URL (e.g. #v=44.96185,59.06233,4.5,latLng&t=0.10) is passed in
+      // as a string, then unpack it based on the hash vars.
+      // Otherwise we are dealing with an object of unpacked hash vars, so move on.
+      if (typeof(unsafe_data) === "string") {
+        if (unsafe_data.substr(0,1) == "#")
+          unsafe_data = unsafe_data.slice(1);
+        unsafe_data = org.gigapan.Util.unpackVars(unsafe_data);
+      }
+
+      if (unsafe_data.v) {
+        var newView = timelapse.unsafeViewToView(unsafe_data.v.split(","));
+        // Always warp to the new view (i.e. pass in true for the second value)
+        timelapse.setNewView(newView, true);
+      }
+      if (unsafe_data.t) {
+        var newTime = parseFloat(unsafe_data.t);
+        timelapse.seek(newTime);
+      }
     }
   });
 
   // Handles the cross-domain iframe request of going to a location on the presentation slider
-  pm.bind("timemachine-goto-presentation-slide", function(slideTitle) {
-    var slideId = slideTitle.split(' ').join('_');
+  pm.bind("timemachine-goto-presentation-slide", function(unsafe_slideTitle) {
+    var slideId = unsafe_slideTitle.split(' ').join('_');
     var $slideContainer = $("#" + slideId).parent();
     var keyframeId = $slideContainer.attr("id").split("_")[3];
     timelapse.getPresentationSlider().getPresentationSliderViewer().selectAndGo($slideContainer, keyframeId, undefined, undefined, true);

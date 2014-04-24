@@ -991,6 +991,42 @@ if (!window['$']) {
     // Extract a safe view object from an unsafe view string.
     var unsafeViewToView = function(viewParam) {
       var view = null;
+
+      if (!viewParam)
+        return view;
+
+      // If the view is not a string (i.e an object) then we need to break it up into one
+      // so that we can sanitize it below.
+      if (viewParam.center || viewParam.bbox) {
+        var tmpViewParam = [];
+        if (viewParam.center) {
+          var isLatLng = false;
+          var centerView = viewParam.center;
+          for (var key in centerView) {
+            tmpViewParam.push(centerView[key]);
+            if (key == "lat")
+              isLatLng = true;
+          }
+          tmpViewParam.push(viewParam.zoom);
+          isLatLng ? tmpViewParam.push("latLng") : tmpViewParam.push("pts");
+          viewParam = tmpViewParam;
+        } else if (viewParam.bbox) {
+          var isLatLng = false;
+          var bboxView = viewParam.bbox;
+          for (var key in bboxView) {
+            if (key == "ne" || key == "sw") {
+              isLatLng = true;
+              for (var innerKey in bboxView[key])
+                tmpViewParam.push(bboxView[key][innerKey]);
+            } else {
+              tmpViewParam.push(bboxView[key]);
+            }
+          }
+          isLatLng ? tmpViewParam.push("latLng") : tmpViewParam.push("pts");
+          viewParam = tmpViewParam;
+        }
+      }
+
       if (viewParam.indexOf("latLng") != -1) {
         if (viewParam.length == 4)
           view = {
@@ -1392,12 +1428,12 @@ if (!window['$']) {
 
     // Handle any hash variables related to time machines
     var handleHashChange = function() {
-      var unsafeHashVars = UTIL.getUnsafeHashVars();
-      var newView = getViewFromHash(unsafeHashVars);
-      var newTime = getTimeFromHash(unsafeHashVars);
-      var tourJSON = getTourFromHash(unsafeHashVars);
-      var presentationJSON = getPresentationFromHash(unsafeHashVars);
-      var modisLock = getModisLockFromHash(unsafeHashVars);
+      var unsafeHashObj = UTIL.getUnsafeHashVars();
+      var newView = getViewFromHash(unsafeHashObj);
+      var newTime = getTimeFromHash(unsafeHashObj);
+      var tourJSON = getTourFromHash(unsafeHashObj);
+      var presentationJSON = getPresentationFromHash(unsafeHashObj);
+      var modisLock = getModisLockFromHash(unsafeHashObj);
       if (newView || newTime || tourJSON || presentationJSON || modisLock) {
         if (newView)
           _setNewView(newView, true);
@@ -1428,49 +1464,52 @@ if (!window['$']) {
         return false;
     };
 
-    // Gets safe view values from an unsafe hash string.
-    var getViewFromHash = function(unsafeHashVars) {
-      if (unsafeHashVars && unsafeHashVars.v) {
-        var newView = unsafeViewToView(unsafeHashVars.v.split(","));
+    // Gets safe view values (Object) from an unsafe object containing key-value pairs from the URL hash.
+    var getViewFromHash = function(unsafeHashObj) {
+      if (unsafeHashObj && unsafeHashObj.v) {
+        var newView = unsafeViewToView(unsafeHashObj.v.split(","));
         return newView;
       }
       return null;
     };
 
-    // Gets a safe time value from an unsafe hash string.
-    var getTimeFromHash = function(unsafeHashVars) {
-      if (unsafeHashVars && unsafeHashVars.t) {
-        var newTime = parseFloat(unsafeHashVars.t);
+    // Gets a safe time value (Float) from an unsafe object containing key-value pairs from the URL hash.
+    // TODO: what if time is 0?
+    var getTimeFromHash = function(unsafeHashObj) {
+      if (unsafeHashObj && unsafeHashObj.t) {
+        var newTime = parseFloat(unsafeHashObj.t);
         return newTime;
       }
       return null;
     };
 
-    // Gets a safe MODIS month lock value from an unsafe hash string.
-    var getModisLockFromHash = function(unsafeHashVars) {
-      if (unsafeHashVars && unsafeHashVars.l) {
-        var newMonthLock = unsafeHashVars.l;
+    // Gets a safe MODIS month lock value (String) from an unsafe object containing key-value pairs from the URL hash.
+    var getModisLockFromHash = function(unsafeHashObj) {
+      if (unsafeHashObj && unsafeHashObj.l) {
+        var newMonthLock = String(unsafeHashObj.l);
         return newMonthLock;
       }
       return null;
     };
 
-    // Gets safe tour JSON from an unsafe hash string.
-    var getTourFromHash = function(unsafeHashVars) {
-      if (unsafeHashVars && unsafeHashVars.tour) {
+    // Gets safe tour JSON from an unsafe object containing key-value pairs from the URL hash.
+    // The JSON returned is safe because calls to urlStringToJSON go to carefully-designed methods that use strict encoders (and naming conventions to mark strings not strictly sanitized) to ensure the input is safe.
+    var getTourFromHash = function(unsafeHashObj) {
+      if (unsafeHashObj && unsafeHashObj.tour) {
         if (snaplapse) {
-          var tourJSON = snaplapse.urlStringToJSON(unsafeHashVars.tour);
+          var tourJSON = snaplapse.urlStringToJSON(unsafeHashObj.tour);
           return tourJSON;
         }
       }
       return null;
     };
 
-    // Gets safe presentation JSON from an unsafe hash string.
-    var getPresentationFromHash = function(unsafeHashVars) {
-      if (unsafeHashVars && unsafeHashVars.presentation) {
+    // Gets safe presentation JSON from an unsafe object containing key-value pairs from the URL hash.
+    // The JSON returned is safe because calls to urlStringToJSON go to carefully-designed methods that use strict encoders (and naming conventions to mark strings not strictly sanitized) to ensure the input is safe.
+    var getPresentationFromHash = function(unsafeHashObj) {
+      if (unsafeHashObj && unsafeHashObj.presentation) {
         if (presentationSlider) {
-          var presentationJSON = presentationSlider.urlStringToJSON(unsafeHashVars.presentation);
+          var presentationJSON = presentationSlider.urlStringToJSON(unsafeHashObj.presentation);
           return presentationJSON;
         }
       }

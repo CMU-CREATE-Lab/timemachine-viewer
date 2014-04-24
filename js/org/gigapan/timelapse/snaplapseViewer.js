@@ -1254,12 +1254,12 @@ function playCachedSnaplapse(snaplapseId) {
               snaplapse.resetKeyframe();
               if (usePresentationSlider) {
                 $("#" + composerDivId + " .snaplapse_keyframe_container").scrollLeft(0);
-                var unsafeHashVars = UTIL.getUnsafeHashVars();
+                var unsafeHashObj = UTIL.getUnsafeHashVars();
                 // Go to the desired keyframe if there is no shared view and no tour
-                if ( typeof unsafeHashVars.v == "undefined" && typeof unsafeHashVars.tour == "undefined") {
+                if ( typeof unsafeHashObj.v == "undefined" && typeof unsafeHashObj.tour == "undefined") {
                   var $desiredSlide;
-                  if ( typeof unsafeHashVars.slide != "undefined")
-                    $desiredSlide = $("#" + unsafeHashVars.slide);
+                  if ( typeof unsafeHashObj.slide != "undefined")
+                    $desiredSlide = $("#" + unsafeHashObj.slide);
                   if ($desiredSlide && $desiredSlide.length > 0)
                     $desiredSlide[0].click();
                   else {
