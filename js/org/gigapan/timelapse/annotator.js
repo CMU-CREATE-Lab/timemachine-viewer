@@ -414,7 +414,7 @@ if (!window['$']) {
       UTIL.selectSelectableElements($("#" + annotatorDivId + " .annotation_list"), $annotListItem);
       // Hide the last annotation item's right border
       hideLastAnnotationItemBorder();
-      timelapse.handleAnnotatorModeToolbarChange();
+      handleAnnotatorModeToolbarChange();
       // The reason to hide and show the elements is the workaround for a webkit refresh bug
       $("#" + annotatorDivId + " .annotation_container").hide().show(0);
     }
@@ -815,7 +815,8 @@ if (!window['$']) {
         },
         stop: function(event) {
           var elem = $(event.target).children(".ui-selected").get(0);
-          if (!elem) return;
+          if (!elem)
+            return;
           var willWarpAndSeek = elem.willWarpAndSeek;
           handleAnnotationSelectionChange(willWarpAndSeek);
           elem.willWarpAndSeek = undefined;
@@ -852,12 +853,140 @@ if (!window['$']) {
       $("#" + annotatorDivId + " .annotation_container").css("position", "absolute").css("top", newTop + "px").css("left", newLeft + "px").css("width", newWidth + "px");
     }
 
+    // Create the annotator toolbar
+    // TODO: this is broken, we moved it out from timelapse.js
+    var createAnnotatorModeToolbar = function() {
+      var $annotatorModeToolbar = $("#" + viewerDivId + " .annotatorModeToolbar");
+      // Create add button
+      $annotatorModeToolbar.append('<input type="checkbox" class="addAnnotationCheckbox"/>');
+      $annotatorModeToolbar.append('<label class="addAnnotationLabel" title="Enable/Disable adding annotations (CTRL key or COMMAND key)">Add</label>');
+      var $addAnnotationCheckbox = $("#" + viewerDivId + " .addAnnotationCheckbox");
+      $addAnnotationCheckbox.attr("id", viewerDivId + "_addAnnotationCheckbox");
+      $("#" + viewerDivId + " .addAnnotationLabel").attr("for", viewerDivId + "_addAnnotationCheckbox");
+      $addAnnotationCheckbox.button({
+        icons: {
+          primary: "ui-icon-plus"
+        },
+        text: true
+      }).change(function() {
+        var $hideAnnotationCheckbox = $("#" + viewerDivId + " .hideAnnotationCheckbox");
+        if ($hideAnnotationCheckbox.is(":checked")) {
+          $hideAnnotationCheckbox.prop("checked", false).button("refresh").change();
+        }
+        if ($addAnnotationCheckbox.is(":checked")) {
+          annotator.setCanAddAnnotation(true);
+          if (!$("#" + viewerDivId + " .moveAnnotationCheckbox").is(":checked"))
+            $hideAnnotationCheckbox.button("option", "disabled", true);
+        } else {
+          annotator.setCanAddAnnotation(false);
+          if (!$("#" + viewerDivId + " .moveAnnotationCheckbox").is(":checked"))
+            $hideAnnotationCheckbox.button("option", "disabled", false);
+        }
+      });
+      // Create move button
+      $annotatorModeToolbar.append('<input type="checkbox" class="moveAnnotationCheckbox"/>');
+      $annotatorModeToolbar.append('<label class="moveAnnotationLabel" title="Enable/Disable moving annotations (ALT key)">Move</label>');
+      var $moveAnnotationCheckbox = $("#" + viewerDivId + " .moveAnnotationCheckbox");
+      $moveAnnotationCheckbox.attr("id", viewerDivId + "_moveAnnotationCheckbox");
+      $("#" + viewerDivId + " .moveAnnotationLabel").attr("for", viewerDivId + "_moveAnnotationCheckbox");
+      $moveAnnotationCheckbox.button({
+        icons: {
+          primary: "ui-icon-arrow-4"
+        },
+        text: true,
+        disabled: true
+      }).change(function() {
+        var $hideAnnotationCheckbox = $("#" + viewerDivId + " .hideAnnotationCheckbox");
+        var $addAnnotationCheckbox = $("#" + viewerDivId + " .addAnnotationCheckbox");
+        if ($hideAnnotationCheckbox.is(":checked")) {
+          $hideAnnotationCheckbox.prop("checked", false).button("refresh").change();
+        }
+        if ($moveAnnotationCheckbox.is(":checked")) {
+          annotator.setCanMoveAnnotation(true);
+          if (!$addAnnotationCheckbox.is(":checked"))
+            $hideAnnotationCheckbox.button("option", "disabled", true);
+        } else {
+          annotator.setCanMoveAnnotation(false);
+          if (!$addAnnotationCheckbox.is(":checked"))
+            $hideAnnotationCheckbox.button("option", "disabled", false);
+        }
+      });
+      // Create delete button
+      $annotatorModeToolbar.append('<button class="deleteAnnotation" title="Delete an annotation">Del</button>');
+      $("#" + viewerDivId + " .deleteAnnotation").button({
+        icons: {
+          primary: "ui-icon-minus"
+        },
+        text: true,
+        disabled: true
+      }).click(function() {
+        annotator.deleteSelectedAnnotations();
+        handleAnnotatorModeToolbarChange();
+      });
+      // Create save button
+      $annotatorModeToolbar.append('<button class="saveAnnotation" title="Save annotations">Save</button>');
+      $("#" + viewerDivId + " .saveAnnotation").button({
+        icons: {
+          primary: "ui-icon-folder-collapsed"
+        },
+        text: true,
+        disabled: true
+      }).click(function() {
+        annotator.showSaveAnnotatorWindow();
+      });
+      // Create load button
+      $annotatorModeToolbar.append('<button class="loadAnnotation" title="Load annotations">Load</button>');
+      $("#" + viewerDivId + " .loadAnnotation").button({
+        icons: {
+          primary: "ui-icon-folder-open"
+        },
+        text: true
+      }).click(function() {
+        annotator.showLoadAnnotatorWindow();
+      });
+      // Create clear button
+      $annotatorModeToolbar.append('<button class="clearAnnotation" title="Clear all annotations">Clear</button>');
+      $("#" + viewerDivId + " .clearAnnotation").button({
+        icons: {
+          primary: "ui-icon-trash"
+        },
+        text: true,
+        disabled: true
+      }).click(function() {
+        var confirmClearAlert = confirm("Are you sure you want to clear all annotations?");
+        if (!confirmClearAlert)
+          return;
+        annotator.clearAnnotations();
+      });
+      // Create buttonset
+      $annotatorModeToolbar.buttonset();
+    };
+
+    // Change the status of the annotator toolbar
+    // TODO: this is broken, we moved it out from timelapse.js
+    var handleAnnotatorModeToolbarChange = function() {
+      var $Annotationtems = $("#" + settings["annotatorDiv"] + " .annotation_list > .ui-selectee");
+      var numItems = $Annotationtems.size();
+      if (numItems > 0) {
+        $("#" + viewerDivId + " .deleteAnnotation").button("option", "disabled", false);
+        $("#" + viewerDivId + " .saveAnnotation").button("option", "disabled", false);
+        $("#" + viewerDivId + " .clearAnnotation").button("option", "disabled", false);
+        $("#" + viewerDivId + " .moveAnnotationCheckbox").button("option", "disabled", false);
+      } else {
+        $("#" + viewerDivId + " .deleteAnnotation").button("option", "disabled", true);
+        $("#" + viewerDivId + " .saveAnnotation").button("option", "disabled", true);
+        $("#" + viewerDivId + " .clearAnnotation").button("option", "disabled", true);
+        $("#" + viewerDivId + " .moveAnnotationCheckbox").button("option", "disabled", true);
+      }
+    };
+
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////
     //
     // Constructor code
     //
     org.gigapan.Util.ajax("html", rootAppURL, "annotation_editor.html", function(html) {
       $annotatorDivObj.html(html);
+      createAnnotatorModeToolbar();
       setupAnnotationLayer();
     });
 

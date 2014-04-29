@@ -26,7 +26,11 @@
     <script src="../js/org/gigapan/timelapse/annotator.js" type="text/javascript"></script>
     <script src="../js/org/gigapan/timelapse/defaultUI.js" type="text/javascript"></script>
     <script src="../js/org/gigapan/timelapse/urlEncoder.js" type="text/javascript"></script>
+
+    <script src="../js/org/gigapan/postmessage.js" type="text/javascript"></script>
     <script src="../js/org/gigapan/timelapse/crossdomain_api.js" type="text/javascript"></script>
+
+    <script src="../template_includes.js" type="text/javascript"></script>
 
     <script type="text/javascript">
       jQuery.support.cors = true;
@@ -74,6 +78,8 @@
           },
           onTimeMachinePlayerReady: function(viewerDivId) {
             console.log("Time Machine player is ready.");
+            setupPostMessageHandlers();
+            //timelapse.loadSharedDataFromUnsafeURL("#tour=EFBkDAx4r09Js1vjjJ2F__BkDyuCp_17uRk_s0lI2F__BkD1jF45xr6Z5kv8qKhJ__BkD9gJumu-rSu7g2oI7C__BkD-lMsx6nyKsj83_HyI__Untitled_B", true);
           },
           disableTourLooping: true
         };

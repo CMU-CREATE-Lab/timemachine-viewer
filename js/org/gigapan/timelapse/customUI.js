@@ -96,9 +96,6 @@ if (!org.gigapan.timelapse.Timelapse) {
     // Class variables
     //
     var datasetType = timelapse.getDatasetType();
-    var startEditorFromPresentationMode = ( typeof (settings["startEditorFromPresentationMode"]) == "undefined") ? false : settings["startEditorFromPresentationMode"];
-    var showAddressLookup = ( typeof (settings["showAddressLookup"]) == "undefined") ? false : settings["showAddressLookup"];
-    var showEditorModeButton = ( typeof (settings["showEditorModeButton"]) == "undefined") ? true : settings["showEditorModeButton"];
     var viewerDivId = timelapse.getViewerDivId();
     var $viewer = $("#" + viewerDivId);
     var viewer_offset = $viewer.offset();
@@ -126,7 +123,6 @@ if (!org.gigapan.timelapse.Timelapse) {
     var pixelRatio = getPixelRatio();
     var endFrameIdx = numFrames - 1;
     var extraHeight = 2;
-    var $customEditorControl;
     var $customSpeedhelp;
 
     // Modis dataset variables
@@ -291,9 +287,6 @@ if (!org.gigapan.timelapse.Timelapse) {
       createCustomButtons();
       // Create timeline slider
       createCustomTimeline();
-      // Create editor toolbar
-      if (editorEnabled)
-        createCustomEditorModeToolBar();
 
       // TODO
       // Update certain properties on window resize
@@ -303,24 +296,6 @@ if (!org.gigapan.timelapse.Timelapse) {
         });
       }
       fitToWindow();
-
-      var $speedControl;
-      if (datasetType == "landsat")
-        $speedControl = $("#" + viewerDivId + " .customToggleSpeed");
-      else
-        $speedControl = $("#" + viewerDivId + " .modisCustomToggleSpeed");
-
-      // Set event listeners
-      var snaplapse = timelapse.getSnaplapse();
-      if (snaplapse) {
-        snaplapse.addEventListener('play', function() {
-          if ($speedControl.is(':visible'))
-            timelapse.getSnaplapse().getSnaplapseViewer().hideViewerUI();
-        });
-        snaplapse.addEventListener('stop', function() {
-          timelapse.getSnaplapse().getSnaplapseViewer().showViewerUI();
-        });
-      }
 
       if (datasetType == "modis") {
         timelapse.addTimeChangeListener(function() {
@@ -569,10 +544,11 @@ if (!org.gigapan.timelapse.Timelapse) {
         UTIL.addGoogleAnalyticEvent('button', 'click', 'viewer-set-speed-to-fast');
       });
 
-      timelapse.addPlaybackRateChangeListener(function(rate, fromUI) {
-        if (!fromUI) {
+      timelapse.addPlaybackRateChangeListener(function(rate, skipUpdateUI) {
+        if (!skipUpdateUI) {
           var snaplapse = timelapse.getSnaplapse();
-          if (snaplapse && snaplapse.isPlaying())
+          var snaplapseForSharedTour = timelapse.getSnaplapseForSharedTour();
+          if ((snaplapse && snaplapse.isPlaying()) || (snaplapseForSharedTour && snaplapseForSharedTour.isPlaying()))
             return;
           $("#" + viewerDivId + " .customToggleSpeed").hide();
           if (rate >= 1) {
@@ -1135,223 +1111,6 @@ if (!org.gigapan.timelapse.Timelapse) {
         $defaultUIPlaybackButton.addClass("pause").removeClass("play from_help");
         timelapse.handlePlayPause();
       }
-    };
-
-    var setPresentationMode = function(status) {
-      var snaplapseViewer = timelapse.getSnaplapse().getSnaplapseViewer();
-      if (status == true) {
-        startEditorFromPresentationMode = true;
-        $("#" + viewerDivId + " .customEditorControl .playStopTimewarp").hide();
-        $("#" + viewerDivId + " .videoQualityContainer").hide();
-        if (snaplapseViewer)
-          snaplapseViewer.setPresentationMode(true);
-      } else {
-        startEditorFromPresentationMode = false;
-        $("#" + viewerDivId + " .customEditorControl .playStopTimewarp").show();
-        $("#" + viewerDivId + " .videoQualityContainer").show();
-        if (snaplapseViewer)
-          snaplapseViewer.setPresentationMode(false);
-      }
-    };
-
-    var createCustomEditorModeToolBar = function() {
-      $customEditorControl = $('<div class="customEditorControl"></div>');
-      var customEditorModeToolbar = $('<div class="customEditorModeToolbar"></div>');
-      $customEditorControl.append(customEditorModeToolbar);
-      $("#" + viewerDivId).append($customEditorControl);
-      // Create add button
-      customEditorModeToolbar.append('<button class="addTimetag" title="Add a keyframe">Add</button>');
-      $("#" + viewerDivId + " .customEditorControl .addTimetag").button({
-        icons: {
-          primary: "ui-icon-plus"
-        },
-        text: true
-      }).click(function() {
-        // The button will be enabled at the end of addSnaplapseKeyframeListItem() in snaplapseViewer
-        $("#" + viewerDivId + " .customEditorControl .addTimetag").button("option", "disabled", true);
-        timelapse.getSnaplapse().getSnaplapseViewer().recordKeyframe();
-        UTIL.addGoogleAnalyticEvent('button', 'click', 'editor-add-keyframe');
-      });
-      // Create save button
-      customEditorModeToolbar.append('<button class="saveTimewarp" title="Share a tour">Share</button>');
-      $("#" + viewerDivId + " .customEditorControl .saveTimewarp").button({
-        icons: {
-          primary: "ui-icon-person"
-        },
-        text: true,
-        disabled: true
-      }).click(function() {
-        timelapse.getSnaplapse().getSnaplapseViewer().saveSnaplapse();
-        UTIL.addGoogleAnalyticEvent('button', 'click', 'editor-show-share-dialog');
-      });
-      // Create load button
-      customEditorModeToolbar.append('<button class="loadTimewarp" title="Load a tour">Load</button>');
-      $("#" + viewerDivId + " .customEditorControl .loadTimewarp").button({
-        icons: {
-          primary: "ui-icon-folder-open"
-        },
-        text: true
-      }).click(function() {
-        timelapse.getSnaplapse().getSnaplapseViewer().showLoadSnaplapseWindow();
-        UTIL.addGoogleAnalyticEvent('button', 'click', 'editor-show-load-dialog');
-      });
-      // Create delete button
-      customEditorModeToolbar.append('<button class="deleteTimetag" title="Delete a keyframe">Del</button>');
-      $("#" + viewerDivId + " .customEditorControl .deleteTimetag").button({
-        icons: {
-          primary: "ui-icon-minus"
-        },
-        text: true,
-        disabled: true
-      }).click(function() {
-        timelapse.getSnaplapse().getSnaplapseViewer().deleteSelectedKeyframes();
-        UTIL.addGoogleAnalyticEvent('button', 'click', 'editor-delete-keyframe');
-      });
-      // Create new button
-      customEditorModeToolbar.append('<button class="newTimewarp" title="Remove all keyframes">Clear</button>');
-      $("#" + viewerDivId + " .customEditorControl .newTimewarp").button({
-        icons: {
-          primary: "ui-icon-trash"
-        },
-        text: true,
-        disabled: true
-      }).click(function() {
-        UTIL.addGoogleAnalyticEvent('button', 'click', 'editor-show-clear-dialog');
-        var confirmClearAlert = confirm("Are you sure you want to delete all keyframes");
-        if (!confirmClearAlert)
-          return;
-        timelapse.getSnaplapse().getSnaplapseViewer().loadNewSnaplapse(null);
-        timelapse.handleEditorModeToolbarChange();
-        UTIL.addGoogleAnalyticEvent('button', 'click', 'editor-clear-keyframes');
-      });
-      // Create play button
-      customEditorModeToolbar.append('<button class="playStopTimewarp" title="Play or stop a tour">Play Tour</button>');
-      $("#" + viewerDivId + " .customEditorControl .playStopTimewarp").button({
-        icons: {
-          primary: "ui-icon-play"
-        },
-        text: true,
-        disabled: true
-      }).click(function() {
-        timelapse.getSnaplapse().getSnaplapseViewer().playStopSnaplapseOnButtonClicked();
-      });
-      // Create mode toggle button
-      if (showEditorModeButton) {
-        // Populate the dropdown
-        $customEditorControl.append('<ul class="editorModeOptions"></ul>');
-        var editorModeOptions = "";
-        editorModeOptions += '<li><a href="javascript:void(0);">' + getCustomEditorModeText("presentation") + '</a></li>';
-        editorModeOptions += '<li><a href="javascript:void(0);">' + getCustomEditorModeText("tour") + '</a></li>';
-        var $editorModeOptions = $("#" + viewerDivId + " .editorModeOptions").append(editorModeOptions);
-        // Create button
-        $customEditorControl.append('<button class="toggleMode" title="Toggle between tour and presentation mode">Change Mode</button>');
-        $("#" + viewerDivId + " .customEditorControl .toggleMode").button({
-          icons: {
-            secondary: "ui-icon-triangle-1-s"
-          },
-          text: true
-        }).click(function() {
-          if ($editorModeOptions.is(":visible")) {
-            $editorModeOptions.hide();
-          } else {
-            $editorModeOptions.show().position({
-              my: "center top",
-              at: "center bottom",
-              of: $(this)
-            });
-            $(document).one("mouseup", function(e) {
-              var targetGroup = $(e.target).parents().addBack();
-              if (!targetGroup.is(".toggleMode"))
-                $editorModeOptions.hide();
-            });
-          }
-        });
-        if (startEditorFromPresentationMode)
-          $("#" + viewerDivId + " .customEditorControl .toggleMode .ui-button-text").text(getCustomEditorModeText("presentation"));
-        else
-          $("#" + viewerDivId + " .customEditorControl .toggleMode .ui-button-text").text(getCustomEditorModeText("tour"));
-        $editorModeOptions.hide().menu();
-        // Set the dropdown
-        $("#" + viewerDivId + " .customEditorControl .editorModeOptions li a").click(function() {
-          var selectedModeTxt = $(this).text();
-          if (selectedModeTxt == getCustomEditorModeText("tour")) {
-            setPresentationMode(false);
-            UTIL.addGoogleAnalyticEvent('button', 'click', 'editor-set-to-tour-mode');
-          } else if (selectedModeTxt == getCustomEditorModeText("presentation")) {
-            setPresentationMode(true);
-            UTIL.addGoogleAnalyticEvent('button', 'click', 'editor-set-to-presentation-mode');
-          }
-          $("#" + viewerDivId + " .customEditorControl .toggleMode span").text(selectedModeTxt);
-        });
-      }
-      // Create buttonset
-      customEditorModeToolbar.buttonset();
-      // Move the playing control and the help higher if the editor control bar is enabled
-      var customEditorModeToolbar_height = customEditorModeToolbar.height() + 5;
-      $customControl.css("bottom", "+=" + customEditorModeToolbar_height + "px");
-      if (showAddressLookup)
-        handleAddressLookup();
-      if (startEditorFromPresentationMode)
-        setPresentationMode(true);
-    };
-
-    var getCustomEditorModeText = function(mode) {
-      if (mode == "tour")
-        return "Tour Editor";
-      else if (mode == "presentation")
-        return "Presentation Editor";
-    };
-
-    var handleAddressLookup = function() {
-      if ( typeof google === "undefined")
-        return;
-
-      var $addressLookupElem = $('<input>').attr({
-        id: viewerDivId + "_addressLookup",
-        size: 35,
-        type: "textbox",
-        "placeholder": "Enter the name of a place to zoom to..."
-      }).addClass("addressLookup");
-      $customEditorControl.append($addressLookupElem);
-
-      var autocomplete = new google.maps.places.Autocomplete($addressLookupElem.get(0));
-      var geocoder = new google.maps.Geocoder();
-
-      google.maps.event.addListener(autocomplete, 'place_changed', function() {
-        var place = autocomplete.getPlace();
-        if (!place.geometry) {
-          var address = $addressLookupElem.val();
-          geocoder.geocode({
-            'address': address
-          }, function(results, status) {
-            if (status == google.maps.GeocoderStatus.OK) {
-              var lat = results[0].geometry.location.lat();
-              var lng = results[0].geometry.location.lng();
-              newView = {
-                center: {
-                  "lat": lat,
-                  "lng": lng
-                },
-                "zoom": 10
-              };
-              timelapse.setNewView(newView, false, false);
-              UTIL.addGoogleAnalyticEvent('textbox', 'search', 'go-to-searched-place');
-            } else {
-              console.log("Geocode failed: " + status);
-            }
-          });
-        } else {
-          var newView = {
-            center: {
-              "lat": place.geometry.location.lat(),
-              "lng": place.geometry.location.lng()
-            },
-            "zoom": 10
-          };
-          timelapse.setNewView(newView, false, false);
-          UTIL.addGoogleAnalyticEvent('textbox', 'search', 'go-to-searched-place');
-        }
-      });
     };
 
     var getCurrentYear = function() {

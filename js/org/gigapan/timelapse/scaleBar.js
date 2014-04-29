@@ -312,17 +312,17 @@ if (!org.gigapan.timelapse.Timelapse) {
       // Create video quality selector
       var content = '';
       content += '<div class="videoQualityContainer">';
-      content += '    <div class="videoQuality_text_static">Resolution for:</div>';
+      content += '    <div class="videoQuality_text_static">Resolution for :</div>';
       content += '    <select class="videoQualitySelector"></select>';
       content += '    <input class="metersPerPixel_text" type="text">';
-      content += '    <div class="metersPerPixel_text_static">meters / pixel</div>';
+      content += '    <div class="metersPerPixel_text_static">Meters per pixel :</div>';
       content += '</div>';
       $videoQualityContainer = $(content);
       $("#" + viewerDivId).append($videoQualityContainer);
       videoQualitySelector = $("#" + viewerDivId + " .videoQualitySelector").get(0);
       metersPerPixel_text = $("#" + viewerDivId + " .metersPerPixel_text").get(0);
       // Add video quality options
-      addOptions("default", "Current Window", "The Viewport Size", videoQualitySelector);
+      addOptions("default", "This Window", "The Viewport Size", videoQualitySelector);
       addOptions("15360x8640", "15360 x 8640", "16K", videoQualitySelector);
       addOptions("11520x6480", "11520 x 6480", "12K", videoQualitySelector);
       addOptions("7860x4320", "7860 x 4320", "8K", videoQualitySelector);

@@ -104,3 +104,26 @@
 .hideAnnotationLabel .ui-button-text {
   height: 0px;
 }
+
+.annotatorModeToolbar {
+  margin-top: 0px;
+  margin-left: 0px;
+  margin-right: 0px;
+  margin-bottom: 0px;
+  padding: 0;
+  float: right;
+  display: none;
+  height: 100%;
+}
+
+.annotatorModeToolbar .ui-state-default {
+  background: white;
+}
+
+.addAnnotationLabel .ui-button-text {
+  margin-top: 11px;
+}
+
+.moveAnnotationLabel .ui-button-text {
+  margin-top: 11px;
+}

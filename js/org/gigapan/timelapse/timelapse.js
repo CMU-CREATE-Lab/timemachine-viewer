@@ -160,8 +160,8 @@ if (!window['$']) {
     // Objects
     var videoset;
     var snaplapse;
-    var snaplapseViewer;
-    var presentationSlider;
+    var snaplapseForSharedTour;
+    var snaplapseForPresentationSlider;
     var scaleBar;
     var smallGoogleMap;
     var annotator;
@@ -402,14 +402,6 @@ if (!window['$']) {
       return minViewportWidth;
     };
 
-    this.disableEditorToolbarButtons = function() {
-      defaultUI.disableEditorToolbarButtons();
-    };
-
-    this.enableEditorToolbarButtons = function() {
-      defaultUI.enableEditorToolbarButtons();
-    };
-
     // Used by defaultUI to switch between modes (player, editor, etc)
     // TODO: Rename?
     this.getMode = function() {
@@ -480,8 +472,12 @@ if (!window['$']) {
       return snaplapse;
     };
 
-    this.getPresentationSlider = function() {
-      return presentationSlider;
+    this.getSnaplapseForSharedTour = function() {
+      return snaplapseForSharedTour;
+    };
+
+    this.getSnaplapseForPresentationSlider = function() {
+      return snaplapseForPresentationSlider;
     };
 
     this.getCanvas = function() {
@@ -515,11 +511,7 @@ if (!window['$']) {
     };
 
     this.handleEditorModeToolbarChange = function() {
-      defaultUI.handleEditorModeToolbarChange();
-    };
-
-    this.handleAnnotatorModeToolbarChange = function() {
-      defaultUI.handleAnnotatorModeToolbarChange();
+      snaplapse.getSnaplapseViewer().handleEditorModeToolbarChange();
     };
 
     this.isFullScreen = function() {
@@ -559,6 +551,12 @@ if (!window['$']) {
         _pause();
       }
     };
+
+    var stopParabolicMotion = function() {
+      if (parabolicMotionController)
+        parabolicMotionController._disableAnimation();
+    };
+    this.stopParabolicMotion = stopParabolicMotion;
 
     var convertViewportToTimeMachine = function(point) {
       var boundingBox = thisObj.getBoundingBoxForCurrentView();
@@ -1017,7 +1015,7 @@ if (!window['$']) {
             if (key == "ne" || key == "sw") {
               isLatLng = true;
               for (var innerKey in bboxView[key])
-                tmpViewParam.push(bboxView[key][innerKey]);
+              tmpViewParam.push(bboxView[key][innerKey]);
             } else {
               tmpViewParam.push(bboxView[key]);
             }
@@ -1134,6 +1132,7 @@ if (!window['$']) {
       var timePadding = isFirefox ? 0 : 0.3;
       var seekTime = (frameIdx + timePadding) / _getFps();
       _seek(seekTime);
+      seek_panoVideo(seekTime);
     };
     this.seekToFrame = seekToFrame;
 
@@ -1184,7 +1183,7 @@ if (!window['$']) {
       thisObj.setPlaybackRate(originalPlaybackRate);
     };
 
-    this.setPlaybackRate = function(rate, preserveOriginalRate, fromUI) {
+    this.setPlaybackRate = function(rate, preserveOriginalRate, skipUpdateUI) {
       if (!preserveOriginalRate)
         originalPlaybackRate = rate;
       videoset.setPlaybackRate(rate);
@@ -1196,7 +1195,7 @@ if (!window['$']) {
       }
 
       for (var i = 0; i < playbackRateChangeListeners.length; i++)
-        playbackRateChangeListeners[i](rate, fromUI);
+        playbackRateChangeListeners[i](rate, skipUpdateUI);
     };
 
     this.toggleMainControls = function() {
@@ -1439,21 +1438,21 @@ if (!window['$']) {
           _setNewView(newView, true);
         if (newTime)
           _seek(newTime);
-        if (snaplapse && tourJSON) {
-          var snaplapseViewer = snaplapse.getSnaplapseViewer();
-          if (snaplapseViewer) {
-            snaplapseViewer.loadNewSnaplapse(tourJSON);
+        if (snaplapseForSharedTour && tourJSON) {
+          var snaplapseViewerForSharedTour = snaplapseForSharedTour.getSnaplapseViewer();
+          if (snaplapseViewerForSharedTour) {
+            snaplapseViewerForSharedTour.loadNewSnaplapse(tourJSON);
             UTIL.addGoogleAnalyticEvent('window', 'onHashChange', 'url-load-tour');
           }
         }
-        if (presentationSlider && presentationJSON) {
-          var presentationSliderViewer = presentationSlider.getSnaplapseViewer();
+        if (snaplapseForPresentationSlider && presentationJSON) {
+          var snaplapseViewerForPresentationSlider = snaplapseForPresentationSlider.getSnaplapseViewer();
           if ( typeof snaplapse == "undefined") {
             // Prevent the editor leave page alert from showing if only the presentation mode is enabled from the hash
             window.onbeforeunload = null;
           }
-          if (presentationSliderViewer) {
-            presentationSliderViewer.loadNewSnaplapse(presentationJSON);
+          if (snaplapseViewerForPresentationSlider) {
+            snaplapseViewerForPresentationSlider.loadNewSnaplapse(presentationJSON);
             UTIL.addGoogleAnalyticEvent('window', 'onHashChange', 'url-load-presentation');
           }
         }
@@ -1493,7 +1492,8 @@ if (!window['$']) {
     };
 
     // Gets safe tour JSON from an unsafe object containing key-value pairs from the URL hash.
-    // The JSON returned is safe because calls to urlStringToJSON go to carefully-designed methods that use strict encoders (and naming conventions to mark strings not strictly sanitized) to ensure the input is safe.
+    // The JSON returned is safe because calls to urlStringToJSON go to carefully-designed methods that use strict encoders
+    // (and naming conventions to mark strings not strictly sanitized) to ensure the input is safe.
     var getTourFromHash = function(unsafeHashObj) {
       if (unsafeHashObj && unsafeHashObj.tour) {
         if (snaplapse) {
@@ -1505,11 +1505,12 @@ if (!window['$']) {
     };
 
     // Gets safe presentation JSON from an unsafe object containing key-value pairs from the URL hash.
-    // The JSON returned is safe because calls to urlStringToJSON go to carefully-designed methods that use strict encoders (and naming conventions to mark strings not strictly sanitized) to ensure the input is safe.
+    // The JSON returned is safe because calls to urlStringToJSON go to carefully-designed methods that use strict encoders
+    // (and naming conventions to mark strings not strictly sanitized) to ensure the input is safe.
     var getPresentationFromHash = function(unsafeHashObj) {
       if (unsafeHashObj && unsafeHashObj.presentation) {
-        if (presentationSlider) {
-          var presentationJSON = presentationSlider.urlStringToJSON(unsafeHashObj.presentation);
+        if (snaplapseForPresentationSlider) {
+          var presentationJSON = snaplapseForPresentationSlider.urlStringToJSON(unsafeHashObj.presentation);
           return presentationJSON;
         }
       }
@@ -1524,8 +1525,7 @@ if (!window['$']) {
       var saveMouseMove = document.onmousemove;
       var saveMouseUp = document.onmouseup;
       $(videoDiv).removeClass("openHand closedHand").addClass('closedHand');
-      if (parabolicMotionController)
-        parabolicMotionController._disableAnimation();
+      stopParabolicMotion();
       document.onmousemove = function(event) {
         if (mouseIsDown) {
           //if (videoset.isStalled()) return;
@@ -2062,12 +2062,6 @@ if (!window['$']) {
     };
     this.getCurrentFrameNumber = getCurrentFrameNumber;
 
-    // Set the snaplapse viewer after the ajax call, called by snaplapse
-    this.setSnaplapseViewer = function(_snaplapseViewer) {
-      snaplapseViewer = _snaplapseViewer;
-      $("#" + viewerDivId + " .addTimetag").button("option", "disabled", false);
-    };
-
     // Initialize the tag info with location data
     var initializeTagInfo_locationData = function() {
       var boundingBox = pixelCenterToPixelBoundingBoxView(homeView).bbox;
@@ -2171,6 +2165,43 @@ if (!window['$']) {
       }// End of if (visualizer != undefined || smallGoogleMap != undefined || scaleBar != undefined)
     };
     this.updateTagInfo_locationData = updateTagInfo_locationData;
+
+    var loadSharedDataFromUnsafeURL = function(unsafe_fullURL, playOnLoad) {
+      var unsafe_matchURL = unsafe_fullURL.match(/#(.+)/);
+      if (unsafe_matchURL) {
+        var unsafe_sharedVars = UTIL.unpackVars(unsafe_matchURL[1]);
+        var unsafe_sharedData;
+        var snaplapseForSharedData;
+        // Find if shared data exists in the URL
+        if (unsafe_sharedVars.tour && snaplapseForSharedTour) {
+          unsafe_sharedData = unsafe_sharedVars.tour;
+          snaplapseForSharedData = snaplapseForSharedTour;
+        } else if (unsafe_sharedVars.presentation && snaplapseForPresentationSlider) {
+          unsafe_sharedData = unsafe_sharedVars.presentation;
+          snaplapseForSharedData = snaplapseForPresentationSlider;
+        }
+        // Handle the shared data
+        if (unsafe_sharedData) {
+          var snaplapseViewerForSharedData = snaplapseForSharedData.getSnaplapseViewer();
+          if (snaplapseViewerForSharedData) {
+            var sharedData = snaplapseForSharedData.urlStringToJSON(unsafe_sharedData);
+            if (sharedData) {
+              if (playOnLoad && unsafe_sharedVars.tour) {
+                var onLoad = function() {
+                  snaplapseViewerForSharedData.removeEventListener('snaplapse-loaded', onLoad);
+                  $("#" + viewerDivId + " .tourLoadOverlay").show();
+                  $("#" + viewerDivId + " .tourLoadOverlayPlay").show();
+                  snaplapseViewerForSharedData.animateTourOverlayAndPlay(0);
+                };
+                snaplapseViewerForSharedData.addEventListener('snaplapse-loaded', onLoad);
+              }
+              snaplapseViewerForSharedData.loadNewSnaplapse(sharedData, playOnLoad);
+            } // end of if (sharedData)
+          }// end of if (snaplapseViewerForSharedData)
+        }// end of if (unsafe_sharedData)
+      }// end of if (unsafe_matchURL)
+    };
+    this.loadSharedDataFromUnsafeURL = loadSharedDataFromUnsafeURL;
 
     var viewPointToContextMapPoint = function(viewPoint) {
       return {
@@ -2597,12 +2628,13 @@ if (!window['$']) {
       if (settings["composerDiv"]) {
         $("#" + videoDivId).append('<div class="snaplapse-annotation-description"><div></div></div>');
         snaplapse = new org.gigapan.timelapse.Snaplapse(settings["composerDiv"], thisObj, settings);
+        snaplapseForSharedTour = new org.gigapan.timelapse.Snaplapse(undefined, thisObj, settings, "noUI");
         // Timewarp visualizer that shows the location of the current view and transitions between keyframes
         if (!tmJSON['projection-bounds'] && editorEnabled)
           visualizer = new org.gigapan.timelapse.Visualizer(thisObj, snaplapse, visualizerGeometry);
       }
       if (settings["presentationSliderDiv"])
-        presentationSlider = new org.gigapan.timelapse.Snaplapse(settings["presentationSliderDiv"], thisObj, settings, true);
+        snaplapseForPresentationSlider = new org.gigapan.timelapse.Snaplapse(settings["presentationSliderDiv"], thisObj, settings, "presentation");
       if (settings["annotatorDiv"])
         annotator = new org.gigapan.timelapse.Annotator(settings["annotatorDiv"], thisObj);
 
@@ -2954,26 +2986,6 @@ if (!window['$']) {
         "width": newWidth + 2 + "px",
         "height": newHeight + 2 + "px"
       });
-
-      //$("#"+timelapseViewerDivId+" .layerSlider").css({"top": newHeight+2+$("#" + timelapseViewerDivId + " .controls").height()+"px", "right": "28px"}); // extra 2px for the borders
-
-      // Wiki specific css
-      if (newWidth == 816) {//large video
-        $("#content").css({
-          "padding": "0px 0px 0px 305px"
-        });
-        $("#firstHeading").css({
-          "top": "628px"
-        });
-      } else {
-        $("#content").css({
-          "padding": "0px 0px 0px 0px"
-        });
-        $("#firstHeading").css({
-          "top": "450px"
-        });
-      }
-      // End wiki specific css
     }
 
     var showSpinner = function(viewerDivId) {

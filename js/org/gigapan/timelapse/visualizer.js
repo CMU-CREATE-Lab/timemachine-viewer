@@ -109,6 +109,7 @@ if (!org.gigapan.timelapse.Timelapse) {
     };
     var navWidth = visualizerGeometry.width;
     var navHeight = visualizerGeometry.height;
+
     // Variables for all visualizer elements
     var visualizer;
     var navigationMap_container;
@@ -119,6 +120,7 @@ if (!org.gigapan.timelapse.Timelapse) {
     var $hideMapCheckbox;
     var $hideMapLabel;
     var panoVideo;
+
     // Variables for kinetic JS
     var navigationMap_layer_background;
     var navigationMap_layer_mask;
@@ -129,11 +131,13 @@ if (!org.gigapan.timelapse.Timelapse) {
     var navigationMap_mask;
     var navigationMap_box;
     var navigationMap_circle;
+
     // Variables for attributes
     var navigationMap_width;
     var navigationMap_height;
     var tagsNavigation_position;
     var isHideNavigationMap = false;
+
     // Parameters for context map
     var defaultTagColor = timelapse.getTagColor();
     var defaultTagRGB = defaultTagColor[0] + "," + defaultTagColor[1] + "," + defaultTagColor[2];
@@ -649,7 +653,7 @@ if (!org.gigapan.timelapse.Timelapse) {
 
     // Set the mode of the visualizer
     var setMode = function(mode, isFitToWindow, noAnimation) {
-      if (mode == "player" || mode == "annotator") {
+      if (mode == "player") {
         navigationMap_layer_tag.show();
         $tagsNavigation.show();
         if (noAnimation == true) {
@@ -659,6 +663,8 @@ if (!org.gigapan.timelapse.Timelapse) {
           $navigationMap_container.stop(true, true).fadeOut(200);
           $hideMapLabel.stop(true, true).fadeOut(200);
         }
+        if (panoVideo)
+          panoVideo.pause();
       } else if (mode == "editor") {
         if (isFitToWindow) {
           //handleShowHideNavigationMap("hide");

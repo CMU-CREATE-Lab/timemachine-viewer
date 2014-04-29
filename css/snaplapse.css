@@ -715,3 +715,195 @@
   background-image: url(../images/bubble_edge_horizontal_white.png);
   max-width: 260px;
 }
+
+.toolbar {
+  width: inherit;
+  height: 40px;
+  background-color: rgb(220,220,220);
+  position: relative;
+  border-right: 1px solid #656565;
+  border-left: 1px solid #656565;
+  border-top: 0px solid #838383;
+  border-bottom: 1px solid #656565;
+  font-size: 12px;
+  margin: 0;
+  padding: 0;
+  z-index: 20;
+}
+
+.toolbar .ui-button {
+  -webkit-user-select: none;
+  -khtml-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  -o-user-select: none;
+  user-select: none;
+}
+
+.toolbar .ui-button:focus {
+  outline: none;
+}
+
+.toolbar .editorTitle {
+  position: absolute;
+  left: 20px;
+  top: 10px;
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 15px;
+  color: black;
+  opacity: 0.8;
+  font-weight: bold;
+}
+
+.toolbar .toggleMode {
+  position: absolute;
+  width: 138px;
+  height: 20px;
+  bottom: 10px;
+  left: 20px;
+  background: white;
+  border: 1px solid #656565;
+  border-radius: 2px !important;
+  z-index: 30;
+  outline: none;
+}
+
+.toolbar .toggleMode .ui-button-text {
+  text-align: center;
+  padding: 0;
+  font-size: 11px;
+  margin-top: 0px;
+  margin-left: -13px;
+}
+
+.toolbar .toggleMode .ui-icon {
+  margin-right: -4px;
+}
+
+.fullScreenBtnContainer {
+  float: right;
+  display: inline;
+  margin-top: 0px;
+  margin-left: 0px;
+  margin-right: 0px;
+  margin-bottom: 0px;
+  padding: 0;
+  height: 100%;
+}
+
+.fullscreenLabel.ui-state-default {
+  background: white;
+}
+
+.fullscreenLabel {
+  height: 100%;
+  border-radius: 0;
+  padding: 0;
+}
+
+.editorModeToolbar {
+  margin-top: 0px;
+  margin-left: 0px;
+  margin-right: 0px;
+  margin-bottom: 0px;
+  padding: 0;
+  float: right;
+  height: 100%;
+}
+
+.editorModeToolbar .ui-button {
+  min-width: 35px;
+  margin-right: -1px;
+  margin-left: 0px;
+  border-radius: 0px !important;
+  vertical-align: middle;
+  border-top: 0px solid white;
+  border-bottom: 0px solid white;
+  height: 100%;
+  border-left: 1px solid rgb(220,220,220);
+  border-right: 1px solid rgb(220,220,220);
+}
+
+.editorModeToolbar .ui-button:hover:not(
+[disabled]) {
+  border-right: 1px solid #656565;
+  border-left: 1px solid #656565;
+  z-index: 999;
+}
+
+.editorModeToolbar .ui-state-default {
+  background: white;
+}
+
+.editorModeToolbar .ui-state-active {
+  background: #656565 !important;
+  color: white;
+}
+
+.editorModeToolbar .ui-state-active .ui-icon {
+  background-image: url(../images/ui-icons_custom_256x240.png);
+}
+
+.editorModeToolbar .newTimewarp {
+  border-right: 1px solid #656565 !important;
+}
+
+.editorModeToolbar .playStopTimewarp .ui-icon {
+  background-image: url(../images/ui-icons_custom_256x240.png);
+  margin-left: 3px;
+}
+
+.editorModeToolbar .playStopTimewarp.ui-state-default {
+  width: 120px;
+  color: white;
+  background-color: #71AF71;
+  border-right: 1px solid #656565 !important;
+  border-left: 1px solid #656565 !important;
+}
+
+.editorModeToolbar .playStopTimewarp.ui-state-default:hover:not(
+[disabled]) {
+  background-color: #529952;
+}
+
+.editorModeToolbar .playStopTimewarp.isPlaying.ui-state-default {
+  background-color: rgba(255,0,0,0.4);
+}
+
+.editorModeToolbar .playStopTimewarp.isPlaying.ui-state-default:hover:not(
+[disabled]) {
+  background-color: rgba(255,0,0,0.52);
+}
+
+.editorModeOptions {
+  border-radius: 2px;
+  box-shadow: 2px 2px 3px rgba(0,0,0,0.3);
+}
+
+.editorModeOptions .ui-menu-item {
+  font-size: 11px;
+}
+
+.editorModeOptions .ui-corner-all {
+  border-radius: 2px;
+}
+
+.editorModeOptions.ui-menu {
+  position: absolute;
+  width: 116px;
+  padding: 10px;
+  border: 1px solid #656565;
+  z-index: 35;
+}
+
+.editorModeOptions.ui-state-focus {
+  padding: 10px;
+}
+
+.addressLookup {
+  position: absolute;
+  top: 10px;
+  left: 172px;
+  z-index: 99;
+  height: 13px;
+}

@@ -136,7 +136,8 @@ if (!org.gigapan.timelapse.Timelapse) {
     var isMapMinimized = false;
     var zoomOffset;
     var oldGoogleMapZoom;
-    // Variable for dom elements
+
+    // DOM elements
     var smallMapContainer;
     var smallMap;
     var smallMapResizer;

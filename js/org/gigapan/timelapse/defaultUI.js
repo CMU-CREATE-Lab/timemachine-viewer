@@ -95,52 +95,50 @@ if (!org.gigapan.timelapse.Timelapse) {
     //
     // Class variables
     //
-    var mode = "player";
-    var viewerDivId = timelapse.getViewerDivId();
-    var tmJSON = timelapse.getTmJSON();
-    var panInterval;
-    var translationSpeedConstant = 20;
-    var $playbackButton = $("#" + viewerDivId + " .playbackButton");
-    var $toolbar = $("#" + viewerDivId + " .toolbar");
-    var $controls = $("#" + viewerDivId + " .controls");
-    var $editorModeToolbar = $("#" + viewerDivId + " .editorModeToolbar");
-    var $annotatorModeToolbar = $("#" + viewerDivId + " .annotatorModeToolbar");
-    var $fastSpeed = $("#fastSpeed");
-    var $mediumSpeed = $("#mediumSpeed");
-    var $slowSpeed = $("#slowSpeed");
-    var toolbarHeight = $toolbar.outerHeight();
-    var minViewportHeight = timelapse.getMinViewportHeight();
-    var minViewportWidth = timelapse.getMinViewportWidth();
-    var isSafari = org.gigapan.Util.isSafari();
 
+    // Objects
     var visualizer = timelapse.getVisualizer();
     var annotator = timelapse.getAnnotator();
     var videoset = timelapse.getVideoset();
+    var tmJSON = timelapse.getTmJSON();
+    var panInterval;
 
+    // DOM elements
+    var viewerDivId = timelapse.getViewerDivId();
+    var $playbackButton = $("#" + viewerDivId + " .playbackButton");
+    var $controls = $("#" + viewerDivId + " .controls");
+    var $fastSpeed = $("#fastSpeed");
+    var $mediumSpeed = $("#mediumSpeed");
+    var $slowSpeed = $("#slowSpeed");
+
+    // Settings
     var showShareBtn = ( typeof (settings["showShareBtn"]) == "undefined") ? true : settings["showShareBtn"];
     var showHomeBtn = ( typeof (settings["showHomeBtn"]) == "undefined") ? true : settings["showHomeBtn"];
     var showMainControls = ( typeof (settings["showMainControls"]) == "undefined") ? true : settings["showMainControls"];
     var showZoomControls = ( typeof (settings["showZoomControls"]) == "undefined") ? true : settings["showZoomControls"];
     var showPanControls = ( typeof (settings["showPanControls"]) == "undefined") ? true : settings["showPanControls"];
-    var showFullScreenBtn = ( typeof (settings["showFullScreenBtn"]) == "undefined") ? true : settings["showFullScreenBtn"];
-    var startEditorFromPresentationMode = ( typeof (settings["startEditorFromPresentationMode"]) == "undefined") ? false : settings["startEditorFromPresentationMode"];
-    var showEditorModeButton = ( typeof (settings["showEditorModeButton"]) == "undefined") ? true : settings["showEditorModeButton"];
     var showLogoOnDefaultUI = ( typeof (settings["showLogoOnDefaultUI"]) == "undefined") ? true : settings["showLogoOnDefaultUI"];
     var showEditorOnLoad = ( typeof (settings["showEditorOnLoad"]) == "undefined") ? false : settings["showEditorOnLoad"];
     var editorEnabled = timelapse.getEditorEnabled();
     var useCustomUI = timelapse.useCustomUI();
+
+    // Flags
+    var isSafari = org.gigapan.Util.isSafari();
+
+    // Parameters
+    var minViewportHeight = timelapse.getMinViewportHeight();
+    var minViewportWidth = timelapse.getMinViewportWidth();
+    var mode = "player";
+    var translationSpeedConstant = 20;
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////
     //
     // Private methods
     //
 
-    //create the toolbar
-    var createToolbar = function() {
-      createPlayerModeToolbar();
-      createSideToolBar();
-      createSpeedControl();
-      // Play button
+    // Create main UI
+    var createMainUI = function() {
+      // Create play button
       $playbackButton.button({
         icons: {
           secondary: "ui-icon-custom-play"
@@ -155,33 +153,81 @@ if (!org.gigapan.timelapse.Timelapse) {
         else
           UTIL.addGoogleAnalyticEvent('button', 'click', 'viewer-pause');
       });
-      // Create fullscreen button
-      if (showFullScreenBtn) {
-        var $fullScreenBtnContainer = $("#" + viewerDivId + " .fullScreenBtnContainer");
-        $fullScreenBtnContainer.append('<input type="checkbox" class="fullscreenCheckbox"/>');
-        $fullScreenBtnContainer.append('<label class="fullscreenLabel" title="Toggle fullscreen"></label>');
-        var $fullscreenCheckbox = $("#" + viewerDivId + " .fullscreenCheckbox");
-        $fullscreenCheckbox.attr("id", viewerDivId + "_fullscreenCheckbox");
-        $("#" + viewerDivId + " .fullscreenLabel").attr("for", viewerDivId + "_fullscreenCheckbox");
-        $fullscreenCheckbox.button({
+      // Create share button
+      if (showShareBtn) {
+        $("#" + viewerDivId + " .share").button({
           icons: {
-            primary: "ui-icon-arrow-4-diag"
+            primary: "ui-icon-person"
           },
-          text: false
-        }).change(function() {
-          if ($fullscreenCheckbox.is(":checked"))
-            timelapse.fullScreen(true);
-          else
-            timelapse.fullScreen(false);
+          text: true
+        }).click(function() {
+          var shareViewDialog = $("#" + viewerDivId + " .shareView");
+          if (shareViewDialog.dialog("isOpen"))
+            shareViewDialog.dialog("close");
+          else {
+            shareView();
+            UTIL.addGoogleAnalyticEvent('button', 'click', 'viewer-show-share-dialog');
+          }
         });
       }
+      // Share view window
+      $("#" + viewerDivId + " .shareView").dialog({
+        resizable: false,
+        autoOpen: false,
+        width: 632,
+        height: 95,
+        create: function() {
+          $(this).parents("#" + viewerDivId + " .ui-dialog").css({
+            'border': '1px solid #000'
+          });
+        }
+      }).parent().appendTo($("#" + viewerDivId));
+      // Create help button
+      var helpPlayerCheckbox = $("#" + viewerDivId + " .helpPlayerCheckbox");
+      helpPlayerCheckbox.attr("id", viewerDivId + "_helpPlayerCheckbox");
+      var $helpPlayerLabel = $("#" + viewerDivId + " .helpPlayerLabel");
+      $helpPlayerLabel.attr("for", viewerDivId + "_helpPlayerCheckbox");
+      helpPlayerCheckbox.button({
+        icons: {
+          primary: "ui-icon-help"
+        },
+        text: true
+      }).change(function() {
+        if (helpPlayerCheckbox.is(":checked")) {
+          doHelpOverlay();
+          $(document).one("mouseup", function(e) {
+            if ($helpPlayerLabel.has(e.target).length == 0)
+              helpPlayerCheckbox.prop("checked", false).button("refresh").change();
+          });
+          UTIL.addGoogleAnalyticEvent('button', 'click', 'viewer-show-help');
+        } else {
+          removeHelpOverlay();
+        }
+      });
       // Create mode switch button
-      createModeSwitchButton();
-      if (settings["composerDiv"] || settings["annotatorDiv"]) {
-        if (settings["composerDiv"])
-          createEditorModeToolbar();
-        if (settings["annotatorDiv"])
-          createAnnotatorModeToolbar();
+      var $viewerModeBtn = $("#" + viewerDivId + " .viewerModeBtn");
+      var $viewerModeCheckbox = $("#" + viewerDivId + " .viewerModeCheckbox");
+      if (editorEnabled) {
+        $viewerModeBtn.attr("id", viewerDivId + "_viewerModeBtn");
+        $viewerModeCheckbox.attr("id", viewerDivId + "_viewerModeCheckbox");
+        $viewerModeBtn.attr("for", viewerDivId + "_viewerModeCheckbox");
+        $viewerModeCheckbox.button({
+          icons: {
+            primary: "ui-icon-note"
+          },
+          text: true
+        }).click(function() {
+          if ($viewerModeCheckbox.is(":checked")) {
+            setMode("editor");
+            UTIL.addGoogleAnalyticEvent('button', 'click', 'viewer-set-to-editor-mode');
+          } else {
+            setMode("player");
+            UTIL.addGoogleAnalyticEvent('button', 'click', 'viewer-set-to-player-mode');
+          }
+        });
+      } else {
+        $viewerModeBtn.remove();
+        $viewerModeCheckbox.remove();
       }
       // Layers for a dataset
       if (tmJSON["layers"]) {
@@ -194,86 +240,26 @@ if (!org.gigapan.timelapse.Timelapse) {
           visible: 3.5
         });
       }
+
+      createTimelineSlider();
+      createSpeedControl();
+
+      // Settings
       if (showEditorOnLoad && editorEnabled && !useCustomUI)
-        $("#" + viewerDivId + " .viewerModeCheckbox").trigger("click");
+        setMode("editor");
+      if (!showMainControls || useCustomUI) {
+        $("#" + viewerDivId + " .controls").hide();
+        $("#" + viewerDivId + " .timelineSliderFiller").hide();
+      }
+      if (showLogoOnDefaultUI)
+        $("#" + viewerDivId + " .createLabLogo").show();
     };
 
-    var createSpeedControl = function() {
-      // Speeds < 0.5x in Safari, even if emulated, result in broken playback, so do not include the "slow" (0.25x) speed option
-      if (isSafari)
-        $slowSpeed.remove();
-
-      $fastSpeed.button({
-        text: true
-      }).click(function() {
-        timelapse.setPlaybackRate(0.5, null, true);
-        $controls.prepend($mediumSpeed);
-        $mediumSpeed.stop(true, true).show();
-        $fastSpeed.slideUp(300);
-        UTIL.addGoogleAnalyticEvent('button', 'click', 'viewer-set-speed-to-medium');
-      });
-
-      $mediumSpeed.button({
-        text: true
-      }).click(function() {
-        // Due to playback issues, we are not allowing the "slow" option for Safari users
-        if (isSafari) {
-          timelapse.setPlaybackRate(1, null, true);
-          $controls.prepend($fastSpeed);
-          $fastSpeed.stop(true, true).show();
-          UTIL.addGoogleAnalyticEvent('button', 'click', 'viewer-set-speed-to-fast');
-        } else {
-          timelapse.setPlaybackRate(0.25, null, true);
-          $controls.prepend($slowSpeed);
-          $slowSpeed.stop(true, true).show();
-          UTIL.addGoogleAnalyticEvent('button', 'click', 'viewer-set-speed-to-slow');
-        }
-        $mediumSpeed.slideUp(300);
-      });
-
-      $slowSpeed.button({
-        text: true
-      }).click(function() {
-        timelapse.setPlaybackRate(1, null, true);
-        $controls.prepend($fastSpeed);
-        $fastSpeed.stop(true, true).show();
-        $slowSpeed.slideUp(300);
-        UTIL.addGoogleAnalyticEvent('button', 'click', 'viewer-set-speed-to-fast');
-      });
-
-      timelapse.addPlaybackRateChangeListener(function(rate, fromUI) {
-        if (!fromUI) {
-          var snaplapse = timelapse.getSnaplapse();
-          if (snaplapse && snaplapse.isPlaying())
-            return;
-          $("#" + viewerDivId + " .toggleSpeed").hide();
-          if (rate >= 1) {
-            $fastSpeed.show();
-            $mediumSpeed.hide();
-            $slowSpeed.hide();
-          } else if ((rate < 1 && rate >= 0.5) || (isSafari && rate < 0.5)) {
-            $mediumSpeed.show();
-            $fastSpeed.hide();
-            $slowSpeed.hide();
-          } else {
-            $slowSpeed.show();
-            $mediumSpeed.hide();
-            $fastSpeed.hide();
-          }
-        }
-      });
-
-      // Since the call to set the playback rate when first creating the timelapse
-      // happens before the UI is setup, we need to run it again below to properly
-      // update the UI.
-      var playbackRate = timelapse.getPlaybackRate();
-      if (playbackRate >= 1) {
-        $fastSpeed.show();
-      } else if (playbackRate < 1 && playbackRate >= 0.5) {
-        $mediumSpeed.show();
-      } else {
-        $slowSpeed.show();
-      }
+    var createSideToolBar = function() {
+      if (showPanControls)
+        createPanControl();
+      if (showZoomControls)
+        createZoomControl();
     };
 
     var createPanControl = function() {
@@ -420,560 +406,21 @@ if (!org.gigapan.timelapse.Timelapse) {
         clearInterval(intervalId);
       });
       // Create zoom all button
-      $zoom.append('<button class="zoomall" title="Home"></button>');
-      $("#" + viewerDivId + " .zoomall").button({
-        icons: {
-          primary: "ui-icon-home"
-        },
-        text: false
-      }).click(function() {
-        timelapse.warpTo(timelapse.homeView());
-        UTIL.addGoogleAnalyticEvent('button', 'click', 'viewer-zoom-to-home-view');
-      });
-    };
-
-    var createSideToolBar = function() {
-      createPanControl();
-      createZoomControl();
-      var $tools = $("#" + viewerDivId + " .tools");
-      // Create hide annotation button
-      if (settings["annotatorDiv"]) {
-        $tools.append('<input type="checkbox" class="hideAnnotationCheckbox"/>');
-        $tools.append('<label class="hideAnnotationLabel" title="Toggle hiding annotations">Hide</label>');
-        var hideAnnotationCheckbox = $("#" + viewerDivId + " .hideAnnotationCheckbox");
-        hideAnnotationCheckbox.attr("id", viewerDivId + "_hideAnnotationCheckbox");
-        $("#" + viewerDivId + " .hideAnnotationLabel").attr("for", viewerDivId + "_hideAnnotationCheckbox");
-        hideAnnotationCheckbox.button({
+      if (showHomeBtn) {
+        $zoom.append('<button class="zoomall" title="Home"></button>');
+        $("#" + viewerDivId + " .zoomall").button({
           icons: {
-            primary: "ui-icon-tag"
+            primary: "ui-icon-home"
           },
           text: false
-        }).change(function() {
-          if (hideAnnotationCheckbox.is(":checked")) {
-            annotator.getAnnotationLayer().hide();
-          } else {
-            annotator.getAnnotationLayer().show();
-            annotator.getAnnotationLayer().draw();
-          }
-        });
-      }
-    };
-
-    // Create the player mode toolbar
-    var createPlayerModeToolbar = function() {
-      // Create share button
-      if (showShareBtn) {
-        $("#" + viewerDivId + " .share").button({
-          icons: {
-            primary: "ui-icon-person"
-          },
-          text: true
         }).click(function() {
-          var shareViewDialog = $("#" + viewerDivId + " .shareView");
-          if (shareViewDialog.dialog("isOpen"))
-            shareViewDialog.dialog("close");
-          else {
-            shareView();
-            UTIL.addGoogleAnalyticEvent('button', 'click', 'viewer-show-share-dialog');
-          }
+          timelapse.warpTo(timelapse.homeView());
+          UTIL.addGoogleAnalyticEvent('button', 'click', 'viewer-zoom-to-home-view');
         });
       }
-      // Share view window
-      $("#" + viewerDivId + " .shareView").dialog({
-        resizable: false,
-        autoOpen: false,
-        width: 632,
-        height: 95,
-        create: function() {
-          $(this).parents("#" + viewerDivId + " .ui-dialog").css({
-            'border': '1px solid #000'
-          });
-        }
-      }).parent().appendTo($("#" + viewerDivId));
-      // Create help button
-      var helpPlayerCheckbox = $("#" + viewerDivId + " .helpPlayerCheckbox");
-      helpPlayerCheckbox.attr("id", viewerDivId + "_helpPlayerCheckbox");
-      var $helpPlayerLabel = $("#" + viewerDivId + " .helpPlayerLabel");
-      $helpPlayerLabel.attr("for", viewerDivId + "_helpPlayerCheckbox");
-      helpPlayerCheckbox.button({
-        icons: {
-          primary: "ui-icon-help"
-        },
-        text: true
-      }).change(function() {
-        if (helpPlayerCheckbox.is(":checked")) {
-          doHelpOverlay();
-          $(document).one("mouseup", function(e) {
-            if ($helpPlayerLabel.has(e.target).length == 0)
-              helpPlayerCheckbox.prop("checked", false).button("refresh").change();
-          });
-          UTIL.addGoogleAnalyticEvent('button', 'click', 'viewer-show-help');
-        } else {
-          removeHelpOverlay();
-        }
-      });
     };
 
-    // Create the editor mode toolbar
-    var createEditorModeToolbar = function() {
-      var $editorModeToolbar = $("#" + viewerDivId + " .editorModeToolbar");
-      // Create add button
-      $editorModeToolbar.append('<button class="addTimetag" title="Add a keyframe">Add</button>');
-      $("#" + viewerDivId + " .toolbar .addTimetag").button({
-        icons: {
-          primary: "ui-icon-plus"
-        },
-        text: true,
-        disabled: true
-      }).click(function() {
-        // The button will be enabled at the end of addSnaplapseKeyframeListItem() in snaplapseViewer
-        $("#" + viewerDivId + " .toolbar .addTimetag").button("option", "disabled", true);
-        timelapse.getSnaplapse().getSnaplapseViewer().recordKeyframe();
-        UTIL.addGoogleAnalyticEvent('button', 'click', 'editor-add-keyframe');
-      });
-      // Create save button
-      $editorModeToolbar.append('<button class="saveTimewarp" title="Share a tour">Share</button>');
-      $("#" + viewerDivId + " .toolbar .saveTimewarp").button({
-        icons: {
-          primary: "ui-icon-person"
-        },
-        text: true,
-        disabled: true
-      }).click(function() {
-        timelapse.getSnaplapse().getSnaplapseViewer().saveSnaplapse();
-        UTIL.addGoogleAnalyticEvent('button', 'click', 'editor-show-share-dialog');
-      });
-      // Create load button
-      $editorModeToolbar.append('<button class="loadTimewarp" title="Load a tour">Load</button>');
-      $("#" + viewerDivId + " .toolbar .loadTimewarp").button({
-        icons: {
-          primary: "ui-icon-folder-open"
-        },
-        text: true
-      }).click(function() {
-        timelapse.getSnaplapse().getSnaplapseViewer().showLoadSnaplapseWindow();
-        UTIL.addGoogleAnalyticEvent('button', 'click', 'editor-show-load-dialog');
-      });
-      // Create delete button
-      $editorModeToolbar.append('<button class="deleteTimetag" title="Delete a keyframe">Del</button>');
-      $("#" + viewerDivId + " .toolbar .deleteTimetag").button({
-        icons: {
-          primary: "ui-icon-minus"
-        },
-        text: true,
-        disabled: true
-      }).click(function() {
-        timelapse.getSnaplapse().getSnaplapseViewer().deleteSelectedKeyframes();
-        UTIL.addGoogleAnalyticEvent('button', 'click', 'editor-delete-keyframe');
-      });
-      // Create new button
-      $editorModeToolbar.append('<button class="newTimewarp" title="Remove all keyframes">Clear</button>');
-      $("#" + viewerDivId + " .toolbar .newTimewarp").button({
-        icons: {
-          primary: "ui-icon-trash"
-        },
-        text: true
-      }).click(function() {
-        UTIL.addGoogleAnalyticEvent('button', 'click', 'editor-show-clear-dialog');
-        var confirmClearAlert = confirm("Are you sure you want to delete all keyframes?");
-        if (!confirmClearAlert)
-          return;
-        timelapse.getSnaplapse().getSnaplapseViewer().loadNewSnaplapse(null);
-        handleEditorModeToolbarChange();
-        UTIL.addGoogleAnalyticEvent('button', 'click', 'editor-clear-keyframes');
-      });
-      // Create play button
-      $editorModeToolbar.append('<button class="playStopTimewarp" title="Play or stop a tour">Play Tour</button>');
-      $("#" + viewerDivId + " .toolbar .playStopTimewarp").button({
-        icons: {
-          primary: "ui-icon-play"
-        },
-        text: true,
-        disabled: true
-      }).click(function() {
-        timelapse.getSnaplapse().getSnaplapseViewer().playStopSnaplapseOnButtonClicked();
-      });
-      // Create mode toggle button and options
-      if (showEditorModeButton) {
-        // Populate the dropdown
-        var editorModeOptions = "";
-        editorModeOptions += '<li><a href="javascript:void(0);">' + getEditorModeText("presentation") + '</a></li>';
-        editorModeOptions += '<li><a href="javascript:void(0);">' + getEditorModeText("tour") + '</a></li>';
-        var $editorModeOptions = $("#" + viewerDivId + " .editorModeOptions").append(editorModeOptions);
-        // Create button
-        $("#" + viewerDivId + " .toolbar .toggleMode").button({
-          icons: {
-            secondary: "ui-icon-triangle-1-s"
-          },
-          text: true
-        }).click(function() {
-          if ($editorModeOptions.is(":visible")) {
-            $editorModeOptions.hide();
-          } else {
-            $editorModeOptions.show().position({
-              my: "center top",
-              at: "center bottom",
-              of: $(this)
-            });
-            $(document).one("mouseup", function(e) {
-              var targetGroup = $(e.target).parents().addBack();
-              if (!targetGroup.is(".toggleMode"))
-                $editorModeOptions.hide();
-            });
-          }
-        });
-        if (startEditorFromPresentationMode)
-          $("#" + viewerDivId + " .toolbar .toggleMode .ui-button-text").text(getEditorModeText("presentation"));
-        else
-          $("#" + viewerDivId + " .toolbar .toggleMode .ui-button-text").text(getEditorModeText("tour"));
-        $editorModeOptions.hide().menu();
-        // Set the dropdown
-        $("#" + viewerDivId + " .toolbar .editorModeOptions li a").click(function() {
-          var selectedModeTxt = $(this).text();
-          if (selectedModeTxt == getEditorModeText("tour")) {
-            setPresentationMode(false);
-            UTIL.addGoogleAnalyticEvent('button', 'click', 'editor-set-to-tour-mode');
-          } else if (selectedModeTxt == getEditorModeText("presentation")) {
-            setPresentationMode(true);
-            UTIL.addGoogleAnalyticEvent('button', 'click', 'editor-set-to-presentation-mode');
-          }
-          $("#" + viewerDivId + " .toolbar .toggleMode span").text(selectedModeTxt);
-        });
-        if (startEditorFromPresentationMode)
-          setPresentationMode(true);
-      } else {
-        $("#" + viewerDivId + " .toolbar .toggleMode").remove();
-        $("#" + viewerDivId + " .toolbar .editorModeOptions").remove();
-      }
-    };
-
-    var getEditorModeText = function(mode) {
-      if (mode == "tour")
-        return "Tour Editor";
-      else if (mode == "presentation")
-        return "Presentation Editor";
-    };
-
-    var setPresentationMode = function(status) {
-      var snaplapseViewer = timelapse.getSnaplapse().getSnaplapseViewer();
-      if (status == true) {
-        startEditorFromPresentationMode = true;
-        $("#" + viewerDivId + " .toolbar .playStopTimewarp").hide();
-        if (snaplapseViewer)
-          snaplapseViewer.setPresentationMode(true);
-      } else {
-        startEditorFromPresentationMode = false;
-        $("#" + viewerDivId + " .toolbar .playStopTimewarp").show();
-        if (snaplapseViewer)
-          snaplapseViewer.setPresentationMode(false);
-      }
-    };
-
-    // Hide the area for editing the timewarp
-    var hideEditorArea = function() {
-      $("#" + settings["composerDiv"]).hide();
-    };
-
-    // Show the area for editing the timewarp
-    var showEditorArea = function() {
-      $("#" + settings["composerDiv"]).show();
-    };
-
-    // Create the annotator toolbar
-    var createAnnotatorModeToolbar = function() {
-      var $annotatorModeToolbar = $("#" + viewerDivId + " .annotatorModeToolbar");
-      // Create add button
-      $annotatorModeToolbar.append('<input type="checkbox" class="addAnnotationCheckbox"/>');
-      $annotatorModeToolbar.append('<label class="addAnnotationLabel" title="Enable/Disable adding annotations (CTRL key or COMMAND key)">Add</label>');
-      var $addAnnotationCheckbox = $("#" + viewerDivId + " .addAnnotationCheckbox");
-      $addAnnotationCheckbox.attr("id", viewerDivId + "_addAnnotationCheckbox");
-      $("#" + viewerDivId + " .addAnnotationLabel").attr("for", viewerDivId + "_addAnnotationCheckbox");
-      $addAnnotationCheckbox.button({
-        icons: {
-          primary: "ui-icon-plus"
-        },
-        text: true
-      }).change(function() {
-        var $hideAnnotationCheckbox = $("#" + viewerDivId + " .hideAnnotationCheckbox");
-        if ($hideAnnotationCheckbox.is(":checked")) {
-          $hideAnnotationCheckbox.prop("checked", false).button("refresh").change();
-        }
-        if ($addAnnotationCheckbox.is(":checked")) {
-          annotator.setCanAddAnnotation(true);
-          if (!$("#" + viewerDivId + " .moveAnnotationCheckbox").is(":checked"))
-            $hideAnnotationCheckbox.button("option", "disabled", true);
-        } else {
-          annotator.setCanAddAnnotation(false);
-          if (!$("#" + viewerDivId + " .moveAnnotationCheckbox").is(":checked"))
-            $hideAnnotationCheckbox.button("option", "disabled", false);
-        }
-      });
-      // Create move button
-      $annotatorModeToolbar.append('<input type="checkbox" class="moveAnnotationCheckbox"/>');
-      $annotatorModeToolbar.append('<label class="moveAnnotationLabel" title="Enable/Disable moving annotations (ALT key)">Move</label>');
-      var $moveAnnotationCheckbox = $("#" + viewerDivId + " .moveAnnotationCheckbox");
-      $moveAnnotationCheckbox.attr("id", viewerDivId + "_moveAnnotationCheckbox");
-      $("#" + viewerDivId + " .moveAnnotationLabel").attr("for", viewerDivId + "_moveAnnotationCheckbox");
-      $moveAnnotationCheckbox.button({
-        icons: {
-          primary: "ui-icon-arrow-4"
-        },
-        text: true,
-        disabled: true
-      }).change(function() {
-        var $hideAnnotationCheckbox = $("#" + viewerDivId + " .hideAnnotationCheckbox");
-        var $addAnnotationCheckbox = $("#" + viewerDivId + " .addAnnotationCheckbox");
-        if ($hideAnnotationCheckbox.is(":checked")) {
-          $hideAnnotationCheckbox.prop("checked", false).button("refresh").change();
-        }
-        if ($moveAnnotationCheckbox.is(":checked")) {
-          annotator.setCanMoveAnnotation(true);
-          if (!$addAnnotationCheckbox.is(":checked"))
-            $hideAnnotationCheckbox.button("option", "disabled", true);
-        } else {
-          annotator.setCanMoveAnnotation(false);
-          if (!$addAnnotationCheckbox.is(":checked"))
-            $hideAnnotationCheckbox.button("option", "disabled", false);
-        }
-      });
-      // Create delete button
-      $annotatorModeToolbar.append('<button class="deleteAnnotation" title="Delete an annotation">Del</button>');
-      $("#" + viewerDivId + " .deleteAnnotation").button({
-        icons: {
-          primary: "ui-icon-minus"
-        },
-        text: true,
-        disabled: true
-      }).click(function() {
-        annotator.deleteSelectedAnnotations();
-        handleAnnotatorModeToolbarChange();
-      });
-      // Create save button
-      $annotatorModeToolbar.append('<button class="saveAnnotation" title="Save annotations">Save</button>');
-      $("#" + viewerDivId + " .saveAnnotation").button({
-        icons: {
-          primary: "ui-icon-folder-collapsed"
-        },
-        text: true,
-        disabled: true
-      }).click(function() {
-        annotator.showSaveAnnotatorWindow();
-      });
-      // Create load button
-      $annotatorModeToolbar.append('<button class="loadAnnotation" title="Load annotations">Load</button>');
-      $("#" + viewerDivId + " .loadAnnotation").button({
-        icons: {
-          primary: "ui-icon-folder-open"
-        },
-        text: true
-      }).click(function() {
-        annotator.showLoadAnnotatorWindow();
-      });
-      // Create clear button
-      $annotatorModeToolbar.append('<button class="clearAnnotation" title="Clear all annotations">Clear</button>');
-      $("#" + viewerDivId + " .clearAnnotation").button({
-        icons: {
-          primary: "ui-icon-trash"
-        },
-        text: true,
-        disabled: true
-      }).click(function() {
-        var confirmClearAlert = confirm("Are you sure you want to clear all annotations?");
-        if (!confirmClearAlert)
-          return;
-        annotator.clearAnnotations();
-      });
-      // Create buttonset
-      $annotatorModeToolbar.buttonset();
-    };
-
-    // Hide the area for annotation
-    var hideAnnotatorArea = function() {
-      if (annotator != undefined) {
-        $("#" + settings["annotatorDiv"]).hide();
-      }
-    };
-
-    // Show the area for annotation
-    var showAnnotatorArea = function() {
-      if (annotator != undefined) {
-        $("#" + settings["annotatorDiv"]).show();
-      }
-    };
-
-    // Change the UI according to different modes
-    var setMode = function(newMode) {
-      var snaplapse = timelapse.getSnaplapse();
-      var fullScreen = timelapse.isFullScreen();
-      var smallGoogleMap = timelapse.getSmallGoogleMap();
-      var enableSmallGoogleMap = timelapse.isSmallGoogleMapEnable();
-      var panoVideo, snaplapseViewer;
-      if (visualizer)
-        panoVideo = visualizer.getPanoVideo();
-      if (snaplapse)
-        snaplapseViewer = timelapse.getSnaplapse().getSnaplapseViewer();
-
-      if (newMode == "player") {
-        mode = newMode;
-        $annotatorModeToolbar.hide();
-        $editorModeToolbar.hide();
-        $toolbar.hide();
-        $controls.css("bottom", "0px");
-        $("#" + viewerDivId + " .fullscreenCheckbox").prop("checked", fullScreen).button("refresh");
-        $("#" + viewerDivId + " .moveAnnotationCheckbox").prop("checked", false).button("refresh").change();
-        if (!fullScreen) {
-          hideAnnotatorArea();
-          hideEditorArea();
-        }
-        if (snaplapse) {
-          snaplapseViewer.hideAnnotationBubble();
-        }
-        if (smallGoogleMap && enableSmallGoogleMap == true) {
-          smallGoogleMap.drawSmallMapBoxColor({
-            r: 219,
-            g: 48,
-            b: 48
-          });
-        }
-        if (mode == "player" && panoVideo != undefined) {
-          panoVideo.pause();
-        }
-      } else if (newMode == "editor") {
-        mode = newMode;
-        $toolbar.show();
-        $controls.css("bottom", toolbarHeight + "px");
-        $annotatorModeToolbar.hide();
-        $editorModeToolbar.show();
-        $("#" + viewerDivId + " .fullscreenCheckbox").prop("checked", fullScreen).button("refresh");
-        $("#" + viewerDivId + " .moveAnnotationCheckbox").prop("checked", false).button("refresh").change();
-        if (!fullScreen) {
-          hideAnnotatorArea();
-          showEditorArea();
-          enableEditorToolbarButtons();
-          handleEditorModeToolbarChange();
-          timelapse.seek_panoVideo(videoset.getCurrentTime());
-          if (!videoset.isPaused() && panoVideo) {
-            panoVideo.play();
-          }
-        } else {
-          disableEditorToolbarButtons();
-        }
-        timelapse.updateTagInfo_locationData();
-      } else if (newMode == "annotator") {
-        mode = newMode;
-        $("#" + viewerDivId + " .controls").show();
-        $("#" + viewerDivId + " .editorModeToolbar").hide();
-        $("#" + viewerDivId + " .annotatorModeToolbar").show();
-        $("#" + viewerDivId + " .fullscreenCheckbox").prop("checked", fullScreen).button("refresh");
-        if (!fullScreen) {
-          hideEditorArea();
-          showAnnotatorArea();
-          timelapse.seek_panoVideo(videoset.getCurrentTime());
-          if (!videoset.isPaused() && panoVideo) {
-            panoVideo.play();
-          }
-        }
-        if (snaplapse) {
-          snaplapseViewer.hideAnnotationBubble();
-        }
-        timelapse.updateTagInfo_locationData();
-      }
-      if (visualizer)
-        visualizer.setMode(mode, fullScreen);
-      if (settings["viewportGeometry"] && settings["viewportGeometry"]["max"])
-        fitToWindow();
-    };
-
-    // Create the mode switching button
-    var createModeSwitchButton = function() {
-      var $viewerModeBtn = $("#" + viewerDivId + " .viewerModeBtn");
-      var $viewerModeCheckbox = $("#" + viewerDivId + " .viewerModeCheckbox");
-      if (editorEnabled) {
-        $viewerModeBtn.attr("id", viewerDivId + "_viewerModeBtn");
-        $viewerModeCheckbox.attr("id", viewerDivId + "_viewerModeCheckbox");
-        $viewerModeBtn.attr("for", viewerDivId + "_viewerModeCheckbox");
-        $viewerModeCheckbox.button({
-          icons: {
-            primary: "ui-icon-note"
-          },
-          text: true
-        }).click(function() {
-          if ($viewerModeCheckbox.is(":checked")) {
-            setMode("editor");
-            UTIL.addGoogleAnalyticEvent('button', 'click', 'viewer-set-to-editor-mode');
-          } else {
-            setMode("player");
-            UTIL.addGoogleAnalyticEvent('button', 'click', 'viewer-set-to-player-mode');
-          }
-        });
-      } else {
-        $viewerModeBtn.remove();
-        $viewerModeCheckbox.remove();
-      }
-    };
-
-    var shareView = function() {
-      var $shareUrl = $("#" + viewerDivId + " .shareurl");
-      var parentUrl = "";
-      if (window.top === window.self) {
-        // no iframe
-        parentUrl = window.location.href.split("#")[0];
-      } else {
-        // inside iframe
-        parentUrl = document.referrer.split("#")[0];
-      }
-      $shareUrl.val(parentUrl + timelapse.getShareView()).focus(function() {
-        $(this).select();
-      }).click(function() {
-        $(this).select();
-      }).mouseup(function(e) {
-        e.preventDefault();
-      });
-      $("#" + viewerDivId + " .shareView").dialog("open");
-    };
-
-    function doHelpOverlay() {
-      $("#" + viewerDivId + " .instructions").fadeIn(200);
-
-      if ($playbackButton.hasClass('pause')) {
-        timelapse.handlePlayPause();
-        $playbackButton.removeClass("pause").addClass("play from_help");
-      }
-    }
-
-    function removeHelpOverlay() {
-      $("#" + viewerDivId + " .instructions").fadeOut(200);
-
-      if ($playbackButton.hasClass('from_help')) {
-        timelapse.handlePlayPause();
-        $playbackButton.addClass("pause").removeClass("play from_help");
-      }
-    }
-
-    function populateLayers() {
-      var numLayers = tmJSON["layers"].length;
-      var html = "";
-      for (var i = 0; i < numLayers; i++) {
-        html += "<li data-index=" + i + "><img src=\"" + tmJSON["layers"][i]["tn-path"] + "\" " + "alt='layer' width='45' height='45' ><br/><span style='font-size:small; text-align:center; display:block; margin: -5px 0px 0px 0px !important;'>" + tmJSON["layers"][i]["description"] + "</span></li>";
-      }
-      $("#" + viewerDivId + " .layerChoices").append(html);
-
-      $("#" + viewerDivId + " .layerChoices li").bind("click", function() {
-        timelapse.switchLayer($(this).attr("data-index"));
-      });
-    }
-
-    function zoomIn() {
-      var val = Math.min($("#" + viewerDivId + " .zoomSlider").slider("value") + 0.01, 1);
-      timelapse.setScaleFromSlider(val);
-    }
-
-    function zoomOut() {
-      var val = Math.max($("#" + viewerDivId + " .zoomSlider").slider("value") - 0.01, 0);
-      timelapse.setScaleFromSlider(val);
-    }
-
-    function createZoomSlider($zoom) {
+    var createZoomSlider = function($zoom) {
       $zoom.append('<div class="zoomSlider" title="Click to zoom"></div>');
       var $zoomSlider = $("#" + viewerDivId + " .zoomSlider");
       $zoomSlider.slider({
@@ -997,7 +444,185 @@ if (!org.gigapan.timelapse.Timelapse) {
       });
 
       $("#" + viewerDivId + " .zoomSlider .ui-slider-handle").attr("title", "Drag to zoom");
-    }
+    };
+
+    var createSpeedControl = function() {
+      // Speeds < 0.5x in Safari, even if emulated, result in broken playback, so do not include the "slow" (0.25x) speed option
+      if (isSafari)
+        $slowSpeed.remove();
+
+      $fastSpeed.button({
+        text: true
+      }).click(function() {
+        timelapse.setPlaybackRate(0.5, null, true);
+        $controls.prepend($mediumSpeed);
+        $mediumSpeed.stop(true, true).show();
+        $fastSpeed.slideUp(300);
+        UTIL.addGoogleAnalyticEvent('button', 'click', 'viewer-set-speed-to-medium');
+      });
+
+      $mediumSpeed.button({
+        text: true
+      }).click(function() {
+        // Due to playback issues, we are not allowing the "slow" option for Safari users
+        if (isSafari) {
+          timelapse.setPlaybackRate(1, null, true);
+          $controls.prepend($fastSpeed);
+          $fastSpeed.stop(true, true).show();
+          UTIL.addGoogleAnalyticEvent('button', 'click', 'viewer-set-speed-to-fast');
+        } else {
+          timelapse.setPlaybackRate(0.25, null, true);
+          $controls.prepend($slowSpeed);
+          $slowSpeed.stop(true, true).show();
+          UTIL.addGoogleAnalyticEvent('button', 'click', 'viewer-set-speed-to-slow');
+        }
+        $mediumSpeed.slideUp(300);
+      });
+
+      $slowSpeed.button({
+        text: true
+      }).click(function() {
+        timelapse.setPlaybackRate(1, null, true);
+        $controls.prepend($fastSpeed);
+        $fastSpeed.stop(true, true).show();
+        $slowSpeed.slideUp(300);
+        UTIL.addGoogleAnalyticEvent('button', 'click', 'viewer-set-speed-to-fast');
+      });
+
+      timelapse.addPlaybackRateChangeListener(function(rate, skipUpdateUI) {
+        if (!skipUpdateUI) {
+          var snaplapse = timelapse.getSnaplapse();
+          var snaplapseForSharedTour = timelapse.getSnaplapseForSharedTour();
+          if ((snaplapse && snaplapse.isPlaying()) || (snaplapseForSharedTour && snaplapseForSharedTour.isPlaying()))
+            return;
+          $("#" + viewerDivId + " .toggleSpeed").hide();
+          if (rate >= 1) {
+            $fastSpeed.show();
+            $mediumSpeed.hide();
+            $slowSpeed.hide();
+          } else if ((rate < 1 && rate >= 0.5) || (isSafari && rate < 0.5)) {
+            $mediumSpeed.show();
+            $fastSpeed.hide();
+            $slowSpeed.hide();
+          } else {
+            $slowSpeed.show();
+            $mediumSpeed.hide();
+            $fastSpeed.hide();
+          }
+        }
+      });
+
+      // Since the call to set the playback rate when first creating the timelapse
+      // happens before the UI is setup, we need to run it again below to properly
+      // update the UI.
+      var playbackRate = timelapse.getPlaybackRate();
+      if (playbackRate >= 1) {
+        $fastSpeed.show();
+      } else if (playbackRate < 1 && playbackRate >= 0.5) {
+        $mediumSpeed.show();
+      } else {
+        $slowSpeed.show();
+      }
+    };
+
+    // Change the UI according to different modes
+    var setMode = function(newMode) {
+      var snaplapse = timelapse.getSnaplapse();
+      var smallGoogleMap = timelapse.getSmallGoogleMap();
+      var enableSmallGoogleMap = timelapse.isSmallGoogleMapEnable();
+      var panoVideo, snaplapseViewer;
+      if (visualizer)
+        panoVideo = visualizer.getPanoVideo();
+      if (snaplapse)
+        snaplapseViewer = timelapse.getSnaplapse().getSnaplapseViewer();
+
+      if (newMode == "player") {
+        mode = newMode;
+        $("#" + settings["composerDiv"]).hide();
+        if (snaplapseViewer)
+          snaplapseViewer.hideAnnotationBubble();
+        if (smallGoogleMap && enableSmallGoogleMap == true) {
+          smallGoogleMap.drawSmallMapBoxColor({
+            r: 219,
+            g: 48,
+            b: 48
+          });
+        }
+        if (panoVideo)
+          panoVideo.pause();
+      } else if (newMode == "editor") {
+        mode = newMode;
+        $("#" + settings["composerDiv"]).show();
+        timelapse.seek_panoVideo(videoset.getCurrentTime());
+        if (!videoset.isPaused() && panoVideo)
+          panoVideo.play();
+        timelapse.updateTagInfo_locationData();
+      }
+      if (visualizer)
+        visualizer.setMode(mode, false);
+    };
+    this.setMode = setMode;
+
+    var shareView = function() {
+      var $shareUrl = $("#" + viewerDivId + " .shareurl");
+      var parentUrl = "";
+      if (window.top === window.self) {
+        // no iframe
+        parentUrl = window.location.href.split("#")[0];
+      } else {
+        // inside iframe
+        parentUrl = document.referrer.split("#")[0];
+      }
+      $shareUrl.val(parentUrl + timelapse.getShareView()).focus(function() {
+        $(this).select();
+      }).click(function() {
+        $(this).select();
+      }).mouseup(function(e) {
+        e.preventDefault();
+      });
+      $("#" + viewerDivId + " .shareView").dialog("open");
+    };
+
+    var doHelpOverlay = function() {
+      $("#" + viewerDivId + " .instructions").fadeIn(200);
+
+      if ($playbackButton.hasClass('pause')) {
+        timelapse.handlePlayPause();
+        $playbackButton.removeClass("pause").addClass("play from_help");
+      }
+    };
+
+    var removeHelpOverlay = function() {
+      $("#" + viewerDivId + " .instructions").fadeOut(200);
+
+      if ($playbackButton.hasClass('from_help')) {
+        timelapse.handlePlayPause();
+        $playbackButton.addClass("pause").removeClass("play from_help");
+      }
+    };
+
+    var populateLayers = function() {
+      var numLayers = tmJSON["layers"].length;
+      var html = "";
+      for (var i = 0; i < numLayers; i++) {
+        html += "<li data-index=" + i + "><img src=\"" + tmJSON["layers"][i]["tn-path"] + "\" " + "alt='layer' width='45' height='45' ><br/><span style='font-size:small; text-align:center; display:block; margin: -5px 0px 0px 0px !important;'>" + tmJSON["layers"][i]["description"] + "</span></li>";
+      }
+      $("#" + viewerDivId + " .layerChoices").append(html);
+
+      $("#" + viewerDivId + " .layerChoices li").bind("click", function() {
+        timelapse.switchLayer($(this).attr("data-index"));
+      });
+    };
+
+    var zoomIn = function() {
+      var val = Math.min($("#" + viewerDivId + " .zoomSlider").slider("value") + 0.01, 1);
+      timelapse.setScaleFromSlider(val);
+    };
+
+    var zoomOut = function() {
+      var val = Math.max($("#" + viewerDivId + " .zoomSlider").slider("value") - 0.01, 0);
+      timelapse.setScaleFromSlider(val);
+    };
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////
     //
@@ -1010,81 +635,6 @@ if (!org.gigapan.timelapse.Timelapse) {
     this.isShowMainControls = function() {
       return showMainControls;
     };
-
-    // Change the status of the editor toolbar
-    var handleAnnotatorModeToolbarChange = function() {
-      var $Annotationtems = $("#" + settings["annotatorDiv"] + " .annotation_list > .ui-selectee");
-      var numItems = $Annotationtems.size();
-      if (numItems > 0) {
-        $("#" + viewerDivId + " .deleteAnnotation").button("option", "disabled", false);
-        $("#" + viewerDivId + " .saveAnnotation").button("option", "disabled", false);
-        $("#" + viewerDivId + " .clearAnnotation").button("option", "disabled", false);
-        $("#" + viewerDivId + " .moveAnnotationCheckbox").button("option", "disabled", false);
-      } else {
-        $("#" + viewerDivId + " .deleteAnnotation").button("option", "disabled", true);
-        $("#" + viewerDivId + " .saveAnnotation").button("option", "disabled", true);
-        $("#" + viewerDivId + " .clearAnnotation").button("option", "disabled", true);
-        $("#" + viewerDivId + " .moveAnnotationCheckbox").button("option", "disabled", true);
-      }
-    };
-    this.handleAnnotatorModeToolbarChange = handleAnnotatorModeToolbarChange;
-
-    // Change the status of the editor toolbar
-    var handleEditorModeToolbarChange = function() {
-      var $keyframeItems = $("#" + settings["composerDiv"] + " .snaplapse_keyframe_list").children();
-      var numItems = $keyframeItems.size();
-      if (numItems >= 1) {
-        $("#" + viewerDivId + " .deleteTimetag").button("option", "disabled", false);
-        $("#" + viewerDivId + " .saveTimewarp").button("option", "disabled", false);
-        $("#" + viewerDivId + " .newTimewarp").button("option", "disabled", false);
-      } else {
-        $("#" + viewerDivId + " .deleteTimetag").button("option", "disabled", true);
-        $("#" + viewerDivId + " .saveTimewarp").button("option", "disabled", true);
-        $("#" + viewerDivId + " .newTimewarp").button("option", "disabled", true);
-      }
-      if (numItems >= 2) {
-        $("#" + viewerDivId + " .playStopTimewarp").button("option", "disabled", false);
-      } else {
-        $("#" + viewerDivId + " .playStopTimewarp").button("option", "disabled", true);
-      }
-    };
-    this.handleEditorModeToolbarChange = handleEditorModeToolbarChange;
-
-    var handleFitToWindowChange = function(isFitToWindow) {
-      var panoVideo;
-      if (visualizer)
-        panoVideo = visualizer.getPanoVideo();
-      if (isFitToWindow) {
-        if (mode == "editor") {
-          if (panoVideo) {
-            panoVideo.pause();
-          }
-        } else if (mode == "annotator") {
-          if (panoVideo)
-            panoVideo.pause();
-        }
-      } else {
-        if (mode == "editor") {
-          if (!timelapse.getSnaplapse().isPlaying()) {
-            enableEditorToolbarButtons();
-            handleEditorModeToolbarChange();
-          }
-          timelapse.seek_panoVideo(videoset.getCurrentTime());
-          if (!videoset.isPaused() && panoVideo) {
-            panoVideo.play();
-          }
-          showEditorArea();
-        } else if (mode == "annotator") {
-          showAnnotatorArea();
-          timelapse.seek_panoVideo(videoset.getCurrentTime());
-          if (!videoset.isPaused() && panoVideo)
-            panoVideo.play();
-        }
-      }
-      if (visualizer)
-        visualizer.setMode(mode, isFitToWindow);
-    };
-    this.handleFitToWindowChange = handleFitToWindowChange;
 
     var _toggleMainControls = function() {
       showMainControls = !showMainControls;
@@ -1106,48 +656,25 @@ if (!org.gigapan.timelapse.Timelapse) {
     };
     this.togglePanControls = _togglePanControls;
 
-    // Disable buttons in editor full screen mode
-    var disableEditorToolbarButtons = function() {
-      $("#" + viewerDivId + " .addTimetag").button("option", "disabled", true);
-      $("#" + viewerDivId + " .deleteTimetag").button("option", "disabled", true);
-      $("#" + viewerDivId + " .saveTimewarp").button("option", "disabled", true);
-      $("#" + viewerDivId + " .loadTimewarp").button("option", "disabled", true);
-      $("#" + viewerDivId + " .newTimewarp").button("option", "disabled", true);
-      $("#" + viewerDivId + " .setTimewarp").button("option", "disabled", true);
-      if (showEditorModeButton)
-        $("#" + viewerDivId + " .toggleMode").button("option", "disabled", true);
-    };
-    this.disableEditorToolbarButtons = disableEditorToolbarButtons;
-
-    // Enable buttons from editor full screen mode
-    var enableEditorToolbarButtons = function() {
-      $("#" + viewerDivId + " .addTimetag").button("option", "disabled", false);
-      $("#" + viewerDivId + " .deleteTimetag").button("option", "disabled", false);
-      $("#" + viewerDivId + " .saveTimewarp").button("option", "disabled", false);
-      $("#" + viewerDivId + " .loadTimewarp").button("option", "disabled", false);
-      $("#" + viewerDivId + " .newTimewarp").button("option", "disabled", false);
-      $("#" + viewerDivId + " .setTimewarp").button("option", "disabled", false);
-      if (showEditorModeButton)
-        $("#" + viewerDivId + " .toggleMode").button("option", "disabled", false);
-    };
-    this.enableEditorToolbarButtons = enableEditorToolbarButtons;
-
     var fitToWindow = function() {
       var newViewportWidth, newViewportHeight;
       newViewportWidth = window.innerWidth - 2;
       // Extra 2px for the borders
-      newViewportHeight = window.innerHeight;
-      // Extra 1px for the borders
+      newViewportHeight = window.innerHeight - 2;
+      // Extra 2px for the borders
       var scaleBar = timelapse.getScaleBar();
       if (scaleBar)
         scaleBar.updateVideoSize();
 
+      var $toolbar = $("#" + settings["composerDiv"] + " .toolbar");
       var $snaplapseKeyframeContainer = $("#" + settings["composerDiv"] + " .snaplapse_keyframe_container");
       var $presentationSliderKeyframeContainer = $("#" + settings["presentationSliderDiv"] + " .snaplapse_keyframe_container");
 
       // 175 is the height of the keyframe container
-      var extraHeight = 175 + toolbarHeight;
-      newViewportHeight -= extraHeight;
+      // 41 is the height of toolbar
+      var keyframeContainerHeight = settings["composerDiv"] ? 175 : 0;
+      var toolbarHeight = settings["composerDiv"] ? 41 : 0;
+      newViewportHeight -= keyframeContainerHeight + toolbarHeight;
 
       // Ensure minimum dimensions to not break controls
       if (newViewportWidth < minViewportWidth)
@@ -1155,11 +682,14 @@ if (!org.gigapan.timelapse.Timelapse) {
       if (newViewportHeight < minViewportHeight)
         newViewportHeight = minViewportHeight;
 
-      $snaplapseKeyframeContainer.css({
-        "top": newViewportHeight + toolbarHeight,
+      $toolbar.css({
+        "top": newViewportHeight + 2,
         "width": newViewportWidth
       });
-
+      $snaplapseKeyframeContainer.css({
+        "top": newViewportHeight + toolbarHeight + 2,
+        "width": newViewportWidth
+      });
       $presentationSliderKeyframeContainer.css({
         "top": newViewportHeight + 6,
         "width": "inherit",
@@ -1169,7 +699,8 @@ if (!org.gigapan.timelapse.Timelapse) {
       timelapse.fitVideoToViewport(newViewportWidth, newViewportHeight);
       window.scrollTo(0, 0);
 
-      handleFitToWindowChange(true);
+      if (visualizer)
+        visualizer.setMode(mode, false);
       timelapse.updateTagInfo_locationData();
     };
     this.fitToWindow = fitToWindow;
@@ -1218,25 +749,14 @@ if (!org.gigapan.timelapse.Timelapse) {
     //
     // Constructor code
     //
-    createTimelineSlider();
-    createToolbar();
+    createSideToolBar();
 
-    if (!showZoomControls)
-      $("#" + viewerDivId + " .zoom").hide();
-
-    if (!showPanControls)
-      $("#" + viewerDivId + " .pan").hide();
-
-    if (!showMainControls || useCustomUI) {
-      $("#" + viewerDivId + " .controls").hide();
-      $("#" + viewerDivId + " .timelineSliderFiller").hide();
+    if (!useCustomUI)
+      createMainUI();
+    else {
+      $("#" + viewerDivId + " .controls").remove();
+      $("#" + viewerDivId + " .shareView").remove();
     }
-
-    if (showLogoOnDefaultUI)
-      $("#" + viewerDivId + " .createLabLogo").show();
-
-    if (!showHomeBtn)
-      $("#" + viewerDivId + " .zoomall").hide();
 
     if (settings["viewportGeometry"] && settings["viewportGeometry"]["max"]) {
       // We already add a resizing handler in customUI.js, so don't add it again for landsat and modis.
