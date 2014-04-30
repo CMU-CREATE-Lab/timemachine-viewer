@@ -435,57 +435,6 @@ body, html {
   overflow: visible;
 }
 
-.carousel {
-  margin: 0 0 20px 10px;
-}
-
-.layerSlider {
-  margin-left: 560px;
-}
-
-.carousel a.prev, .carousel a.next {
-  display: block;
-  float: left;
-  width: 30px;
-  height: 40px;
-  text-decoration: none;
-  background: url("../images/prev.jpg") left 15px no-repeat;
-}
-
-.carousel a.next {
-  height: 50px;
-  position: absolute;
-  margin: -78px 0px 0px 218px;
-  background: url("../images/next.jpg") right 23px no-repeat;
-}
-
-.carousel a.next:hover {
-  background-image: url("../images/next.jpg");
-}
-
-.carousel a.prev:hover {
-  background-image: url("../images/prev.jpg");
-}
-
-.carousel a:hover, .carousel a:active {
-  border: none;
-  outline: none;
-}
-
-.carousel ul {
-  margin: 0;
-}
-
-.carousel li img, .carousel li p {
-  background-color: #fff;
-  margin: 5px;
-  width: 45px;
-}
-
-.jCarouselLite img {
-  cursor: pointer;
-}
-
 .shareurl {
   width: 600px;
   height: 32px;

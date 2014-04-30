@@ -236,7 +236,6 @@ if (!window['$']) {
     var tmJSON;
     var datasetJSON = null;
     var videoDivId;
-    var playerSize;
     var datasetIndex;
     var datasetPath;
     var tileRootPath;
@@ -2408,23 +2407,6 @@ if (!window['$']) {
       return "{l:" + getTileidxLevel(t) + ",c:" + getTileidxColumn(t) + ",r:" + getTileidxRow(t) + "}";
     };
 
-    // TODO: Need to make sure viewport actually changes size.
-    // Need to change logic in fitVideoToViewport()
-    this.switchSize = function(index) {
-      playerSize = index;
-      var newIndex = datasetLayer * tmJSON["sizes"].length + playerSize;
-      validateAndSetDatasetIndex(newIndex);
-      loadTimelapseCallback(tmJSON);
-      $("#" + viewerDivId + " .playerSizeText").text(tmJSON["datasets"][datasetIndex]["name"]);
-    };
-
-    this.switchLayer = function(layerNum) {
-      var newIndex = layerNum * tmJSON["sizes"].length + playerSize;
-      datasetLayer = layerNum;
-      validateAndSetDatasetIndex(newIndex);
-      loadTimelapseCallback(tmJSON);
-    };
-
     function validateAndSetDatasetIndex(newDatasetIndex) {
       // Make sure the datasetIndex is a valid number, and within the range of datasets for this timelapse.
       if (!UTIL.isNumber(newDatasetIndex)) {
@@ -2720,6 +2702,14 @@ if (!window['$']) {
       };
     };
 
+    this.switchLayer = function(layerNum) {
+      var newIndex = layerNum * tmJSON["sizes"].length;
+      datasetLayer = layerNum;
+      loadTimelapseWithPreviousViewAndTime = true;
+      validateAndSetDatasetIndex(newIndex);
+      loadTimelapseCallback(tmJSON);
+    };
+
     var loadTimelapse = function(url, desiredView, desiredTime, preserveCurrentViewAndTime) {
       showSpinner(viewerDivId);
       settings["url"] = url;
@@ -2751,15 +2741,8 @@ if (!window['$']) {
       // Assume tiles and json are on same host
       tileRootPath = settings["url"];
 
-      if ( typeof (playerSize) === 'undefined') {
-        for (var i = 0; i < tmJSON["sizes"].length; i++) {
-          playerSize = i;
-          if (settings["playerSize"] && tmJSON["sizes"][i].toLowerCase() == settings["playerSize"].toLowerCase())
-            break;
-        }
-      }
       // layer + size = index of dataset
-      validateAndSetDatasetIndex(datasetLayer * tmJSON["sizes"].length + playerSize);
+      validateAndSetDatasetIndex(datasetLayer * tmJSON["sizes"].length);
       var path = tmJSON["datasets"][datasetIndex]['id'] + "/";
       datasetPath = settings["url"] + path;
       UTIL.ajax("json", settings["url"], path + "r.json" + getMetadataCacheBreaker(), loadVideoSetCallback);

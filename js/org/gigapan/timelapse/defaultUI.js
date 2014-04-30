@@ -229,17 +229,6 @@ if (!org.gigapan.timelapse.Timelapse) {
         $viewerModeBtn.remove();
         $viewerModeCheckbox.remove();
       }
-      // Layers for a dataset
-      if (tmJSON["layers"]) {
-        $("#" + viewerDivId + " .layerSlider").show();
-        populateLayers();
-        $("#" + viewerDivId + " .layerSlider .jCarouselLite").jCarouselLite({
-          btnNext: "#" + viewerDivId + " .layerSlider .next",
-          btnPrev: "#" + viewerDivId + " .layerSlider .prev",
-          circular: true,
-          visible: 3.5
-        });
-      }
 
       createTimelineSlider();
       createSpeedControl();
@@ -599,19 +588,6 @@ if (!org.gigapan.timelapse.Timelapse) {
         timelapse.handlePlayPause();
         $playbackButton.addClass("pause").removeClass("play from_help");
       }
-    };
-
-    var populateLayers = function() {
-      var numLayers = tmJSON["layers"].length;
-      var html = "";
-      for (var i = 0; i < numLayers; i++) {
-        html += "<li data-index=" + i + "><img src=\"" + tmJSON["layers"][i]["tn-path"] + "\" " + "alt='layer' width='45' height='45' ><br/><span style='font-size:small; text-align:center; display:block; margin: -5px 0px 0px 0px !important;'>" + tmJSON["layers"][i]["description"] + "</span></li>";
-      }
-      $("#" + viewerDivId + " .layerChoices").append(html);
-
-      $("#" + viewerDivId + " .layerChoices li").bind("click", function() {
-        timelapse.switchLayer($(this).attr("data-index"));
-      });
     };
 
     var zoomIn = function() {

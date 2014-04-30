@@ -121,6 +121,13 @@ function setupPostMessageHandlers() {
     if (timelapse && unsafe_data)
       timelapse.loadSharedDataFromUnsafeURL(unsafe_data.tourURL, unsafe_data.playOnLoad);
   });
+
+  // Handles switching layers
+  pm.bind("timemachine-switch-layer", function(unsafe_layerNum) {
+    var layerNum = parseInt(unsafe_layerNum);
+    if (timelapse && layerNum)
+      timelapse.switchLayer(layerNum);
+  });
 }
 
 // Handles the sending of cross-domain iframe requests.
