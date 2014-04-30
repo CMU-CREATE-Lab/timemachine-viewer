@@ -393,7 +393,7 @@ if (!org.gigapan.timelapse.snaplapse) {
 
       // Handle description box
       if (uiEnabled && !usePresentationSlider)
-        $("#" + viewerDivId + " .snaplapse-annotation-description").css("bottom", "62px");
+        setSubtitlePosition("up");
 
       // Editor should be placed on top of the presentation slider
       if (!usePresentationSlider)
@@ -975,7 +975,7 @@ if (!org.gigapan.timelapse.snaplapse) {
               hideCustomUI();
           }
 
-          $("#" + viewerDivId + " .snaplapse-annotation-description").css("bottom", "15px");
+          setSubtitlePosition("down");
           $("#" + viewerDivId + ' .help').removeClass("enabled").addClass("disabled");
           $("#" + viewerDivId + " .instructions").hide();
           $("#" + viewerDivId + " .instructions").removeClass('on');
@@ -988,7 +988,9 @@ if (!org.gigapan.timelapse.snaplapse) {
           // Remove masks
           $("#" + viewerDivId + " .snaplapsePlayingMaskViewer").remove();
           $("#" + composerDivId + " .snaplapsePlayingMask").remove();
-          $("#" + viewerDivId + " .snaplapse-annotation-description").css("bottom", "62px");
+
+          if (editorEnabled)
+            setSubtitlePosition("up");
 
           if (uiEnabled) {
             // If users play tours from the editor
@@ -1147,6 +1149,7 @@ if (!org.gigapan.timelapse.snaplapse) {
             $("#" + viewerDivId + " .tourLoadOverlay").show();
             $("#" + viewerDivId + " .tourLoadOverlayPlay").show();
           }
+          setSubtitlePosition("down");
           $("#" + settings["presentationSliderDiv"]).hide();
           if (useCustomUI) {
             hideCustomUI();
@@ -1163,6 +1166,15 @@ if (!org.gigapan.timelapse.snaplapse) {
       return true;
     };
     this.loadNewSnaplapse = loadNewSnaplapse;
+
+    var setSubtitlePosition = function(position) {
+      var positionBottom;
+      if (position == "up")
+        positionBottom = 62;
+      else if (position == "down")
+        positionBottom = 15;
+      $("#" + viewerDivId + " .snaplapse-annotation-description").css("bottom", positionBottom + "px");
+    }
 
     var setDefaultUIToPlayerMode = function() {
       var $viewerModeCheckbox = $("#" + viewerDivId + " .viewerModeCheckbox");

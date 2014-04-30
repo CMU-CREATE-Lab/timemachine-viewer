@@ -170,12 +170,7 @@ if (!window['$']) {
     var visualizer;
 
     // DOM elements
-    var Tslider1Full;
-    var Tslider1Color;
     var panoVideo;
-    var $subtitle_DOM;
-    var subtitle_DOM;
-    var subtitle_DOM_child;
     var dataPanesId;
 
     // Canvas version
@@ -2652,21 +2647,7 @@ if (!window['$']) {
       }
 
       setupSliderHandlers(viewerDivId);
-      cacheAndInitializeElements();
     }
-
-    // TODO: factor out most of this map related code
-    // Cache and initialize DOM elements
-    var cacheAndInitializeElements = function() {
-      Tslider1Full = $("#Tslider1");
-      Tslider1Color = Tslider1Full.find(" .ui-slider-range.ui-widget-header.ui-slider-range-max").get(0);
-      Tslider1Full = Tslider1Full.get(0);
-      if (snaplapse) {
-        $subtitle_DOM = $("#" + viewerDivId + " .snaplapse-annotation-description");
-        subtitle_DOM = $subtitle_DOM.get(0);
-        subtitle_DOM_child = subtitle_DOM.children[0];
-      }
-    };
 
     var computeViewportGeometry = function(data) {
       if (viewportGeometry.max == false) {
