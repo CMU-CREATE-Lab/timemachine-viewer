@@ -112,6 +112,7 @@ if (!org.gigapan.timelapse.snaplapse) {
     var showFullScreenBtn = ( typeof (settings["showFullScreenBtn"]) == "undefined") ? true : settings["showFullScreenBtn"];
     var showEditorModeButton = ( typeof (settings["showEditorModeButton"]) == "undefined") ? true : settings["showEditorModeButton"];
     var showAddressLookup = ( typeof (settings["showAddressLookup"]) == "undefined") ? false : settings["showAddressLookup"];
+    var disableKeyframeTitle = ( typeof (settings["disableKeyframeTitle"]) == "undefined") ? false : settings["disableKeyframeTitle"];
 
     // Flags
     var didOnce = false;
@@ -460,9 +461,15 @@ if (!org.gigapan.timelapse.snaplapse) {
       }).parent().appendTo($("#" + composerDivId));
 
       // Create the subtitle dialog
+      var dialogHeight = disableKeyframeTitle ? 210 : 250;
+      if (disableKeyframeTitle) {
+        $(".keyframe_title_container").hide();
+        $(".createSubtitle_dialog_txt").css("top", "11px");
+        $(".subtitle_textarea").css("top", "31px");
+      }
       $createSubtitle_dialog.dialog({
         autoOpen: false,
-        height: 250,
+        height: dialogHeight,
         width: 310,
         modal: true,
         resizable: false,
@@ -672,6 +679,10 @@ if (!org.gigapan.timelapse.snaplapse) {
         type: "textbox",
         "placeholder": "Enter the name of a place to zoom to..."
       }).addClass("addressLookup");
+
+      if (!showEditorModeButton)
+        $addressLookupElem.css("left", "20px");
+
       $toolbar.append($addressLookupElem);
 
       var autocomplete = new google.maps.places.Autocomplete($addressLookupElem.get(0));
@@ -1175,7 +1186,6 @@ if (!org.gigapan.timelapse.snaplapse) {
         positionBottom = 15;
       $("#" + viewerDivId + " .snaplapse-annotation-description").css("bottom", positionBottom + "px");
     }
-
     var setDefaultUIToPlayerMode = function() {
       var $viewerModeCheckbox = $("#" + viewerDivId + " .viewerModeCheckbox");
       if ($viewerModeCheckbox.is(":checked"))
@@ -1276,7 +1286,8 @@ if (!org.gigapan.timelapse.snaplapse) {
           content += '      	<img id="' + thumbnailId + '" width="' + KEYFRAME_THUMBNAIL_WIDTH + '" height="' + KEYFRAME_THUMBNAIL_HEIGHT + '" class="snaplapse_keyframe_list_item_thumbnail"></img>';
         else
           content += '      	<canvas id="' + thumbnailId + '" width="' + KEYFRAME_THUMBNAIL_WIDTH + '" height="' + KEYFRAME_THUMBNAIL_HEIGHT + '" class="snaplapse_keyframe_list_item_thumbnail"></canvas>';
-        content += '				<div id="' + titleId + '" class="snaplapse_keyframe_list_item_title"></div>';
+        if (!disableKeyframeTitle)
+          content += '				<div id="' + titleId + '" class="snaplapse_keyframe_list_item_title"></div>';
         content += '			</div>';
         content += '      <div id="' + buttonContainerId + '" class="keyframe-button-container">';
         content += '        <button id="' + updateButtonId + '" title="Update this keyframe to current view">&nbsp</button>';

@@ -120,6 +120,7 @@ if (!Math.uuid) {
     // Settings
     var useCustomUI = timelapse.useCustomUI();
     var usePresentationSlider = (mode == "presentation") ? true : false;
+    var disableKeyframeTitle = ( typeof (settings["disableKeyframeTitle"]) == "undefined") ? false : settings["disableKeyframeTitle"];
 
     // Flags
     var isCurrentlyPlaying = false;
@@ -133,7 +134,10 @@ if (!Math.uuid) {
     var loadJSON;
     var loadKeyframesLength;
     var rootAppURL = org.gigapan.Util.getRootAppURL();
-    var TOUR_SHARING_VERSION = 4;
+
+    // Because the viewer on Google Earth Engine is not updated yet,
+    // we need to use disableKeyframeTitle flag for backward compatibility.
+    var TOUR_SHARING_VERSION = disableKeyframeTitle ? 3 : 4;
 
     // Loop Dwell
     var doLoopDwellTimeout;
@@ -452,8 +456,10 @@ if (!Math.uuid) {
           encoder.write_udecimal(zoom, 2);
           // Keyframe description
           encoder.write_string(desiredKeyframes[i]['unsafe_string_description']);
-          // Keyframe title
-          encoder.write_string(desiredKeyframes[i]['unsafe_string_frameTitle']);
+          if (!disableKeyframeTitle) {
+            // Keyframe title
+            encoder.write_string(desiredKeyframes[i]['unsafe_string_frameTitle']);
+          }
         }
         // Tour title
         var title = $("#" + composerDivId + " .saveTimewarpWindow_tourTitleInput").val();
