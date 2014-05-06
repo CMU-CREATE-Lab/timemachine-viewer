@@ -200,6 +200,7 @@ if (!window['$']) {
     var loadTimelapseWithPreviousViewAndTime = false;
     var didHashChangeFirstTimeOnLoad = false;
     var didFirstTimeOnLoad = false;
+    var doNotResetViewerSize = false;
 
     // Viewer
     var viewerType;
@@ -2705,6 +2706,7 @@ if (!window['$']) {
       var newIndex = layerNum * tmJSON["sizes"].length;
       datasetLayer = layerNum;
       loadTimelapseWithPreviousViewAndTime = true;
+      doNotResetViewerSize = true;
       validateAndSetDatasetIndex(newIndex);
       loadTimelapseCallback(tmJSON);
     };
@@ -2783,7 +2785,13 @@ if (!window['$']) {
       currentIdx = null;
       onPanoLoadSuccessCallback(data, null, true);
       var newViewportGeometry = computeViewportGeometry(data);
-      fitVideoToViewport(newViewportGeometry.width, newViewportGeometry.height);
+
+      if (!doNotResetViewerSize)
+        fitVideoToViewport(newViewportGeometry.width, newViewportGeometry.height);
+      else {
+        _warpTo(view);
+        doNotResetViewerSize = false;
+      }
 
       // The UI is ready now and we can display it
       $("#" + viewerDivId).css("visibility", "visible");
