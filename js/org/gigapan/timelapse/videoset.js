@@ -175,9 +175,11 @@ if (!window['$']) {
     var isFirefox = UTIL.isFirefox();
     var doChromeSeekableHack = timelapse.doChromeSeekableHack();
     var doChromeBufferedHack = timelapse.doChromeBufferedHack();
+    var doChromeCacheBreaker = timelapse.doChromeCacheBreaker();
     var spinnerTimeoutId;
     var videoIsSeekingIntervalCheck;
     var browserSupportsPlaybackRate = UTIL.playbackRateSupported();
+    var activeVideoSrcList = {};
 
     ////////////////////////
     //
@@ -359,6 +361,18 @@ if (!window['$']) {
         };
       }
 
+      // New workaround for the Chrome cache loading bug.
+      // https://code.google.com/p/chromium/issues/detail?id=31014
+      if (isChrome && doChromeCacheBreaker) {
+        var creationTime = (new Date()).getTime();
+        if (activeVideoSrcList[src]) {
+          UTIL.log("Video found in local storage, adding cache breaker: " + src);
+          src = src + "?time=" + creationTime
+        }
+        activeVideoSrcList[src] = creationTime;
+        window.localStorage.setItem('activeVideoSrcList', JSON.stringify(activeVideoSrcList));
+      }
+
       //UTIL.log(getVideoSummaryAsString(video));
       if (video.src == '')
         video.setAttribute('src', src);
@@ -409,13 +423,18 @@ if (!window['$']) {
       video.bwLastBuf = 0;
       video.bandwidth = 0;
 
-      if (isChrome && (doChromeSeekableHack || doChromeBufferedHack)) {
+      // 20140506: Chrome buffered workaround replaced with new method
+      // utilizing window.localStorage. The seekable case left in
+      // just in case the issue still exists in Chrome. From some testing,
+      // it is not clear whether the bug still exists in situations of
+      // low bandwidth or high tile server load.
+      if (isChrome && (doChromeSeekableHack /*|| doChromeBufferedHack*/)) {
         var check;
         var timeout = 2000;
         check = function() {
           UTIL.log("check load for video(" + video.id + ")");
           UTIL.log("readyState: " + video.readyState);
-          if ((video.seekable.length == 0 || video.buffered.length == 0) && activeVideos[video.id] == video) {
+          if ((video.seekable.length == 0 /*|| video.buffered.length == 0*/) && activeVideos[video.id] == video) {
             // Ouch.  A brand new bug in Chrome 15 (apparently) causes videos to never load
             // if they've been loaded recently and are being loaded again now.
             // It's pretty weird, but this disgusting code seems to work around the problem.
@@ -478,7 +497,23 @@ if (!window['$']) {
     this.repositionVideo = _repositionVideo;
 
     var stopStreaming = function(video) {
+      if (isChrome && doChromeCacheBreaker) {
+        delete activeVideoSrcList[video.src];
+        UTIL.log("Video deleted from local storage: " + video.src);
+        window.localStorage.setItem('activeVideoSrcList', JSON.stringify(activeVideoSrcList));
+      }
       video.src = "";
+    };
+
+    var clearOutVideoLocalStore = function(checkTimestamps) {
+      var currentTimeInMs = (new Date()).getTime();
+      for (var videoSrc in activeVideoSrcList) {
+        // Check if >= 1 day or if we just need to delete the item
+        if ((checkTimestamps && (currentTimeInMs - activeVideoSrcList[videoSrc] >= 86400000)) || typeof(checkTimestamps) !== 'boolean') {
+          delete activeVideoSrcList[videoSrc];
+        }
+      }
+      window.localStorage.setItem('activeVideoSrcList', JSON.stringify(activeVideoSrcList));
     };
 
     var garbageCollect = function() {
@@ -1376,6 +1411,15 @@ if (!window['$']) {
     //
     // Constructor code
     //
+
+    // Clear out the local storage related to videos loaded.
+    // This is a workaround for a Chrome cache bug.
+    // See new code (and bug report link) in _addVideo()
+    if (isChrome && doChromeCacheBreaker) {
+      activeVideoSrcList = JSON.parse(window.localStorage.getItem('activeVideoSrcList')) || {};
+      $(window).on('beforeunload', clearOutVideoLocalStore);
+      clearOutVideoLocalStore(true)
+    }
 
     this.setStatusLoggingEnabled(false);
   };

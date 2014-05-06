@@ -125,8 +125,11 @@ if (!window['$']) {
     var datasetLayer = settings["layer"] && UTIL.isNumber(settings["layer"]) ? settings["layer"] : 0;
     var initialTime = settings["initialTime"] && UTIL.isNumber(settings["initialTime"]) ? settings["initialTime"] : 0;
     var initialView = settings["initialView"] || null;
+    // deprecated
     var doChromeSeekableHack = ( typeof (settings["doChromeSeekableHack"]) == "undefined") ? true : settings["doChromeSeekableHack"];
+    // deprecated
     var doChromeBufferedHack = ( typeof (settings["doChromeBufferedHack"]) == "undefined") ? true : settings["doChromeBufferedHack"];
+    var doChromeCacheBreaker = ( typeof (settings["doChromeCacheBreaker"]) == "undefined") ? true : settings["doChromeCacheBreaker"];
     var loopDwell = ( typeof (settings["loopDwell"]) == "undefined" || typeof (settings["loopDwell"]["startDwell"]) == "undefined" || typeof (settings["loopDwell"]["endDwell"]) == "undefined") ? null : settings["loopDwell"];
     var startDwell = (!loopDwell || typeof (settings["loopDwell"]["startDwell"]) == "undefined") ? 0 : settings["loopDwell"]["startDwell"];
     var endDwell = (!loopDwell || typeof (settings["loopDwell"]["endDwell"]) == "undefined") ? 0 : settings["loopDwell"]["endDwell"];
@@ -420,6 +423,10 @@ if (!window['$']) {
 
     this.doChromeBufferedHack = function() {
       return doChromeBufferedHack;
+    };
+
+    this.doChromeCacheBreaker = function() {
+      return doChromeCacheBreaker;
     };
 
     this.getSmallGoogleMap = function() {
@@ -1443,7 +1450,7 @@ if (!window['$']) {
           var snaplapseViewerForPresentationSlider = snaplapseForPresentationSlider.getSnaplapseViewer();
           if ( typeof snaplapse == "undefined") {
             // Prevent the editor leave page alert from showing if only the presentation mode is enabled from the hash
-            window.onbeforeunload = null;
+            $(window).off("beforeunload", handleLeavePageWithEditor);
           }
           if (snaplapseViewerForPresentationSlider) {
             snaplapseViewerForPresentationSlider.loadNewSnaplapse(presentationJSON);
@@ -2415,15 +2422,17 @@ if (!window['$']) {
       return ( enableMetadataCacheBreaker ? ("?" + new Date().getTime()) : "");
     }
 
-    var handleLeavePage = function() {
+    var handleLeavePageWithEditor = function() {
       if ((editorEnabled && snaplapse && snaplapse.getKeyframes().length > 0) || (annotator && annotator.getAnnotationList().length > 0)) {
         return "You are attempting to leave this page while creating a tour.";
       }
     };
 
     function setupUIHandlers() {
-      // Leave Page Alert
-      window.onbeforeunload = handleLeavePage;
+      // Alert when an editor (tour or annotator) is up and the user tries to leave the page.
+      if (editorEnabled || annotator) {
+        $(window).on('beforeunload', handleLeavePageWithEditor);
+      }
 
       // On URL hash change, do share view related stuff
       window.onhashchange = handleHashChange;
@@ -2615,17 +2624,17 @@ if (!window['$']) {
       if (settings["annotatorDiv"])
         annotator = new org.gigapan.timelapse.Annotator(settings["annotatorDiv"], thisObj);
 
-      //hasLayers = timelapseMetadataJSON["has_layers"] || false;
-      setupUIHandlers();
       defaultUI = new org.gigapan.timelapse.DefaultUI(thisObj, settings);
       if (useCustomUI)
         customUI = new org.gigapan.timelapse.CustomUI(thisObj, settings);
 
-      //handlePluginVideoTagOverride(); //TODO
+      // TODO(pdille):
+      // Bring back this feature for those with RealPlayer/DivX or other plugins that take-over the video tag element.
+      //handlePluginVideoTagOverride();
 
+      // Must be placed after customUI is created
       if (settings["scaleBarOptions"] && tmJSON['projection-bounds'])
         scaleBar = new org.gigapan.timelapse.ScaleBar(settings["scaleBarOptions"], thisObj);
-      // Must be placed after TimelineSlider is created
 
       if (isHyperwall)
         customUI.handleHyperwallChangeUI();
@@ -2646,6 +2655,7 @@ if (!window['$']) {
         _seek(halfOfAFrame);
       }
 
+      setupUIHandlers();
       setupSliderHandlers(viewerDivId);
     }
 
