@@ -149,8 +149,8 @@ if (!window['$']) {
       width: 250,
       height: 142
     };
-    var minViewportHeight = 400;
-    var minViewportWidth = 700;
+    var minViewportHeight = 370;
+    var minViewportWidth = 540;
     var defaultLoopDwellTime = 0.5;
 
     // If the user requested a tour editor AND has a div in the DOM for the editor,
