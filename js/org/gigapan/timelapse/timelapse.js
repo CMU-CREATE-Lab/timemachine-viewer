@@ -2615,9 +2615,17 @@ if (!window['$']) {
         $("#" + videoDivId).append('<div class="snaplapse-annotation-description"><div></div></div>');
         snaplapse = new org.gigapan.timelapse.Snaplapse(settings["composerDiv"], thisObj, settings);
         snaplapseForSharedTour = new org.gigapan.timelapse.Snaplapse(undefined, thisObj, settings, "noUI");
+
+        // TODO:
+        // Disabled because of odd behavior in Chrome. Causes an endless 'waiting for socket' error to appear
+        // if too many tabs/windows are open with Time Machines loaded. The behavior is a bit similar to the Chrome
+        // cache bug in the sense that once you close a window, one that was stuck will start to work.
+        // Visualizer loads a top level video to be used as a context map in the editor. It seeks when the main video also seeks.
+        // Most likely that is at the heart of the problem.
+        //
         // Timewarp visualizer that shows the location of the current view and transitions between keyframes
-        if (!tmJSON['projection-bounds'] && editorEnabled)
-          visualizer = new org.gigapan.timelapse.Visualizer(thisObj, snaplapse, visualizerGeometry);
+        //if (!tmJSON['projection-bounds'] && editorEnabled)
+        //  visualizer = new org.gigapan.timelapse.Visualizer(thisObj, snaplapse, visualizerGeometry);
       }
       if (settings["presentationSliderDiv"])
         snaplapseForPresentationSlider = new org.gigapan.timelapse.Snaplapse(settings["presentationSliderDiv"], thisObj, settings, "presentation");
