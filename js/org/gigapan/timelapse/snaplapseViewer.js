@@ -681,7 +681,7 @@ if (!org.gigapan.timelapse.snaplapse) {
       }).addClass("addressLookup");
 
       if (!showEditorModeButton)
-        $addressLookupElem.css("left", "20px");
+        $addressLookupElem.css("left", "18px");
 
       $toolbar.append($addressLookupElem);
 
