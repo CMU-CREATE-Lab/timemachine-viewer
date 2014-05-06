@@ -92,6 +92,10 @@ function setupPostMessageHandlers() {
         unsafe_data = org.gigapan.Util.unpackVars(unsafe_data);
       }
 
+      var snaplapseTour = timelapse.getSnaplapseForSharedTour();
+      if (snaplapseTour)
+        snaplapseTour.clearSnaplapse()
+
       if (unsafe_data.v) {
         var newView = timelapse.unsafeViewToView(unsafe_data.v.split(","));
         // Always warp to the new view (i.e. pass in true for the second value)
