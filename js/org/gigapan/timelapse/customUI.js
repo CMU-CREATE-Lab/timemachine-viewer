@@ -1243,22 +1243,7 @@ if (!org.gigapan.timelapse.Timelapse) {
     //
     var fitToWindow = function() {
       if (settings["viewportGeometry"] && settings["viewportGeometry"]["max"]) {
-        if (editorEnabled)
-          timelapse.getDefaultUI().fitToWindow();
-        else {
-          // Earth Engine Case
-          if (settings["presentationSliderDiv"] && $("#" + settings["presentationSliderDiv"]).length) {
-            // If in presentation viewer-only mode
-            var $presentationSliderKeyframeContainer = $("#" + settings["presentationSliderDiv"] + " .snaplapse_keyframe_container");
-            extraHeight = 103;
-            $presentationSliderKeyframeContainer.css({
-              "top": window.innerHeight - extraHeight + 6,
-              "width": "inherit",
-              "max-width": window.innerWidth - 2
-            });
-          }
-          timelapse.fitVideoToViewport(window.innerWidth - 2, window.innerHeight - extraHeight);
-        }
+        timelapse.getDefaultUI().fitToWindow();
       }
       viewerWidth = $viewer.width();
       sliderLeftMargin_pct = (sliderLeftMargin / viewerWidth) * 100;

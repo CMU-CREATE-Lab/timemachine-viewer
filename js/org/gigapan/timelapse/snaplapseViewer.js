@@ -116,6 +116,7 @@ if (!org.gigapan.timelapse.snaplapse) {
 
     // Flags
     var didOnce = false;
+    var presentationSliderEnabled = timelapse.getPresentationSliderEnabled();
 
     // DOM elements
     var composerDivId = snaplapse.getComposerDivId();
@@ -132,7 +133,7 @@ if (!org.gigapan.timelapse.snaplapse) {
     var rootAppURL = org.gigapan.Util.getRootAppURL();
     var maxSubtitleLength = 120;
     var embedWidth = 854;
-    var embedHeight = 480;
+    var embedHeight = 480 + ( presentationSliderEnabled ? 103 : 0);
     var sortingStartDistance = 30;
     var moveOneKeyframeIdx = {
       from: undefined,
@@ -230,8 +231,6 @@ if (!org.gigapan.timelapse.snaplapse) {
       $("#" + viewerDivId).append('<div class="tourLoadOverlay"><div class="tourLoadOverlayTitle"></div><img class="tourLoadOverlayPlay" title="Click to start the tour" src="' + rootAppURL + 'images/tour_play_outline.png"></div>');
 
       var $tourLoadOverlayPlay = $("#" + viewerDivId + " .tourLoadOverlayPlay");
-      var titleTop = ($("#" + viewerDivId + " .tiledContentHolder").outerHeight() + $tourLoadOverlayPlay.outerHeight()) / 2 + 10;
-      $("#" + viewerDivId + " .tourLoadOverlayTitle").css("top", titleTop + "px");
 
       $("#" + viewerDivId + " .tourLoadOverlay").hover(function() {
         if (!snaplapse.isPlaying())
@@ -257,16 +256,16 @@ if (!org.gigapan.timelapse.snaplapse) {
       $("#" + viewerDivId + " .snaplapseTourPlayBack").show();
       // Animate tour title]
       $("#" + viewerDivId + " .tourLoadOverlayTitle").animate({
-        "top": "28px",
-        "left": "65px",
+        "top": "26px",
+        "left": "63px",
         "margin-left": "0px"
       }, duration, function() {
         $("#" + viewerDivId + " .tourLoadOverlayTitle").appendTo($("#" + viewerDivId + " .snaplapseTourPlayBack"));
       });
       // Animate tour play button
       $("#" + viewerDivId + " .tourLoadOverlayPlay").animate({
-        "top": "20px",
-        "left": "20px",
+        "top": "18px",
+        "left": "18px",
         "width": "40px",
         "height": "40px",
         "margin-left": "0px",
@@ -411,7 +410,7 @@ if (!org.gigapan.timelapse.snaplapse) {
         var sizeArray = $(this).val().split(",");
         if (sizeArray.length == 2) {
           embedWidth = sizeArray[0];
-          embedHeight = sizeArray[1];
+          embedHeight = parseInt(sizeArray[1]) + ( presentationSliderEnabled ? 103 : 0);
           $("#" + composerDivId + " .saveTimewarpWindow_JSON2").val('<iframe width="' + embedWidth + '" height="' + embedHeight + '" src="' + rootEmbedURL + snaplapse.getAsUrlString() + '" frameborder="0"></iframe>');
         }
       });
@@ -877,6 +876,8 @@ if (!org.gigapan.timelapse.snaplapse) {
           parentUrl = document.referrer.split("#")[0];
         }
       }
+      if (sourceUrl.indexOf("timemachine.cmucreatelab.org") > -1)
+        sourceUrl = sourceUrl.replace("/wiki-viewer.html", "/wiki-viewer-embed.html");
       if (startEditorFromPresentationMode) {
         rootURL = parentUrl + "#presentation=";
         rootEmbedURL = sourceUrl + "#presentation=";
@@ -1032,7 +1033,7 @@ if (!org.gigapan.timelapse.snaplapse) {
           $("#" + viewerDivId + ' .help').removeClass("disabled").addClass("enabled");
           $("#" + viewerDivId + ' .timelineSlider').slider("enable");
           $("#" + viewerDivId + " .tourLoadOverlayPlay").attr("src", rootAppURL + "images/tour_replay_outline.png").css("opacity", "1.0");
-          $("#" + viewerDivId + " .snaplapseTourPlayBack").css("left", "60px").toggleClass("stopTour playTour").attr("title", "Click to replay this tour");
+          $("#" + viewerDivId + " .snaplapseTourPlayBack").css("left", "67px").toggleClass("stopTour playTour").attr("title", "Click to replay this tour");
         });
 
         snaplapse.addEventListener('keyframe-added', function(keyframe, insertionIndex, keyframes) {

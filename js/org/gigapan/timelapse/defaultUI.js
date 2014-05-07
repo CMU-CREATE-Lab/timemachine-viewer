@@ -120,6 +120,7 @@ if (!org.gigapan.timelapse.Timelapse) {
     var showLogoOnDefaultUI = ( typeof (settings["showLogoOnDefaultUI"]) == "undefined") ? true : settings["showLogoOnDefaultUI"];
     var showEditorOnLoad = ( typeof (settings["showEditorOnLoad"]) == "undefined") ? false : settings["showEditorOnLoad"];
     var editorEnabled = timelapse.getEditorEnabled();
+    var presentationSliderEnabled = timelapse.getPresentationSliderEnabled();
     var useCustomUI = timelapse.useCustomUI();
 
     // Flags
@@ -647,10 +648,12 @@ if (!org.gigapan.timelapse.Timelapse) {
       var $presentationSliderKeyframeContainer = $("#" + settings["presentationSliderDiv"] + " .snaplapse_keyframe_container");
 
       // 175 is the height of the keyframe container
+      // 103 is the height of the presentation slider container
       // 41 is the height of toolbar
-      var keyframeContainerHeight = settings["composerDiv"] ? 175 : 0;
-      var toolbarHeight = settings["composerDiv"] ? 41 : 0;
-      newViewportHeight -= keyframeContainerHeight + toolbarHeight;
+      var keyframeContainerHeight = editorEnabled ? 175 : 0;
+      var toolbarHeight = editorEnabled ? 41 : 0;
+      var presentationSliderKeyframeContainerHeight = (!editorEnabled && presentationSliderEnabled) ? 103 : 0;
+      newViewportHeight -= keyframeContainerHeight + toolbarHeight + presentationSliderKeyframeContainerHeight;
 
       // Ensure minimum dimensions to not break controls
       if (newViewportWidth < minViewportWidth)

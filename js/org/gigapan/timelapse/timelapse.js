@@ -159,6 +159,7 @@ if (!window['$']) {
     // (No thumbnails for keyframes pulled and loading a tour will display a load
     // button with the tour name on the center of the viewport.)
     var editorEnabled = settings["composerDiv"] && $("#" + settings["composerDiv"]).length;
+    var presentationSliderEnabled = settings["presentationSliderDiv"] && $("#" + settings["presentationSliderDiv"]).length;
 
     // Objects
     var videoset;
@@ -382,6 +383,10 @@ if (!window['$']) {
 
     this.getEditorEnabled = function() {
       return editorEnabled;
+    };
+
+    this.getPresentationSliderEnabled = function() {
+      return presentationSliderEnabled;
     };
 
     this.getDefaultUI = function() {

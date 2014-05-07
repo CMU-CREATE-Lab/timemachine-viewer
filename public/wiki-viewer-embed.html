@@ -34,17 +34,23 @@
     <script type="text/javascript">
       jQuery.support.cors = true;
 
-      var url = "http://g7.gigapan.org/timemachines/pittsburgh-v12";
+      var queryStr = window.location.href.slice(window.location.href.indexOf('?') + 1).split("#")[0];
+      timelapseMetadata = org.gigapan.Util.unpackVars(queryStr);
+
+      url = "http://g7.gigapan.org/timemachines/" + timelapseMetadata["id"];
 
       function init() {
-        var viewerSettings = {
+        var myView = null;
+        var myTime = 0;
+
+        var viewerOptions = {
           url: url,
           showFullScreenBtn: false,
           presentationSliderDiv: "presentationSlider1",
           composerDiv: "composer1",
           viewportGeometry: {
-            width: 1068,
-            height: 600,
+            width: 843,
+            height: 466,
             max: true
           },
           onTimeMachinePlayerReady: function(viewerDivId) {
@@ -52,11 +58,11 @@
             setupPostMessageHandlers();
           },
           disableTourLooping: true,
-          showEditorModeButton: false,
-          showEditorOnLoad: true,
           isGoogleAnalyticEventTrackingEnabled: true
         };
-        timelapse = new org.gigapan.timelapse.Timelapse("player1", viewerSettings);
+        if (timelapseMetadata && !timelapseMetadata['forceMP4'])
+          delete viewerOptions["mediaType"];
+        timelapse = new org.gigapan.timelapse.Timelapse("player1", viewerOptions);
       }
 
       $(init);
@@ -79,8 +85,7 @@
     </script>
   </head>
   <body>
-    <div id="player1" style="position: absolute; top:10px; left:10px;"></div>
-    <div id="composer1"></div>
+    <div id="player1"></div>
     <div id="presentationSlider1"></div>
   </body>
 </html>
