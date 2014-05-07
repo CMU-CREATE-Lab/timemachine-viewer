@@ -225,19 +225,20 @@ if (!org.gigapan.timelapse.snaplapse) {
 
     var initializeTourOverlyUI = function() {
       timelapse.stopParabolicMotion();
-      $("#" + viewerDivId).append('<div class="snaplapseTourPlayBack playTour"></div>');
-      $("#" + viewerDivId).append('<div class="tourLoadOverlay"><div class="tourLoadOverlayTitleContainer"><div class="tourLoadOverlayTitle"></div></div><img class="tourLoadOverlayPlay" title="Click to start the tour" src="' + rootAppURL + 'images/tour_play_outline.png"></div>');
 
-      $("#" + viewerDivId + " .tourLoadOverlayTitleContainer").css({
-        'width': '100%'
-      });
+      $("#" + viewerDivId).append('<div class="snaplapseTourPlayBack playTour"></div>');
+      $("#" + viewerDivId).append('<div class="tourLoadOverlay"><div class="tourLoadOverlayTitle"></div><img class="tourLoadOverlayPlay" title="Click to start the tour" src="' + rootAppURL + 'images/tour_play_outline.png"></div>');
+
+      var $tourLoadOverlayPlay = $("#" + viewerDivId + " .tourLoadOverlayPlay");
+      var titleTop = ($("#" + viewerDivId + " .tiledContentHolder").outerHeight() + $tourLoadOverlayPlay.outerHeight()) / 2 + 10;
+      $("#" + viewerDivId + " .tourLoadOverlayTitle").css("top", titleTop + "px");
 
       $("#" + viewerDivId + " .tourLoadOverlay").hover(function() {
         if (!snaplapse.isPlaying())
-          $("#" + viewerDivId + " .tourLoadOverlayPlay").css("opacity", 1.0);
+          $tourLoadOverlayPlay.css("opacity", 1.0);
       }, function() {
         if (!snaplapse.isPlaying())
-          $("#" + viewerDivId + " .tourLoadOverlayPlay").css("opacity", 0.8);
+          $tourLoadOverlayPlay.css("opacity", 0.8);
       }).click(function() {
         animateTourOverlayAndPlay(500);
       });
@@ -254,44 +255,30 @@ if (!org.gigapan.timelapse.snaplapse) {
 
     var animateTourOverlayAndPlay = function(duration) {
       $("#" + viewerDivId + " .snaplapseTourPlayBack").show();
-      // Animate tour title
-      $("#" + viewerDivId + " .tourLoadOverlayTitleContainer").animate({
-        top: "20px",
-        left: "-440px"
+      // Animate tour title]
+      $("#" + viewerDivId + " .tourLoadOverlayTitle").animate({
+        "top": "28px",
+        "left": "65px",
+        "margin-left": "0px"
       }, duration, function() {
-        $(this).css({
-          'text-align': 'left',
-          'left': '70px',
-          'width': ''
-        });
-        $("#" + viewerDivId + " .tourLoadOverlayTitle").css({
-          'padding-left': '0px',
-          'padding-right': '0px'
-        });
+        $("#" + viewerDivId + " .tourLoadOverlayTitle").appendTo($("#" + viewerDivId + " .snaplapseTourPlayBack"));
       });
       // Animate tour play button
       $("#" + viewerDivId + " .tourLoadOverlayPlay").animate({
-        top: "10px",
-        width: "40px",
-        height: "40px",
-        left: "25px",
+        "top": "20px",
+        "left": "20px",
+        "width": "40px",
+        "height": "40px",
         "margin-left": "0px",
         "margin-top": "0px",
         "opacity": "1.0"
       }, duration, function() {
-        $("#" + viewerDivId + " .tourLoadOverlayTitleContainer").css({
-          'position': 'static',
-          'margin-left': '70px',
-          'margin-top': '19px'
-        });
         $("#" + viewerDivId + " .tourLoadOverlayPlay").appendTo($("#" + viewerDivId + " .snaplapseTourPlayBack"));
-        $("#" + viewerDivId + " .tourLoadOverlayTitleContainer").appendTo($("#" + viewerDivId + " .snaplapseTourPlayBack"));
         $("#" + viewerDivId + " .tourLoadOverlay").hide();
         $(this).attr({
           "src": rootAppURL + "images/tour_stop_outline.png",
           "title": ""
         });
-        $("#" + viewerDivId + " .snaplapseTourPlayBack").attr("title", "Click to stop tour playback");
         snaplapse.play();
       });
     };
@@ -981,12 +968,14 @@ if (!org.gigapan.timelapse.snaplapse) {
           if (!useCustomUI) {
             $sideToolbar.hide();
             $controls.hide();
+            setCaptureTimePosition("down");
           } else {
             if ($("#" + viewerDivId + " .customTimeline").is(':visible'))
               hideCustomUI();
           }
 
           setSubtitlePosition("down");
+
           $("#" + viewerDivId + ' .help').removeClass("enabled").addClass("disabled");
           $("#" + viewerDivId + " .instructions").hide();
           $("#" + viewerDivId + " .instructions").removeClass('on');
@@ -1033,6 +1022,7 @@ if (!org.gigapan.timelapse.snaplapse) {
           if (!useCustomUI) {
             $sideToolbar.show();
             $controls.show();
+            setCaptureTimePosition("up");
           } else {
             showCustomUI();
           }
@@ -1145,7 +1135,7 @@ if (!org.gigapan.timelapse.snaplapse) {
         $sortable.empty();
       $("#" + viewerDivId + " .snaplapse-annotation-description > div").text("");
 
-      // Set the UI
+      // Set the UI after starting to load a new tour
       if ( typeof json != 'undefined' && json != null) {
         if (usePresentationSlider) {
           var unsafeHashObj = UTIL.getUnsafeHashVars();
@@ -1168,6 +1158,7 @@ if (!org.gigapan.timelapse.snaplapse) {
           } else {
             $("#" + viewerDivId + " .controls").hide();
             $("#" + viewerDivId + " .sideToolBar").hide();
+            setCaptureTimePosition("down");
             setDefaultUIToPlayerMode();
           }
         }
@@ -1185,7 +1176,24 @@ if (!org.gigapan.timelapse.snaplapse) {
       else if (position == "down")
         positionBottom = 15;
       $("#" + viewerDivId + " .snaplapse-annotation-description").css("bottom", positionBottom + "px");
-    }
+    };
+
+    var setCaptureTimePosition = function(position) {
+      var positionBottom;
+      var positionLeft;
+      if (position == "up") {
+        positionLeft = 90;
+        positionBottom = 42;
+      } else if (position == "down") {
+        positionLeft = 20;
+        positionBottom = 15;
+      }
+      $("#" + viewerDivId + " .captureTime").css({
+        "bottom": positionBottom + "px",
+        "left": positionLeft + "px"
+      });
+    };
+
     var setDefaultUIToPlayerMode = function() {
       var $viewerModeCheckbox = $("#" + viewerDivId + " .viewerModeCheckbox");
       if ($viewerModeCheckbox.is(":checked"))

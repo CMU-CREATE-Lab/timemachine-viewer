@@ -289,9 +289,9 @@ body, html {
 .captureTime {
   position: absolute;
   left: 90px;
-  bottom: 43px;
-  font-size: 16px;
-  text-shadow: -1px 0 #656565, 0 1px #656565, 1px 0 #656565, 0 -1px #656565, 2px 2px 3px rgba(0,0,0,0.3);
+  bottom: 42px;
+  font-size: 18px;
+  text-shadow: -1px 0 #000, 0 1px #000, 1px 0 #000, 0 -1px #000, 2px 2px 3px rgba(0,0,0,0.3);
   font-family: Arial, Helvetica, sans-serif;
   text-align: center;
   color: white;

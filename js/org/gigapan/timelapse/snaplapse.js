@@ -628,7 +628,8 @@ if (!Math.uuid) {
           $("#" + composerDivId + " .saveTimewarpWindow_tourTitleInput").val(tourTitle);
           if (!usePresentationSlider) {
             // Add the tour title to be used during tour playback
-            $("#" + viewerDivId + " .tourLoadOverlayTitle").text("Tour: " + tourTitle);
+            var $tourLoadOverlayTitle = $("#" + viewerDivId + " .tourLoadOverlayTitle");
+            $tourLoadOverlayTitle.text("Tour: " + tourTitle).css("margin-left", -($tourLoadOverlayTitle.width() / 2) + "px");
           }
         }
         if ( typeof (loadJSON['snaplapse']) != 'undefined' && typeof (loadJSON['snaplapse']['keyframes']) != 'undefined') {
