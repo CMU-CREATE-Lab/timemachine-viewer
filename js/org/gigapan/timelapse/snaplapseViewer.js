@@ -1182,16 +1182,20 @@ if (!org.gigapan.timelapse.snaplapse) {
     var setCaptureTimePosition = function(position) {
       var positionBottom;
       var positionLeft;
+      var fontSize;
       if (position == "up") {
         positionLeft = 90;
         positionBottom = 42;
+        fontSize = 18;
       } else if (position == "down") {
-        positionLeft = 20;
-        positionBottom = 15;
+        positionLeft = 8;
+        positionBottom = 5;
+        fontSize = 15;
       }
       $("#" + viewerDivId + " .captureTime").css({
         "bottom": positionBottom + "px",
-        "left": positionLeft + "px"
+        "left": positionLeft + "px",
+        "font-size" : fontSize + "px",
       });
     };
 
