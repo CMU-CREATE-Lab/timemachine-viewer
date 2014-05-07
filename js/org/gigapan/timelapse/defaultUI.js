@@ -735,6 +735,7 @@ if (!org.gigapan.timelapse.Timelapse) {
     else {
       $("#" + viewerDivId + " .controls").remove();
       $("#" + viewerDivId + " .shareView").remove();
+      $("#" + viewerDivId + " .captureTime").remove();
     }
 
     if (settings["viewportGeometry"] && settings["viewportGeometry"]["max"]) {
