@@ -622,7 +622,7 @@
   text-shadow: -1px 0 1px black, 0 1px 1px black, 1px 0 1px black, 0 -1px 1px black;
   cursor: pointer;
   height: 48px;
-  display: none;
+  visibility: hidden;
   width: 450px;
 }
 
@@ -636,7 +636,7 @@
   background: black;
   cursor: pointer;
   z-index: 99;
-  display: none;
+  visibility: hidden;
 }
 
 .tourLoadOverlayPlay {

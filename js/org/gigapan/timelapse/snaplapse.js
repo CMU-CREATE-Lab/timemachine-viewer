@@ -158,13 +158,6 @@ if (!Math.uuid) {
         thisObj.stop();
       }
 
-      // Reset the tour overlay
-      if (keyframes.length > 0 && !usePresentationSlider) {
-        $("#" + viewerDivId + " .snaplapseTourPlayBack").remove();
-        $("#" + viewerDivId + " .tourLoadOverlay").remove();
-        snaplapseViewer.initializeTourOverlyUI();
-      }
-
       keyframes.length = 0;
       keyframesById = {};
       keyframeIntervals.length = 0;
@@ -623,14 +616,6 @@ if (!Math.uuid) {
           $(document.body).css("cursor", "wait");
           loadJSON = JSON.parse(json);
           _clearSnaplapse();
-          var tourTitle = loadJSON['snaplapse']['unsafe_string_title'] ? loadJSON['snaplapse']['unsafe_string_title'] : "Untitled";
-          // Add the tour title to the save dialogue
-          $("#" + composerDivId + " .saveTimewarpWindow_tourTitleInput").val(tourTitle);
-          if (!usePresentationSlider) {
-            // Add the tour title to be used during tour playback
-            var $tourLoadOverlayTitle = $("#" + viewerDivId + " .tourLoadOverlayTitle");
-            $tourLoadOverlayTitle.text("Tour: " + tourTitle).css("margin-left", -($tourLoadOverlayTitle.width() / 2) + "px");
-          }
         }
         if ( typeof (loadJSON['snaplapse']) != 'undefined' && typeof (loadJSON['snaplapse']['keyframes']) != 'undefined') {
           UTIL.log("Found [" + loadJSON['snaplapse']['keyframes'].length + "] keyframes in the json:\n\n" + json);

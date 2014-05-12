@@ -224,14 +224,19 @@ if (!org.gigapan.timelapse.snaplapse) {
     };
     this.hideLastKeyframeTransition = hideLastKeyframeTransition;
 
-    var initializeTourOverlyUI = function() {
+    var initializeTourOverlyUI = function(tourTitle) {
       timelapse.stopParabolicMotion();
 
+      $("#" + viewerDivId + " .snaplapseTourPlayBack").remove();
+      $("#" + viewerDivId + " .tourLoadOverlay").remove();
       $("#" + viewerDivId).append('<div class="snaplapseTourPlayBack playTour"></div>');
       $("#" + viewerDivId).append('<div class="tourLoadOverlay"><div class="tourLoadOverlayTitle"></div><img class="tourLoadOverlayPlay" title="Click to start the tour" src="' + rootAppURL + 'images/tour_play_outline.png"></div>');
 
-      var $tourLoadOverlayPlay = $("#" + viewerDivId + " .tourLoadOverlayPlay");
+      // Add the tour title to be used during tour playback
+      var $tourLoadOverlayTitle = $("#" + viewerDivId + " .tourLoadOverlayTitle");
+      $tourLoadOverlayTitle.text("Tour: " + tourTitle).css("margin-left", -($tourLoadOverlayTitle.width() / 2) + "px");
 
+      var $tourLoadOverlayPlay = $("#" + viewerDivId + " .tourLoadOverlayPlay");
       $("#" + viewerDivId + " .tourLoadOverlay").hover(function() {
         if (!snaplapse.isPlaying())
           $tourLoadOverlayPlay.css("opacity", 1.0);
@@ -250,10 +255,9 @@ if (!org.gigapan.timelapse.snaplapse) {
           snaplapse.stop();
       });
     };
-    this.initializeTourOverlyUI = initializeTourOverlyUI;
 
     var animateTourOverlayAndPlay = function(duration) {
-      $("#" + viewerDivId + " .snaplapseTourPlayBack").show();
+      $("#" + viewerDivId + " .snaplapseTourPlayBack").css("visibility", "visible");
       // Animate tour title]
       $("#" + viewerDivId + " .tourLoadOverlayTitle").animate({
         "top": "26px",
@@ -273,7 +277,7 @@ if (!org.gigapan.timelapse.snaplapse) {
         "opacity": "1.0"
       }, duration, function() {
         $("#" + viewerDivId + " .tourLoadOverlayPlay").appendTo($("#" + viewerDivId + " .snaplapseTourPlayBack"));
-        $("#" + viewerDivId + " .tourLoadOverlay").hide();
+        $("#" + viewerDivId + " .tourLoadOverlay").css("visibility", "hidden");
         $(this).attr({
           "src": rootAppURL + "images/tour_stop_outline.png",
           "title": ""
@@ -293,9 +297,6 @@ if (!org.gigapan.timelapse.snaplapse) {
         $("#" + composerDivId + " .saveTimewarpWindow").remove();
         $("#" + composerDivId + " .loadTimewarpWindow").remove();
       }
-
-      if (!usePresentationSlider && !uiEnabled)
-        initializeTourOverlyUI();
 
       hideAnnotationBubble();
 
@@ -955,7 +956,7 @@ if (!org.gigapan.timelapse.snaplapse) {
               },
               label: "Stop Tour"
             }).addClass("isPlaying");
-            $("#" + viewerDivId + " .snaplapseTourPlayBack").hide();
+            $("#" + viewerDivId + " .snaplapseTourPlayBack").css("visibility", "hidden");
             $sortable.css("opacity", "0.5");
           } else {
             // If users play tours from the viewer
@@ -1009,7 +1010,7 @@ if (!org.gigapan.timelapse.snaplapse) {
               },
               label: "Play Tour"
             }).removeClass("isPlaying");
-            $("#" + viewerDivId + " .snaplapseTourPlayBack").show();
+            $("#" + viewerDivId + " .snaplapseTourPlayBack").css("visibility", "visible");
             $sortable.css("opacity", "1");
           } else {
             // If users play tours from the viewer
@@ -1138,6 +1139,12 @@ if (!org.gigapan.timelapse.snaplapse) {
 
       // Set the UI after starting to load a new tour
       if ( typeof json != 'undefined' && json != null) {
+        var loadJSON = JSON.parse(json);
+        var tourTitle = loadJSON['snaplapse']['unsafe_string_title'] ? loadJSON['snaplapse']['unsafe_string_title'] : "Untitled";
+        if (uiEnabled && !usePresentationSlider) {
+          // Add the tour title to the save dialogue
+          $("#" + composerDivId + " .saveTimewarpWindow_tourTitleInput").val(tourTitle);
+        }
         if (usePresentationSlider) {
           var unsafeHashObj = UTIL.getUnsafeHashVars();
           if ( typeof unsafeHashObj.tour == "undefined")
@@ -1147,9 +1154,10 @@ if (!org.gigapan.timelapse.snaplapse) {
         }
         if (!uiEnabled && !usePresentationSlider) {
           timelapse.pause();
+          initializeTourOverlyUI(tourTitle);
           if (noPlaybackOverlay != true) {
-            $("#" + viewerDivId + " .tourLoadOverlay").show();
-            $("#" + viewerDivId + " .tourLoadOverlayPlay").show();
+            $("#" + viewerDivId + " .tourLoadOverlay").css("visibility", "visible");
+            //$("#" + viewerDivId + " .tourLoadOverlayPlay").css("visibility", "visible");
           }
           setSubtitlePosition("down");
           $("#" + settings["presentationSliderDiv"]).hide();
@@ -1519,9 +1527,8 @@ if (!org.gigapan.timelapse.snaplapse) {
         disabled: false
       }).click(function(event) {
         event.stopPropagation();
-        if (snaplapse.isPlaying()) {
+        if (snaplapse.isPlaying())
           snaplapse.stop();
-        }
         var thisKeyframeId = this.id.split("_")[3];
         snaplapse.play(thisKeyframeId);
         UTIL.addGoogleAnalyticEvent('button', 'click', 'editor-play-tour-from-keyframe');

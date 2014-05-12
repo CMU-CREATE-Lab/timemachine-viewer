@@ -2196,8 +2196,8 @@ if (!window['$']) {
               if (playOnLoad && unsafe_sharedVars.tour) {
                 var onLoad = function() {
                   snaplapseViewerForSharedData.removeEventListener('snaplapse-loaded', onLoad);
-                  $("#" + viewerDivId + " .tourLoadOverlay").show();
-                  $("#" + viewerDivId + " .tourLoadOverlayPlay").show();
+                  $("#" + viewerDivId + " .tourLoadOverlay").css("visibility", "visible");
+                  //$("#" + viewerDivId + " .tourLoadOverlayPlay").css("visibility", "visible");
                   snaplapseViewerForSharedData.animateTourOverlayAndPlay(0);
                 };
                 snaplapseViewerForSharedData.addEventListener('snaplapse-loaded', onLoad);
