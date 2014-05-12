@@ -241,8 +241,8 @@ if (!org.gigapan.timelapse.Timelapse) {
         $("#" + viewerDivId + " .controls").hide();
         $("#" + viewerDivId + " .timelineSliderFiller").hide();
       }
-      if (showLogoOnDefaultUI)
-        $("#" + viewerDivId + " .createLabLogo").show();
+      if (!showLogoOnDefaultUI)
+        $("#" + viewerDivId + " .logo").hide();
     };
 
     var createSideToolBar = function() {

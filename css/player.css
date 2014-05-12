@@ -11,14 +11,26 @@ body, html {
   width: 170px;
   height: 28px;
   position: absolute;
-  bottom: 37px;
+  bottom: 39px;
   right: 64px;
   border: 0px;
   background-image: url("../images/createLabLogo.png");
   -ms-transform: scale(0.647);
   -webkit-transform: scale(0.647);
   transform: scale(0.647);
-  display: none;
+}
+
+.timeMachineLogo {
+  width: 194px;
+  height: 28px;
+  position: absolute;
+  bottom: 39px;
+  right: 64px;
+  border: 0px;
+  background-image: url("../images/timeMachineLogo.png");
+  -ms-transform: scale(0.647);
+  -webkit-transform: scale(0.647);
+  transform: scale(0.647);
 }
 
 #player1_timelapse_canvas {
