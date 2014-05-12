@@ -1195,7 +1195,7 @@ if (!org.gigapan.timelapse.snaplapse) {
       $("#" + viewerDivId + " .captureTime").css({
         "bottom": positionBottom + "px",
         "left": positionLeft + "px",
-        "font-size" : fontSize + "px",
+        "font-size": fontSize + "px",
       });
     };
 
@@ -1401,6 +1401,7 @@ if (!org.gigapan.timelapse.snaplapse) {
       });
 
       if (usePresentationSlider) {
+        $thumbnailButton.attr("id", keyframe.unsafe_string_frameTitle.split(' ').join('_'));
         $thumbnailButton.hover(function() {
           var thisKeyframeId = $(this).parent().attr("id").split("_")[3];
           var thisKeyframe = snaplapse.getKeyframeById(thisKeyframeId);
@@ -1409,35 +1410,7 @@ if (!org.gigapan.timelapse.snaplapse) {
           var thisKeyframeId = $(this).parent().attr("id").split("_")[3];
           var thisKeyframe = snaplapse.getKeyframeById(thisKeyframeId);
           setKeyframeCaptionUI(thisKeyframe, this, true);
-        }).click(function(event) {
-          var $element = $(this);
-          var containerOffset = $keyframeContainer.offset();
-          var containerWidth = $keyframeContainer.width();
-          var elementOffset = $element.offset();
-          var elementWidth = $element.width();
-          var distanceBetweenElementAndLeftEdge = elementOffset.left + elementWidth - containerOffset.left;
-          var distanceBetweenElementAndRightEdge = containerWidth - elementOffset.left + containerOffset.left;
-          if (distanceBetweenElementAndRightEdge < elementWidth * 1.5) {
-            $keyframeContainer.animate({
-              scrollLeft: $keyframeContainer.scrollLeft() + (elementWidth * 1.5 - distanceBetweenElementAndRightEdge)
-            }, {
-              duration: 500,
-              start: function() {
-                setKeyframeCaptionUI(undefined, undefined, true);
-              }
-            });
-          } else if (distanceBetweenElementAndLeftEdge < elementWidth * 1.5) {
-            $keyframeContainer.animate({
-              scrollLeft: $keyframeContainer.scrollLeft() - (elementWidth * 1.5 - distanceBetweenElementAndLeftEdge)
-            }, {
-              duration: 500,
-              start: function() {
-                setKeyframeCaptionUI(undefined, undefined, true);
-              }
-            });
-          }
         });
-        $thumbnailButton.attr("id", keyframe.unsafe_string_frameTitle.split(' ').join('_'));
       }
 
       if (disableTourLooping) {
@@ -1613,20 +1586,12 @@ if (!org.gigapan.timelapse.snaplapse) {
       }
       keyframeListItem.style.backgroundColor = "rgba(" + tagColor[0] + "," + tagColor[1] + "," + tagColor[2] + ",0)";
 
-      // Select the element
-      var autoScroll;
-      if (insertionIndex == loadKeyframesLength - 1 || insertionIndex == keyframes.length - 1)
-        autoScroll = true;
-      UTIL.selectSortableElements($sortable, $("#" + keyframeListItem.id), autoScroll);
-      setKeyframeTitleUI(keyframe);
-
       // Hide the last keyframe transition area
       hideLastKeyframeTransition();
       handleEditorModeToolbarChange();
       $("#" + composerDivId + " .toolbar .addTimetag").button("option", "disabled", false);
 
-      // The reason to hide and show the elements is the workaround for a webkit refresh bug
-      $keyframeContainer.hide().show(0);
+      // Reset the UI
       resetKeyframeTransitionUI(buildConstraint, keyframeListItem.id);
 
       // Add a time tag on the context map
@@ -1641,10 +1606,17 @@ if (!org.gigapan.timelapse.snaplapse) {
           setKeyframeThumbail(keyframe);
         }, 100);
       }
+
+      // Select the element
+      UTIL.selectSortableElements($sortable, $("#" + keyframeListItem.id), "noAnimation");
+      setKeyframeTitleUI(keyframe);
     };
 
     var selectAndGo = function($select, keyframeId, skipAnnotation, skipGo, doNotFireListener) {
-      UTIL.selectSortableElements($sortable, $select);
+      UTIL.selectSortableElements($sortable, $select, true, function() {
+        if (usePresentationSlider)
+          setKeyframeCaptionUI(undefined, undefined, true);
+      });
       if (usePresentationSlider) {
         $sortable.children().children().children(".snaplapse_keyframe_list_item_thumbnail_overlay_presentation").removeClass("thumbnail_highlight");
         $select.children().children(".snaplapse_keyframe_list_item_thumbnail_overlay_presentation").addClass("thumbnail_highlight");
