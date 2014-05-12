@@ -129,7 +129,7 @@ function setupPostMessageHandlers() {
   // Handles switching layers
   pm.bind("timemachine-switch-layer", function(unsafe_layerNum) {
     var layerNum = parseInt(unsafe_layerNum);
-    if (timelapse && layerNum)
+    if (timelapse && !isNaN(layerNum))
       timelapse.switchLayer(layerNum);
   });
 }
