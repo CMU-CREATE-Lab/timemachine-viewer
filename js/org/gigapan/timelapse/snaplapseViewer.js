@@ -876,7 +876,7 @@ if (!org.gigapan.timelapse.snaplapse) {
           parentUrl = document.referrer.split("#")[0];
         }
       }
-      if (sourceUrl.indexOf("timemachine.cmucreatelab.org") > -1)
+      if (sourceUrl.indexOf("timemachine.cmucreatelab.org") > -1 || sourceUrl.indexOf("timemachine.gigapan.org") > -1)
         sourceUrl = sourceUrl.replace("/wiki-viewer.html", "/wiki-viewer-embed.html");
       if (startEditorFromPresentationMode) {
         rootURL = parentUrl + "#presentation=";
