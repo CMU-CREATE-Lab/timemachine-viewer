@@ -1096,7 +1096,7 @@ if (!Math.uuid) {
     // Constructor code
     //
 
-    org.gigapan.Util.ajax("html", rootAppURL, "time_warp_composer.html", function(html) {
+    org.gigapan.Util.ajax("html", rootAppURL, "templates/time_warp_composer.html", function(html) {
       $("#" + composerDivId).html(html);
       snaplapseViewer = new org.gigapan.timelapse.snaplapse.SnaplapseViewer(thisObj, timelapse, settings, mode);
     });

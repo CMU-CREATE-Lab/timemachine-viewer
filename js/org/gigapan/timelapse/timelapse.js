@@ -3002,7 +3002,7 @@ if (!window['$']) {
     browserSupported = UTIL.browserSupported();
 
     if (!browserSupported) {
-      UTIL.ajax("html", rootAppURL, "browser_not_supported_template.html", function(html) {
+      UTIL.ajax("html", rootAppURL, "templates/browser_not_supported_template.html", function(html) {
         $("#" + viewerDivId).html(html);
         $("#browser_not_supported").show();
       });
@@ -3032,6 +3032,6 @@ if (!window['$']) {
     }
 
     UTIL.log('Timelapse("' + settings["url"] + '")');
-    UTIL.ajax("html", rootAppURL, "player_template.html", loadPlayerControlsTemplate);
+    UTIL.ajax("html", rootAppURL, "templates/player_template.html", loadPlayerControlsTemplate);
   };
 })();

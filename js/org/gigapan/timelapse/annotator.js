@@ -984,7 +984,7 @@ if (!window['$']) {
     //
     // Constructor code
     //
-    org.gigapan.Util.ajax("html", rootAppURL, "annotation_editor.html", function(html) {
+    org.gigapan.Util.ajax("html", rootAppURL, "templates/annotation_editor.html", function(html) {
       $annotatorDivObj.html(html);
       createAnnotatorModeToolbar();
       setupAnnotationLayer();
