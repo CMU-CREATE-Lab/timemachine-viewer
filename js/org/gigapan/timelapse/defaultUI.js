@@ -730,26 +730,22 @@ if (!org.gigapan.timelapse.Timelapse) {
     //
     createSideToolBar();
 
-    if (!useCustomUI)
+    if (!useCustomUI) {
       createMainUI();
-    else {
-      $("#" + viewerDivId + " .controls").remove();
-      $("#" + viewerDivId + " .shareView").remove();
-      $("#" + viewerDivId + " .captureTime").remove();
-    }
-
-    if (settings["viewportGeometry"] && settings["viewportGeometry"]["max"]) {
       // We already add a resizing handler in customUI.js, so don't add it again for landsat and modis.
-      if (!useCustomUI) {
+      if (settings["viewportGeometry"] && settings["viewportGeometry"]["max"]) {
         window.onresize = function() {
           fitToWindow();
         };
         fitToWindow();
       }
+      if (timelapse.getPlayOnLoad())
+        timelapse.play();
+    } else {
+      $("#" + viewerDivId + " .controls").remove();
+      $("#" + viewerDivId + " .shareView").remove();
+      $("#" + viewerDivId + " .captureTime").remove();
     }
-
-    if (timelapse.getPlayOnLoad() && !useCustomUI)
-      timelapse.play();
   };
   //end of org.gigapan.timelapse.DefaultUI
 })();
