@@ -2790,6 +2790,7 @@ if (!window['$']) {
       // track of what video replaced it.
       currentIdx = null;
       onPanoLoadSuccessCallback(data, null, true);
+      //debug
       var newViewportGeometry = computeViewportGeometry(data);
 
       if (!doNotResetViewerSize)
@@ -2876,8 +2877,6 @@ if (!window['$']) {
       } else if (viewerType == "video") {
         videoset = new org.gigapan.timelapse.Videoset(viewerDivId, videoDivId, thisObj);
       }
-
-      //videosetStats = new org.gigapan.timelapse.VideosetStats(videoset, settings["videosetStatsDivId"]);
 
       videoDiv['onmousedown'] = handleMousedownEvent;
       videoDiv['ondblclick'] = handleDoubleClickEvent;
@@ -3022,7 +3021,7 @@ if (!window['$']) {
     targetView = {};
 
     // Set default loop dwell time
-    // TODO: this should be set to not just for andsat, but for all short datasets
+    // TODO: this should be set to not just for landsat, but for all short datasets
     if (datasetType == "landsat" && loopDwell == undefined) {
       loopDwell = {
         "startDwell": defaultLoopDwellTime,
