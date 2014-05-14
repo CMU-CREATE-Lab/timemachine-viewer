@@ -61,8 +61,8 @@
           disableTourLooping: true,
           isGoogleAnalyticEventTrackingEnabled: true
         };
-        if (timelapseMetadata && !timelapseMetadata['forceMP4'])
-          delete viewerOptions["mediaType"];
+        if (timelapseMetadata && timelapseMetadata["forceMP4"])
+          viewerOptions["mediaType"] = ".mp4";
         timelapse = new org.gigapan.timelapse.Timelapse("player1", viewerOptions);
       }
 
