@@ -143,6 +143,7 @@ if (!window['$']) {
     var skippedFramesAtStart = ( typeof (settings["skippedFramesAtStart"]) == "undefined" || settings["skippedFramesAtStart"] < 0) ? 0 : settings["skippedFramesAtStart"];
     var mediaType = ( typeof (settings["mediaType"]) == "undefined") ? null : settings["mediaType"];
     var enableMetadataCacheBreaker = settings["enableMetadataCacheBreaker"] || false;
+    var enableContextMapOnDefaultUI = ( typeof (settings["enableContextMapOnDefaultUI"]) == "undefined") ? false : settings["enableContextMapOnDefaultUI"];
     var datasetType = settings["datasetType"];
     var useCustomUI = (settings["datasetType"] == "landsat" || settings["datasetType"] == "modis");
     var visualizerGeometry = {
@@ -2630,8 +2631,8 @@ if (!window['$']) {
         // Most likely that is at the heart of the problem.
         //
         // Timewarp visualizer that shows the location of the current view and transitions between keyframes
-        //if (!tmJSON['projection-bounds'] && editorEnabled)
-        //  visualizer = new org.gigapan.timelapse.Visualizer(thisObj, snaplapse, visualizerGeometry);
+        if (enableContextMapOnDefaultUI && !tmJSON['projection-bounds'] && editorEnabled)
+          visualizer = new org.gigapan.timelapse.Visualizer(thisObj, snaplapse, visualizerGeometry);
       }
       if (settings["presentationSliderDiv"])
         snaplapseForPresentationSlider = new org.gigapan.timelapse.Snaplapse(settings["presentationSliderDiv"], thisObj, settings, "presentation");
