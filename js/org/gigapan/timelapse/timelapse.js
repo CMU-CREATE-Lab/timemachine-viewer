@@ -2975,12 +2975,6 @@ if (!window['$']) {
         "top": spinnerCenterHeight + "px",
         "left": spinnerCenterWidth + "px"
       });
-
-      // Extra 2px for the borders
-      $("#" + viewerDivId + " .instructions").css({
-        "width": newWidth + 2 + "px",
-        "height": newHeight + 2 + "px"
-      });
     }
 
     var showSpinner = function(viewerDivId) {

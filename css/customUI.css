@@ -351,7 +351,10 @@
   position: absolute;
   top: 0px;
   left: 0px;
-  margin: auto;
+  bottom: 0px;
+  right: 0px;
+  width: auto;
+  height: auto;
   z-index: 999;
   display: none;
 }

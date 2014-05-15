@@ -1254,10 +1254,6 @@ if (!org.gigapan.timelapse.Timelapse) {
         'left': sliderLeftMargin_pct + "%"
       });
       sliderWidth = $customTimeline.width();
-      $("#" + viewerDivId + " .customInstructions").css({
-        "width": $video.outerWidth() + "px",
-        "height": $video.outerHeight() + "px"
-      });
     };
     this.fitToWindow = fitToWindow;
 
