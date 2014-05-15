@@ -461,8 +461,10 @@ body, html {
   background-image: url(../images/loading.gif);
   width: 32px;
   height: 32px;
-  top: 0px;
-  left: 0px;
+  top: 50%;
+  left: 50%;
+  margin-left: -16px;
+  margin-top: -16px;
   position: absolute;
   display: none;
   z-index: 10;

@@ -276,7 +276,6 @@ if (!org.gigapan.timelapse.Timelapse) {
       // Create timeline slider
       createCustomTimeline();
 
-      // TODO
       // Update certain properties on window resize
       if (settings["viewportGeometry"] && settings["viewportGeometry"]["max"]) {
         $(window).resize(function() {

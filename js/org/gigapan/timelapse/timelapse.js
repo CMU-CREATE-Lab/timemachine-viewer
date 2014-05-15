@@ -1342,11 +1342,6 @@ if (!window['$']) {
       return _homeView().scale;
     };
 
-    this.updateDimensions = function(newViewportWidth, newViewportHeight) {
-      viewportWidth = newViewportWidth;
-      viewportHeight = newViewportHeight;
-    };
-
     var _viewScaleToZoomSlider = function(value) {
       var tmpValue = Math.sqrt((value - _getMinScale()) / (_getMaxScale() - _getMinScale()));
       return (1 / (Math.log(2))) * (Math.log(tmpValue + 1));
@@ -2937,7 +2932,8 @@ if (!window['$']) {
     }
 
     function setViewportSize(newWidth, newHeight) {
-      thisObj.updateDimensions(newWidth, newHeight);
+      viewportWidth = newWidth;
+      viewportHeight = newHeight;
 
       // Viewport
       $("#" + videoDivId).css({
@@ -2953,25 +2949,11 @@ if (!window['$']) {
         height: newHeight
       });
 
-      // Annotation stage (kineticjs)
+      // Resize kineticjs annotation stage
       var annotator = thisObj.getAnnotator();
       if (annotator) {
-        var annotationStage = annotator.getAnnotationStage();
-        if (annotationStage) {
-          var annotationLayer = annotator.getAnnotationLayer();
-          annotationStage.setSize(newWidth, newHeight);
-          annotationLayer.draw();
-        }
+        annotator.resize();
       }
-
-      // Spinner
-      var spinnerCenterHeight = newHeight / 2 - $("#" + viewerDivId + " .spinner").height() / 2;
-      var spinnerCenterWidth = newWidth / 2 - $("#" + viewerDivId + " .spinner").width() / 2;
-
-      $("#" + viewerDivId + " .spinnerOverlay").css({
-        "top": spinnerCenterHeight + "px",
-        "left": spinnerCenterWidth + "px"
-      });
     }
 
     var showSpinner = function(viewerDivId) {

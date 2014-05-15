@@ -37,9 +37,7 @@
 
  Authors:
  Paul Dille (pdille@andrew.cmu.edu)
-*/
-
-"use strict";
+ */"use strict";
 
 //
 // VERIFY NAMESPACE
@@ -123,6 +121,12 @@ if (!window['$']) {
     //
     // Public methods
     //
+    var resize = function() {
+      annotationStage.setSize(newWidth, newHeight);
+      annotationLayer.draw();
+    };
+    this.resize = resize;
+
     var setCanAddAnnotation = function(status) {
       canAddAnnotation = status;
     };
