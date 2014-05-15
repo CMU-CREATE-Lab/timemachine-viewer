@@ -158,15 +158,9 @@ if (!org.gigapan.timelapse.Timelapse) {
     var maxYearNumFrames;
 
     // In px.
-    var viewerWidth;
     var sliderWidth;
     var sliderLeftMargin;
     var sliderRightMargin;
-
-    // In % of total viewer width.
-    var sliderWidth_pct;
-    var sliderLeftMargin_pct;
-    var sliderRightMargin_pct;
 
     var isShowHoverEffect = true;
     var timeTick_width = 2;
@@ -272,12 +266,6 @@ if (!org.gigapan.timelapse.Timelapse) {
       $customControl = $(customControl);
       // Append element
       $viewer.append(customControl);
-      // Set position
-      $customControl.css({
-        left: "0px",
-        bottom: "0px",
-        width: "100%"
-      });
       // Create google logo
       $customControl.append('<div class="googleLogo"></div>');
       // Create the spinner for months
@@ -733,10 +721,9 @@ if (!org.gigapan.timelapse.Timelapse) {
       } else
         extraSliderRightMargin = 40;
       sliderRightMargin = $customHelpLabel.width() + extraSliderRightMargin;
-      var width_slider = (playerWidth - sliderLeftMargin - sliderRightMargin);
       $customTimeline.css({
         "left": sliderLeftMargin + "px",
-        "width": width_slider + "px"
+        "right": sliderRightMargin + "px"
       });
 
       // Create left, right, and hover date text
@@ -1245,14 +1232,6 @@ if (!org.gigapan.timelapse.Timelapse) {
       if (settings["viewportGeometry"] && settings["viewportGeometry"]["max"]) {
         timelapse.getDefaultUI().fitToWindow();
       }
-      viewerWidth = $viewer.width();
-      sliderLeftMargin_pct = (sliderLeftMargin / viewerWidth) * 100;
-      sliderRightMargin_pct = (sliderRightMargin / viewerWidth) * 100;
-      sliderWidth_pct = 100 - sliderLeftMargin_pct - sliderRightMargin_pct;
-      $customTimeline.css({
-        'width': sliderWidth_pct + "%",
-        'left': sliderLeftMargin_pct + "%"
-      });
       sliderWidth = $customTimeline.width();
     };
     this.fitToWindow = fitToWindow;

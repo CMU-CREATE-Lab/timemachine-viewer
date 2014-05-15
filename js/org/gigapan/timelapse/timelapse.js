@@ -2968,9 +2968,6 @@ if (!window['$']) {
       var spinnerCenterHeight = newHeight / 2 - $("#" + viewerDivId + " .spinner").height() / 2;
       var spinnerCenterWidth = newWidth / 2 - $("#" + viewerDivId + " .spinner").width() / 2;
 
-      // Controls
-      $("#" + viewerDivId + " .controls").width(newWidth);
-
       $("#" + viewerDivId + " .spinnerOverlay").css({
         "top": spinnerCenterHeight + "px",
         "left": spinnerCenterWidth + "px"
