@@ -346,30 +346,6 @@ if (!org.gigapan.timelapse.snaplapse) {
             $sortable.sortable("refreshPositions").sortable("refresh");
           }
         });
-        // Set the position
-        var $tiledContentHolder = $("#" + viewerDivId + " .tiledContentHolder");
-        var playerOffset = $tiledContentHolder.offset();
-        var playerParentOffset = $("#" + viewerDivId).parent().offset();
-        var newTopToolbar = $tiledContentHolder.outerHeight() + playerOffset.top - playerParentOffset.top;
-        var newTopKeyframeContainer = $("#" + composerDivId + " .toolbar").outerHeight() + newTopToolbar;
-        var newLeft = playerOffset.left - playerParentOffset.left;
-        var newWidth = $tiledContentHolder.width();
-        if (!usePresentationSlider) {
-          $("#" + composerDivId + " .toolbar").css({
-            "position": "absolute",
-            "top": newTopToolbar + "px",
-            "left": newLeft + "px",
-            "width": newWidth + "px"
-          });
-        } else {
-          newTopKeyframeContainer = newTopToolbar + 4;
-        }
-        $("#" + composerDivId + " .snaplapse_keyframe_container").css({
-          "position": "absolute",
-          "top": newTopKeyframeContainer + "px",
-          "left": newLeft + "px",
-          "width": newWidth + "px"
-        });
       }
 
       // Handle editor hiding
@@ -811,8 +787,7 @@ if (!org.gigapan.timelapse.snaplapse) {
             pointerLeft = maxPointerLeft - 5;
           var pointerLeftPercent = ((pointerLeft - captionLeft) / captionWidth) * 100;
           $keyframeSubtitleBox.css({
-            "left": captionLeft + "px",
-            "bottom": (documentHeight - elementOffset.top + 9) + "px"
+            "left": captionLeft + "px"
           });
           $keyframeSubtitle.css({
             "background-position": pointerLeftPercent + "% 100%"
@@ -934,12 +909,6 @@ if (!org.gigapan.timelapse.snaplapse) {
             leftOffset = $snaplapseContainer.offset().left;
             topOffset = $snaplapseContainer.offset().top;
           }
-          $("#" + composerDivId + " .snaplapsePlayingMask").css({
-            "left": leftOffset + 1,
-            "top": topOffset + 1,
-            "width": $snaplapseContainer.width(),
-            "height": $snaplapseContainer.height()
-          });
 
           if (uiEnabled) {
             // If users play tours from the editor
@@ -1697,22 +1666,12 @@ if (!org.gigapan.timelapse.snaplapse) {
     };
 
     var setToPresentationViewOnlyMode = function() {
-      var isMaxWindowSize = settings["viewportGeometry"] && settings["viewportGeometry"]["max"];
       var $snaplapseContainer = $("#" + composerDivId + " .snaplapse_keyframe_container");
       $snaplapseContainer.css({
-        "min-height": "73px",
-        "overflow-x": "auto",
-        "border-left": "1px solid black",
-        "border-bottom": "1px solid black",
-        "border-right": "1px solid black",
-        "height": "inherit"
+        "top": "0px",
+        "height": "inherit",
+        "overflow-x": "auto"
       });
-      if (!isMaxWindowSize) {
-        $snaplapseContainer.css({
-          "width": "inherit",
-          "max-width": $("#" + viewerDivId + " .tiledContentHolder").width() + "px"
-        });
-      }
       $sortable.sortable("disable").css({
         "height": "75px",
         "margin-left": "-1px",
@@ -1850,13 +1809,14 @@ if (!org.gigapan.timelapse.snaplapse) {
     loadNewSnaplapse(null);
 
     // TODO: There is sometimes a race condition that defaultUI and customUI is created before snaplapseViewer
+    var autoFitToWindow = timelapse.isAutoFitToWindow();
     if (useCustomUI) {
       var customUI = timelapse.getCustomUI();
-      if (customUI)
+      if (customUI && autoFitToWindow)
         customUI.fitToWindow();
     } else {
       var defaultUI = timelapse.getDefaultUI();
-      if (defaultUI && settings["viewportGeometry"] && settings["viewportGeometry"]["max"])
+      if (defaultUI && autoFitToWindow)
         defaultUI.fitToWindow();
     }
   };

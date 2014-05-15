@@ -51,13 +51,7 @@
           composerDiv: "composer1",
           presentationSliderDiv: "presentationSlider1",
           datasetType: "landsat",
-          viewportGeometry: {
-            width: 1068,
-            height: 600,
-            max: true
-          },
           onTimeMachinePlayerReady: function(viewerDivId) {
-            console.log("Time Machine player is ready.");
             setupPostMessageHandlers();
           },
           scaleBarOptions: {
@@ -77,7 +71,7 @@
     </script>
   </head>
   <body>
-    <div id="player1" style="position: absolute; top:10px; left:10px;"></div>
+    <div id="player1"></div>
     <div id="composer1"></div>
     <div id="presentationSlider1"></div>
   </body>

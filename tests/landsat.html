@@ -57,13 +57,7 @@
           presentationSliderDiv: "presentationSlider1",
           datasetType: "landsat",
           playOnLoad: true,
-          viewportGeometry: {
-            width: 1068,
-            height: 600,
-            max: true
-          },
           onTimeMachinePlayerReady: function(viewerDivId) {
-            console.log("Time Machine player is ready.");
             setupPostMessageHandlers();
             timelapse.getSnaplapseForPresentationSlider().getSnaplapseViewer().addEventListener("slide-changed", function(slideTitle) {
               post("from-timemachine-slide-changed", slideTitle);
@@ -85,7 +79,7 @@
     </script>
   </head>
   <body>
-    <div id="player1" style="position: absolute; top:10px; left:10px;"></div>
+    <div id="player1"></div>
     <div id="presentationSlider1"></div>
   </body>
 </html>

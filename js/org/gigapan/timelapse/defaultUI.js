@@ -634,48 +634,53 @@ if (!org.gigapan.timelapse.Timelapse) {
     this.togglePanControls = _togglePanControls;
 
     var fitToWindow = function() {
-      var newViewportWidth, newViewportHeight;
-      newViewportWidth = window.innerWidth - 2;
-      // Extra 2px for the borders
-      newViewportHeight = window.innerHeight - 2;
-      // Extra 2px for the borders
       var scaleBar = timelapse.getScaleBar();
       if (scaleBar)
         scaleBar.updateVideoSize();
 
-      var $toolbar = $("#" + settings["composerDiv"] + " .toolbar");
-      var $snaplapseKeyframeContainer = $("#" + settings["composerDiv"] + " .snaplapse_keyframe_container");
-      var $presentationSliderKeyframeContainer = $("#" + settings["presentationSliderDiv"] + " .snaplapse_keyframe_container");
+      var $viewerDiv = $("#" + viewerDivId);
+      var viewerBottomPx = 0;
+      if (editorEnabled)
+        viewerBottomPx = 210;
+      else {
+        if (presentationSliderEnabled)
+          viewerBottomPx = 100;
+      }
 
-      // 175 is the height of the keyframe container
-      // 103 is the height of the presentation slider container
-      // 41 is the height of toolbar
-      var keyframeContainerHeight = editorEnabled ? 175 : 0;
-      var toolbarHeight = editorEnabled ? 41 : 0;
-      var presentationSliderKeyframeContainerHeight = (!editorEnabled && presentationSliderEnabled) ? 103 : 0;
-      newViewportHeight -= keyframeContainerHeight + toolbarHeight + presentationSliderKeyframeContainerHeight;
-
-      // Ensure minimum dimensions to not break controls
-      if (newViewportWidth < minViewportWidth)
-        newViewportWidth = minViewportWidth;
-      if (newViewportHeight < minViewportHeight)
-        newViewportHeight = minViewportHeight;
-
-      $toolbar.css({
-        "top": newViewportHeight + 2,
-        "width": newViewportWidth
-      });
-      $snaplapseKeyframeContainer.css({
-        "top": newViewportHeight + toolbarHeight + 2,
-        "width": newViewportWidth
-      });
-      $presentationSliderKeyframeContainer.css({
-        "top": newViewportHeight + 6,
-        "width": "inherit",
-        "max-width": newViewportWidth
+      $viewerDiv.css({
+        "position": "absolute",
+        "top": "0px",
+        "left": "0px",
+        "right": "0px",
+        "bottom": viewerBottomPx + "px",
+        "width": "auto",
+        "height": "auto"
       });
 
-      timelapse.fitVideoToViewport(newViewportWidth, newViewportHeight);
+      var viewerWidth = $viewerDiv.outerWidth();
+      var viewerHeight = $viewerDiv.outerHeight();
+
+      $("#" + settings["composerDiv"]).css({
+        "position": "absolute",
+        "top": (viewerHeight - 2) + "px",
+        "left": "0px",
+        "right": "0px",
+        "bottom": "",
+        "width": "auto",
+        "height": ""
+      });
+
+      $("#" + settings["presentationSliderDiv"]).css({
+        "position": "absolute",
+        "top": (viewerHeight + 4) + "px",
+        "left": "0px",
+        "right": "0px",
+        "bottom": "",
+        "width": "auto",
+        "height": ""
+      });
+
+      timelapse.fitVideoToViewport();
       window.scrollTo(0, 0);
 
       if (visualizer)
@@ -733,7 +738,7 @@ if (!org.gigapan.timelapse.Timelapse) {
     if (!useCustomUI) {
       createMainUI();
       // We already add a resizing handler in customUI.js, so don't add it again for landsat and modis.
-      if (settings["viewportGeometry"] && settings["viewportGeometry"]["max"]) {
+      if (timelapse.isAutoFitToWindow()) {
         window.onresize = function() {
           fitToWindow();
         };

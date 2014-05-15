@@ -31,6 +31,28 @@
 
     <script src="../template_includes.js" type="text/javascript"></script>
 
+    <style>
+      #player1 {
+        position: absolute;
+        top: 10px;
+        left: 10px;
+        width: 843px;
+        height: 492px;
+      }
+      #composer1 {
+        position: absolute;
+        top: 500px;
+        left: 10px;
+        width: 843px;
+      }
+      #presentationSlider1 {
+        position: absolute;
+        top: 506px;
+        left: 10px;
+        width: 843px;
+      }
+    </style>
+
     <script type="text/javascript">
       jQuery.support.cors = true;
 
@@ -67,15 +89,9 @@
         var viewerSettings = {
           url: url,
           showFullScreenBtn: false,
-          //annotatorDiv: "annotator1",
           presentationSliderDiv: "presentationSlider1",
           composerDiv: "composer1",
-          viewportGeometry: {
-            width: 843,
-            height: 492
-          },
           onTimeMachinePlayerReady: function(viewerDivId) {
-            console.log("Time Machine player is ready.");
             setupPostMessageHandlers();
           },
           enableContextMapOnDefaultUI: true,
@@ -88,9 +104,8 @@
     </script>
   </head>
   <body>
-    <div id="player1" style="position: absolute; top:10px; left:10px;"></div>
+    <div id="player1"></div>
     <div id="composer1"></div>
     <div id="presentationSlider1"></div>
-    <div id="annotator1"></div>
   </body>
 </html>

@@ -158,7 +158,6 @@ if (!org.gigapan.timelapse.Timelapse) {
     var maxYearNumFrames;
 
     // In px.
-    var sliderWidth;
     var sliderLeftMargin;
     var sliderRightMargin;
 
@@ -277,12 +276,12 @@ if (!org.gigapan.timelapse.Timelapse) {
       createCustomTimeline();
 
       // Update certain properties on window resize
-      if (settings["viewportGeometry"] && settings["viewportGeometry"]["max"]) {
+      if (timelapse.isAutoFitToWindow()) {
         $(window).resize(function() {
           fitToWindow();
         });
+        fitToWindow();
       }
-      fitToWindow();
 
       if (datasetType == "modis") {
         timelapse.addTimeChangeListener(function() {
@@ -977,6 +976,7 @@ if (!org.gigapan.timelapse.Timelapse) {
     };
 
     var trackMouseAndSlide = function(event) {
+      var sliderWidth = $customTimeline.width();
       var nowXpx = event.pageX - viewer_offset.left - sliderLeftMargin;
       var nowX = (nowXpx / sliderWidth) * 100;
       var targetFrameIdx;
@@ -1228,10 +1228,7 @@ if (!org.gigapan.timelapse.Timelapse) {
     // Public methods
     //
     var fitToWindow = function() {
-      if (settings["viewportGeometry"] && settings["viewportGeometry"]["max"]) {
-        timelapse.getDefaultUI().fitToWindow();
-      }
-      sliderWidth = $customTimeline.width();
+      timelapse.getDefaultUI().fitToWindow();
     };
     this.fitToWindow = fitToWindow;
 

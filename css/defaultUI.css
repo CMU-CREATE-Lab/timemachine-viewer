@@ -68,15 +68,16 @@ body, html {
 }
 
 .tiledContentHolder {
-  position: relative;
-  width: 816px;
-  height: 288px;
+  position: absolute;
+  left: 1px;
+  top: 1px;
+  bottom: 1px;
+  right: 1px;
+  border: 1px solid #656565;
+  width: auto;
+  height: auto;
   background: black;
   overflow: hidden;
-  border-right: 1px solid #656565;
-  border-left: 1px solid #656565;
-  border-top: 1px solid #656565;
-  border-bottom: 1px solid #656565;
 }
 
 .ui-button .ui-icon.ui-icon-custom-stop {

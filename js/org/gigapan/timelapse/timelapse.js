@@ -134,11 +134,6 @@ if (!window['$']) {
     var startDwell = (!loopDwell || typeof (settings["loopDwell"]["startDwell"]) == "undefined") ? 0 : settings["loopDwell"]["startDwell"];
     var endDwell = (!loopDwell || typeof (settings["loopDwell"]["endDwell"]) == "undefined") ? 0 : settings["loopDwell"]["endDwell"];
     var blackFrameDetection = ( typeof (settings["blackFrameDetection"]) == "undefined") ? false : settings["blackFrameDetection"];
-    var viewportGeometry = {
-      width: ( typeof (settings["viewportGeometry"]) == "undefined" || typeof (settings["viewportGeometry"]['width']) == "undefined") ? undefined : settings["viewportGeometry"]['width'],
-      height: ( typeof (settings["viewportGeometry"]) == "undefined" || typeof (settings["viewportGeometry"]['height']) == "undefined") ? undefined : settings["viewportGeometry"]['height'],
-      max: ( typeof (settings["viewportGeometry"]) == "undefined" || typeof (settings["viewportGeometry"]['max']) == "undefined") ? false : settings["viewportGeometry"]['max']
-    };
     var skippedFramesAtEnd = ( typeof (settings["skippedFramesAtEnd"]) == "undefined" || settings["skippedFramesAtEnd"] < 0) ? 0 : settings["skippedFramesAtEnd"];
     var skippedFramesAtStart = ( typeof (settings["skippedFramesAtStart"]) == "undefined" || settings["skippedFramesAtStart"] < 0) ? 0 : settings["skippedFramesAtStart"];
     var mediaType = ( typeof (settings["mediaType"]) == "undefined") ? null : settings["mediaType"];
@@ -203,6 +198,7 @@ if (!window['$']) {
     var didHashChangeFirstTimeOnLoad = false;
     var didFirstTimeOnLoad = false;
     var doNotResetViewerSize = false;
+    var autoFitToWindow = false;
 
     // Viewer
     var viewerType;
@@ -338,6 +334,10 @@ if (!window['$']) {
     //
     // Public methods
     //
+    this.isAutoFitToWindow = function() {
+      return autoFitToWindow;
+    };
+
     this.getDatasetType = function() {
       return datasetType;
     };
@@ -1369,26 +1369,46 @@ if (!window['$']) {
     };
     this.fullScreen = _fullScreen;
 
-    var fitVideoToViewport = function(newViewportWidth, newViewportHeight) {
-      if (newViewportHeight == undefined)
-        newViewportHeight = viewportHeight;
-      if (newViewportWidth == undefined)
-        newViewportWidth = viewportWidth;
+    var fitVideoToViewport = function() {
+      var $viewerDiv = $("#" + viewerDivId);
+      viewportWidth = $viewerDiv.width();
+      viewportHeight = $viewerDiv.height();
+
+      if ( typeof viewportWidth == "undefined") {
+        viewportWidth = minViewportWidth;
+        $viewerDiv.css("width", minViewportWidth);
+      }
+      if ( typeof viewportHeight == "undefined") {
+        viewportHeight = minViewportHeight;
+        $viewerDiv.css("width", minViewportHeight);
+      }
+
       var originalVideoStretchRatio = videoStretchRatio;
       var originalVideoWidth = datasetJSON["video_width"] - datasetJSON["tile_width"];
       var originalVideoHeight = datasetJSON["video_height"] - datasetJSON["tile_height"];
+
       // If the video is too small, we need to stretch the video to fit the viewport,
       // so users don't see black bars around the viewport
-      videoStretchRatio = Math.max(newViewportWidth / originalVideoWidth, newViewportHeight / originalVideoHeight);
+      videoStretchRatio = Math.max(viewportWidth / originalVideoWidth, viewportHeight / originalVideoHeight);
       levelThreshold = defaultLevelThreshold - log2(videoStretchRatio);
       scaleRatio = videoStretchRatio / originalVideoStretchRatio;
-      setViewportSize(newViewportWidth, newViewportHeight);
-      readVideoDivSize();
+
+      // Update canvas size
+      $(canvas).attr({
+        width: viewportWidth,
+        height: viewportHeight
+      });
+      $(canvasTmp).attr({
+        width: viewportWidth,
+        height: viewportHeight
+      });
+
       // Stretching the video affects the home view,
-      // so set home view to undefined so that it gets recomputed
+      // set home view to undefined so that it gets recomputed
       homeView = undefined;
       _homeView();
-      // Set parameters
+
+      // Set to the correct view
       if (view) {
         view.scale *= scaleRatio;
       } else {
@@ -1396,6 +1416,13 @@ if (!window['$']) {
         view = $.extend({}, _homeView());
       }
       _warpTo(view);
+
+      // TODO implement a resize listener and put this in the annotator class
+      // Resize kineticjs annotation stage
+      var annotator = thisObj.getAnnotator();
+      if (annotator) {
+        annotator.resize();
+      }
     };
     this.fitVideoToViewport = fitVideoToViewport;
 
@@ -2014,8 +2041,6 @@ if (!window['$']) {
       metadata = data;
       timelapseDurationInSeconds = (frames - 0.7) / data['fps'];
 
-      readVideoDivSize();
-
       if (loadTimelapseWithPreviousViewAndTime && captureTimes.length > 0 && captureTimes[timelapseCurrentCaptureTimeIndex].length >= 11) {
         var captureTimeStamp = captureTimes[timelapseCurrentCaptureTimeIndex].substring(11);
         previousCaptureTime = new Date("2000/01/01 " + captureTimeStamp).toTimeString().substr(0, 5);
@@ -2031,11 +2056,6 @@ if (!window['$']) {
           captureTimes.push("--");
         }
       }
-    };
-
-    var readVideoDivSize = function() {
-      viewportWidth = $(videoDiv).width();
-      viewportHeight = $(videoDiv).height();
     };
 
     var refresh = function() {
@@ -2669,39 +2689,6 @@ if (!window['$']) {
       setupSliderHandlers(viewerDivId);
     }
 
-    var computeViewportGeometry = function(data) {
-      if (viewportGeometry.max == false) {
-        if (viewportGeometry.width == undefined)
-          viewportGeometry.width = data["video_width"] - data["tile_width"];
-        if (viewportGeometry.height == undefined)
-          viewportGeometry.height = data["video_height"] - data["tile_height"];
-        if (visualizerGeometry.height == undefined)
-          visualizerGeometry.height = viewportGeometry.height / 4.3;
-        if (visualizerGeometry.width == undefined)
-          visualizerGeometry.width = viewportGeometry.width / 4.3;
-        if (viewportGeometry.height < minViewportHeight) {
-          viewportGeometry.height = minViewportHeight;
-          visualizerGeometry.height = visualizerGeometry.height;
-          visualizerGeometry.width = visualizerGeometry.height * (data["video_width"] / data["video_height"]);
-        }
-        if (viewportGeometry.width < minViewportWidth)
-          viewportGeometry.width = minViewportWidth;
-      } else {
-        $("#" + viewerDivId).css({
-          "position": "absolute",
-          "top": "0px",
-          "left": "0px"
-        });
-        $("body").css("overflow", "hidden");
-        if (settings['annotatorDiv'])
-          $("#" + settings['annotatorDiv']).hide();
-      }
-
-      return {
-        width: viewportGeometry.width,
-        height: viewportGeometry.height
-      };
-    };
 
     this.switchLayer = function(layerNum) {
       var newIndex = layerNum * tmJSON["sizes"].length;
@@ -2785,12 +2772,15 @@ if (!window['$']) {
       // track of what video replaced it.
       currentIdx = null;
       onPanoLoadSuccessCallback(data, null, true);
-      //debug
-      var newViewportGeometry = computeViewportGeometry(data);
 
-      if (!doNotResetViewerSize)
-        fitVideoToViewport(newViewportGeometry.width, newViewportGeometry.height);
-      else {
+      if (!doNotResetViewerSize) {
+        // If no css is specified, fit the viewport to window
+        if ($("#" + viewerDivId).css("position") == "static")
+          autoFitToWindow = true;
+        // If we are going to fit the viewport to window, defaultUI class will handle it
+        if (!autoFitToWindow)
+          fitVideoToViewport();
+      } else {
         _warpTo(view);
         doNotResetViewerSize = false;
       }
@@ -2928,31 +2918,6 @@ if (!window['$']) {
         $("#player").hide();
         $("#time_warp_composer").hide();
         $("#html5_overridden_message").show();
-      }
-    }
-
-    function setViewportSize(newWidth, newHeight) {
-      viewportWidth = newWidth;
-      viewportHeight = newHeight;
-
-      // Viewport
-      $("#" + videoDivId).css({
-        "width": newWidth + "px",
-        "height": newHeight + "px"
-      });
-      $(canvas).attr({
-        width: newWidth,
-        height: newHeight
-      });
-      $(canvasTmp).attr({
-        width: newWidth,
-        height: newHeight
-      });
-
-      // Resize kineticjs annotation stage
-      var annotator = thisObj.getAnnotator();
-      if (annotator) {
-        annotator.resize();
       }
     }
 

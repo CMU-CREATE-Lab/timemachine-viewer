@@ -67,16 +67,9 @@
         var viewerSettings = {
           url: url,
           showFullScreenBtn: false,
-          //annotatorDiv: "annotator1",
           presentationSliderDiv: "presentationSlider1",
           composerDiv: "composer1",
-          viewportGeometry: {
-            width: 1068,
-            height: 600,
-            max: true
-          },
           onTimeMachinePlayerReady: function(viewerDivId) {
-            console.log("Time Machine player is ready.");
             setupPostMessageHandlers();
             //timelapse.loadSharedDataFromUnsafeURL("#tour=EFBkDAx4r09Js1vjjJ2F__BkDyuCp_17uRk_s0lI2F__BkD1jF45xr6Z5kv8qKhJ__BkD9gJumu-rSu7g2oI7C__BkD-lMsx6nyKsj83_HyI__Untitled_B", true);
           },
@@ -89,9 +82,8 @@
     </script>
   </head>
   <body>
-    <div id="player1" style="position: absolute; top:10px; left:10px;"></div>
+    <div id="player1"></div>
     <div id="composer1"></div>
     <div id="presentationSlider1"></div>
-    <div id="annotator1"></div>
   </body>
 </html>

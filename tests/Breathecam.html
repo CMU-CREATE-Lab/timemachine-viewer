@@ -43,13 +43,7 @@
           presentationSliderDiv: "presentationSlider1",
           composerDiv: "composer1",
           mediaType: ".mp4",
-          viewportGeometry: {
-            width: 1068,
-            height: 600,
-            max: true
-          },
           onTimeMachinePlayerReady: function(viewerDivId) {
-            console.log("Time Machine player is ready.");
             setupPostMessageHandlers();
           },
           disableTourLooping: true,
@@ -64,7 +58,7 @@
     </script>
   </head>
   <body>
-    <div id="player1" style="position: absolute; top:10px; left:10px;"></div>
+    <div id="player1"></div>
     <div id="composer1"></div>
     <div id="presentationSlider1"></div>
   </body>

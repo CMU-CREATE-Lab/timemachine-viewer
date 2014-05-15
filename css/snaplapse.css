@@ -246,13 +246,17 @@
 }
 
 .snaplapse_keyframe_container {
-  width: 1079px;
+  position: absolute;
+  top: 37px;
+  left: 1px;
+  right: 1px;
+  border-bottom: 1px solid #656565;
+  border-left: 1px solid #656565;
+  border-right: 1px solid #656565;
+  width: auto;
   height: 174px;
   padding: 0;
   margin: 0;
-  border-left: solid 1px #656565;
-  border-right: solid 1px #656565;
-  border-bottom: solid 1px #656565;
   background-color: white;
   overflow-x: scroll;
   overflow-y: hidden;
@@ -606,10 +610,11 @@
 .snaplapsePlayingMask {
   position: absolute;
   opacity: 0;
-  width: 100%;
-  height: 100%;
-  z-index: 19;
+  left: 0px;
   top: 0px;
+  width: 100%;
+  height: 212px;
+  z-index: 19;
   background: black;
 }
 
@@ -664,6 +669,7 @@
 
 .keyframeSubtitleBoxForHovering {
   z-index: 1100;
+  bottom: 10px;
   font-size: 12px;
   color: black;
   position: absolute;
@@ -700,14 +706,14 @@
 }
 
 .toolbar {
-  width: inherit;
-  height: 40px;
+  position: absolute;
+  top: 0px;
+  left: 1px;
+  right: 1px;
+  width: auto;
+  height: 36px;
   background-color: rgb(220,220,220);
-  position: relative;
-  border-right: 1px solid #656565;
-  border-left: 1px solid #656565;
-  border-top: 0px solid #838383;
-  border-bottom: 1px solid #656565;
+  border: 1px solid #656565;
   font-size: 12px;
   margin: 0;
   padding: 0;
@@ -742,7 +748,7 @@
   position: absolute;
   width: 138px;
   height: 20px;
-  bottom: 10px;
+  bottom: 8px;
   left: 20px;
   background: white;
   border: 1px solid #656565;
@@ -840,8 +846,9 @@
   width: 120px;
   color: white;
   background-color: #71AF71;
-  border-right: 1px solid #656565 !important;
+  border-right: 0px !important;
   border-left: 1px solid #656565 !important;
+  margin-right: 0px;
 }
 
 .editorModeToolbar .playStopTimewarp.ui-state-default:hover:not(
@@ -885,7 +892,7 @@
 
 .addressLookup {
   position: absolute;
-  top: 10px;
+  bottom: 8px;
   left: 172px;
   z-index: 99;
   height: 13px;

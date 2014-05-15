@@ -139,12 +139,15 @@
   width: 156px;
   height: 58px;
   position: absolute;
-  bottom: 53px;
-  right: -22px;
+  bottom: 68px;
+  right: 19px;
   background-image: url("../images/googleLogo.png");
   -ms-transform: scale(0.5); /* IE 9 */
   -webkit-transform: scale(0.5); /* Chrome, Safari, Opera */
   transform: scale(0.5);
+  -ms-transform-origin: 100% 100%;
+  -webkit-transform-origin: 100% 100%;
+  transform-origin: 100% 100%;
 }
 
 .customControl {
@@ -153,7 +156,7 @@
   height: 60px;
   left: 0px;
   right: 0px;
-  bottom : 0px;
+  bottom: 0px;
   width: auto;
   z-index: 19;
   -webkit-user-select: none;
