@@ -1371,6 +1371,29 @@ if (!window['$']) {
 
     var fitVideoToViewport = function() {
       var $viewerDiv = $("#" + viewerDivId);
+
+      // If no css is specified, fit the viewport to window
+      // TODO: this block duplicates the code in defaultUI.fitToWindow(), refactor it
+      if ($viewerDiv.css("position") == "static") {
+        autoFitToWindow = true;
+        var viewerBottomPx = 0;
+        if (editorEnabled)
+          viewerBottomPx = 210;
+        else {
+          if (presentationSliderEnabled)
+            viewerBottomPx = 100;
+        }
+        $viewerDiv.css({
+          "position": "absolute",
+          "top": "0px",
+          "left": "0px",
+          "right": "0px",
+          "bottom": viewerBottomPx + "px",
+          "width": "auto",
+          "height": "auto"
+        });
+      }
+
       viewportWidth = $viewerDiv.width();
       viewportHeight = $viewerDiv.height();
 
@@ -2774,12 +2797,7 @@ if (!window['$']) {
       onPanoLoadSuccessCallback(data, null, true);
 
       if (!doNotResetViewerSize) {
-        // If no css is specified, fit the viewport to window
-        if ($("#" + viewerDivId).css("position") == "static")
-          autoFitToWindow = true;
-        // If we are going to fit the viewport to window, defaultUI class will handle it
-        if (!autoFitToWindow)
-          fitVideoToViewport();
+        fitVideoToViewport();
       } else {
         _warpTo(view);
         doNotResetViewerSize = false;
