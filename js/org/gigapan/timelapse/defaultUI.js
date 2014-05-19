@@ -404,7 +404,7 @@ if (!org.gigapan.timelapse.Timelapse) {
           },
           text: false
         }).click(function() {
-          timelapse.warpTo(timelapse.homeView());
+          timelapse.warpTo(timelapse.getHomeView());
           UTIL.addGoogleAnalyticEvent('button', 'click', 'viewer-zoom-to-home-view');
         });
       }
@@ -415,7 +415,7 @@ if (!org.gigapan.timelapse.Timelapse) {
       var $zoomSlider = $("#" + viewerDivId + " .zoomSlider");
       $zoomSlider.slider({
         orientation: "vertical",
-        value: timelapse.viewScaleToZoomSlider(timelapse.getDefaultScale()),
+        value: 0,
         min: 0,
         max: 1,
         step: 0.01,

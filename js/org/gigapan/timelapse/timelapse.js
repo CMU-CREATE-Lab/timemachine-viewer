@@ -244,6 +244,7 @@ if (!window['$']) {
     var timelapseCurrentCaptureTimeIndex = 0;
     var captureTimes = [];
     var homeView;
+    var panoView;
     var firstVideoId;
     var topLevelVideo = {};
     var originalPlaybackRate = playbackSpeed;
@@ -305,7 +306,7 @@ if (!window['$']) {
         "lat": undefined,
         "lng": undefined
       },
-      "homeView": {
+      "panoView": {
         "xmin": undefined,
         "ymin": undefined
       },
@@ -333,6 +334,14 @@ if (!window['$']) {
     //
     // Public methods
     //
+    this.getHomeView = function() {
+      return homeView;
+    };
+
+    this.getPanoView = function() {
+      return panoView;
+    };
+
     this.isFitToBrowserWindow = function() {
       return isFitToBrowserWindow;
     };
@@ -594,7 +603,7 @@ if (!window['$']) {
       if (scale == undefined) {
         scale = view.scale;
       }
-      return Math.round(1e3 * Math.log(scale / (_homeView().scale)) / Math.log(2)) / 1e3;
+      return Math.round(1e3 * Math.log(scale / (panoView.scale)) / Math.log(2)) / 1e3;
     };
     this.scaleToZoom = scaleToZoom;
 
@@ -602,7 +611,7 @@ if (!window['$']) {
       if (zoom == undefined) {
         zoom = getCurrentZoom();
       }
-      return Math.pow(2, zoom) * _homeView().scale;
+      return Math.pow(2, zoom) * panoView.scale;
     };
     this.zoomToScale = zoomToScale;
 
@@ -768,23 +777,24 @@ if (!window['$']) {
     };
     this.warpTo = _warpTo;
 
-    var _homeView = function() {
-      if (homeView == undefined || !UTIL.isNumber(homeView.scale)) {
-        if (settings["newHomeView"] != undefined) {
-          // Store the home view so we don't need to compute it every time
-          homeView = pixelBoundingBoxToPixelCenter(pixelCenterToPixelBoundingBoxView(settings["newHomeView"]).bbox);
-        } else {
-          homeView = pixelBoundingBoxToPixelCenter({
-            xmin: 0,
-            ymin: 0,
-            xmax: panoWidth,
-            ymax: panoHeight
-          });
-        }
+    var computeHomeView = function() {
+      computePanoView();
+      if (settings["newHomeView"] != undefined) {
+        // Store the home view so we don't need to compute it every time
+        homeView = pixelBoundingBoxToPixelCenter(pixelCenterToPixelBoundingBoxView(settings["newHomeView"]).bbox);
+      } else {
+        homeView = panoView;
       }
-      return homeView;
     };
-    this.homeView = _homeView;
+
+    var computePanoView = function() {
+      panoView = pixelBoundingBoxToPixelCenter({
+        xmin: 0,
+        ymin: 0,
+        xmax: panoWidth,
+        ymax: panoHeight
+      });
+    };
 
     this.getBoundingBoxForCurrentView = function() {
       var bboxView = pixelCenterToPixelBoundingBoxView(view);
@@ -897,11 +907,11 @@ if (!window['$']) {
 
     var getViewStrAsProjection = function() {
       var latlng = _getProjection().pointToLatlng(view);
-      return Math.round(1e5 * latlng.lat) / 1e5 + "," + Math.round(1e5 * latlng.lng) / 1e5 + "," + Math.round(1e3 * Math.log(view.scale / _homeView().scale) / Math.log(2)) / 1e3 + "," + "latLng";
+      return Math.round(1e5 * latlng.lat) / 1e5 + "," + Math.round(1e5 * latlng.lng) / 1e5 + "," + Math.round(1e3 * Math.log(view.scale / panoView.scale) / Math.log(2)) / 1e3 + "," + "latLng";
     };
 
     var getViewStrAsPoints = function() {
-      return Math.round(1e5 * view.x) / 1e5 + "," + Math.round(1e5 * view.y) / 1e5 + "," + Math.round(1e3 * Math.log(view.scale / _homeView().scale) / Math.log(2)) / 1e3 + "," + "pts";
+      return Math.round(1e5 * view.x) / 1e5 + "," + Math.round(1e5 * view.y) / 1e5 + "," + Math.round(1e3 * Math.log(view.scale / panoView.scale) / Math.log(2)) / 1e3 + "," + "pts";
     };
 
     var _getViewStr = function() {
@@ -1323,9 +1333,8 @@ if (!window['$']) {
     };
 
     var _getMinScale = function() {
-      return _homeView().scale * 0.5;
+      return panoView.scale * 0.5;
     };
-
     this.getMinScale = _getMinScale;
 
     var _getMaxScale = function() {
@@ -1334,11 +1343,10 @@ if (!window['$']) {
       else
         return 2;
     };
-
     this.getMaxScale = _getMaxScale;
 
     this.getDefaultScale = function() {
-      return _homeView().scale;
+      return panoView.scale;
     };
 
     var _viewScaleToZoomSlider = function(value) {
@@ -1422,8 +1430,8 @@ if (!window['$']) {
         if (scaleBar)
           scaleBar.updateCachedVideoSize();
         // TODO implement a resize listener and put this in the visualizer class
-        if (visualizer)
-          visualizer.setMode(mode, false);
+        if (visualizer && defaultUI)
+          visualizer.setMode(defaultUI.getMode(), false);
         // Set the listener when resizing the browser window
         window.onresize = function() {
           resizeUI();
@@ -1467,8 +1475,7 @@ if (!window['$']) {
 
       // Stretching the video affects the home view,
       // set home view to undefined so that it gets recomputed
-      homeView = undefined;
-      _homeView();
+      computeHomeView();
 
       // Set to the correct view
       if (view) {
@@ -1936,7 +1943,7 @@ if (!window['$']) {
       return {
         x: theView.center.x,
         y: theView.center.y,
-        scale: Math.pow(2, theView.zoom) * _homeView().scale
+        scale: Math.pow(2, theView.zoom) * panoView.scale
       };
     };
     this.pixelCenterViewToPixelCenter = pixelCenterViewToPixelCenter;
@@ -1953,7 +1960,7 @@ if (!window['$']) {
       return {
         x: point.x,
         y: point.y,
-        scale: Math.pow(2, theView.zoom) * _homeView().scale
+        scale: Math.pow(2, theView.zoom) * panoView.scale
       };
     };
     this.latLngCenterViewToPixelCenter = latLngCenterViewToPixelCenter;
@@ -2147,10 +2154,10 @@ if (!window['$']) {
 
     // Initialize the tag info with location data
     var initializeTagInfo_locationData = function() {
-      var boundingBox = pixelCenterToPixelBoundingBoxView(homeView).bbox;
-      tagInfo_locationData.homeView.xmin = boundingBox.xmin;
-      tagInfo_locationData.homeView.ymin = boundingBox.ymin;
-      tagInfo_locationData.homeView.scale = homeView.scale;
+      var boundingBox = pixelCenterToPixelBoundingBoxView(panoView).bbox;
+      tagInfo_locationData.panoView.xmin = boundingBox.xmin;
+      tagInfo_locationData.panoView.ymin = boundingBox.ymin;
+      tagInfo_locationData.panoView.scale = panoView.scale;
       if (visualizer) {
         var navigationMap = visualizer.getNavigationMap();
         var navigationMapWidth = $(navigationMap).width();
@@ -2288,8 +2295,8 @@ if (!window['$']) {
 
     var viewPointToContextMapPoint = function(viewPoint) {
       return {
-        x: (viewPoint.x - tagInfo_locationData.homeView.xmin) * tagInfo_locationData.scale_map_nav,
-        y: (viewPoint.y - tagInfo_locationData.homeView.ymin) * tagInfo_locationData.scale_map_nav
+        x: (viewPoint.x - tagInfo_locationData.panoView.xmin) * tagInfo_locationData.scale_map_nav,
+        y: (viewPoint.y - tagInfo_locationData.panoView.ymin) * tagInfo_locationData.scale_map_nav
       };
     };
     this.viewPointToContextMapPoint = viewPointToContextMapPoint;
@@ -2858,13 +2865,14 @@ if (!window['$']) {
         if (!loadTimelapseWithPreviousViewAndTime)
           settings["newHomeView"] = undefined;
         // Reset home view
-        homeView = undefined;
-        _homeView();
+        computeHomeView();
         // Reset current view
         if (!loadTimelapseWithPreviousViewAndTime)
           view = $.extend({}, homeView);
         _warpTo(view);
       }
+
+
 
       if (visualizer) {
         topLevelVideo.src = getTileidxUrl(0);

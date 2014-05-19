@@ -625,12 +625,12 @@ if (!org.gigapan.timelapse.Timelapse) {
     // Load the navigation map
     var loadNavigationMap = function(tagInfo_locationData) {
       // Draw the home view to the canvas
-      var xmin_homeView = tagInfo_locationData.homeView.xmin;
-      var ymin_homeView = tagInfo_locationData.homeView.ymin;
-      var scale_homeView = tagInfo_locationData.homeView.scale;
+      var xmin_panoView = tagInfo_locationData.panoView.xmin;
+      var ymin_panoView = tagInfo_locationData.panoView.ymin;
+      var scale_panoView = tagInfo_locationData.panoView.scale;
       var videoDiv = document.getElementById(videoDivID);
-      var videoLeft = -(xmin_homeView * scale_homeView);
-      var videoTop = -(ymin_homeView * scale_homeView);
+      var videoLeft = -(xmin_panoView * scale_panoView);
+      var videoTop = -(ymin_panoView * scale_panoView);
       var scale = $(navigationMap).width() / $(videoDiv).width();
       var video = videoset.getCurrentActiveVideo();
       navigationMap_drawImage.x = videoLeft * scale;
