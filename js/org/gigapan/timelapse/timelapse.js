@@ -197,7 +197,6 @@ if (!window['$']) {
     var loadTimelapseWithPreviousViewAndTime = false;
     var didHashChangeFirstTimeOnLoad = false;
     var didFirstTimeOnLoad = false;
-    var doNotResetViewerSize = false;
     var autoFitToWindow = false;
 
     // Viewer
@@ -2677,6 +2676,8 @@ if (!window['$']) {
       if (settings["annotatorDiv"])
         annotator = new org.gigapan.timelapse.Annotator(settings["annotatorDiv"], thisObj);
 
+      fitVideoToViewport();
+
       defaultUI = new org.gigapan.timelapse.DefaultUI(thisObj, settings);
       if (useCustomUI)
         customUI = new org.gigapan.timelapse.CustomUI(thisObj, settings);
@@ -2717,7 +2718,6 @@ if (!window['$']) {
       var newIndex = layerNum * tmJSON["sizes"].length;
       datasetLayer = layerNum;
       loadTimelapseWithPreviousViewAndTime = true;
-      doNotResetViewerSize = true;
       validateAndSetDatasetIndex(newIndex);
       loadTimelapseCallback(tmJSON);
     };
@@ -2796,13 +2796,6 @@ if (!window['$']) {
       currentIdx = null;
       onPanoLoadSuccessCallback(data, null, true);
 
-      if (!doNotResetViewerSize) {
-        fitVideoToViewport();
-      } else {
-        _warpTo(view);
-        doNotResetViewerSize = false;
-      }
-
       // The UI is ready now and we can display it
       $("#" + viewerDivId).css("visibility", "visible");
 
@@ -2826,6 +2819,7 @@ if (!window['$']) {
           // are properly set for the newly loaded timelapse.
           _seek(0);
         }
+        refresh();
       }
 
       if (visualizer) {
