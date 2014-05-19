@@ -197,7 +197,7 @@ if (!window['$']) {
     var loadTimelapseWithPreviousViewAndTime = false;
     var didHashChangeFirstTimeOnLoad = false;
     var didFirstTimeOnLoad = false;
-    var autoFitToWindow = false;
+    var isFitToBrowserWindow;
 
     // Viewer
     var viewerType;
@@ -333,8 +333,8 @@ if (!window['$']) {
     //
     // Public methods
     //
-    this.isAutoFitToWindow = function() {
-      return autoFitToWindow;
+    this.isFitToBrowserWindow = function() {
+      return isFitToBrowserWindow;
     };
 
     this.getDatasetType = function() {
@@ -1368,13 +1368,18 @@ if (!window['$']) {
     };
     this.fullScreen = _fullScreen;
 
-    var fitVideoToViewport = function() {
+    var resizeUI = function() {
       var $viewerDiv = $("#" + viewerDivId);
 
-      // If no css is specified, fit the viewport to window
-      // TODO: this block duplicates the code in defaultUI.fitToWindow(), refactor it
-      if ($viewerDiv.css("position") == "static") {
-        autoFitToWindow = true;
+      if ( typeof isFitToBrowserWindow == "undefined") {
+        if ($viewerDiv.css("position") == "static")
+          isFitToBrowserWindow = true;
+        else
+          isFitToBrowserWindow = false;
+      }
+
+      if (isFitToBrowserWindow) {
+        // If no css is specified, fit the viewport to the browser window
         var viewerBottomPx = 0;
         if (editorEnabled)
           viewerBottomPx = 210;
@@ -1391,18 +1396,53 @@ if (!window['$']) {
           "width": "auto",
           "height": "auto"
         });
-      }
-
-      viewportWidth = $viewerDiv.width();
-      viewportHeight = $viewerDiv.height();
-
-      if ( typeof viewportWidth == "undefined") {
-        viewportWidth = minViewportWidth;
-        $viewerDiv.css("width", minViewportWidth);
-      }
-      if ( typeof viewportHeight == "undefined") {
-        viewportHeight = minViewportHeight;
-        $viewerDiv.css("width", minViewportHeight);
+        viewportWidth = $viewerDiv.width();
+        viewportHeight = $viewerDiv.height();
+        // TODO implement a resize listener and put this in the snaplapseViewer class
+        $("#" + settings["composerDiv"]).css({
+          "position": "absolute",
+          "top": (viewportHeight - 2) + "px",
+          "left": "0px",
+          "right": "0px",
+          "bottom": "",
+          "width": "auto",
+          "height": ""
+        });
+        // TODO implement a resize listener and put this in the snaplapseViewer class
+        $("#" + settings["presentationSliderDiv"]).css({
+          "position": "absolute",
+          "top": (viewportHeight + 4) + "px",
+          "left": "0px",
+          "right": "0px",
+          "bottom": "",
+          "width": "auto",
+          "height": ""
+        });
+        // TODO implement a resize listener and put this in the scaleBar class
+        if (scaleBar)
+          scaleBar.updateCachedVideoSize();
+        // TODO implement a resize listener and put this in the visualizer class
+        if (visualizer)
+          visualizer.setMode(mode, false);
+        // Set the listener when resizing the browser window
+        window.onresize = function() {
+          resizeUI();
+        };
+        // Scroll to the top left of the browser window
+        window.scrollTo(0, 0);
+        updateTagInfo_locationData();
+      } else {
+        // If css is specified, validate the css
+        viewportWidth = $viewerDiv.width();
+        viewportHeight = $viewerDiv.height();
+        if ( typeof viewportWidth == "undefined") {
+          viewportWidth = minViewportWidth;
+          $viewerDiv.css("width", minViewportWidth);
+        }
+        if ( typeof viewportHeight == "undefined") {
+          viewportHeight = minViewportHeight;
+          $viewerDiv.css("width", minViewportHeight);
+        }
       }
 
       var originalVideoStretchRatio = videoStretchRatio;
@@ -1435,18 +1475,16 @@ if (!window['$']) {
         view.scale *= scaleRatio;
       } else {
         // If it is the first time that we call this function, set the view to home view
-        view = $.extend({}, _homeView());
+        view = $.extend({}, homeView);
       }
       _warpTo(view);
 
       // TODO implement a resize listener and put this in the annotator class
-      // Resize kineticjs annotation stage
       var annotator = thisObj.getAnnotator();
-      if (annotator) {
+      if (annotator)
         annotator.resize();
-      }
     };
-    this.fitVideoToViewport = fitVideoToViewport;
+    this.resizeUI = resizeUI;
 
     var _computeMotion = function(start, end, timeRatio) {
       var s0 = start.xmax - start.xmin;
@@ -2671,16 +2709,17 @@ if (!window['$']) {
         if (enableContextMapOnDefaultUI && !tmJSON['projection-bounds'] && editorEnabled)
           visualizer = new org.gigapan.timelapse.Visualizer(thisObj, snaplapse, visualizerGeometry);
       }
+
       if (settings["presentationSliderDiv"])
         snaplapseForPresentationSlider = new org.gigapan.timelapse.Snaplapse(settings["presentationSliderDiv"], thisObj, settings, "presentation");
       if (settings["annotatorDiv"])
         annotator = new org.gigapan.timelapse.Annotator(settings["annotatorDiv"], thisObj);
 
-      fitVideoToViewport();
-
       defaultUI = new org.gigapan.timelapse.DefaultUI(thisObj, settings);
       if (useCustomUI)
         customUI = new org.gigapan.timelapse.CustomUI(thisObj, settings);
+
+      resizeUI();
 
       // TODO(pdille):
       // Bring back this feature for those with RealPlayer/DivX or other plugins that take-over the video tag element.
@@ -2785,10 +2824,6 @@ if (!window['$']) {
     var loadVideoSetCallback = function(data) {
       datasetJSON = data;
 
-      homeView = null;
-      if (!loadTimelapseWithPreviousViewAndTime)
-        view = null;
-
       // Reset currentIdx so that we'll load in the new tile with the different resolution.  We don't null the
       // currentVideo here because 1) it will be assigned in the refresh() method when it compares the bestIdx
       // and the currentIdx; and 2) we want currentVideo to be non-null so that the VideosetStats can keep
@@ -2819,7 +2854,16 @@ if (!window['$']) {
           // are properly set for the newly loaded timelapse.
           _seek(0);
         }
-        refresh();
+        // Discard the custom home view setting
+        if (!loadTimelapseWithPreviousViewAndTime)
+          settings["newHomeView"] = undefined;
+        // Reset home view
+        homeView = undefined;
+        _homeView();
+        // Reset current view
+        if (!loadTimelapseWithPreviousViewAndTime)
+          view = $.extend({}, homeView);
+        _warpTo(view);
       }
 
       if (visualizer) {

@@ -617,7 +617,6 @@ if (!org.gigapan.timelapse.Timelapse) {
       showMainControls = !showMainControls;
       $("#" + viewerDivId + " .controls").toggle();
       $("#" + viewerDivId + " .timelineSliderFiller").toggle();
-      fitToWindow();
     };
     this.toggleMainControls = _toggleMainControls;
 
@@ -632,62 +631,6 @@ if (!org.gigapan.timelapse.Timelapse) {
       $("#" + viewerDivId + " .pan").toggle();
     };
     this.togglePanControls = _togglePanControls;
-
-    var fitToWindow = function() {
-      var scaleBar = timelapse.getScaleBar();
-      if (scaleBar)
-        scaleBar.updateVideoSize();
-
-      var $viewerDiv = $("#" + viewerDivId);
-      var viewerBottomPx = 0;
-      if (editorEnabled)
-        viewerBottomPx = 210;
-      else {
-        if (presentationSliderEnabled)
-          viewerBottomPx = 100;
-      }
-
-      $viewerDiv.css({
-        "position": "absolute",
-        "top": "0px",
-        "left": "0px",
-        "right": "0px",
-        "bottom": viewerBottomPx + "px",
-        "width": "auto",
-        "height": "auto"
-      });
-
-      var viewerWidth = $viewerDiv.outerWidth();
-      var viewerHeight = $viewerDiv.outerHeight();
-
-      $("#" + settings["composerDiv"]).css({
-        "position": "absolute",
-        "top": (viewerHeight - 2) + "px",
-        "left": "0px",
-        "right": "0px",
-        "bottom": "",
-        "width": "auto",
-        "height": ""
-      });
-
-      $("#" + settings["presentationSliderDiv"]).css({
-        "position": "absolute",
-        "top": (viewerHeight + 4) + "px",
-        "left": "0px",
-        "right": "0px",
-        "bottom": "",
-        "width": "auto",
-        "height": ""
-      });
-
-      timelapse.fitVideoToViewport();
-      window.scrollTo(0, 0);
-
-      if (visualizer)
-        visualizer.setMode(mode, false);
-      timelapse.updateTagInfo_locationData();
-    };
-    this.fitToWindow = fitToWindow;
 
     var createTimelineSlider = function() {
       var numFrames = timelapse.getNumFrames();
@@ -737,13 +680,6 @@ if (!org.gigapan.timelapse.Timelapse) {
 
     if (!useCustomUI) {
       createMainUI();
-      // We already add a resizing handler in customUI.js, so don't add it again for landsat and modis.
-      if (timelapse.isAutoFitToWindow()) {
-        window.onresize = function() {
-          fitToWindow();
-        };
-        fitToWindow();
-      }
       if (timelapse.getPlayOnLoad())
         timelapse.play();
     } else {

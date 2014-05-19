@@ -37,6 +37,11 @@
       var url = "http://g7.gigapan.org/timemachines/breathecam/heinz/2014-03-26.timemachine";
 
       function init() {
+        myHomeView = {
+          x: 3671.3243277564334,
+          y: 1090.4362740684426,
+          scale: 0.4179828167092877
+        };
         var viewerSettings = {
           url: url,
           showFullScreenBtn: false,
@@ -49,6 +54,7 @@
           disableTourLooping: true,
           startEditorFromPresentationMode: true,
           showLogoOnDefaultUI: false,
+          //newHomeView: myHomeView,
           datasetType: "breathecam"
         };
         timelapse = new org.gigapan.timelapse.Timelapse("player1", viewerSettings);

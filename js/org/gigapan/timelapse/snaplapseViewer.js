@@ -1804,20 +1804,11 @@ if (!org.gigapan.timelapse.snaplapse) {
     //
     // Constructor code
     //
-
     initializeSnaplapseUI();
     loadNewSnaplapse(null);
 
     // TODO: There is sometimes a race condition that defaultUI and customUI is created before snaplapseViewer
-    var autoFitToWindow = timelapse.isAutoFitToWindow();
-    if (useCustomUI) {
-      var customUI = timelapse.getCustomUI();
-      if (customUI && autoFitToWindow)
-        customUI.fitToWindow();
-    } else {
-      var defaultUI = timelapse.getDefaultUI();
-      if (defaultUI && autoFitToWindow)
-        defaultUI.fitToWindow();
-    }
+    if (timelapse.isFitToBrowserWindow())
+      timelapse.resizeUI();
   };
 })();

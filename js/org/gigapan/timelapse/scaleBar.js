@@ -503,7 +503,7 @@ if (!org.gigapan.timelapse.Timelapse) {
     };
     this.setScaleBar = setScaleBar;
 
-    var updateVideoSize = function() {
+    var updateCachedVideoSize = function() {
       var oldVideoDivHeight = videoDivHeight;
       var oldVideoDivWidth = videoDivWidth;
       var $videoDiv = $("#" + videoDivId);
@@ -516,7 +516,7 @@ if (!org.gigapan.timelapse.Timelapse) {
       }
       setVideoRatioBar();
     };
-    this.updateVideoSize = updateVideoSize;
+    this.updateCachedVideoSize = updateCachedVideoSize;
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////
     //

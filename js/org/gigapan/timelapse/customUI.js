@@ -275,14 +275,6 @@ if (!org.gigapan.timelapse.Timelapse) {
       // Create timeline slider
       createCustomTimeline();
 
-      // Update certain properties on window resize
-      if (timelapse.isAutoFitToWindow()) {
-        $(window).resize(function() {
-          fitToWindow();
-        });
-        fitToWindow();
-      }
-
       if (datasetType == "modis") {
         timelapse.addTimeChangeListener(function() {
           if (locker == "year") {
@@ -1227,11 +1219,6 @@ if (!org.gigapan.timelapse.Timelapse) {
     //
     // Public methods
     //
-    var fitToWindow = function() {
-      timelapse.getDefaultUI().fitToWindow();
-    };
-    this.fitToWindow = fitToWindow;
-
     var focusTimeTick = function(frameIdx) {
       var elementIdx = frameIdx;
       if (datasetType == "modis")
