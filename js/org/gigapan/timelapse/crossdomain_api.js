@@ -140,7 +140,6 @@ function post(type, data) {
     target: window.parent,
     type: type,
     data: data,
-    url: document.referrer, // needed for hash fallback in older browsers
     origin: document.referrer // TODO: Change this (and above) to explicity set a domain we'll be receiving requests from
   });
 }
