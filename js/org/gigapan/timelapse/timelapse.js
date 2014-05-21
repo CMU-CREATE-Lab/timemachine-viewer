@@ -113,7 +113,7 @@ if (!window['$']) {
 //
 (function() {
   var UTIL = org.gigapan.Util;
-  org.gigapan.timelapse.Timelapse = function(viewerDivId, settings) {
+  org.gigapan.timelapse.Timelapse = function(timeMachineDivId, settings) {
     availableTimelapses.push(this);
 
     // Settings
@@ -154,8 +154,8 @@ if (!window['$']) {
     // Otherwise, we will still handle tours but no editor will be displayed.
     // (No thumbnails for keyframes pulled and loading a tour will display a load
     // button with the tour name on the center of the viewport.)
-    var editorEnabled = settings["composerDiv"] && $("#" + settings["composerDiv"]).length;
-    var presentationSliderEnabled = settings["presentationSliderDiv"] && $("#" + settings["presentationSliderDiv"]).length;
+    var editorEnabled = ( typeof (settings["enableEditor"]) == "undefined") ? false : settings["enableEditor"];
+    var presentationSliderEnabled = ( typeof (settings["enablePresentationSlider"]) == "undefined") ? false : settings["enablePresentationSlider"];
 
     // Objects
     var videoset;
@@ -197,9 +197,9 @@ if (!window['$']) {
     var loadTimelapseWithPreviousViewAndTime = false;
     var didHashChangeFirstTimeOnLoad = false;
     var didFirstTimeOnLoad = false;
-    var isFitToBrowserWindow;
 
     // Viewer
+    var viewerDivId = timeMachineDivId + " .player";
     var viewerType;
     var videoDiv;
     var tiles = {};
@@ -342,10 +342,6 @@ if (!window['$']) {
       return panoView;
     };
 
-    this.isFitToBrowserWindow = function() {
-      return isFitToBrowserWindow;
-    };
-
     this.getDatasetType = function() {
       return datasetType;
     };
@@ -474,6 +470,10 @@ if (!window['$']) {
 
     this.isSmallGoogleMapEnable = function() {
       return enableSmallGoogleMap;
+    };
+
+    this.getTimeMachineDivId = function() {
+      return timeMachineDivId;
     };
 
     this.getViewerDivId = function() {
@@ -1345,10 +1345,6 @@ if (!window['$']) {
     };
     this.getMaxScale = _getMaxScale;
 
-    this.getDefaultScale = function() {
-      return panoView.scale;
-    };
-
     var _viewScaleToZoomSlider = function(value) {
       var tmpValue = Math.sqrt((value - _getMinScale()) / (_getMaxScale() - _getMinScale()));
       return (1 / (Math.log(2))) * (Math.log(tmpValue + 1));
@@ -1376,82 +1372,71 @@ if (!window['$']) {
     };
     this.fullScreen = _fullScreen;
 
-    var resizeUI = function() {
+    var initializeUI = function() {
+      var $timeMachineDiv = $("#" + timeMachineDivId);
       var $viewerDiv = $("#" + viewerDivId);
 
-      if ( typeof isFitToBrowserWindow == "undefined") {
-        if ($viewerDiv.css("position") == "static")
-          isFitToBrowserWindow = true;
-        else
-          isFitToBrowserWindow = false;
+      var originalVideoWidth = datasetJSON["video_width"] - datasetJSON["tile_width"];
+      var originalVideoHeight = datasetJSON["video_height"] - datasetJSON["tile_height"];
+
+      var viewerBottomPx = 0;
+      if (editorEnabled)
+        viewerBottomPx = 210;
+      else {
+        if (presentationSliderEnabled)
+          viewerBottomPx = 100;
       }
 
-      if (isFitToBrowserWindow) {
-        // If no css is specified, fit the viewport to the browser window
-        var viewerBottomPx = 0;
-        if (editorEnabled)
-          viewerBottomPx = 210;
-        else {
-          if (presentationSliderEnabled)
-            viewerBottomPx = 100;
-        }
-        $viewerDiv.css({
+      if ($timeMachineDiv.css("position") == "static") {
+        $timeMachineDiv.css({
           "position": "absolute",
           "top": "0px",
           "left": "0px",
-          "right": "0px",
-          "bottom": viewerBottomPx + "px",
-          "width": "auto",
-          "height": "auto"
+          "width": originalVideoWidth + "px",
+          "height": (originalVideoHeight + viewerBottomPx) + "px"
         });
-        viewportWidth = $viewerDiv.width();
-        viewportHeight = $viewerDiv.height();
+      }
+
+      $viewerDiv.css({
+        "position": "absolute",
+        "top": "0px",
+        "left": "0px",
+        "right": "0px",
+        "bottom": viewerBottomPx + "px",
+        "width": "auto",
+        "height": "auto"
+      });
+
+      resizeViewer();
+
+      window.onresize = function() {
+        if (viewportWidth == $viewerDiv.width() && viewportHeight == $viewerDiv.height())
+          return;
+        resizeViewer();
         // TODO implement a resize listener and put this in the snaplapseViewer class
-        $("#" + settings["composerDiv"]).css({
-          "position": "absolute",
-          "top": (viewportHeight - 2) + "px",
-          "left": "0px",
-          "right": "0px",
-          "bottom": "",
-          "width": "auto",
-          "height": ""
-        });
+        if (snaplapse)
+          snaplapse.getSnaplapseViewer().resizeUI();
         // TODO implement a resize listener and put this in the snaplapseViewer class
-        $("#" + settings["presentationSliderDiv"]).css({
-          "position": "absolute",
-          "top": (viewportHeight + 4) + "px",
-          "left": "0px",
-          "right": "0px",
-          "bottom": "",
-          "width": "auto",
-          "height": ""
-        });
+        if (snaplapseForPresentationSlider)
+          snaplapseForPresentationSlider.getSnaplapseViewer().resizeUI();
         // TODO implement a resize listener and put this in the scaleBar class
         if (scaleBar)
           scaleBar.updateCachedVideoSize();
         // TODO implement a resize listener and put this in the visualizer class
         if (visualizer && defaultUI)
           visualizer.setMode(defaultUI.getMode(), false);
-        // Set the listener when resizing the browser window
-        window.onresize = function() {
-          resizeUI();
-        };
-        // Scroll to the top left of the browser window
-        window.scrollTo(0, 0);
+        // TODO implement a resize listener and put this in the annotator class
+        if (annotator)
+          annotator.resize();
         updateTagInfo_locationData();
-      } else {
-        // If css is specified, validate the css
-        viewportWidth = $viewerDiv.width();
-        viewportHeight = $viewerDiv.height();
-        if ( typeof viewportWidth == "undefined") {
-          viewportWidth = minViewportWidth;
-          $viewerDiv.css("width", minViewportWidth);
-        }
-        if ( typeof viewportHeight == "undefined") {
-          viewportHeight = minViewportHeight;
-          $viewerDiv.css("width", minViewportHeight);
-        }
-      }
+      };
+    };
+
+    var resizeViewer = function() {
+      var $viewerDiv = $("#" + viewerDivId);
+
+      viewportWidth = $viewerDiv.width();
+      viewportHeight = $viewerDiv.height();
 
       var originalVideoStretchRatio = videoStretchRatio;
       var originalVideoWidth = datasetJSON["video_width"] - datasetJSON["tile_width"];
@@ -1485,13 +1470,7 @@ if (!window['$']) {
         view = $.extend({}, homeView);
       }
       _warpTo(view);
-
-      // TODO implement a resize listener and put this in the annotator class
-      var annotator = thisObj.getAnnotator();
-      if (annotator)
-        annotator.resize();
     };
-    this.resizeUI = resizeUI;
 
     var _computeMotion = function(start, end, timeRatio) {
       var s0 = start.xmax - start.xmin;
@@ -2692,7 +2671,7 @@ if (!window['$']) {
             didFirstTimeOnLoad = true;
             // Fire onTimeMachinePlayerReady the first time the page is loaded.
             if ( typeof (settings["onTimeMachinePlayerReady"]) === "function") {
-              settings["onTimeMachinePlayerReady"](viewerDivId);
+              settings["onTimeMachinePlayerReady"](timeMachineDivId);
             }
           }
 
@@ -2700,10 +2679,11 @@ if (!window['$']) {
         }
       });
 
-      if (settings["composerDiv"]) {
+      snaplapseForSharedTour = new org.gigapan.timelapse.Snaplapse(thisObj, settings, "noUI");
+
+      if (editorEnabled) {
         $("#" + videoDivId).append('<div class="snaplapse-annotation-description"><div></div></div>');
-        snaplapse = new org.gigapan.timelapse.Snaplapse(settings["composerDiv"], thisObj, settings);
-        snaplapseForSharedTour = new org.gigapan.timelapse.Snaplapse(undefined, thisObj, settings, "noUI");
+        snaplapse = new org.gigapan.timelapse.Snaplapse(thisObj, settings);
 
         // TODO:
         // Disabled because of odd behavior in Chrome. Causes an endless 'waiting for socket' error to appear
@@ -2713,20 +2693,18 @@ if (!window['$']) {
         // Most likely that is at the heart of the problem.
         //
         // Timewarp visualizer that shows the location of the current view and transitions between keyframes
-        if (enableContextMapOnDefaultUI && !tmJSON['projection-bounds'] && editorEnabled)
+        if (enableContextMapOnDefaultUI && !tmJSON['projection-bounds'])
           visualizer = new org.gigapan.timelapse.Visualizer(thisObj, snaplapse, visualizerGeometry);
       }
 
-      if (settings["presentationSliderDiv"])
-        snaplapseForPresentationSlider = new org.gigapan.timelapse.Snaplapse(settings["presentationSliderDiv"], thisObj, settings, "presentation");
+      if (presentationSliderEnabled)
+        snaplapseForPresentationSlider = new org.gigapan.timelapse.Snaplapse(thisObj, settings, "presentation");
       if (settings["annotatorDiv"])
         annotator = new org.gigapan.timelapse.Annotator(settings["annotatorDiv"], thisObj);
 
       defaultUI = new org.gigapan.timelapse.DefaultUI(thisObj, settings);
       if (useCustomUI)
         customUI = new org.gigapan.timelapse.CustomUI(thisObj, settings);
-
-      resizeUI();
 
       // TODO(pdille):
       // Bring back this feature for those with RealPlayer/DivX or other plugins that take-over the video tag element.
@@ -2843,9 +2821,10 @@ if (!window['$']) {
 
       // Setup the UI if this is the first time we are loading a videoset. Else recreate the time slider for the new set,
       // since it still depends upon values from the old set.
-      if (!defaultUI)
+      if (!defaultUI) {
+        initializeUI();
         setupTimelapse();
-      else {
+      } else {
         timelapseCurrentCaptureTimeIndex = Math.min(frames - 1, Math.floor(thisObj.getCurrentTime() * _getFps()));
         var $timeSlider = $("#" + viewerDivId + " .timelineSlider");
         $timeSlider.slider("destroy");
@@ -2867,12 +2846,11 @@ if (!window['$']) {
         // Reset home view
         computeHomeView();
         // Reset current view
+        console.log("loadTimelapseWithPreviousViewAndTime", loadTimelapseWithPreviousViewAndTime);
         if (!loadTimelapseWithPreviousViewAndTime)
           view = $.extend({}, homeView);
         _warpTo(view);
       }
-
-
 
       if (visualizer) {
         topLevelVideo.src = getTileidxUrl(0);
@@ -2887,19 +2865,19 @@ if (!window['$']) {
     };
 
     function loadPlayerControlsTemplate(html) {
-      var viewerDiv = document.getElementById(viewerDivId);
+      $("#" + timeMachineDivId).html(html);
+      var $viewerDiv = $("#" + viewerDivId);
 
       // Hide the UI because it is not ready yet
-      $(viewerDiv).css("visibility", "hidden");
+      $viewerDiv.css("visibility", "hidden");
 
-      $(viewerDiv).html(html);
       var tmp = document.getElementById("{REPLACE}");
-      $(tmp).attr("id", viewerDivId + "_timelapse");
+      $(tmp).attr("id", timeMachineDivId + "_timelapse");
       videoDivId = $(tmp).attr("id");
       videoDiv = document.getElementById(videoDivId);
       firstVideoId = videoDivId + "_1";
 
-      $(viewerDiv).attr('unselectable', 'on').css({
+      $viewerDiv.attr('unselectable', 'on').css({
         '-moz-user-select': 'none',
         '-o-user-select': 'none',
         '-khtml-user-select': 'none',
@@ -2932,7 +2910,7 @@ if (!window['$']) {
 
       $(videoDiv).mousewheel(thisObj.handleMousescrollEvent);
 
-      $(viewerDiv).on("click", function() {
+      $viewerDiv.on("click", function() {
         $(document).off('keydown.tm_keydown keyup.tm_keyup');
         $(document).on("keydown.tm_keydown", handleKeydownEvent);
         $(document).on("keyup.tm_keyup", handleKeyupEvent);
@@ -3005,7 +2983,7 @@ if (!window['$']) {
 
     if (!browserSupported) {
       UTIL.ajax("html", rootAppURL, "templates/browser_not_supported_template.html", function(html) {
-        $("#" + viewerDivId).html(html);
+        $("#" + timeMachineDivId).html(html);
         $("#browser_not_supported").show();
       });
       return;

@@ -394,7 +394,7 @@ if (!org.gigapan) {
         });
       } else {
         // The reason to hide and show the elements is the workaround for a webkit refresh bug
-        $keyframeContainer.hide().show(0);
+        //$keyframeContainer.hide().show(0);
       }
     }
   };

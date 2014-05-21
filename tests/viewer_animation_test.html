@@ -42,8 +42,8 @@
     <style>
       #sharePara {
         position: absolute;
-        top: 671px;
-        left: 980px;
+        top: 667px;
+        left: 895px;
         height: 40px;
         width: 100px;
         font-size: 14px;
@@ -63,18 +63,12 @@
         height: 32px;
         resize: none;
       }
-      #player1 {
+      #timeMachine {
         position: absolute;
         top: 10px;
         left: 10px;
-        width: 1070px;
-        height: 550px;
-      }
-      #presentationSlider1 {
-        position: absolute;
-        top: 564px;
-        left: 10px;
-        width: 1070px;
+        width: 985px;
+        height: 642px;
       }
     </style>
 
@@ -90,10 +84,9 @@
           y: 521801.7016044302,
           scale: 0.0005840897249061237
         };
-        var viewerSettings = {
+        var settings = {
           url: url,
-          composerDiv: "composer1",
-          presentationSliderDiv: "presentationSlider1",
+          enablePresentationSlider: true,
           datasetType: "landsat",
           onTimeMachinePlayerReady: function(viewerDivId) {
             setupPostMessageHandlers();
@@ -111,7 +104,7 @@
           showAddressLookup: true,
           newHomeView: myHomeView
         };
-        timelapse = new org.gigapan.timelapse.Timelapse("player1", viewerSettings);
+        timelapse = new org.gigapan.timelapse.Timelapse("timeMachine", settings);
         $("#shareParaDialog").dialog({
           resizable: false,
           autoOpen: false,
@@ -229,13 +222,12 @@
     </script>
   </head>
   <body>
-    <div id="player1"></div>
-    <div id="presentationSlider1"></div>
+    <div id="timeMachine"></div>
     <button type="button" id="sharePara">Share</button>
     <div id="shareParaDialog" title="Share Current Settings">
       <textarea id="shareParaURL"></textarea>
     </div>
-    <table style="position: absolute; top:665px; left:10px; vertical-align:middle;">
+    <table style="position: absolute; top:661px; left:10px; vertical-align:middle;">
       <tr style="height:70px;">
         <td>
           <input type="range" step="1" style="width:200px;" id="setAnimateRate_range" onchange="setValue('setAnimateRate', this.value)"/>

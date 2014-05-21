@@ -40,24 +40,12 @@
     <script src="https://maps.google.com/maps/api/js?sensor=false&libraries=places" type="text/javascript" ></script>
 
     <style>
-      #player1 {
+      #timeMachine {
         position: absolute;
         top: 10px;
         left: 10px;
-        width: 950px;
-        height: 540px;
-      }
-      #composer1 {
-        position: absolute;
-        top: 548px;
-        left: 10px;
-        width: 950px;
-      }
-      #presentationSlider1 {
-        position: absolute;
-        top: 554px;
-        left: 10px;
-        width: 950px;
+        width: 985px;
+        height: 752px;
       }
     </style>
 
@@ -73,10 +61,10 @@
           y: 521801.7016044302,
           scale: 0.0005840897249061237
         };
-        var viewerSettings = {
+        var settings = {
           url: url,
-          composerDiv: "composer1",
-          presentationSliderDiv: "presentationSlider1",
+          enableEditor: true,
+          enablePresentationSlider: true,
           datasetType: "landsat",
           onTimeMachinePlayerReady: function(viewerDivId) {
             setupPostMessageHandlers();
@@ -90,15 +78,13 @@
           showAddressLookup: true,
           newHomeView: myHomeView
         };
-        timelapse = new org.gigapan.timelapse.Timelapse("player1", viewerSettings);
+        timelapse = new org.gigapan.timelapse.Timelapse("timeMachine", settings);
       }
 
       $(init);
     </script>
   </head>
   <body>
-    <div id="player1"></div>
-    <div id="composer1"></div>
-    <div id="presentationSlider1"></div>
+    <div id="timeMachine"></div>
   </body>
 </html>

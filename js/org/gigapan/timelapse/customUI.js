@@ -96,12 +96,12 @@ if (!org.gigapan.timelapse.Timelapse) {
     // Class variables
     //
     var datasetType = timelapse.getDatasetType();
+    var timeMachineDivId = timelapse.getTimeMachineDivId();
     var viewerDivId = timelapse.getViewerDivId();
     var $viewer = $("#" + viewerDivId);
     var viewer_offset = $viewer.offset();
     var $video = $("#" + viewerDivId + " .tiledContentHolder");
     var playerWidth = $video.outerWidth();
-    var customControl;
     var $customControl;
     var $customPlay;
     var $customHelpLabel;
@@ -259,12 +259,9 @@ if (!org.gigapan.timelapse.Timelapse) {
     };
 
     var createCustomControl = function() {
-      // Create element
-      customControl = createAnElement("div", "customControl", viewerDivId + "_customControl");
-      // jQuery
-      $customControl = $(customControl);
+      $customControl = $('<div class="customControl"></div>');
       // Append element
-      $viewer.append(customControl);
+      $viewer.append($customControl);
       // Create google logo
       $customControl.append('<div class="googleLogo"></div>');
       // Create the spinner for months
@@ -669,9 +666,9 @@ if (!org.gigapan.timelapse.Timelapse) {
       $customControl.append('<input type="checkbox" class="customHelpCheckbox"/>');
       $customControl.append('<label class="customHelpLabel" title="Show instructions"></label>');
       var $customHelpCheckbox = $("#" + viewerDivId + " .customHelpCheckbox");
-      $customHelpCheckbox.attr("id", viewerDivId + "_customHelpCheckbox");
+      $customHelpCheckbox.attr("id", timeMachineDivId + "_customHelpCheckbox");
       $customHelpLabel = $("#" + viewerDivId + " .customHelpLabel");
-      $customHelpLabel.attr("for", viewerDivId + "_customHelpCheckbox");
+      $customHelpLabel.attr("for", timeMachineDivId + "_customHelpCheckbox");
       $customHelpCheckbox.button({
         icons: {
           primary: "ui-icon-help"
@@ -693,13 +690,11 @@ if (!org.gigapan.timelapse.Timelapse) {
 
     var createCustomTimeline = function() {
       // Create slider container
-      var timeText = createAnElement("div", "timeText", viewerDivId + "_customTimeline_timeText");
-      var customTimeline = createAnElement("div", "customTimeline", viewerDivId + "_customTimeline");
-      $timeText = $(timeText);
+      $timeText = $('<div class="timeText"></div>');
       if (datasetType == "modis")
         $timeText.toggleClass("timeText modisTimeText");
-      $customTimeline = $(customTimeline);
-      $customControl.append(timeText, customTimeline);
+      $customTimeline = $('<div class="customTimeline"></div>');
+      $customControl.append($timeText, $customTimeline);
       var extraSliderLeftMargin = (datasetType == "landsat") ? 50 : 60;
       sliderLeftMargin = $customPlay.width() + $timeText.width() + extraSliderLeftMargin;
       var extraSliderRightMargin;
@@ -717,18 +712,14 @@ if (!org.gigapan.timelapse.Timelapse) {
       });
 
       // Create left, right, and hover date text
-      var timeTextLeft = createAnElement("div", "timeTextLeft", viewerDivId + "_customTimeline_timeTextLeft");
-      var timeTextRight = createAnElement("div", "timeTextRight", viewerDivId + "_customTimeline_timeTextRight");
-      var timeTextHover = createAnElement("div", "timeTextHover", viewerDivId + "_customTimeline_timeTextHover");
-      $timeTextLeft = $(timeTextLeft);
-      $timeTextRight = $(timeTextRight);
-      $timeTextHover = $(timeTextHover);
-      $customTimeline.append(timeTextLeft, timeTextRight, timeTextHover);
+      $timeTextLeft = $('<div class="timeTextLeft"></div>');
+      $timeTextRight = $('<div class="timeTextRight"></div>');
+      $timeTextHover = $('<div class="timeTextHover"></div>');
+      $customTimeline.append($timeTextLeft, $timeTextRight, $timeTextHover);
 
       // Create current time bar
-      var currentTimeTick = createAnElement("div", "currentTimeTick", viewerDivId + "_customTimeline_currentTimeTick");
-      $currentTimeTick = $(currentTimeTick);
-      $customTimeline.append(currentTimeTick);
+      $currentTimeTick = $('<div class="currentTimeTick"></div>');
+      $customTimeline.append($currentTimeTick);
       $currentTimeTick.css({
         "top": "0px",
         "left": "0px",
@@ -761,11 +752,9 @@ if (!org.gigapan.timelapse.Timelapse) {
             frameDictionary[j]["x"] = frameDictionary[j - 1]["x"] + invisibleSpan;
         }
         previousTargetFrameIdx = targetFrame;
-        var timeTickContainer = createAnElement("div", "timeTickContainer", viewerDivId + "_customTimeline_timeTickContainer_" + i);
-        var timeTick = createAnElement("div", "timeTick", viewerDivId + "_customTimeline_timeTick_" + i);
-        var timeTickClickRegion = createAnElement("div", "timeTickClickRegion", viewerDivId + "_customTimeline_timeTickClickRegion_" + i);
-        var $timeTickContainer = $(timeTickContainer);
-        var $timeTickClickRegion = $(timeTickClickRegion);
+        var $timeTick = $('<div class="timeTick" id="' + timeMachineDivId + "_customTimeline_timeTick_" + i + '"></div>');
+        var $timeTickContainer = $('<div class="timeTickContainer" id="' + timeMachineDivId + "_customTimeline_timeTickContainer_" + i + '"></div>');
+        var $timeTickClickRegion = $('<div class="timeTickClickRegion" id="' + timeMachineDivId + "_customTimeline_timeTickClickRegion_" + i + '"></div>');
         $timeTickContainer.css({
           "top": "0px",
           "left": (timeTickSpan * i) + "%",
@@ -778,14 +767,14 @@ if (!org.gigapan.timelapse.Timelapse) {
           "width": "100%",
           "height": "100%"
         }).attr("tabindex", i);
-        $(timeTick).css({
+        $timeTick.css({
           "margin-top": (timeTick_height / 2) + "px",
           "width": timeTick_width + "px",
           "height": timeTick_height + "px"
         });
         $timeTickContainer.on("mouseenter", handleTimeTickMouseover).on("mouseleave", handleTimeTickMouseout).on("mousedown", handleTimeTickMousedown);
-        $timeTickContainer.append(timeTick, timeTickClickRegion);
-        $customTimeline.append(timeTickContainer);
+        $timeTickContainer.append($timeTick, $timeTickClickRegion);
+        $customTimeline.append($timeTickContainer);
       }
       // This part is used for creating the dot showing the final frame
       if (datasetType == "modis") {
@@ -795,12 +784,9 @@ if (!org.gigapan.timelapse.Timelapse) {
         invisibleSpan = (endFrameX - previousTargetFrameX) / (endFrameIdx - previousTargetFrameIdx);
         for (var j = previousTargetFrameIdx + 1; j < endFrameIdx; j++)
           frameDictionary[j]["x"] = frameDictionary[j - 1]["x"] + invisibleSpan;
-        var endTimeDotContainer = createAnElement("div", "endTimeDotContainer", viewerDivId + "_customTimeline_endTimeDotContainer");
-        var endTimeDot = createAnElement("div", "endTimeDot", viewerDivId + "_customTimeline_endTimeDot");
-        var endTimeDotClickRegion = createAnElement("div", "endTimeDotClickRegion", viewerDivId + "_customTimeline_endTimeDotClickRegion");
-        var $endTimeDotContainer = $(endTimeDotContainer);
-        var $endTimeDotClickRegion = $(endTimeDotClickRegion);
-        $endTimeDot = $(endTimeDot);
+        var $endTimeDotContainer = $('<div class="endTimeDotContainer"></div>');
+        var $endTimeDotClickRegion = $('<div class="endTimeDotClickRegion"></div>');
+        $endTimeDot = $('<div class="endTimeDot"></div>');
         $endTimeDotContainer.css({
           "top": "0px",
           "left": (timeTickSpan * numYears) + "%",
@@ -820,8 +806,8 @@ if (!org.gigapan.timelapse.Timelapse) {
           "border-radius": (endTimeDot_radius / 2) + "px"
         });
         $endTimeDotContainer.on("mouseenter", handleEndTimeDotMouseover).on("mouseleave", handleEndTimeDotMouseout).on("mousedown", handleEndTimeDotMousedown);
-        $endTimeDotContainer.append(endTimeDot, endTimeDotClickRegion);
-        $customTimeline.append(endTimeDotContainer);
+        $endTimeDotContainer.append($endTimeDot, $endTimeDotClickRegion);
+        $customTimeline.append($endTimeDotContainer);
       }
       var firstFrameForFirstYear = frameDictionary[0];
       $timeTextLeft.text(firstFrameForFirstYear["year"]).css({
@@ -987,7 +973,8 @@ if (!org.gigapan.timelapse.Timelapse) {
         if (currentFrameIdx != targetFrameIdx)
           timelapse.seekToFrame(targetFrameIdx);
       }
-      $("#" + viewerDivId + "_customTimeline_timeTickClickRegion_" + targetFrameIdx).focus();
+
+      $("#" + timeMachineDivId + "_customTimeline_timeTickClickRegion_" + targetFrameIdx).focus();
     };
 
     var computeSliderHandlePosition_landsat = function(nowX) {
@@ -1062,13 +1049,6 @@ if (!org.gigapan.timelapse.Timelapse) {
         }
       }
       return targetFrameIdx;
-    };
-
-    var createAnElement = function(elemType, elemClass, elemId) {
-      var element = document.createElement(elemType);
-      $(element).addClass(elemClass);
-      element.id = elemId;
-      return element;
     };
 
     var doCustomHelpOverlay = function() {
@@ -1223,7 +1203,7 @@ if (!org.gigapan.timelapse.Timelapse) {
       var elementIdx = frameIdx;
       if (datasetType == "modis")
         elementIdx = frameDictionary[frameIdx]["year"] - firstYear;
-      $("#" + viewerDivId + "_customTimeline_timeTickClickRegion_" + elementIdx).focus();
+      $("#" + timeMachineDivId + "_customTimeline_timeTickClickRegion_" + elementIdx).focus();
     };
     this.focusTimeTick = focusTimeTick;
 

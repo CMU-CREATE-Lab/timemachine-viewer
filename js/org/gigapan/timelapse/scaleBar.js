@@ -109,7 +109,7 @@ if (!org.gigapan.timelapse.Timelapse) {
     };
     var scaleBarGeometryMODIS = {
       "x": 9,
-      "y": 135,
+      "y": 127,
       "position": "left",
       "barLength": 135
     };

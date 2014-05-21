@@ -104,6 +104,7 @@ if (!org.gigapan.timelapse.Timelapse) {
     var panInterval;
 
     // DOM elements
+    var timeMachineDivId = timelapse.getTimeMachineDivId();
     var viewerDivId = timelapse.getViewerDivId();
     var $playbackButton = $("#" + viewerDivId + " .playbackButton");
     var $controls = $("#" + viewerDivId + " .controls");
@@ -175,6 +176,7 @@ if (!org.gigapan.timelapse.Timelapse) {
       $("#" + viewerDivId + " .shareView").dialog({
         resizable: false,
         autoOpen: false,
+        appendTo: "#" + viewerDivId,
         width: 632,
         height: 95,
         create: function() {
@@ -182,12 +184,12 @@ if (!org.gigapan.timelapse.Timelapse) {
             'border': '1px solid #000'
           });
         }
-      }).parent().appendTo($("#" + viewerDivId));
+      });
       // Create help button
       var helpPlayerCheckbox = $("#" + viewerDivId + " .helpPlayerCheckbox");
-      helpPlayerCheckbox.attr("id", viewerDivId + "_helpPlayerCheckbox");
+      helpPlayerCheckbox.attr("id", timeMachineDivId + "_helpPlayerCheckbox");
       var $helpPlayerLabel = $("#" + viewerDivId + " .helpPlayerLabel");
-      $helpPlayerLabel.attr("for", viewerDivId + "_helpPlayerCheckbox");
+      $helpPlayerLabel.attr("for", timeMachineDivId + "_helpPlayerCheckbox");
       helpPlayerCheckbox.button({
         icons: {
           primary: "ui-icon-help"
@@ -209,9 +211,8 @@ if (!org.gigapan.timelapse.Timelapse) {
       var $viewerModeBtn = $("#" + viewerDivId + " .viewerModeBtn");
       var $viewerModeCheckbox = $("#" + viewerDivId + " .viewerModeCheckbox");
       if (editorEnabled) {
-        $viewerModeBtn.attr("id", viewerDivId + "_viewerModeBtn");
-        $viewerModeCheckbox.attr("id", viewerDivId + "_viewerModeCheckbox");
-        $viewerModeBtn.attr("for", viewerDivId + "_viewerModeCheckbox");
+        $viewerModeCheckbox.attr("id", timeMachineDivId + "_viewerModeCheckbox");
+        $viewerModeBtn.attr("for", timeMachineDivId + "_viewerModeCheckbox");
         $viewerModeCheckbox.button({
           icons: {
             primary: "ui-icon-note"
@@ -415,7 +416,7 @@ if (!org.gigapan.timelapse.Timelapse) {
       var $zoomSlider = $("#" + viewerDivId + " .zoomSlider");
       $zoomSlider.slider({
         orientation: "vertical",
-        value: 0,
+        value: timelapse.viewScaleToZoomSlider(timelapse.getHomeView().scale),
         min: 0,
         max: 1,
         step: 0.01,
@@ -528,7 +529,7 @@ if (!org.gigapan.timelapse.Timelapse) {
 
       if (newMode == "player") {
         mode = newMode;
-        $("#" + settings["composerDiv"]).hide();
+        $("#" + timeMachineDivId + " .composer").hide();
         if (snaplapseViewer)
           snaplapseViewer.hideAnnotationBubble();
         if (smallGoogleMap && enableSmallGoogleMap == true) {
@@ -542,7 +543,7 @@ if (!org.gigapan.timelapse.Timelapse) {
           panoVideo.pause();
       } else if (newMode == "editor") {
         mode = newMode;
-        $("#" + settings["composerDiv"]).show();
+        $("#" + timeMachineDivId + " .composer").show();
         timelapse.seek_panoVideo(videoset.getCurrentTime());
         if (!videoset.isPaused() && panoVideo)
           panoVideo.play();

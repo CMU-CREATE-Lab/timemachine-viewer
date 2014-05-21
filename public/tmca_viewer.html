@@ -34,9 +34,9 @@
       var url = "./";
 
       function init() {
-        var viewerSettings = {
+        var settings = {
           url: url,
-          composerDiv: "composer1",
+          enableEditor: true,
           onTimeMachinePlayerReady: function(viewerDivId) {
           },
           disableTourLooping: true,
@@ -45,14 +45,13 @@
           useThumbnailServer: false,
           showEditorModeButton: false
         };
-        timelapse = new org.gigapan.timelapse.Timelapse("player1", viewerSettings);
+        timelapse = new org.gigapan.timelapse.Timelapse("timeMachine", settings);
       }
 
       $(init);
     </script>
   </head>
   <body>
-    <div id="player1"></div>
-    <div id="composer1"></div>
+    <div id="timeMachine"></div>
   </body>
 </html>

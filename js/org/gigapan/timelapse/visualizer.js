@@ -97,8 +97,8 @@ if (!org.gigapan.timelapse.Timelapse) {
     // Class variables
     //
     var videoset = timelapse.getVideoset();
-    var composerDivId = snaplapse.getComposerDivId();
-    var visualizerDivId = composerDivId + "_visualizer";
+    var timeMachineDivId = timelapse.getTimeMachineDivId();
+    var visualizerDivId = timeMachineDivId + "_visualizer";
     var videoDivID = timelapse.getVideoDivId();
     var viewerDivId = timelapse.getViewerDivId();
     var navigationMap_drawImage = {
@@ -111,7 +111,6 @@ if (!org.gigapan.timelapse.Timelapse) {
     var navHeight = visualizerGeometry.height;
 
     // Variables for all visualizer elements
-    var visualizer;
     var navigationMap_container;
     var $navigationMap_container;
     var navigationMap;
@@ -164,21 +163,21 @@ if (!org.gigapan.timelapse.Timelapse) {
     // Create snaplapse visualizer elements
     var createSnaplapseVisualizerElements = function() {
       // Create div elements
-      visualizer = createAnElement("div", "", visualizerDivId);
+      var $visualizer = $('<div class="visualizer"></div>');
       navigationMap_container = createAnElement("div", "navigationMap_container", visualizerDivId + "_navigationMap_container");
       navigationMap = createAnElement("div", "navigationMap", visualizerDivId + "_navigationMap");
       tagsNavigation = createAnElement("div", "tagsNavigation", visualizerDivId + "_tagsNavigation");
       $hideMapCheckbox = $('<input type="checkbox" class="hideMapCheckbox"/>');
       $hideMapLabel = $('<label class="hideMapLabel" title="Hide/Show map"></label>');
-      $hideMapCheckbox.attr("id", viewerDivId + "_hideMapCheckbox");
-      $hideMapLabel.attr("for", viewerDivId + "_hideMapCheckbox");
+      $hideMapCheckbox.attr("id", timeMachineDivId + "_hideMapCheckbox");
+      $hideMapLabel.attr("for", timeMachineDivId + "_hideMapCheckbox");
       // jQuery
       $navigationMap_container = $(navigationMap_container);
       $tagsNavigation = $(tagsNavigation);
       // Append elements
       $navigationMap_container.append(navigationMap, tagsNavigation);
-      $("#" + viewerDivId).append(navigationMap_container, $hideMapCheckbox, $hideMapLabel);
-      $(document.body).append(visualizer);
+      $visualizer.append(navigationMap_container, $hideMapCheckbox, $hideMapLabel);
+      $("#" + viewerDivId).append($visualizer);
       // Create hide/show map button
       $hideMapCheckbox.button({
         icons: {
@@ -741,13 +740,13 @@ if (!org.gigapan.timelapse.Timelapse) {
       var keyframe = keyframes[index];
       var keyframe_last = keyframes[index - 1];
       var keyframe_next = keyframes[index + 1];
-      var idHead = composerDivId + "_snaplapse_keyframe_" + keyframe.id;
+      var idHead = timeMachineDivId + "_snaplapse_keyframe_" + keyframe.id;
       var idHead_last;
       var idHead_next;
       if (keyframe_last != undefined)
-        idHead_last = composerDivId + "_snaplapse_keyframe_" + keyframe_last.id;
+        idHead_last = timeMachineDivId + "_snaplapse_keyframe_" + keyframe_last.id;
       if (keyframe_next != undefined)
-        idHead_next = composerDivId + "_snaplapse_keyframe_" + keyframe_next.id;
+        idHead_next = timeMachineDivId + "_snaplapse_keyframe_" + keyframe_next.id;
       // Get the color of tags
       var color_head = "rgba(" + defaultTagRGB + ",";
       var color_navigationFill = color_head + navigationMap_tag_fillOpacity + ")";
@@ -823,7 +822,7 @@ if (!org.gigapan.timelapse.Timelapse) {
     // Delete a time tag
     var deleteTimeTag = function(keyframeId, keyframe_last) {
       // Delete tags
-      var idHead = composerDivId + "_snaplapse_keyframe_" + keyframeId;
+      var idHead = timeMachineDivId + "_snaplapse_keyframe_" + keyframeId;
       var tagNavigationId = idHead + "_timeTagNavigation";
       var $tagNavigation = $("#" + tagNavigationId);
       var circle_radius_navigation = $tagNavigation.width() / 2;
