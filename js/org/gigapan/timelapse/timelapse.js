@@ -136,7 +136,6 @@ if (!window['$']) {
     var blackFrameDetection = ( typeof (settings["blackFrameDetection"]) == "undefined") ? false : settings["blackFrameDetection"];
     var skippedFramesAtEnd = ( typeof (settings["skippedFramesAtEnd"]) == "undefined" || settings["skippedFramesAtEnd"] < 0) ? 0 : settings["skippedFramesAtEnd"];
     var skippedFramesAtStart = ( typeof (settings["skippedFramesAtStart"]) == "undefined" || settings["skippedFramesAtStart"] < 0) ? 0 : settings["skippedFramesAtStart"];
-    var mediaType = ( typeof (settings["mediaType"]) == "undefined") ? null : settings["mediaType"];
     var enableMetadataCacheBreaker = settings["enableMetadataCacheBreaker"] || false;
     var enableContextMapOnDefaultUI = ( typeof (settings["enableContextMapOnDefaultUI"]) == "undefined") ? false : settings["enableContextMapOnDefaultUI"];
     var datasetType = settings["datasetType"];
@@ -218,7 +217,7 @@ if (!window['$']) {
     var levelInfo;
     var metadata = null;
     var view = null;
-    var targetView = null;
+    var targetView = {};
     var currentIdx = null;
     var currentVideo = null;
     var animateInterval = null;
@@ -254,6 +253,7 @@ if (!window['$']) {
     var parabolicMotionController;
     var parabolicMotionObj = org.gigapan.timelapse.parabolicMotion;
     var previousCaptureTime;
+    var mediaType = null;
 
     // animateRate in milliseconds, 40 means 25 FPS
     var animateRate = isHyperwall ? 10 : 40;
@@ -2981,29 +2981,25 @@ if (!window['$']) {
     //
     // Constructor code
     //
-    browserSupported = UTIL.browserSupported();
+
+    browserSupported = UTIL.browserSupported(settings["mediaType"]);
 
     if (!browserSupported) {
       UTIL.ajax("html", rootAppURL, "templates/browser_not_supported_template.html", function(html) {
         $("#" + timeMachineDivId).html(html);
-        $("#browser_not_supported").show();
       });
       return;
     }
 
-    if (mediaType == null) {
-      mediaType = UTIL.getMediaType();
-    } else {
-      UTIL.setMediaType(mediaType);
-    }
+    mediaType = UTIL.getMediaType();
 
     if (settings["viewerType"])
       UTIL.setViewerType(settings["viewerType"]);
+
     viewerType = UTIL.getViewerType();
-    targetView = {};
 
     // Set default loop dwell time
-    // TODO: this should be set to not just for landsat, but for all short datasets
+    // TODO: This should probably be set not just for landsat, but for all short datasets
     if (datasetType == "landsat" && loopDwell == undefined) {
       loopDwell = {
         "startDwell": defaultLoopDwellTime,
