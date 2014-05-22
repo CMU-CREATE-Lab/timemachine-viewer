@@ -1235,7 +1235,7 @@ if (!org.gigapan.timelapse.Timelapse) {
           "text-align": "center",
           "left": "-=" + 18 + "px",
           "padding-left": "30px",
-          "padding-right": "25px",
+          "padding-right": "25px"
         });
       }
     };

@@ -91,7 +91,6 @@ if (!org.gigapan.timelapse.snaplapse) {
 //
 (function() {
   var UTIL = org.gigapan.Util;
-  var browserSupported = UTIL.browserSupported();
   org.gigapan.timelapse.snaplapse.SnaplapseViewer = function(snaplapse, timelapse, settings, mode) {
 
     // Objects
@@ -131,7 +130,7 @@ if (!org.gigapan.timelapse.snaplapse) {
     // Parameters
     var rootURL;
     var rootEmbedURL;
-    var rootAppURL = org.gigapan.Util.getRootAppURL();
+    var rootAppURL = UTIL.getRootAppURL();
     var maxSubtitleLength = 120;
     var embedWidth = 854;
     var embedHeight = 480 + ( presentationSliderEnabled ? 103 : 0);
@@ -1096,7 +1095,7 @@ if (!org.gigapan.timelapse.snaplapse) {
         });
 
         snaplapse.addEventListener('keyframe-interval-change', function(keyframe) {
-          org.gigapan.Util.log("##################### snaplapse keyframe-interval-change: " + JSON.stringify(keyframe));
+          UTIL.log("##################### snaplapse keyframe-interval-change: " + JSON.stringify(keyframe));
           // Render the keyframe as selected to show that it's being played
           displaySnaplapseFrameAnnotation(keyframe);
         });
@@ -1175,7 +1174,7 @@ if (!org.gigapan.timelapse.snaplapse) {
       $("#" + viewerDivId + " .captureTime").css({
         "bottom": positionBottom + "px",
         "left": positionLeft + "px",
-        "font-size": fontSize + "px",
+        "font-size": fontSize + "px"
       });
     };
 
@@ -1211,10 +1210,10 @@ if (!org.gigapan.timelapse.snaplapse) {
             ctx.drawImage(canvas, 0, 0, cWidth, cHeight, 0, 0, KEYFRAME_THUMBNAIL_WIDTH, KEYFRAME_THUMBNAIL_HEIGHT);
           }
         } else {
-          org.gigapan.Util.error("setKeyframeThumbail(): failed to find a good video");
+          UTIL.error("setKeyframeThumbail(): failed to find a good video");
         }
       } catch(e) {
-        org.gigapan.Util.error("Exception while trying to create thumbnail: " + e);
+        UTIL.error("Exception while trying to create thumbnail: " + e);
       }
     };
 
@@ -1361,11 +1360,11 @@ if (!org.gigapan.timelapse.snaplapse) {
         $keyframeTable.hover(function() {
           var $keyframeListItem = $("#" + keyframeListItem.id);
           if (!$keyframeListItem.hasClass("ui-selected"))
-            org.gigapan.Util.changeBackgroundColorOpacity($keyframeListItem.get(0), 0.15);
+            UTIL.changeBackgroundColorOpacity($keyframeListItem.get(0), 0.15);
         }, function() {
           var $keyframeListItem = $("#" + keyframeListItem.id);
           if (!$keyframeListItem.hasClass("ui-selected"))
-            org.gigapan.Util.changeBackgroundColorOpacity($keyframeListItem.get(0), 0);
+            UTIL.changeBackgroundColorOpacity($keyframeListItem.get(0), 0);
         });
       }
 
@@ -1726,11 +1725,11 @@ if (!org.gigapan.timelapse.snaplapse) {
               callback();
             }
           } else {
-            org.gigapan.Util.error("Failed to load snaplapse json from URL [" + snaplapseJsonUrl + "]");
+            UTIL.error("Failed to load snaplapse json from URL [" + snaplapseJsonUrl + "]");
           }
         },
         error: function() {
-          org.gigapan.Util.error("Error loading snaplapse json from URL [" + snaplapseJsonUrl + "]");
+          UTIL.error("Error loading snaplapse json from URL [" + snaplapseJsonUrl + "]");
         }
       });
       return false;
