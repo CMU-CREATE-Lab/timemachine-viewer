@@ -52,31 +52,37 @@ function setupPostMessageHandlers() {
 
   // Handles the cross-domain iframe request to start playing a time machine.
   pm.bind("timemachine-play", function() {
-    if (timelapse)
-      timelapse.play();
+    if (timelapse && timelapse.isPaused())
+      timelapse.handlePlayPause();
   });
 
   // Handles the cross-domain iframe request to pause a time machine.
   pm.bind("timemachine-pause", function() {
-    if (timelapse)
-      timelapse.pause();
+    if (timelapse && !timelapse.isPaused())
+      timelapse.handlePlayPause();
   });
 
   // Handles the cross-domain iframe request to seek a time machine to the specified time.
   pm.bind("timemachine-seek", function(unsafe_data) {
-    if (unsafe_data && typeof (unsafe_data) !== 'undefined' && timelapse)
-      timelapse.seek(unsafe_data);
+    if (unsafe_data && typeof (unsafe_data) !== 'undefined' && timelapse) {
+      var time = parseFloat(unsafe_data);
+      timelapse.seek(time);
+    }
   });
 
   // Handles the cross-domain iframe request to change the view of a time machine.
   pm.bind("timemachine-set-view", function(unsafe_data) {
     if (unsafe_data && typeof (unsafe_data) !== 'undefined' && timelapse) {
+      // Before we change the view, cancel any tours that may be playing.
+      var snaplapseTour = timelapse.getSnaplapseForSharedTour();
+      if (snaplapseTour)
+        snaplapseTour.clearSnaplapse();
+
       // Sanitize data
-      var safe_data = {};
-      safe_data.view = timelapse.unsafeViewToView(unsafe_data.view);
-      safe_data.doWarp = !!unsafe_data.doWarp;
-      safe_data.doPlay = !!unsafe_data.doPlay;
-      timelapse.setNewView(safe_data.view, safe_data.doWarp, safe_data.doPlay);
+      var view = timelapse.unsafeViewToView(unsafe_data.view);
+      var doWarp = !!unsafe_data.doWarp;
+      var doPlay = !!unsafe_data.doPlay;
+      timelapse.setNewView(view, doWarp, doPlay);
     }
   });
 
@@ -92,9 +98,10 @@ function setupPostMessageHandlers() {
         unsafe_data = org.gigapan.Util.unpackVars(unsafe_data);
       }
 
+      // Before we change the view, cancel any tours that may be playing.
       var snaplapseTour = timelapse.getSnaplapseForSharedTour();
       if (snaplapseTour)
-        snaplapseTour.clearSnaplapse()
+        snaplapseTour.clearSnaplapse();
 
       if (unsafe_data.v) {
         var newView = timelapse.unsafeViewToView(unsafe_data.v.split(","));

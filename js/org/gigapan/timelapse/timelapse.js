@@ -1003,31 +1003,33 @@ if (!window['$']) {
     };
     this.getShareView = getShareView;
 
-    // Extract a safe view object from an unsafe view string.
-    var unsafeViewToView = function(viewParam) {
+    // Extract a safe view from either a view object (i.e. {center:{x:val, y:val}, zoom:val}) or
+    // from an array of strings (i.e. a share URL, such as #v=44.96185,59.06233,4.5,latLng&t=0.10,
+    // that has been unpacked).
+    var unsafeViewToView = function(unsafe_viewParam) {
       var view = null;
 
-      if (!viewParam)
-        return view;
+      if (!unsafe_viewParam)
+        return null;
 
-      // If the view is not a string (i.e an object) then we need to break it up into one
-      // so that we can sanitize it below.
-      if (viewParam.center || viewParam.bbox) {
+      // If we have a view object and not an array of strings (i.e. an unpacked share URL) then we need to unpack
+      // the view object into an array of strings so that it can be properly sanitized further down.
+      if (unsafe_viewParam.center || unsafe_viewParam.bbox) {
         var tmpViewParam = [];
-        if (viewParam.center) {
+        if (unsafe_viewParam.center) {
           var isLatLng = false;
-          var centerView = viewParam.center;
+          var centerView = unsafe_viewParam.center;
           for (var key in centerView) {
             tmpViewParam.push(centerView[key]);
             if (key == "lat")
               isLatLng = true;
           }
-          tmpViewParam.push(viewParam.zoom);
+          tmpViewParam.push(unsafe_viewParam.zoom);
           isLatLng ? tmpViewParam.push("latLng") : tmpViewParam.push("pts");
-          viewParam = tmpViewParam;
-        } else if (viewParam.bbox) {
+          unsafe_viewParam = tmpViewParam;
+        } else if (unsafe_viewParam.bbox) {
           var isLatLng = false;
-          var bboxView = viewParam.bbox;
+          var bboxView = unsafe_viewParam.bbox;
           for (var key in bboxView) {
             if (key == "ne" || key == "sw") {
               isLatLng = true;
@@ -1038,48 +1040,48 @@ if (!window['$']) {
             }
           }
           isLatLng ? tmpViewParam.push("latLng") : tmpViewParam.push("pts");
-          viewParam = tmpViewParam;
+          unsafe_viewParam = tmpViewParam;
         }
       }
 
-      if (viewParam.indexOf("latLng") != -1) {
-        if (viewParam.length == 4)
+      if (unsafe_viewParam.indexOf("latLng") != -1) {
+        if (unsafe_viewParam.length == 4)
           view = {
             center: {
-              "lat": parseFloat(viewParam[0]),
-              "lng": parseFloat(viewParam[1])
+              "lat": parseFloat(unsafe_viewParam[0]),
+              "lng": parseFloat(unsafe_viewParam[1])
             },
-            "zoom": parseFloat(viewParam[2])
+            "zoom": parseFloat(unsafe_viewParam[2])
           };
-        else if (viewParam.length == 5)
+        else if (unsafe_viewParam.length == 5)
           view = {
             bbox: {
               "ne": {
-                "lat": parseFloat(viewParam[0]),
-                "lng": parseFloat(viewParam[1])
+                "lat": parseFloat(unsafe_viewParam[0]),
+                "lng": parseFloat(unsafe_viewParam[1])
               },
               "sw": {
-                "lat": parseFloat(viewParam[2]),
-                "lng": parseFloat(viewParam[3])
+                "lat": parseFloat(unsafe_viewParam[2]),
+                "lng": parseFloat(unsafe_viewParam[3])
               }
             }
           };
       } else {// Assume points if the user did not specify latLng. Also allow for the omission of 'pts' param for backwards compatibility
-        if ((viewParam.indexOf("pts") == -1 && viewParam.length == 3) || viewParam.length == 4)
+        if ((unsafe_viewParam.indexOf("pts") == -1 && unsafe_viewParam.length == 3) || unsafe_viewParam.length == 4)
           view = {
             center: {
-              "x": parseFloat(viewParam[0]),
-              "y": parseFloat(viewParam[1])
+              "x": parseFloat(unsafe_viewParam[0]),
+              "y": parseFloat(unsafe_viewParam[1])
             },
-            "zoom": parseFloat(viewParam[2])
+            "zoom": parseFloat(unsafe_viewParam[2])
           };
-        else if ((viewParam.indexOf("pts") == -1 && viewParam.length == 4) || viewParam.length == 5)
+        else if ((unsafe_viewParam.indexOf("pts") == -1 && unsafe_viewParam.length == 4) || unsafe_viewParam.length == 5)
           view = {
             bbox: {
-              "xmin": parseFloat(viewParam[0]),
-              "xmax": parseFloat(viewParam[1]),
-              "ymin": parseFloat(viewParam[2]),
-              "ymax": parseFloat(viewParam[3])
+              "xmin": parseFloat(unsafe_viewParam[0]),
+              "xmax": parseFloat(unsafe_viewParam[1]),
+              "ymin": parseFloat(unsafe_viewParam[2]),
+              "ymax": parseFloat(unsafe_viewParam[3])
             }
           };
       }
