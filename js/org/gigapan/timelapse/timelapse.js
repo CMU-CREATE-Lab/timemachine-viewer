@@ -174,9 +174,7 @@ if (!window['$']) {
 
     // Canvas version
     var canvas;
-    var canvasTmp;
-    var canvasContext;
-    var canvasTmpContext;
+    var blackFrameDetectionCanvas;
 
     // Full screen variables
     var fullScreen = false;
@@ -498,10 +496,6 @@ if (!window['$']) {
 
     this.getCanvas = function() {
       return canvas;
-    };
-
-    this.getCanvasTmp = function() {
-      return canvasTmp;
     };
 
     this.getAnnotator = function() {
@@ -1455,7 +1449,7 @@ if (!window['$']) {
         width: viewportWidth,
         height: viewportHeight
       });
-      $(canvasTmp).attr({
+      $(blackFrameDetectionCanvas).attr({
         width: viewportWidth,
         height: viewportHeight
       });
@@ -2867,6 +2861,7 @@ if (!window['$']) {
     };
 
     function loadPlayerControlsTemplate(html) {
+      // Add player_template.html to the DOM
       $("#" + timeMachineDivId).html(html);
       var $viewerDiv = $("#" + viewerDivId);
 
@@ -2879,6 +2874,7 @@ if (!window['$']) {
       videoDiv = document.getElementById(videoDivId);
       firstVideoId = videoDivId + "_1";
 
+      // Prevent the UI from being selected by the user.
       $viewerDiv.attr('unselectable', 'on').css({
         '-moz-user-select': 'none',
         '-o-user-select': 'none',
@@ -2888,32 +2884,31 @@ if (!window['$']) {
         'user-select': 'none'
       });
 
+      // TODO: Check that this hasn't bitrotted.
       dataPanesId = tmp.id + "_dataPanes";
       $("#" + videoDivId).append("<div id=" + dataPanesId + "></div>");
 
       if (viewerType == "canvas") {
         canvas = document.createElement('canvas');
         canvas.id = videoDivId + "_canvas";
-        canvasContext = canvas.getContext('2d');
         videoDiv.appendChild(canvas);
-        canvasTmp = document.createElement('canvas');
-        canvasTmp.id = videoDivId + "_canvas_tmp";
-        canvasTmp.style.display = "none";
-        canvasTmpContext = canvasTmp.getContext('2d');
+        blackFrameDetectionCanvas = document.createElement('canvas');
+        blackFrameDetectionCanvas.id = videoDivId + "_canvas_blackFrameDetection";
+        blackFrameDetectionCanvas.style.display = "none";
         if (blackFrameDetection)
-          videoDiv.appendChild(canvasTmp);
-        videoset = new org.gigapan.timelapse.Videoset(viewerDivId, videoDivId, thisObj, canvas.id, canvasTmp.id);
+          videoDiv.appendChild(blackFrameDetectionCanvas);
+        videoset = new org.gigapan.timelapse.Videoset(viewerDivId, videoDivId, thisObj, canvas.id, blackFrameDetectionCanvas.id);
       } else if (viewerType == "video") {
         videoset = new org.gigapan.timelapse.Videoset(viewerDivId, videoDivId, thisObj);
       }
 
+      // Setup viewport event handlers.
       videoDiv['onmousedown'] = handleMousedownEvent;
       videoDiv['ondblclick'] = handleDoubleClickEvent;
 
       $(videoDiv).mousewheel(thisObj.handleMousescrollEvent);
 
-      $viewerDiv.on("click", function() {
-        $(document).off('keydown.tm_keydown keyup.tm_keyup');
+      $viewerDiv.one("click", function() {
         $(document).on("keydown.tm_keydown", handleKeydownEvent);
         $(document).on("keyup.tm_keyup", handleKeyupEvent);
       });
@@ -2999,7 +2994,8 @@ if (!window['$']) {
     viewerType = UTIL.getViewerType();
 
     // Set default loop dwell time
-    // TODO: This should probably be set not just for landsat, but for all short datasets
+    // TODO: This should probably be set not just for landsat, but for all short datasets.
+    // TODO: This should probably move to the setup function.
     if (datasetType == "landsat" && loopDwell == undefined) {
       loopDwell = {
         "startDwell": defaultLoopDwellTime,

@@ -121,16 +121,16 @@ if (!window['$']) {
   // instead of "new RegExp()" for better performance (see https://developer.mozilla.org/en/JavaScript/Guide/Regular_Expressions)
   var SPLIT_VIDEO_FRAGMENT_URL_PATTERN = /_(\d+).(mp4|webm)(?:\?time=[0-9]+)?$/i;
 
-  org.gigapan.timelapse.Videoset = function(viewerDivId, videoDivId, timelapse, canvasId, canvasTmpId) {
+  org.gigapan.timelapse.Videoset = function(viewerDivId, videoDivId, timelapse, canvasId, blackFrameDetectionCanvasId) {
     var mediaType = UTIL.getMediaType();
     var viewerType = UTIL.getViewerType();
     var videoDiv = document.getElementById(videoDivId);
     if (viewerType == "canvas") {
       var canvas = document.getElementById(canvasId);
       var canvasContext = canvas.getContext('2d');
-      var canvasTmp = document.getElementById(canvasTmpId);
-      if (canvasTmp) {
-        var canvasTmpContext = canvasTmp.getContext('2d');
+      var blackFrameDetectionCanvas = document.getElementById(blackFrameDetectionCanvasId);
+      if (blackFrameDetectionCanvas) {
+        var blackFrameDetectionCanvasContext = blackFrameDetectionCanvas.getContext('2d');
       }
     }
     var isStatusLoggingEnabled = false;
@@ -1363,11 +1363,11 @@ if (!window['$']) {
       if (video.active && video.ready && !video.seeking && video.readyState >= 2 && video.canDraw == true) {
         // Black frame detection
         var videoGeometry = video.geometry;
-        if (canvasTmp) {
-          canvasTmpContext.clearRect(0, 0, canvasTmp.width, canvasTmp.height);
-          canvasTmpContext.drawImage(video, videoGeometry.left, videoGeometry.top, videoGeometry.width, videoGeometry.height);
+        if (blackFrameDetectionCanvas) {
+          blackFrameDetectionCanvasContext.clearRect(0, 0, blackFrameDetectionCanvas.width, blackFrameDetectionCanvas.height);
+          blackFrameDetectionCanvasContext.drawImage(video, videoGeometry.left, videoGeometry.top, videoGeometry.width, videoGeometry.height);
 
-          var image = canvasTmpContext.getImageData(0, 0, canvasTmp.width, canvasTmp.height);
+          var image = blackFrameDetectionCanvasContext.getImageData(0, 0, blackFrameDetectionCanvas.width, blackFrameDetectionCanvas.height);
           var imgData = image.data;
           var len = imgData.length;
 
