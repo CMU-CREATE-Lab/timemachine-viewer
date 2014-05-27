@@ -1556,13 +1556,7 @@ if (!org.gigapan.timelapse.snaplapse) {
       });
 
       // Override the color of keyframe items
-      var tagColor;
-      if (timelapse.getVisualizer()) {
-        tagColor = timelapse.getTagColor();
-      } else {
-        tagColor = [1, 1, 1];
-      }
-      keyframeListItem.style.backgroundColor = "rgba(" + tagColor[0] + "," + tagColor[1] + "," + tagColor[2] + ",0)";
+      keyframeListItem.style.backgroundColor = "rgba(1,1,1,0)";
 
       // Hide the last keyframe transition area
       hideLastKeyframeTransition();

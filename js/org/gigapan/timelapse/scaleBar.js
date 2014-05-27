@@ -40,9 +40,7 @@
  VERIFY NAMESPACE
 
  Create the global symbol "org" if it doesn't exist.  Throw an error if it does exist but is not an object.
-*/
-
-"use strict";
+ */"use strict";
 
 // Create the global symbol "org" if it doesn't exist.  Throw an error if it does exist but is not an object.
 var org;
@@ -121,12 +119,23 @@ if (!org.gigapan.timelapse.Timelapse) {
     var englishUnitArray = [8000, 4000, 2000, 1000, 500, 200, 100, 50, 20, 10, 5, 2, 1, 0.4735, 0.3788, 0.1894, 0.0947, 0.0947, 0.0379, 0.0189];
     var nowMetricUnitIndex = 1;
     var nowEnglishUnitIndex = 1;
-    var distance;
     var videoQualityHeight;
     var videoQualityWidth;
     var videoDivRatio;
     var videoDivBorderWidth;
     var videoQualityRatio;
+    var distancePerPixel = {
+      "km": undefined,
+      "mi": undefined
+    };
+    var radianPerDegree = Math.PI / 180;
+    var earthRadius = {
+      "km": 6371,
+      "mi": 3959
+    };
+    var c1 = radianPerDegree * earthRadius.km;
+    var c2 = radianPerDegree * earthRadius.mi;
+
     // Variables for DOM elements
     var metricUnit_txt_DOM;
     var englishUnit_txt_DOM;
@@ -238,8 +247,8 @@ if (!org.gigapan.timelapse.Timelapse) {
     };
 
     // Display the video quality
-    var displayVideoQuality = function(distance) {
-      var metersPerPixel = Math.round(distance.km * 1000 * 100) / 100;
+    var displayVideoQuality = function() {
+      var metersPerPixel = Math.round(distancePerPixel.km * 1000 * 100) / 100;
       var metersPerPixel_currentResolution;
       if (videoQualityRatio > videoDivRatio) {
         metersPerPixel_currentResolution = Math.round(((metersPerPixel * videoDivWidth) / videoQualityWidth) * 100) / 100;
@@ -261,7 +270,7 @@ if (!org.gigapan.timelapse.Timelapse) {
           videoQualityHeight = videoDivHeight;
           videoQualityWidth = videoDivWidth;
         }
-        displayVideoQuality(distance);
+        displayVideoQuality();
         setVideoRatioBar();
       });
       metersPerPixel_text.addEventListener("keydown", function(event) {
@@ -273,9 +282,7 @@ if (!org.gigapan.timelapse.Timelapse) {
         var $metersPerPixel_text = $(metersPerPixel_text);
         var targetDistance_km = $metersPerPixel_text.val() / 1000;
         if (!isNaN(targetDistance_km) && targetDistance_km != 0) {
-          var tagInfo_locationData = timelapse.getTagInfo_locationData();
-          var tagLatLngCenter = tagInfo_locationData.tagLatLngCenter_nav;
-          var currentDistance_km = tagInfo_locationData.distance_pixel_lng * (Math.PI / 180) * 6371 * Math.cos(tagLatLngCenter.lat * (Math.PI / 180));
+          var currentDistance_km = distancePerPixel.km;
           var currentView = timelapse.getView();
           var targetView = $.extend({}, currentView);
           if (videoQualityRatio > videoDivRatio) {
@@ -439,13 +446,17 @@ if (!org.gigapan.timelapse.Timelapse) {
     };
     this.setVideoRatioBar = setVideoRatioBar;
 
-    // Set the scale bar
-    var setScaleBar = function(distance_pixel_lng, tagLatLngCenter) {
-      // Calculate the distance of 2 center pixels in longitude
-      distance = {
-        "km": distance_pixel_lng * (Math.PI / 180) * 6371 * Math.cos(tagLatLngCenter.lat * (Math.PI / 180)),
-        "mi": distance_pixel_lng * (Math.PI / 180) * 3959 * Math.cos(tagLatLngCenter.lat * (Math.PI / 180))
-      };
+    var setScaleBar = function(view, latlngCenter) {
+      var latlngNearCenter = timelapse.getProjection().pointToLatlng({
+        "x": (view.x + 1 / view.scale),
+        "y": view.y,
+        "scale": view.scale
+      });
+      // Compute the distance per pixel in longitude degree
+      var degreePerPixel = Math.abs(latlngCenter.lng - latlngNearCenter.lng);
+      var v1 = degreePerPixel * Math.cos(latlngCenter.lat * radianPerDegree);
+      distancePerPixel.km = c1 * v1;
+      distancePerPixel.mi = c2 * v1;
       // Find the new proper scale
       var metricUnitArray = metricUnit_txt_DOM.textContent.split(" ");
       var englishUnitArray = englishUnit_txt_DOM.textContent.split(" ");
@@ -469,8 +480,8 @@ if (!org.gigapan.timelapse.Timelapse) {
         barUnit.english = Math.round(barUnit.english * 10000) / 10000;
       }
       // Find scale
-      var newScale_metric = findScale("metric", barUnit.metric, distance.km, barLength);
-      var newScale_english = findScale("english", barUnit.english, distance.mi, barLength);
+      var newScale_metric = findScale("metric", barUnit.metric, distancePerPixel.km, barLength);
+      var newScale_english = findScale("english", barUnit.english, distancePerPixel.mi, barLength);
       // Draw the scale bar
       var min_X = 15;
       var min_Y = 13;
@@ -499,7 +510,7 @@ if (!org.gigapan.timelapse.Timelapse) {
       };
       drawScaleBar(scaleBarSetting);
       if (enableVideoQualitySelector == true)
-        displayVideoQuality(distance);
+        displayVideoQuality();
     };
     this.setScaleBar = setScaleBar;
 

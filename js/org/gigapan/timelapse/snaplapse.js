@@ -341,8 +341,6 @@ if (!Math.uuid) {
           timelapse.getVisualizer().deleteTimeTag(keyframeId, keyframes[index - 1]);
           timelapse.getVisualizer().addTimeTag(keyframes, index);
         }
-        var tagColor = timelapse.getTagColor();
-        var color_head = "rgba(" + tagColor[0] + "," + tagColor[1] + "," + tagColor[2] + ",";
 
         // Events should be fired at the end of this function
         var listeners = eventListeners['keyframe-modified'];
@@ -355,8 +353,6 @@ if (!Math.uuid) {
             }
           }
         }
-
-        return color_head;
       }
     };
 

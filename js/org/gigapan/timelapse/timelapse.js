@@ -169,7 +169,6 @@ if (!window['$']) {
     var visualizer;
 
     // DOM elements
-    var panoVideo;
     var dataPanesId;
 
     // Canvas version
@@ -243,11 +242,9 @@ if (!window['$']) {
     var homeView;
     var panoView;
     var firstVideoId;
-    var topLevelVideo = {};
     var originalPlaybackRate = playbackSpeed;
     var originalLoopPlayback = loopPlayback;
     var translationSpeedConstant = 20;
-    var leader;
     var parabolicMotionController;
     var parabolicMotionObj = org.gigapan.timelapse.parabolicMotion;
     var previousCaptureTime;
@@ -278,40 +275,10 @@ if (!window['$']) {
     var defaultLevelThreshold = 0.05;
     var levelThreshold = defaultLevelThreshold;
 
-    // Scale bar, small google map, editor, annotator
-    var tagInfo_locationData = {
-      "tagPointNE_nav": {
-        "x": undefined,
-        "y": undefined
-      },
-      "tagPointSW_nav": {
-        "x": undefined,
-        "y": undefined
-      },
-      "tagPointCenter_nav": {
-        "x": undefined,
-        "y": undefined
-      },
-      "tagLatLngNE_nav": {
-        "lat": undefined,
-        "lng": undefined
-      },
-      "tagLatLngSW_nav": {
-        "lat": undefined,
-        "lng": undefined
-      },
-      "tagLatLngCenter_nav": {
-        "lat": undefined,
-        "lng": undefined
-      },
-      "panoView": {
-        "xmin": undefined,
-        "ymin": undefined
-      },
-      "distance_pixel_lng": undefined,
-      "scale_map_nav": undefined,
-      "tagPointRadius_nav": undefined
-    };
+    // Scale bar, small google map, visualizer
+    var panoVideo;
+    var topLevelVideo = {};
+    var leader;
 
     // Constants
     var CONSTANTS = {
@@ -456,10 +423,6 @@ if (!window['$']) {
 
     this.getVisualizer = function() {
       return visualizer;
-    };
-
-    this.getTagInfo_locationData = function() {
-      return tagInfo_locationData;
     };
 
     this.setSmallGoogleMapEnableStatus = function(status) {
@@ -1424,7 +1387,7 @@ if (!window['$']) {
         // TODO implement a resize listener and put this in the annotator class
         if (annotator)
           annotator.resize();
-        updateTagInfo_locationData();
+        updateLocationContextUI();
       };
     };
 
@@ -2127,109 +2090,45 @@ if (!window['$']) {
     };
     this.getCurrentFrameNumber = getCurrentFrameNumber;
 
-    // Initialize the tag info with location data
-    var initializeTagInfo_locationData = function() {
-      var boundingBox = pixelCenterToPixelBoundingBoxView(panoView).bbox;
-      tagInfo_locationData.panoView.xmin = boundingBox.xmin;
-      tagInfo_locationData.panoView.ymin = boundingBox.ymin;
-      tagInfo_locationData.panoView.scale = panoView.scale;
-      if (visualizer) {
-        var navigationMap = visualizer.getNavigationMap();
-        var navigationMapWidth = $(navigationMap).width();
-        tagInfo_locationData.scale_map_nav = navigationMapWidth / (boundingBox.xmax - boundingBox.xmin);
-      }
-    };
-
-    // Update tag information of location data
-    // TODO(yenchiah): This seems to be run several times (~6) when the time machine object is first created.
-    // Another bug is that the position of the pano video on the context map is incorrect.
-    // This seems to happens when the aspect ratio of the viewport and the context map are not the same.
-    var updateTagInfo_locationData = function() {
+    // Update the scale bar and the context map
+    // Need to call this when changing the view
+    var updateLocationContextUI = function() {
       if (!defaultUI)
         return null;
-      var mode = defaultUI.getMode();
-      if (scaleBar == undefined && smallGoogleMap == undefined) {
-        if (fullScreen || mode == "player") {
-          return null;
-        }
-      }
+      if (scaleBar == undefined && smallGoogleMap == undefined && defaultUI.getMode() == "player")
+        return null;
       if (visualizer || smallGoogleMap || scaleBar) {
         // Need to get the projection dynamically when the viewer size changes
         var videoViewer_projection;
         if (tmJSON['projection-bounds'])
           videoViewer_projection = _getProjection();
-        // Get video viewer center location
 
         if (isHyperwall && !masterView)
           masterView = thisObj.getView();
 
-        var scale = isHyperwall ? masterView.scale : view.scale;
         var desiredView = isHyperwall ? masterView : view;
 
-        var videoViewer_centerPoint = {
-          "x": desiredView.x,
-          "y": desiredView.y,
-          "scale": scale
-        };
-        var tagLatLngCenter_nav;
+        var latlngCenter;
         if (videoViewer_projection) {
-          tagLatLngCenter_nav = videoViewer_projection.pointToLatlng(videoViewer_centerPoint);
-          tagInfo_locationData.tagLatLngCenter_nav.lat = tagLatLngCenter_nav.lat;
-          tagInfo_locationData.tagLatLngCenter_nav.lng = tagLatLngCenter_nav.lng;
+          latlngCenter = videoViewer_projection.pointToLatlng(desiredView);
         }
-        if (scaleBar) {
-          // Compute the the distance between two center pixels
-          var videoViewer_nearCenterPoint = {
-            "x": (desiredView.x + 1 / scale),
-            "y": desiredView.y,
-            "scale": scale
-          };
-          var tagLatLngNearCenter_nav, distance_pixel_lng;
-          if (videoViewer_projection) {
-            tagLatLngNearCenter_nav = videoViewer_projection.pointToLatlng(videoViewer_nearCenterPoint);
-            distance_pixel_lng = Math.abs(tagLatLngCenter_nav.lng - tagLatLngNearCenter_nav.lng);
-            tagInfo_locationData.distance_pixel_lng = distance_pixel_lng;
-            scaleBar.setScaleBar(distance_pixel_lng, tagLatLngCenter_nav);
-          }
+        // Update the scale bar
+        if (scaleBar && videoViewer_projection) {
+          scaleBar.setScaleBar(desiredView, latlngCenter);
         }
+        // Update context maps
         if (visualizer || smallGoogleMap) {
-          // Get the location bound of the video viewer
-          var bbox = pixelCenterToPixelBoundingBoxView(desiredView).bbox;
-          var videoViewer_leftTopPoint = {
-            "x": bbox.xmin,
-            "y": bbox.ymin
-          };
-          var videoViewer_rightBotPoint = {
-            "x": bbox.xmax,
-            "y": bbox.ymax
-          };
-          var tagLatLngNE_nav, tagLatLngSW_nav;
-          if (videoViewer_projection) {
-            tagLatLngNE_nav = videoViewer_projection.pointToLatlng(videoViewer_leftTopPoint);
-            tagLatLngSW_nav = videoViewer_projection.pointToLatlng(videoViewer_rightBotPoint);
-            tagInfo_locationData.tagLatLngNE_nav.lat = tagLatLngNE_nav.lat;
-            tagInfo_locationData.tagLatLngNE_nav.lng = tagLatLngNE_nav.lng;
-            tagInfo_locationData.tagLatLngSW_nav.lat = tagLatLngSW_nav.lat;
-            tagInfo_locationData.tagLatLngSW_nav.lng = tagLatLngSW_nav.lng;
-          }
-          // Update the small google map
-          if (smallGoogleMap && enableSmallGoogleMap == true) {
-            smallGoogleMap.setSmallGoogleMap(tagLatLngCenter_nav, videoViewer_centerPoint.scale);
-            smallGoogleMap.setSmallMapBoxLocation(tagLatLngNE_nav, tagLatLngSW_nav);
+          var desiredBound = pixelCenterToPixelBoundingBoxView(desiredView).bbox;
+          if (videoViewer_projection && smallGoogleMap && enableSmallGoogleMap == true) {
+            smallGoogleMap.setMap(desiredBound, latlngCenter);
           }
           if (visualizer) {
-            // Calculate the position on the navigation map
-            var contextMapPointInfo = boundingBoxToContextMapPointInfo(bbox);
-            tagInfo_locationData.tagPointNE_nav = contextMapPointInfo.p_NE;
-            tagInfo_locationData.tagPointSW_nav = contextMapPointInfo.p_SW;
-            tagInfo_locationData.tagPointCenter_nav = viewPointToContextMapPoint(view);
-            tagInfo_locationData.tagPointRadius_nav = contextMapPointInfo.radius;
-            visualizer.updateInterface_locationData(tagInfo_locationData);
-          }// End of if (visualizer)
+            visualizer.setMap(desiredBound);
+          }
         }// End of if (visualizer || smallGoogleMap)
-      }// End of if (visualizer != undefined || smallGoogleMap != undefined || scaleBar != undefined)
+      }// End of if (visualizer || smallGoogleMap || scaleBar)
     };
-    this.updateTagInfo_locationData = updateTagInfo_locationData;
+    this.updateLocationContextUI = updateLocationContextUI;
 
     var loadSharedDataFromUnsafeURL = function(unsafe_fullURL, playOnLoad) {
       var unsafe_matchURL = unsafe_fullURL.match(/#(.+)/);
@@ -2267,68 +2166,6 @@ if (!window['$']) {
       }// end of if (unsafe_matchURL)
     };
     this.loadSharedDataFromUnsafeURL = loadSharedDataFromUnsafeURL;
-
-    var viewPointToContextMapPoint = function(viewPoint) {
-      return {
-        x: (viewPoint.x - tagInfo_locationData.panoView.xmin) * tagInfo_locationData.scale_map_nav,
-        y: (viewPoint.y - tagInfo_locationData.panoView.ymin) * tagInfo_locationData.scale_map_nav
-      };
-    };
-    this.viewPointToContextMapPoint = viewPointToContextMapPoint;
-
-    var boundingBoxToContextMapPointInfo = function(bbox) {
-      var p_NE = viewPointToContextMapPoint({
-        "x": bbox.xmin,
-        "y": bbox.ymin
-      });
-      var p_SW = viewPointToContextMapPoint({
-        "x": bbox.xmax,
-        "y": bbox.ymax
-      });
-      var radius = 4.7667 * Math.log(Math.abs(p_NE.x - p_SW.x) + Math.abs(p_NE.y - p_SW.y)) - 16.525;
-      if (radius < 2)
-        radius = 2;
-      return {
-        p_NE: p_NE,
-        p_SW: p_SW,
-        radius: radius
-      };
-    };
-    this.boundingBoxToContextMapPointInfo = boundingBoxToContextMapPointInfo;
-
-    // Select tag color
-    var getTagColor = function() {
-      // TODO: change color?
-      return [255, 0, 0, 0];
-    };
-    this.getTagColor = getTagColor;
-
-    // Get the location bound of the viewer
-    var getViewerLocationBound = function() {
-      var viewer = document.getElementById(videoDivId);
-      var viewerProjection = _getProjection();
-      var leftTopPoint = $.extend({}, view);
-      var rightBotPoint = $.extend({}, view);
-      leftTopPoint.x -= (viewer.offsetWidth / 2) / view.scale;
-      leftTopPoint.y -= (viewer.offsetHeight / 2) / view.scale;
-      var leftTopLatLng = viewerProjection.pointToLatlng(leftTopPoint);
-      rightBotPoint.x += (viewer.offsetWidth / 2) / view.scale;
-      rightBotPoint.y += (viewer.offsetHeight / 2) / view.scale;
-      var rightBotLatLng = viewerProjection.pointToLatlng(rightBotPoint);
-      return {
-        "leftTopLatLng": leftTopLatLng,
-        "rightBotLatLng": rightBotLatLng
-      };
-    };
-    this.getViewerLocationBound = getViewerLocationBound;
-
-    // Get the center of the view
-    var getViewerLocationCenter = function() {
-      var viewerProjection = _getProjection();
-      var centerLatLng = viewerProjection.pointToLatlng(thisObj.getView());
-      return centerLatLng;
-    };
-    this.getViewerLocationCenter = getViewerLocationCenter;
 
     var needFirstAncestor = function(tileidx) {
       //UTIL.log("need ancestor for " + dumpTileidx(tileidx));
@@ -2565,10 +2402,11 @@ if (!window['$']) {
       });
 
       _addViewChangeListener(function() {
+        // TODO: move to the annotator
         if (annotator)
           annotator.updateAnnotationPositions();
         if (!isHyperwall)
-          updateTagInfo_locationData();
+          updateLocationContextUI();
       });
 
       _addVideoPauseListener(function() {
@@ -2670,8 +2508,6 @@ if (!window['$']) {
               settings["onTimeMachinePlayerReady"](timeMachineDivId);
             }
           }
-
-          updateTagInfo_locationData();
         }
       });
 
@@ -2842,7 +2678,6 @@ if (!window['$']) {
         // Reset home view
         computeHomeView();
         // Reset current view
-        console.log("loadTimelapseWithPreviousViewAndTime", loadTimelapseWithPreviousViewAndTime);
         if (!loadTimelapseWithPreviousViewAndTime)
           view = $.extend({}, homeView);
         _warpTo(view);
@@ -2852,8 +2687,7 @@ if (!window['$']) {
         topLevelVideo.src = getTileidxUrl(0);
         topLevelVideo.geometry = tileidxGeometry(0);
         leader = videoset.getLeader();
-        initializeTagInfo_locationData();
-        visualizer.loadNavigationMap(tagInfo_locationData);
+        visualizer.loadContextMap();
         panoVideo = visualizer.clonePanoVideo(topLevelVideo);
       }
 

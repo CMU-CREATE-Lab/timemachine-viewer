@@ -291,7 +291,7 @@ if (!org.gigapan.timelapse.Timelapse) {
       google.maps.event.addListener(googleMap, 'drag', updateLocation);
       google.maps.event.addListener(googleMap, 'resize', function() {
         google.maps.event.addListenerOnce(googleMap, 'bounds_changed', function() {
-          timelapse.updateTagInfo_locationData();
+          timelapse.updateLocationContextUI();
         });
       });
       // Create resizer
@@ -365,7 +365,7 @@ if (!org.gigapan.timelapse.Timelapse) {
         // Google maps starts counting its zoom level at 1, so we need to add 1
         zoomOffset = googleMapZoom - maxViewerZoom + 1;
         // Zoom back to the initial view
-        timelapse.updateTagInfo_locationData();
+        timelapse.updateLocationContextUI();
       });
     };
 
@@ -496,27 +496,47 @@ if (!org.gigapan.timelapse.Timelapse) {
       }
     };
 
-    ////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    //
-    // Public methods
-    //
-    // Hide the small google map size
-    var hideSmallMap = function() {
-      if ($smallMapContainer.is(":visible")) {
-        $smallMapContainer.stop(true, true).fadeOut(200);
+    var setSmallGoogleMap = function(latlngCenter) {
+      if (isMapMinimized == false) {
+        if (zoomOffset == undefined)
+          return;
+        var extendRatio = (mapGeometry.width + mapGeometry.height) / (startHeight + startWidth);
+        if (extendRatio >= 1)
+          extendRatio *= 0.6;
+        else
+          extendRatio *= -0.5;
+        var googleMapLatlngCenter = new google.maps.LatLng(latlngCenter.lat, latlngCenter.lng);
+        googleMap.setCenter(googleMapLatlngCenter);
+        var newZoom = Math.floor((timelapse.getCurrentZoom() + zoomOffset) + extendRatio);
+        if (oldGoogleMapZoom != newZoom) {
+          oldGoogleMapZoom = newZoom;
+          googleMap.setZoom(newZoom);
+        }
       }
     };
-    this.hideSmallMap = hideSmallMap;
 
-    // Show the small google map size
-    var showSmallMap = function() {
-      if (!$smallMapContainer.is(":visible")) {
-        $smallMapContainer.stop(true, true).fadeIn(200);
-      }
+    var setSmallMapBoxLocation = function(latlngNE, latlngSW) {
+      var boxLatLngNE_googleMap = new google.maps.LatLng(latlngNE.lat, latlngNE.lng, true);
+      var boxLatLngSW_googleMap = new google.maps.LatLng(latlngSW.lat, latlngSW.lng, true);
+      if (!isHyperwall)
+        googleMapBox.setBounds(new google.maps.LatLngBounds(boxLatLngNE_googleMap, boxLatLngSW_googleMap));
     };
-    this.showSmallMap = showSmallMap;
 
-    // Toggle the small google map size
+    var resetSmallMapSize = function() {
+      if (mapGeometry.height != minHeight || mapGeometry.width != minWidth) {
+        lastMapGeometry = $.extend({}, mapGeometry);
+        mapGeometry.height = startHeight;
+        mapGeometry.width = startWidth;
+      } else {
+        if (lastMapGeometry != undefined)
+          mapGeometry = $.extend({}, lastMapGeometry);
+      }
+      setSmallMapSize(mapGeometry.height, mapGeometry.width, true, function() {
+        // Update google map
+        google.maps.event.trigger(googleMap, "resize");
+      });
+    };
+
     var toggleSmallMapSize = function() {
       if (mapGeometry.height != 20 || mapGeometry.width != 20) {
         lastMapGeometry = $.extend({}, mapGeometry);
@@ -542,100 +562,25 @@ if (!org.gigapan.timelapse.Timelapse) {
         google.maps.event.trigger(googleMap, "resize");
       }, callBackOnComplete);
     };
-    this.toggleSmallMapSize = toggleSmallMapSize;
 
-    // Reset the small google map size
-    var resetSmallMapSize = function() {
-      if (mapGeometry.height != minHeight || mapGeometry.width != minWidth) {
-        lastMapGeometry = $.extend({}, mapGeometry);
-        mapGeometry.height = startHeight;
-        mapGeometry.width = startWidth;
-      } else {
-        if (lastMapGeometry != undefined)
-          mapGeometry = $.extend({}, lastMapGeometry);
-      }
-      setSmallMapSize(mapGeometry.height, mapGeometry.width, true, function() {
-        // Update google map
-        google.maps.event.trigger(googleMap, "resize");
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    //
+    // Public methods
+    //
+    var setMap = function(bbox, latlngCenter) {
+      var projection = timelapse.getProjection();
+      var latlngNE = projection.pointToLatlng({
+        "x": bbox.xmin,
+        "y": bbox.ymin
       });
+      var latlngSW = projection.pointToLatlng({
+        "x": bbox.xmax,
+        "y": bbox.ymax
+      });
+      setSmallGoogleMap(latlngCenter);
+      setSmallMapBoxLocation(latlngNE, latlngSW);
     };
-    this.resetSmallMapSize = resetSmallMapSize;
-
-    // Set the small google map
-    var setSmallGoogleMap = function(tagLatLngCenter, viewerScale) {
-      if (isMapMinimized == false) {
-        if (zoomOffset == undefined)
-          return;
-        var extendRatio = (mapGeometry.width + mapGeometry.height) / (startHeight + startWidth);
-        if (extendRatio >= 1)
-          extendRatio *= 0.6;
-        else
-          extendRatio *= -0.5;
-        var googleMapLatlngCenter = new google.maps.LatLng(tagLatLngCenter.lat, tagLatLngCenter.lng);
-        googleMap.setCenter(googleMapLatlngCenter);
-        var newZoom = Math.floor((timelapse.scaleToZoom(viewerScale) + zoomOffset) + extendRatio);
-        if (oldGoogleMapZoom != newZoom) {
-          oldGoogleMapZoom = newZoom;
-          googleMap.setZoom(newZoom);
-        }
-      }
-    };
-    this.setSmallGoogleMap = setSmallGoogleMap;
-
-    // Set the location of small google map box
-    var setSmallMapBoxLocation = function(tagLatLngNE, tagLatLngSW) {
-      var boxLatLngNE_googleMap = new google.maps.LatLng(tagLatLngNE.lat, tagLatLngNE.lng, true);
-      var boxLatLngSW_googleMap = new google.maps.LatLng(tagLatLngSW.lat, tagLatLngSW.lng, true);
-      if (!isHyperwall)
-        googleMapBox.setBounds(new google.maps.LatLngBounds(boxLatLngNE_googleMap, boxLatLngSW_googleMap));
-    };
-    this.setSmallMapBoxLocation = setSmallMapBoxLocation;
-
-    // Draw the small google map color
-    var drawSmallMapBoxColor = function(colorRGB) {
-      // Set the color
-      var boxColor = "rgb(" + colorRGB.r + "," + colorRGB.g + "," + colorRGB.b + ")";
-      var boxOption = {
-        strokeColor: boxColor,
-        strokeOpacity: mapBoxStrokeOpacity,
-        fillColor: boxColor,
-        fillOpacity: mapBoxFillOpacity
-      };
-      if (!isHyperwall)
-        googleMapBox.setOptions(boxOption);
-    };
-    this.drawSmallMapBoxColor = drawSmallMapBoxColor;
-
-    var getSmallMapDivID = function() {
-      return smallGoogleMapDivId + "_smallMap";
-    };
-    this.getSmallMapDivID = getSmallMapDivID;
-
-    var getSmallMapContainer = function() {
-      return smallMapContainer;
-    };
-    this.getSmallMapContainer = getSmallMapContainer;
-
-    var updateMapGeometry = function(newTop, newRight, newViewportWidth, newViewportHeight) {
-      if (newTop == undefined)
-        newTop = mapGeometry.top;
-      if (newRight == undefined)
-        newRight = mapGeometry.right;
-      if (newViewportWidth == undefined)
-        newViewportWidth = mapGeometry.width;
-      if (newViewportHeight == undefined)
-        newViewportHeight = mapGeometry.height;
-      mapGeometry.top = newTop;
-      mapGeometry.right = newRight;
-      smallMapContainer.style.right = mapGeometry.right + "px";
-      smallMapContainer.style.top = mapGeometry.top + "px";
-      google.maps.event.trigger(googleMap, "resize");
-    };
-    this.updateMapGeometry = updateMapGeometry;
-
-    this.getMapGeometry = function() {
-      return mapGeometry;
-    };
+    this.setMap = setMap;
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////
     //

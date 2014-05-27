@@ -532,13 +532,6 @@ if (!org.gigapan.timelapse.Timelapse) {
         $("#" + timeMachineDivId + " .composer").hide();
         if (snaplapseViewer)
           snaplapseViewer.hideAnnotationBubble();
-        if (smallGoogleMap && enableSmallGoogleMap == true) {
-          smallGoogleMap.drawSmallMapBoxColor({
-            r: 219,
-            g: 48,
-            b: 48
-          });
-        }
         if (panoVideo)
           panoVideo.pause();
       } else if (newMode == "editor") {
@@ -547,7 +540,7 @@ if (!org.gigapan.timelapse.Timelapse) {
         timelapse.seek_panoVideo(videoset.getCurrentTime());
         if (!videoset.isPaused() && panoVideo)
           panoVideo.play();
-        timelapse.updateTagInfo_locationData();
+        timelapse.updateLocationContextUI();
       }
       if (visualizer)
         visualizer.setMode(mode, false);
