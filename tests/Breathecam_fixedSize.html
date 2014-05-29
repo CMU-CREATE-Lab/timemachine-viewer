@@ -33,9 +33,11 @@
 
     <style>
       #timeMachine {
-        position: absolute;
-        width: 100%;
-        height: 100%;
+        position: relative;
+        margin-top: 10px;
+        margin-left: 10px;
+        width: 843px;
+        height: 702px;
       }
     </style>
 
@@ -45,6 +47,11 @@
       var url = "http://g7.gigapan.org/timemachines/breathecam/heinz/2014-03-26.timemachine";
 
       function init() {
+        myHomeView = {
+          x: 3671.3243277564334,
+          y: 1090.4362740684426,
+          scale: 0.4179828167092877
+        };
         var settings = {
           url: url,
           showFullScreenBtn: false,
@@ -57,6 +64,7 @@
           disableTourLooping: true,
           startEditorFromPresentationMode: true,
           showLogoOnDefaultUI: false,
+          newHomeView: myHomeView,
           datasetType: "breathecam"
         };
         timelapse = new org.gigapan.timelapse.Timelapse("timeMachine", settings);
@@ -67,5 +75,10 @@
   </head>
   <body>
     <div id="timeMachine"></div>
+    <div style="position: relative; margin-left: 10px; margin-top: 10px;">
+      <button onclick="timelapse.loadTimelapse('http://g7.gigapan.org/timemachines/breathecam/heinz/2014-05-16.timemachine', {x: 3730.4926057305433, y: 1269.794655713908, scale: 1.5}, 50, true)">Change date, view, and time</button>
+      <button onclick="timelapse.loadTimelapse('http://g7.gigapan.org/timemachines/breathecam/heinz/2014-05-18.timemachine', null, null, true)">Change date but preserve view and time</button>
+      <button onclick="timelapse.loadTimelapse('http://g7.gigapan.org/timemachines/breathecam/heinz/2014-05-20.timemachine')">Change date but reset view and time</button>
+    </div>
   </body>
 </html>

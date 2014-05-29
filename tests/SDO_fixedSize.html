@@ -33,16 +33,45 @@
 
     <style>
       #timeMachine {
-        position: absolute;
-        width: 100%;
-        height: 100%;
+        position: relative;
+        margin-top: 10px;
+        margin-left: 10px;
+        width: 843px;
+        height: 702px;
       }
     </style>
 
     <script type="text/javascript">
       jQuery.support.cors = true;
 
-      var url = "http://g7.gigapan.org/timemachines/breathecam/heinz/2014-03-26.timemachine";
+      //Pittsburgh
+      //var url = "http://g7.gigapan.org/timemachines/pittsburgh-v12";
+      //Blue Marble
+      //var url = "http://g7.gigapan.org/timemachines/blue-marble-v2/";
+      //Ocean Chlorophyll
+      //var url = "http://g7.gigapan.org/timemachines/chlorophyll-r32d-crf28-g10-bf0-l/";
+      //Plant Growth
+      //var url = "http://g7.gigapan.org/timemachines/brassica-15m-g10-bf0-l/";
+      //Bees
+      //var url = "http://g7.gigapan.org/timemachines/bees-chalkbrood-45m-2011-07-ap-v9/";
+      //Early Universe
+      //var url = "http://g7.gigapan.org/timemachines/e5-crf28-g10-bf0-l/";
+      //Paddle At The Point
+      //var url = "http://g7.gigapan.org/timemachines/patp-sub4-crf28-g10-bf0-l/";
+      //CMU Carnival 2010
+      //var url = "http://g7.gigapan.org/timemachines/carnival-10m-halfsize-g10-bf0-l30/";
+      //Burning Man 2011
+      //var url = "http://g7.gigapan.org/timemachines/BurningMan2011-v1/";
+      //Arizona Grasslands
+      //var url = "http://g7.gigapan.org/timemachines/usda-crf24-g10-bf0-l/";
+      //Visible Human Female
+      //var url = "http://g7.gigapan.org/timemachines/vhf-crf28-g10-bf0-l/";
+      //Weather Radar
+      //var url = "http://g7.gigapan.org/timemachines/radarmosaic-crf28-g10-bf0-6fps/";
+      //Kraus Winter Garden
+      //var url = "http://g7.gigapan.org/timemachines/ghc1-24h-halfsize-crf32-g10-bf0-l30/";
+      //Solar Dynamics Observatory
+      var url = "http://g7.gigapan.org/timemachines/sdo-color-crf24-g10-bf0-l/";
 
       function init() {
         var settings = {
@@ -50,14 +79,11 @@
           showFullScreenBtn: false,
           enableEditor: true,
           enablePresentationSlider: true,
-          mediaType: ".mp4",
           onTimeMachinePlayerReady: function(viewerDivId) {
             setupPostMessageHandlers();
+            //timelapse.loadSharedDataFromUnsafeURL("#tour=EFBkDAx4r09Js1vjjJ2F__BkDyuCp_17uRk_s0lI2F__BkD1jF45xr6Z5kv8qKhJ__BkD9gJumu-rSu7g2oI7C__BkD-lMsx6nyKsj83_HyI__Untitled_B", true);
           },
-          disableTourLooping: true,
-          startEditorFromPresentationMode: true,
-          showLogoOnDefaultUI: false,
-          datasetType: "breathecam"
+          disableTourLooping: true
         };
         timelapse = new org.gigapan.timelapse.Timelapse("timeMachine", settings);
       }
@@ -67,5 +93,10 @@
   </head>
   <body>
     <div id="timeMachine"></div>
+    <div style="position: relative; margin-left: 10px; margin-top: 10px;">
+      <button onclick="timelapse.switchLayer(1)">Switch to layer 1</button>
+      <button onclick="timelapse.switchLayer(2)">Switch to layer 2</button>
+      <button onclick="timelapse.switchLayer(3)">Switch to layer 3</button>
+    </div>
   </body>
 </html>
