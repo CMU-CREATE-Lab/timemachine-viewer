@@ -765,7 +765,7 @@ if (!org.gigapan.timelapse.snaplapse) {
         if (isTextNonEmpty(keyframe['unsafe_string_description'])) {
           $keyframeSubtitle.text(keyframe["unsafe_string_description"]);
           var $element = $(element);
-          var containerOffset = $keyframeContainer.offset();
+          var containerOffset = $keyframeContainer.position();
           var containerWidth = $keyframeContainer.width();
           var elementOffset = $element.offset();
           var elementWidth = $element.width();
