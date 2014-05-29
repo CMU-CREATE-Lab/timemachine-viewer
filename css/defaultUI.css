@@ -122,7 +122,7 @@ body, html {
   outline: 0;
 }
 
-.viewerModeBtn {
+.editorToggle {
   position: absolute;
   width: 58px;
   height: 18px;
@@ -139,22 +139,22 @@ body, html {
   font-size: 11px;
 }
 
-.viewerModeBtn .ui-icon {
+.editorToggle .ui-icon {
   margin-left: -2px;
 }
 
-.viewerModeBtn .ui-button-text {
+.editorToggle .ui-button-text {
   margin-top: -1px;
   margin-left: 0px;
 }
 
-.viewerModeBtn.ui-state-active {
+.editorToggle.ui-state-active {
   border: 1px solid #ffffff;
   background: rgba(0,0,0,0.6);
   color: white;
 }
 
-.viewerModeBtn.ui-state-active .ui-icon {
+.editorToggle.ui-state-active .ui-icon {
   background-image: url(../images/ui-icons_custom_256x240.png);
 }
 

@@ -155,6 +155,7 @@ if (!window['$']) {
     // button with the tour name on the center of the viewport.)
     var editorEnabled = ( typeof (settings["enableEditor"]) == "undefined") ? false : settings["enableEditor"];
     var presentationSliderEnabled = ( typeof (settings["enablePresentationSlider"]) == "undefined") ? false : settings["enablePresentationSlider"];
+    var annotatorEnabled = ( typeof (settings["enableAnnotator"]) == "undefined") ? false : settings["enableAnnotator"];
 
     // Objects
     var videoset;
@@ -351,12 +352,16 @@ if (!window['$']) {
       return doingLoopingDwell;
     };
 
-    this.getEditorEnabled = function() {
+    this.isEditorEnabled = function() {
       return editorEnabled;
     };
 
-    this.getPresentationSliderEnabled = function() {
+    this.isPresentationSliderEnabled = function() {
       return presentationSliderEnabled;
+    };
+
+    this.isAnnotatorEnabled = function() {
+      return annotatorEnabled;
     };
 
     this.getDefaultUI = function() {
@@ -2531,8 +2536,8 @@ if (!window['$']) {
 
       if (presentationSliderEnabled)
         snaplapseForPresentationSlider = new org.gigapan.timelapse.Snaplapse(thisObj, settings, "presentation");
-      if (settings["annotatorDiv"])
-        annotator = new org.gigapan.timelapse.Annotator(settings["annotatorDiv"], thisObj);
+      if (annotatorEnabled)
+        annotator = new org.gigapan.timelapse.Annotator(thisObj);
 
       defaultUI = new org.gigapan.timelapse.DefaultUI(thisObj, settings);
       if (useCustomUI)

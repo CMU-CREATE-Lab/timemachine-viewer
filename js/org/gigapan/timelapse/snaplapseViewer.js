@@ -105,7 +105,7 @@ if (!org.gigapan.timelapse.snaplapse) {
     var showEditorOnLoad = ( typeof (settings["showEditorOnLoad"]) == "undefined") ? false : settings["showEditorOnLoad"];
     var usePresentationSlider = (mode == "presentation") ? true : false;
     var uiEnabled = (mode == "noUI") ? false : true;
-    var editorEnabled = timelapse.getEditorEnabled();
+    var editorEnabled = timelapse.isEditorEnabled();
     var useCustomUI = timelapse.useCustomUI();
     var useThumbnailServer = ( typeof (settings["useThumbnailServer"]) == "undefined") ? true : settings["useThumbnailServer"];
     var showFullScreenBtn = ( typeof (settings["showFullScreenBtn"]) == "undefined") ? true : settings["showFullScreenBtn"];
@@ -115,7 +115,7 @@ if (!org.gigapan.timelapse.snaplapse) {
 
     // Flags
     var didOnce = false;
-    var presentationSliderEnabled = timelapse.getPresentationSliderEnabled();
+    var presentationSliderEnabled = timelapse.isPresentationSliderEnabled();
 
     // DOM elements
     var composerDivId = snaplapse.getComposerDivId();
@@ -1179,9 +1179,9 @@ if (!org.gigapan.timelapse.snaplapse) {
     };
 
     var setDefaultUIToPlayerMode = function() {
-      var $viewerModeCheckbox = $("#" + viewerDivId + " .viewerModeCheckbox");
-      if ($viewerModeCheckbox.is(":checked"))
-        $viewerModeCheckbox.click();
+      var $editorToggleCheckbox = $("#" + viewerDivId + " .editorToggleCheckbox");
+      if ($editorToggleCheckbox.is(":checked"))
+        $editorToggleCheckbox.click();
     };
 
     var setKeyframeThumbail = function(keyframe) {

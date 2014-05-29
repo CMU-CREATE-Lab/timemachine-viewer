@@ -170,7 +170,7 @@ if (!org.gigapan.timelapse.Timelapse) {
     var timeTickGrow_height = currentTimeTick_height;
     var originalIsPaused;
     var isSafari = org.gigapan.Util.isSafari();
-    var editorEnabled = timelapse.getEditorEnabled();
+    var editorEnabled = timelapse.isEditorEnabled();
     var timeTickSpan;
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////

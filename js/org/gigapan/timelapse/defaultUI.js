@@ -120,8 +120,8 @@ if (!org.gigapan.timelapse.Timelapse) {
     var showPanControls = ( typeof (settings["showPanControls"]) == "undefined") ? true : settings["showPanControls"];
     var showLogoOnDefaultUI = ( typeof (settings["showLogoOnDefaultUI"]) == "undefined") ? true : settings["showLogoOnDefaultUI"];
     var showEditorOnLoad = ( typeof (settings["showEditorOnLoad"]) == "undefined") ? false : settings["showEditorOnLoad"];
-    var editorEnabled = timelapse.getEditorEnabled();
-    var presentationSliderEnabled = timelapse.getPresentationSliderEnabled();
+    var editorEnabled = timelapse.isEditorEnabled();
+    var presentationSliderEnabled = timelapse.isPresentationSliderEnabled();
     var useCustomUI = timelapse.useCustomUI();
 
     // Flags
@@ -207,19 +207,19 @@ if (!org.gigapan.timelapse.Timelapse) {
           removeHelpOverlay();
         }
       });
-      // Create mode switch button
-      var $viewerModeBtn = $("#" + viewerDivId + " .viewerModeBtn");
-      var $viewerModeCheckbox = $("#" + viewerDivId + " .viewerModeCheckbox");
+      // Create editor mode switch button
       if (editorEnabled) {
-        $viewerModeCheckbox.attr("id", timeMachineDivId + "_viewerModeCheckbox");
-        $viewerModeBtn.attr("for", timeMachineDivId + "_viewerModeCheckbox");
-        $viewerModeCheckbox.button({
+        var $editorToggle = $("#" + viewerDivId + " .editorToggle");
+        var $editorToggleCheckbox = $("#" + viewerDivId + " .editorToggleCheckbox");
+        $editorToggleCheckbox.attr("id", timeMachineDivId + "_editorToggleCheckbox");
+        $editorToggle.attr("for", timeMachineDivId + "_editorToggleCheckbox");
+        $editorToggleCheckbox.button({
           icons: {
             primary: "ui-icon-note"
           },
           text: true
         }).click(function() {
-          if ($viewerModeCheckbox.is(":checked")) {
+          if ($editorToggleCheckbox.is(":checked")) {
             setMode("editor");
             UTIL.addGoogleAnalyticEvent('button', 'click', 'viewer-set-to-editor-mode');
           } else {
@@ -228,8 +228,8 @@ if (!org.gigapan.timelapse.Timelapse) {
           }
         });
       } else {
-        $viewerModeBtn.remove();
-        $viewerModeCheckbox.remove();
+        $editorToggle.remove();
+        $editorToggleCheckbox.remove();
       }
 
       createTimelineSlider();
