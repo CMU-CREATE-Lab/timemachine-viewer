@@ -1180,8 +1180,11 @@ if (!org.gigapan.timelapse.snaplapse) {
 
     var setDefaultUIToPlayerMode = function() {
       var $editorToggleCheckbox = $("#" + viewerDivId + " .editorToggleCheckbox");
+      var $annotatorToggleCheckbox = $("#" + viewerDivId + " .annotatorToggleCheckbox");
       if ($editorToggleCheckbox.is(":checked"))
         $editorToggleCheckbox.click();
+      if ($annotatorToggleCheckbox.is(":checked"))
+        $annotatorToggleCheckbox.click();
     };
 
     var setKeyframeThumbail = function(keyframe) {

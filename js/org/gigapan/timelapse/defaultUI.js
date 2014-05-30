@@ -262,7 +262,7 @@ if (!org.gigapan.timelapse.Timelapse) {
 
       // Settings
       if (showEditorOnLoad && editorEnabled && !useCustomUI)
-        setMode("editor");
+        $editorToggleCheckbox.click();
       if (!showMainControls || useCustomUI) {
         $("#" + viewerDivId + " .controls").hide();
         $("#" + viewerDivId + " .timelineSliderFiller").hide();
