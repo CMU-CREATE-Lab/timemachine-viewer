@@ -2820,7 +2820,7 @@ if (!window['$']) {
 
     if (!browserSupported) {
       UTIL.ajax("html", rootAppURL, "templates/browser_not_supported_template.html", function(html) {
-        $("#" + timeMachineDivId).append(html);
+        $("#" + timeMachineDivId).html(html);
       });
       return;
     }
