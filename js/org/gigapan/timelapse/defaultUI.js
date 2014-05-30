@@ -111,6 +111,8 @@ if (!org.gigapan.timelapse.Timelapse) {
     var $fastSpeed = $("#fastSpeed");
     var $mediumSpeed = $("#mediumSpeed");
     var $slowSpeed = $("#slowSpeed");
+    var $editorToggleCheckbox;
+    var $annotatorToggleCheckbox;
 
     // Settings
     var showShareBtn = ( typeof (settings["showShareBtn"]) == "undefined") ? true : settings["showShareBtn"];
@@ -122,6 +124,7 @@ if (!org.gigapan.timelapse.Timelapse) {
     var showEditorOnLoad = ( typeof (settings["showEditorOnLoad"]) == "undefined") ? false : settings["showEditorOnLoad"];
     var editorEnabled = timelapse.isEditorEnabled();
     var presentationSliderEnabled = timelapse.isPresentationSliderEnabled();
+    var annotatorEnabled = timelapse.isAnnotatorEnabled();
     var useCustomUI = timelapse.useCustomUI();
 
     // Flags
@@ -208,9 +211,9 @@ if (!org.gigapan.timelapse.Timelapse) {
         }
       });
       // Create editor mode switch button
+      var $editorToggle = $("#" + viewerDivId + " .editorToggle");
+      $editorToggleCheckbox = $("#" + viewerDivId + " .editorToggleCheckbox");
       if (editorEnabled) {
-        var $editorToggle = $("#" + viewerDivId + " .editorToggle");
-        var $editorToggleCheckbox = $("#" + viewerDivId + " .editorToggleCheckbox");
         $editorToggleCheckbox.attr("id", timeMachineDivId + "_editorToggleCheckbox");
         $editorToggle.attr("for", timeMachineDivId + "_editorToggleCheckbox");
         $editorToggleCheckbox.button({
@@ -230,6 +233,28 @@ if (!org.gigapan.timelapse.Timelapse) {
       } else {
         $editorToggle.remove();
         $editorToggleCheckbox.remove();
+      }
+      // Create annotator mode switch button debug
+      var $annotatorToggle = $("#" + viewerDivId + " .annotatorToggle");
+      $annotatorToggleCheckbox = $("#" + viewerDivId + " .annotatorToggleCheckbox");
+      if (annotatorEnabled) {
+        $annotatorToggleCheckbox.attr("id", timeMachineDivId + "_annotatorToggleCheckbox");
+        $annotatorToggle.attr("for", timeMachineDivId + "_annotatorToggleCheckbox");
+        $annotatorToggleCheckbox.button({
+          icons: {
+            primary: "ui-icon-note"
+          },
+          text: true
+        }).click(function() {
+          if ($annotatorToggleCheckbox.is(":checked")) {
+            setMode("annotator");
+          } else {
+            setMode("player");
+          }
+        });
+      } else {
+        $annotatorToggle.remove();
+        $annotatorToggleCheckbox.remove();
       }
 
       createTimelineSlider();
@@ -521,6 +546,7 @@ if (!org.gigapan.timelapse.Timelapse) {
       var snaplapse = timelapse.getSnaplapse();
       var smallGoogleMap = timelapse.getSmallGoogleMap();
       var enableSmallGoogleMap = timelapse.isSmallGoogleMapEnable();
+      var annotator = timelapse.getAnnotator();
       var panoVideo, snaplapseViewer;
       if (visualizer)
         panoVideo = visualizer.getPanoVideo();
@@ -528,19 +554,29 @@ if (!org.gigapan.timelapse.Timelapse) {
         snaplapseViewer = timelapse.getSnaplapse().getSnaplapseViewer();
 
       if (newMode == "player") {
-        mode = newMode;
+        mode = "player";
         $("#" + timeMachineDivId + " .composer").hide();
+        $("#" + timeMachineDivId + " .annotator").hide();
         if (snaplapseViewer)
           snaplapseViewer.hideAnnotationBubble();
         if (panoVideo)
           panoVideo.pause();
+        if (annotator)
+          annotator.resetToolbar();
       } else if (newMode == "editor") {
-        mode = newMode;
+        if ($annotatorToggleCheckbox.is(":checked"))
+          $annotatorToggleCheckbox.click();
+        mode = "editor";
         $("#" + timeMachineDivId + " .composer").show();
         timelapse.seek_panoVideo(videoset.getCurrentTime());
         if (!videoset.isPaused() && panoVideo)
           panoVideo.play();
         timelapse.updateLocationContextUI();
+      } else if (newMode == "annotator") {
+        if ($editorToggleCheckbox.is(":checked"))
+          $editorToggleCheckbox.click();
+        mode = "annotator";
+        $("#" + timeMachineDivId + " .annotator").show();
       }
       if (visualizer)
         visualizer.setMode(mode, false);

@@ -1391,7 +1391,7 @@ if (!window['$']) {
           visualizer.setMode(defaultUI.getMode(), false);
         // TODO implement a resize listener and put this in the annotator class
         if (annotator)
-          annotator.resize();
+          annotator.resizeUI();
         updateLocationContextUI();
       };
     };
@@ -2820,7 +2820,7 @@ if (!window['$']) {
 
     if (!browserSupported) {
       UTIL.ajax("html", rootAppURL, "templates/browser_not_supported_template.html", function(html) {
-        $("#" + timeMachineDivId).html(html);
+        $("#" + timeMachineDivId).append(html);
       });
       return;
     }

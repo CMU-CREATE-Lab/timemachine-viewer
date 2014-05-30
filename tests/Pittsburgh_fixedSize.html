@@ -79,11 +79,12 @@
           showFullScreenBtn: false,
           enableEditor: true,
           enablePresentationSlider: true,
+          enableAnnotator: true,
           onTimeMachinePlayerReady: function(viewerDivId) {
             setupPostMessageHandlers();
           },
           enableContextMapOnDefaultUI: true,
-          showEditorOnLoad: true,
+          //showEditorOnLoad: true,
           disableTourLooping: true
         };
         timelapse = new org.gigapan.timelapse.Timelapse("timeMachine", settings);

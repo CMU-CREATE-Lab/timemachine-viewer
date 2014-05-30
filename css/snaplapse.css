@@ -705,7 +705,7 @@
   max-width: 260px;
 }
 
-.toolbar {
+.composer .toolbar {
   position: absolute;
   top: 0px;
   left: 1px;
@@ -720,7 +720,7 @@
   z-index: 20;
 }
 
-.toolbar .ui-button {
+.composer .toolbar .ui-button {
   -webkit-user-select: none;
   -khtml-user-select: none;
   -moz-user-select: none;
@@ -729,11 +729,11 @@
   user-select: none;
 }
 
-.toolbar .ui-button:focus {
+.composer .toolbar .ui-button:focus {
   outline: none;
 }
 
-.toolbar .editorTitle {
+.composer .toolbar .editorTitle {
   position: absolute;
   left: 20px;
   top: 10px;
@@ -744,7 +744,7 @@
   font-weight: bold;
 }
 
-.toolbar .toggleMode {
+.composer .toolbar .toggleMode {
   position: absolute;
   width: 138px;
   height: 20px;
@@ -757,7 +757,7 @@
   outline: none;
 }
 
-.toolbar .toggleMode .ui-button-text {
+.composer .toolbar .toggleMode .ui-button-text {
   text-align: center;
   padding: 0;
   font-size: 11px;
@@ -765,7 +765,7 @@
   margin-left: -13px;
 }
 
-.toolbar .toggleMode .ui-icon {
+.composer .toolbar .toggleMode .ui-icon {
   margin-right: -4px;
 }
 
@@ -813,8 +813,7 @@
   border-right: 1px solid rgb(220,220,220);
 }
 
-.editorModeToolbar .ui-button:hover:not(
-[disabled]) {
+.editorModeToolbar .ui-button.ui-state-hover {
   border-right: 1px solid #656565;
   border-left: 1px solid #656565;
   z-index: 999;

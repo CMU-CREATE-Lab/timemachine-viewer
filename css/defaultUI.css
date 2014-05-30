@@ -122,11 +122,28 @@ body, html {
   outline: 0;
 }
 
+.annotatorToggle {
+  bottom: 118px;
+}
+
+.annotatorToggle .ui-button-text {
+  margin-top: -1px;
+  margin-left: -2px;
+}
+
 .editorToggle {
+  bottom: 86px;
+}
+
+.editorToggle .ui-button-text {
+  margin-top: -1px;
+  margin-left: 0px;
+}
+
+.toggleBtn {
   position: absolute;
   width: 58px;
   height: 18px;
-  bottom: 86px;
   right: 20px;
   background: white;
   border: 1px solid #656565;
@@ -139,22 +156,17 @@ body, html {
   font-size: 11px;
 }
 
-.editorToggle .ui-icon {
+.toggleBtn .ui-icon {
   margin-left: -2px;
 }
 
-.editorToggle .ui-button-text {
-  margin-top: -1px;
-  margin-left: 0px;
-}
-
-.editorToggle.ui-state-active {
+.toggleBtn.ui-state-active {
   border: 1px solid #ffffff;
   background: rgba(0,0,0,0.6);
   color: white;
 }
 
-.editorToggle.ui-state-active .ui-icon {
+.toggleBtn.ui-state-active .ui-icon {
   background-image: url(../images/ui-icons_custom_256x240.png);
 }
 

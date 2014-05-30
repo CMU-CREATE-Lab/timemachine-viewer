@@ -1797,7 +1797,7 @@ if (!org.gigapan.timelapse.snaplapse) {
     };
 
     var resizeUI = function() {
-      var viewportHeight = $("#" + viewerDivId).height();
+      var viewportHeight = timelapse.getViewportHeight();
       var newTop = usePresentationSlider ? (viewportHeight + 4) : (viewportHeight - 2);
       $("#" + composerDivId).css({
         "position": "absolute",

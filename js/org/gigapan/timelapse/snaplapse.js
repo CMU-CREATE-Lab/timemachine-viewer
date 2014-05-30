@@ -1099,7 +1099,7 @@ if (!Math.uuid) {
     //
     if (uiEnabled) {
       org.gigapan.Util.ajax("html", rootAppURL, "templates/time_warp_composer.html", function(html) {
-        $("#" + timeMachineDivId).append($('<div class="' + composerDivClass + '"></div>').html(html));
+        $("#" + timeMachineDivId).append($('<div class="' + composerDivClass + '"></div>').append(html));
         snaplapseViewer = new org.gigapan.timelapse.snaplapse.SnaplapseViewer(thisObj, timelapse, settings, mode);
       });
     } else {
