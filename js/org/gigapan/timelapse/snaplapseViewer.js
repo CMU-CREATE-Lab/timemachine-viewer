@@ -116,6 +116,7 @@ if (!org.gigapan.timelapse.snaplapse) {
     // Flags
     var didOnce = false;
     var presentationSliderEnabled = timelapse.isPresentationSliderEnabled();
+    var isHidingCustomUI = false;
 
     // DOM elements
     var composerDivId = snaplapse.getComposerDivId();
@@ -163,44 +164,50 @@ if (!org.gigapan.timelapse.snaplapse) {
     };
 
     var hideCustomUI = function() {
-      $("#" + viewerDivId + " .sideToolBar").hide();
-      $("#" + viewerDivId + " .googleLogo").css("bottom", "-=45px");
-      $("#" + viewerDivId + " .toggleGoogleMapBtn").hide();
-      $("#" + viewerDivId + " .smallMapResizer").hide();
-      $("#" + viewerDivId + " .customTimeline").hide();
-      $("#" + viewerDivId + " .customHelpLabel").hide();
-      $("#" + viewerDivId + " .videoQualityContainer").hide();
-      if (datasetType == "landsat") {
-        $("#" + viewerDivId + " .customToggleSpeed").hide();
-        $("#" + viewerDivId + " .customPlay").hide();
-        $("#" + viewerDivId + " .timeText").addClass("timeTextTour");
-      } else if (datasetType == "modis") {
-        $("#" + viewerDivId + " .modisCustomToggleSpeed").hide();
-        $("#" + viewerDivId + " .toggleLock").hide();
-        $("#" + viewerDivId + " .modisTimeText").css("top", "+=20px");
-        $("#" + viewerDivId + " .monthSpinnerContainer").css("top", "+=20px");
-        $("#" + viewerDivId + " .scaleBarContainer").css("bottom", "-=20px");
-        $("#" + viewerDivId + " .modisCustomPlay").hide();
+      if (!isHidingCustomUI) {
+        isHidingCustomUI = true;
+        $("#" + viewerDivId + " .sideToolBar").hide();
+        $("#" + viewerDivId + " .googleLogo").css("bottom", "-=45px");
+        $("#" + viewerDivId + " .toggleGoogleMapBtn").hide();
+        $("#" + viewerDivId + " .smallMapResizer").hide();
+        $("#" + viewerDivId + " .customTimeline").hide();
+        $("#" + viewerDivId + " .customHelpLabel").hide();
+        $("#" + viewerDivId + " .videoQualityContainer").hide();
+        if (datasetType == "landsat") {
+          $("#" + viewerDivId + " .customToggleSpeed").hide();
+          $("#" + viewerDivId + " .customPlay").hide();
+          $("#" + viewerDivId + " .timeText").addClass("timeTextTour");
+        } else if (datasetType == "modis") {
+          $("#" + viewerDivId + " .modisCustomToggleSpeed").hide();
+          $("#" + viewerDivId + " .toggleLock").hide();
+          $("#" + viewerDivId + " .modisTimeText").css("top", "+=20px");
+          $("#" + viewerDivId + " .monthSpinnerContainer").css("top", "+=20px");
+          $("#" + viewerDivId + " .scaleBarContainer").css("bottom", "-=20px");
+          $("#" + viewerDivId + " .modisCustomPlay").hide();
+        }
       }
     };
 
     var showCustomUI = function() {
-      $("#" + viewerDivId + " .sideToolBar").show();
-      $("#" + viewerDivId + " .googleLogo").css("bottom", "+=45px");
-      $("#" + viewerDivId + " .toggleGoogleMapBtn").show();
-      $("#" + viewerDivId + " .smallMapResizer").show();
-      $("#" + viewerDivId + " .customTimeline").show();
-      $("#" + viewerDivId + " .customHelpLabel").show();
-      $("#" + viewerDivId + " .videoQualityContainer").show();
-      if (datasetType == "landsat") {
-        $("#" + viewerDivId + " .customPlay").show();
-        $("#" + viewerDivId + " .timeText").removeClass("timeTextTour");
-      } else if (datasetType == "modis") {
-        $("#" + viewerDivId + " .toggleLock").show();
-        $("#" + viewerDivId + " .modisTimeText").css("top", "-=20px");
-        $("#" + viewerDivId + " .monthSpinnerContainer").css("top", "-=20px");
-        $("#" + viewerDivId + " .scaleBarContainer").css("bottom", "+=20px");
-        $("#" + viewerDivId + " .modisCustomPlay").show();
+      if (isHidingCustomUI) {
+        isHidingCustomUI = false;
+        $("#" + viewerDivId + " .sideToolBar").show();
+        $("#" + viewerDivId + " .googleLogo").css("bottom", "+=45px");
+        $("#" + viewerDivId + " .toggleGoogleMapBtn").show();
+        $("#" + viewerDivId + " .smallMapResizer").show();
+        $("#" + viewerDivId + " .customTimeline").show();
+        $("#" + viewerDivId + " .customHelpLabel").show();
+        $("#" + viewerDivId + " .videoQualityContainer").show();
+        if (datasetType == "landsat") {
+          $("#" + viewerDivId + " .customPlay").show();
+          $("#" + viewerDivId + " .timeText").removeClass("timeTextTour");
+        } else if (datasetType == "modis") {
+          $("#" + viewerDivId + " .toggleLock").show();
+          $("#" + viewerDivId + " .modisTimeText").css("top", "-=20px");
+          $("#" + viewerDivId + " .monthSpinnerContainer").css("top", "-=20px");
+          $("#" + viewerDivId + " .scaleBarContainer").css("bottom", "+=20px");
+          $("#" + viewerDivId + " .modisCustomPlay").show();
+        }
       }
     };
     this.showCustomUI = showCustomUI;

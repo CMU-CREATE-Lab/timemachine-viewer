@@ -242,7 +242,7 @@ if (!org.gigapan.timelapse.Timelapse) {
         $annotatorToggle.attr("for", timeMachineDivId + "_annotatorToggleCheckbox");
         $annotatorToggleCheckbox.button({
           icons: {
-            primary: "ui-icon-note"
+            primary: "ui-icon-tag"
           },
           text: true
         }).click(function() {
