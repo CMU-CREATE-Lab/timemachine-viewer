@@ -775,7 +775,8 @@ if (!window['$']) {
             y: yPos
           });
           var currentTime = timelapse.getCurrentTime();
-          addAnnotation(kineticImage.attrs.id + "_item", timeMachinePosition.x, timeMachinePosition.y, timelapse.getCurrentZoom(), Math.max(currentTime - 1, 0).toFixed(2), Math.min(currentTime + 1, timelapse.getDuration()).toFixed(2), kineticImage, null);
+          //addAnnotation(kineticImage.attrs.id + "_item", timeMachinePosition.x, timeMachinePosition.y, timelapse.getCurrentZoom(), Math.max(currentTime - 1, 0).toFixed(2), Math.min(currentTime + 1, timelapse.getDuration()).toFixed(2), kineticImage, null);
+          addAnnotation(kineticImage.attrs.id + "_item", timeMachinePosition.x, timeMachinePosition.y, -1, 0, timelapse.getDuration().toFixed(2), kineticImage, null);
         }
         annotationLayer.draw();
       };
