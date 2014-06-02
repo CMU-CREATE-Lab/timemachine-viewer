@@ -645,6 +645,11 @@ if (!window['$']) {
         });
 
         kineticImage.on('click', function(e) {
+          console.log(timelapse.convertViewportToTimeMachine({
+            x: this.attrs.x,
+            y: this.attrs.y
+          }));
+
           if (e.metaKey || e.ctrlKey)
             return;
 
@@ -776,6 +781,7 @@ if (!window['$']) {
       };
 
       annotationImg.src = (markerSrc) ? markerSrc : "../images/map-pointer.png";
+      resetToolbar();
       return kineticImage;
     }
 
