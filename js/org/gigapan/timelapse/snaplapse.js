@@ -1130,7 +1130,7 @@ if (!Math.uuid) {
     var actualDuration;
     var desiredDuration;
     var disableTourLooping = ( typeof settings['disableTourLooping'] == "undefined") ? false : settings['disableTourLooping'];
-    var defaultLoopTimes = timelapse.getSnaplapse().getDefaultLoopTimes();
+    var defaultLoopTimes = timelapse.getSnaplapseForSharedTour().getDefaultLoopTimes();
 
     // Determine and validate loop times and loop dwell time
     // Loop dwell time is the time that users want to pause the video at the begining or end while looping

@@ -1536,8 +1536,8 @@ if (!window['$']) {
     // (and naming conventions to mark strings not strictly sanitized) to ensure the input is safe.
     var getTourFromHash = function(unsafeHashObj) {
       if (unsafeHashObj && unsafeHashObj.tour) {
-        if (snaplapse) {
-          var tourJSON = snaplapse.urlStringToJSON(unsafeHashObj.tour);
+        if (snaplapseForSharedTour) {
+          var tourJSON = snaplapseForSharedTour.urlStringToJSON(unsafeHashObj.tour);
           return tourJSON;
         }
       }
