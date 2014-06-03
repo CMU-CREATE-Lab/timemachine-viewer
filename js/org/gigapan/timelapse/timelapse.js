@@ -823,7 +823,7 @@ if (!window['$']) {
     };
     this.addViewEndChangeListener = _addViewEndChangeListener;
 
-    var _removEndViewChangeListener = function(listener) {
+    var _removeEndViewChangeListener = function(listener) {
       for (var i = 0; i < viewEndChangeListeners.length; i++) {
         if (viewEndChangeListeners[i] == listener[0]) {
           viewEndChangeListeners.splice(i, 1);
@@ -831,7 +831,7 @@ if (!window['$']) {
         }
       }
     };
-    this.removEndViewChangeListener = _removEndViewChangeListener;
+    this.removeEndViewChangeListener = _removeEndViewChangeListener;
 
     var _addVideoPauseListener = function(listener) {
       videoset.addEventListener('videoset-pause', listener);
@@ -847,6 +847,11 @@ if (!window['$']) {
       videoset.addEventListener('video-made-visible', listener);
     };
     this.makeVideoVisibleListener = _makeVideoVisibleListener;
+
+    var _removeVideoVisibleListener = function(listener) {
+      videoset.removeEventListener('video-made-visible', listener);
+    };
+    this.removeVideoVisibleListener = _removeVideoVisibleListener;
 
     var _addPlaybackRateChangeListener = function(listener) {
       playbackRateChangeListeners.push(listener);
@@ -893,7 +898,7 @@ if (!window['$']) {
       newView = _normalizeView(newView);
 
       var defaultEndViewCallback = function() {
-        _removEndViewChangeListener(this);
+        _removeEndViewChangeListener(this);
         parabolicMotionController = null;
         if (doPlay)
           thisObj.handlePlayPause();
