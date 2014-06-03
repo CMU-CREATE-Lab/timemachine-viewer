@@ -2622,7 +2622,7 @@ if (!window['$']) {
     };
 
     // Assumes dates are being used as capture times.
-    function findExactOrClosestCaptureTime(timeToFind) {
+    var findExactOrClosestCaptureTime = function(timeToFind) {
       var low = 0, high = captureTimes.length - 1, i, comparison;
       while (low <= high) {
         i = Math.floor((low + high) / 2);
@@ -2642,6 +2642,7 @@ if (!window['$']) {
       }
       return i;
     };
+    this.findExactOrClosestCaptureTime = findExactOrClosestCaptureTime;
 
     var loadVideoSetCallback = function(data) {
       datasetJSON = data;
