@@ -200,12 +200,12 @@ if (!Math.uuid) {
       if (buildPreviousFlag) {
         keyframeToBuild = keyframes[idx - 1];
         if ( typeof (keyframeToBuild) != "undefined" && keyframeToBuild != null && typeof (keyframes[idx]) != "undefined" && keyframes[idx] != null) {
-          keyframeInterval = new org.gigapan.timelapse.KeyframeInterval(keyframeToBuild, keyframes[idx], null, timelapse.getDuration(), timeMachineDivId, keyframeToBuild['buildConstraint'], timelapse, settings);
+          keyframeInterval = new org.gigapan.timelapse.KeyframeInterval(keyframeToBuild, keyframes[idx], null, timelapse.getDuration(), timeMachineDivId, keyframeToBuild['buildConstraint'], defaultLoopTimes, timelapse, settings);
         }
       } else {
         keyframeToBuild = keyframes[idx];
         if ( typeof (keyframeToBuild) != "undefined" && keyframeToBuild != null && typeof (keyframes[idx + 1]) != "undefined" && keyframes[idx + 1] != null) {
-          keyframeInterval = new org.gigapan.timelapse.KeyframeInterval(keyframeToBuild, keyframes[idx + 1], null, timelapse.getDuration(), timeMachineDivId, keyframeToBuild['buildConstraint'], timelapse, settings);
+          keyframeInterval = new org.gigapan.timelapse.KeyframeInterval(keyframeToBuild, keyframes[idx + 1], null, timelapse.getDuration(), timeMachineDivId, keyframeToBuild['buildConstraint'], defaultLoopTimes, timelapse, settings);
         }
       }
     };
@@ -265,10 +265,6 @@ if (!Math.uuid) {
         }
       }
       return null;
-    };
-
-    this.getDefaultLoopTimes = function() {
-      return defaultLoopTimes;
     };
 
     this.setDurationForKeyframe = function(keyframeId, duration) {
@@ -782,7 +778,7 @@ if (!Math.uuid) {
       var intervals = [];
       for (var k = startingKeyframeIndex + 1; k < keyframes.length; k++) {
         var previousKeyframeInterval = (intervals.length > 0) ? intervals[intervals.length - 1] : null;
-        var keyframeInterval = new org.gigapan.timelapse.KeyframeInterval(keyframes[k - 1], keyframes[k], previousKeyframeInterval, timelapse.getDuration(), timeMachineDivId, undefined, timelapse, settings);
+        var keyframeInterval = new org.gigapan.timelapse.KeyframeInterval(keyframes[k - 1], keyframes[k], previousKeyframeInterval, timelapse.getDuration(), timeMachineDivId, undefined, defaultLoopTimes, timelapse, settings);
         intervals[intervals.length] = keyframeInterval;
         UTIL.log("buildKeyframeIntervals(): created keyframe interval (" + (intervals.length - 1) + "): between time [" + keyframes[k - 1]['time'] + "] and [" + keyframes[k]['time'] + "]: " + keyframeInterval);
       }
@@ -1111,7 +1107,7 @@ if (!Math.uuid) {
     return parseFloat(t.toFixed(6));
   };
 
-  org.gigapan.timelapse.KeyframeInterval = function(startingFrame, endingFrame, previousKeyframeInterval, videoDuration, timeMachineDivId, constraintParaName, timelapse, settings) {
+  org.gigapan.timelapse.KeyframeInterval = function(startingFrame, endingFrame, previousKeyframeInterval, videoDuration, timeMachineDivId, constraintParaName, defaultLoopTimes, timelapse, settings) {
     var nextKeyframeInterval = null;
     var playbackRate = null;
     var itemIdHead = timeMachineDivId + "_snaplapse_keyframe_" + startingFrame.id;
@@ -1130,7 +1126,6 @@ if (!Math.uuid) {
     var actualDuration;
     var desiredDuration;
     var disableTourLooping = ( typeof settings['disableTourLooping'] == "undefined") ? false : settings['disableTourLooping'];
-    var defaultLoopTimes = timelapse.getSnaplapseForSharedTour().getDefaultLoopTimes();
 
     // Determine and validate loop times and loop dwell time
     // Loop dwell time is the time that users want to pause the video at the begining or end while looping
