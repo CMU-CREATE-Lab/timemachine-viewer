@@ -673,6 +673,10 @@ if (!org.gigapan.timelapse.Timelapse) {
       $("#" + viewerDivId + " .currentCaptureTime").html(org.gigapan.Util.htmlForTextWithEmbeddedNewlines(captureTimes[timelapse.getTimelapseCurrentCaptureTimeIndex()]));
 
       var $timelineSlider = $("#" + viewerDivId + " .timelineSlider");
+
+      // Remove all previously added events
+      $timelineSlider.unbind("mousedown");
+
       $timelineSlider.slider({
         min: 0,
         max: numFrames - 1, // this way the time scrubber goes exactly to the end of timeline
