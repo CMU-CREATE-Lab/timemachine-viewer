@@ -36,7 +36,6 @@
 "use strict";
 
 var cachedSnaplapses = {};
-var currentlyDisplayedVideoId = 1;
 var KEYFRAME_THUMBNAIL_WIDTH = 126;
 // should really be 56.25
 var KEYFRAME_THUMBNAIL_HEIGHT = 73;
@@ -306,12 +305,6 @@ if (!org.gigapan.timelapse.snaplapse) {
       }
 
       hideAnnotationBubble();
-
-      // Add an event listener to the videoset so we can keep track of which video is currently visible,
-      // so that we can create the keyframe thumbnails
-      timelapse.getVideoset().addEventListener('video-made-visible', function(videoId) {
-        currentlyDisplayedVideoId = videoId;
-      });
 
       // Add mouseover actions to all of the buttons
       $('.button').hover(function() {

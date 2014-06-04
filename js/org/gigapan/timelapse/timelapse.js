@@ -1401,6 +1401,16 @@ if (!window['$']) {
       };
     };
 
+    var setInitialView = function() {
+      if (loadSharedViewFromUnsafeURL(UTIL.getUnsafeHashString())) {
+        // loadSharedViewFromUnsafeURL() sets our view (if valid) and returns a boolean
+      } else if (initialView) {
+        view = initialView;
+      } else if (!loadTimelapseWithPreviousViewAndTime) {
+        view = null;
+      }
+    };
+
     var resizeViewer = function() {
       var $viewerDiv = $("#" + viewerDivId);
 
@@ -1430,6 +1440,9 @@ if (!window['$']) {
       // Stretching the video affects the home view,
       // set home view to undefined so that it gets recomputed
       computeHomeView();
+
+      if (!didFirstTimeOnLoad)
+        setInitialView();
 
       // Set to the correct view
       if (view) {
@@ -1472,41 +1485,47 @@ if (!window['$']) {
 
     // Handle any hash variables related to time machines
     var handleHashChange = function() {
-      var unsafeHashObj = UTIL.getUnsafeHashVars();
-      var newView = getViewFromHash(unsafeHashObj);
-      var newTime = getTimeFromHash(unsafeHashObj);
-      var tourJSON = getTourFromHash(unsafeHashObj);
-      var presentationJSON = getPresentationFromHash(unsafeHashObj);
-      var modisLock = getModisLockFromHash(unsafeHashObj);
-      if (newView || newTime || tourJSON || presentationJSON || modisLock) {
-        if (newView)
-          _setNewView(newView, true);
-        if (newTime)
-          _seek(newTime);
-        if (snaplapseForSharedTour && tourJSON) {
-          var snaplapseViewerForSharedTour = snaplapseForSharedTour.getSnaplapseViewer();
-          if (snaplapseViewerForSharedTour) {
-            snaplapseViewerForSharedTour.loadNewSnaplapse(tourJSON);
-            UTIL.addGoogleAnalyticEvent('window', 'onHashChange', 'url-load-tour');
-          }
-        }
-        if (snaplapseForPresentationSlider && presentationJSON) {
-          var snaplapseViewerForPresentationSlider = snaplapseForPresentationSlider.getSnaplapseViewer();
-          if ( typeof snaplapse == "undefined") {
-            // Prevent the editor leave page alert from showing if only the presentation mode is enabled from the hash
-            $(window).off("beforeunload", handleLeavePageWithEditor);
-          }
-          if (snaplapseViewerForPresentationSlider) {
-            snaplapseViewerForPresentationSlider.loadNewSnaplapse(presentationJSON);
-            UTIL.addGoogleAnalyticEvent('window', 'onHashChange', 'url-load-presentation');
-          }
-        }
-        if (datasetType == "modis" && modisLock == "month")
-          $("#noLock").click();
-        return true;
-      } else
-        return false;
+      var unsafeHashString = UTIL.getUnsafeHashString();
+
+      // Share views
+      loadSharedViewFromUnsafeURL(unsafeHashString);
+      // Tours and presentations
+      loadSharedDataFromUnsafeURL(unsafeHashString);
     };
+
+    var loadSharedViewFromUnsafeURL = function(unsafe_fullURL) {
+      var unsafe_matchURL = unsafe_fullURL.match(/#(.+)/);
+      if (unsafe_matchURL) {
+        var unsafeHashObj = UTIL.unpackVars(unsafe_matchURL[1]);
+        var newView = getViewFromHash(unsafeHashObj);
+        var newTime = getTimeFromHash(unsafeHashObj);
+
+        // If the current URL happens to include a hash with a share link, but a new dataset
+        // is being loaded with the current view/time preserved (which is mostly likely
+        // different from the shared view) then move on.
+        if (loadTimelapseWithPreviousViewAndTime)
+          return;
+
+        if (newView) {
+          if (didFirstTimeOnLoad) {
+            _setNewView(newView, true);
+          } else {
+            view = _normalizeView(newView);
+          }
+        }
+        if (newTime) {
+          if (didFirstTimeOnLoad) {
+            _seek(newTime);
+          } else {
+            initialTime = newTime;
+          }
+        }
+        return true;
+      } else {
+        return false;
+      }
+    };
+    this.loadSharedViewFromUnsafeURL = loadSharedViewFromUnsafeURL;
 
     // Gets safe view values (Object) from an unsafe object containing key-value pairs from the URL hash.
     var getViewFromHash = function(unsafeHashObj) {
@@ -1523,15 +1542,6 @@ if (!window['$']) {
       if (unsafeHashObj && unsafeHashObj.t) {
         var newTime = parseFloat(unsafeHashObj.t);
         return newTime;
-      }
-      return null;
-    };
-
-    // Gets a safe MODIS month lock value (String) from an unsafe object containing key-value pairs from the URL hash.
-    var getModisLockFromHash = function(unsafeHashObj) {
-      if (unsafeHashObj && unsafeHashObj.l) {
-        var newMonthLock = String(unsafeHashObj.l);
-        return newMonthLock;
       }
       return null;
     };
@@ -2144,22 +2154,27 @@ if (!window['$']) {
       var unsafe_matchURL = unsafe_fullURL.match(/#(.+)/);
       if (unsafe_matchURL) {
         var unsafe_sharedVars = UTIL.unpackVars(unsafe_matchURL[1]);
+        // Can be a tour or a presentation slider
         var unsafe_sharedData;
         var snaplapseForSharedData;
         // Find if shared data exists in the URL
         if (unsafe_sharedVars.tour && snaplapseForSharedTour) {
           unsafe_sharedData = unsafe_sharedVars.tour;
           snaplapseForSharedData = snaplapseForSharedTour;
+          UTIL.addGoogleAnalyticEvent('window', 'onHashChange', 'url-load-tour');
         } else if (unsafe_sharedVars.presentation && snaplapseForPresentationSlider) {
           unsafe_sharedData = unsafe_sharedVars.presentation;
           snaplapseForSharedData = snaplapseForPresentationSlider;
+          UTIL.addGoogleAnalyticEvent('window', 'onHashChange', 'url-load-presentation');
         }
         // Handle the shared data
         if (unsafe_sharedData) {
           var snaplapseViewerForSharedData = snaplapseForSharedData.getSnaplapseViewer();
           if (snaplapseViewerForSharedData) {
+            // Sanitize and parse data
             var sharedData = snaplapseForSharedData.urlStringToJSON(unsafe_sharedData);
             if (sharedData) {
+              // Tours
               if (playOnLoad && unsafe_sharedVars.tour) {
                 var onLoad = function() {
                   snaplapseViewerForSharedData.removeEventListener('snaplapse-loaded', onLoad);
@@ -2169,11 +2184,12 @@ if (!window['$']) {
                 };
                 snaplapseViewerForSharedData.addEventListener('snaplapse-loaded', onLoad);
               }
+              // Load the tour or presentation slider, depending upon what is contained in sharedData.
               snaplapseViewerForSharedData.loadNewSnaplapse(sharedData, playOnLoad);
-            } // end of if (sharedData)
-          }// end of if (snaplapseViewerForSharedData)
-        }// end of if (unsafe_sharedData)
-      }// end of if (unsafe_matchURL)
+            }
+          }
+        }
+      }
     };
     this.loadSharedDataFromUnsafeURL = loadSharedDataFromUnsafeURL;
 
@@ -2492,32 +2508,49 @@ if (!window['$']) {
       });
 
       _makeVideoVisibleListener(function(videoId) {
+        // This is the first video of the dataset being displayed
         if (videoId == firstVideoId) {
-          if (!didFirstTimeOnLoad)
-            didHashChangeFirstTimeOnLoad = handleHashChange();
-
-          // Hash params override the view set during initialization
-          if (!didHashChangeFirstTimeOnLoad) {
-            // Set the initial view
-            if (initialView) {
-              _setNewView(initialView, true);
-            }
-            // Seek to the initial time
-            if (initialTime != 0) {
+          // If the user requested the same point spatial and temporal point in the previous dataset, calculate and seek there.
+          if (loadTimelapseWithPreviousViewAndTime) {
+            var closestFrame = findExactOrClosestCaptureTime(previousCaptureTime);
+            seekToFrame(closestFrame);
+            timelapseCurrentTimeInSeconds = closestFrame / _getFps();
+          } else {
+            if (initialTime == 0) {
+              timelapseCurrentTimeInSeconds = 0;
+              // Fixes Safari/IE bug which causes the video to not be displayed if the video has no leader and the initial
+              // time is zero (the video seeked event is never fired, so videoset never gets the cue that the video
+              // should be displayed).  The fix is to simply seek half a frame in.  Yeah, the video won't be starting at
+              // *zero*, but the displayed frame will still be the right one, so...good enough.  :-)
+              if (videoset.getLeader() <= 0 && (isSafari || isIE)) {
+                var halfOfAFrame = 1 / _getFps() / 2;
+                _seek(halfOfAFrame);
+              }
+            } else  {
+              timelapseCurrentTimeInSeconds = initialTime;
               _seek(initialTime);
             }
           }
-          // Set to false if we ever load a new timelapse at a later time
-          // We do not want to parse anything in the hash in this case.
-          didHashChangeFirstTimeOnLoad = false;
 
-          if (!didFirstTimeOnLoad) {
+          if (didFirstTimeOnLoad) {
+            timelapseCurrentCaptureTimeIndex = Math.min(frames - 1, Math.floor(timelapseCurrentTimeInSeconds * _getFps()));
+            // Recreate timeline slider.
+            // There seems to be an issue with the jQuery UI slider widget, since just changing the max value and refreshing
+            // the slider does not proplerly update the available range. So we have to manually recreate it...
+            var $timeSlider = $("#" + viewerDivId + " .timelineSlider");
+            $timeSlider.slider("destroy");
+            defaultUI.createTimelineSlider();
+            $timeSlider.slider("option", "value", timelapseCurrentCaptureTimeIndex);
+          } else {
+            loadSharedDataFromUnsafeURL(UTIL.getUnsafeHashString());
             didFirstTimeOnLoad = true;
             // Fire onTimeMachinePlayerReady the first time the page is loaded.
             if ( typeof (settings["onTimeMachinePlayerReady"]) === "function") {
               settings["onTimeMachinePlayerReady"](timeMachineDivId);
             }
           }
+
+          hideSpinner(viewerDivId);
         }
       });
 
@@ -2528,7 +2561,7 @@ if (!window['$']) {
         snaplapse = new org.gigapan.timelapse.Snaplapse(thisObj, settings);
 
         // TODO:
-        // Disabled because of odd behavior in Chrome. Causes an endless 'waiting for socket' error to appear
+        // Disabled by default because of odd behavior in Chrome. Causes an endless 'waiting for socket' error to appear
         // if too many tabs/windows are open with Time Machines loaded. The behavior is a bit similar to the Chrome
         // cache bug in the sense that once you close a window, one that was stuck will start to work.
         // Visualizer loads a top level video to be used as a context map in the editor. It seeks when the main video also seeks.
@@ -2566,19 +2599,12 @@ if (!window['$']) {
 
       thisObj.setPlaybackRate(playbackSpeed);
 
-      // Fixes Safari bug which causes the video to not be displayed if the video has no leader and the initial
-      // time is zero (the video seeked event is never fired, so videoset never gets the cue that the video
-      // should be displayed).  The fix is to simply seek half a frame in.  Yeah, the video won't be starting at
-      // *zero*, but the displayed frame will still be the right one, so...good enough.  :-)
-      if (videoset.getLeader() <= 0 && (isSafari || isIE)) {
-        var halfOfAFrame = 1 / _getFps() / 2;
-        _seek(halfOfAFrame);
-      }
-
       setupUIHandlers();
       setupSliderHandlers(viewerDivId);
-    }
 
+      // The UI is now ready and we can display it
+      $("#" + viewerDivId).css("visibility", "visible");
+    }
 
     this.switchLayer = function(layerNum) {
       var newIndex = layerNum * tmJSON["sizes"].length;
@@ -2590,19 +2616,30 @@ if (!window['$']) {
 
     var loadTimelapse = function(url, desiredView, desiredTime, preserveCurrentViewAndTime) {
       showSpinner(viewerDivId);
+
       settings["url"] = url;
       // Add trailing slash to url if it was omitted
       if (settings["url"].charAt(settings["url"].length - 1) != "/")
         settings["url"] += "/";
+
+      // If the user specifies a starting view, use it.
       if (desiredView && typeof (desiredView) === "object") {
         initialView = desiredView;
-        settings["initialView"] = desiredView;
+      } else {
+        initialView = null;
       }
+      settings["initialView"] = initialView;
+
+      // If the user specifies a starting time, use it.
       if (desiredTime && typeof (desiredTime) === "number") {
         initialTime = desiredTime;
-        settings["initialTime"] = desiredTime;
+        settings["initialTime"] = initialTime;
+      } else {
+        initialTime = 0;
       }
+
       loadTimelapseWithPreviousViewAndTime = !!preserveCurrentViewAndTime;
+
       // We are loading a new timelapse and in order for code that should only be run when the
       // first video of a timelapse is displayed, we need to reset the firstVideoId to the next
       // id that the videoset class will use. See _makeVideoVisibleListener() where we check for
@@ -2610,6 +2647,7 @@ if (!window['$']) {
       if (didFirstTimeOnLoad) {
         firstVideoId = videoDivId + "_" + (videoset.getCurrentVideoId() + 1);
       }
+
       UTIL.ajax("json", settings["url"], "tm.json" + getMetadataCacheBreaker(), loadTimelapseCallback);
     };
     this.loadTimelapse = loadTimelapse;
@@ -2659,39 +2697,20 @@ if (!window['$']) {
       currentIdx = null;
       onPanoLoadSuccessCallback(data, null, true);
 
-      // The UI is ready now and we can display it
-      $("#" + viewerDivId).css("visibility", "visible");
-
-      // Setup the UI if this is the first time we are loading a videoset. Else recreate the time slider for the new set,
-      // since it still depends upon values from the old set.
-      if (!defaultUI) {
-        initializeUI();
-        setupTimelapse();
-      } else {
-        timelapseCurrentCaptureTimeIndex = Math.min(frames - 1, Math.floor(thisObj.getCurrentTime() * _getFps()));
-        var $timeSlider = $("#" + viewerDivId + " .timelineSlider");
-        $timeSlider.slider("destroy");
-        defaultUI.createTimelineSlider();
-        if (loadTimelapseWithPreviousViewAndTime) {
-          var closestFrame = findExactOrClosestCaptureTime(previousCaptureTime);
-          seekToFrame(closestFrame);
-          // Sometimes the time change event is not fired (though it should have since the video did seek)
-          // So we manually update the UI.
-          $timeSlider.slider("option", "value", closestFrame);
-        } else {
-          // Seek to the beginning, even if we are already there to ensure that variables keeping track of time
-          // are properly set for the newly loaded timelapse.
-          _seek(0);
-        }
-        // Discard the custom home view setting
+      // We've already loaded the UI, so just do new dataset specific setup.
+      if (didFirstTimeOnLoad) {
+        setInitialView();
+        // Discard the custom home view setting if the user is not preserving the previous current view for the new dataset
         if (!loadTimelapseWithPreviousViewAndTime)
           settings["newHomeView"] = undefined;
         // Reset home view
         computeHomeView();
-        // Reset current view
-        if (!loadTimelapseWithPreviousViewAndTime)
+        if (!view)
           view = $.extend({}, homeView);
         _warpTo(view);
+      } else {
+        initializeUI();
+        setupTimelapse();
       }
 
       if (visualizer) {
@@ -2701,8 +2720,6 @@ if (!window['$']) {
         visualizer.loadContextMap();
         panoVideo = visualizer.clonePanoVideo(topLevelVideo);
       }
-
-      hideSpinner(viewerDivId);
     };
 
     function loadPlayerControlsTemplate(html) {
@@ -2770,7 +2787,7 @@ if (!window['$']) {
       // which in any browser will reslove relative paths correctly. We choose the latter to keep the message console clean.
       $('<style type="text/css">.closedHand {cursor: url("' + rootAppURL + 'css/cursors/closedhand.cur"), move !important;} .openHand {cursor: url("' + rootAppURL + 'css/cursors/openhand.cur"), move !important;} .tiledContentHolder {cursor: url("' + rootAppURL + 'css/cursors/openhand.cur"), move;}</style>').appendTo($('head'));
 
-      loadTimelapse(settings["url"]);
+      loadTimelapse(settings["url"], settings["initialView"], settings["initialTime"]);
     }
 
     function setupSliderHandlers(viewerDivId) {

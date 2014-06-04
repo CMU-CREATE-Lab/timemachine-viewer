@@ -333,18 +333,29 @@ if (!org.gigapan) {
     return vars;
   };
 
+  // Note: Hash string may contain potentially unsafe user-inputted data.
+  // Caution must be taken when working with it.
+  org.gigapan.Util.getUnsafeHashString = function() {
+    var unsafeHashSource = "";
+    var unsafeHashIframe = "";
+    unsafeHashSource = window.location.hash;
+    try {
+      unsafeHashIframe = window.top.location.hash;
+      if (unsafeHashSource)
+        unsafeHashIframe = unsafeHashIframe.slice(1);
+    } catch(e) {
+      // Most likely we are dealing with different domains and cannot access window.top
+    }
+    return unsafeHashSource + "&" + unsafeHashIframe;
+  }
+
   // Note: Hash variables may contain potentially unsafe user-inputted data.
   // Caution must be taken when working with these values.
   org.gigapan.Util.getUnsafeHashVars = function() {
-    var hashSource = "";
-    var hashIframe = "";
-    // TODO: link to our page on the time machine website
-    hashSource = window.location.hash.slice(1);
-    try {
-      hashIframe = window.top.location.hash.slice(1);
-    } catch(e) {
-    }
-    return org.gigapan.Util.unpackVars(hashSource + "&" + hashIframe);
+    var unsafeHashString = org.gigapan.Util.getUnsafeHashString();
+    if (unsafeHashString.length > 1)
+      unsafeHashString = unsafeHashString.slice(1);
+    return org.gigapan.Util.unpackVars(unsafeHashString);
   };
 
   // Select an element in jQuery selectable

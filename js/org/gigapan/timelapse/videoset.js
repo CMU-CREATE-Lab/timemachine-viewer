@@ -238,10 +238,11 @@ if (!window['$']) {
     };
 
     this.setLeader = function(newLeader) {
+      timeOffset = 0;
       var currentTime = _getCurrentTime();
       // Subtract 0 to force this to be a number
       leader = newLeader - 0;
-      _seek(currentTime);
+      //_seek(currentTime);
     };
 
     this.getLeader = function() {
@@ -357,7 +358,11 @@ if (!window['$']) {
           return this.currentTime;
         };
         video.setCurrentTime = function(newTime) {
-          this.currentTime = newTime;
+          // If we rapidly zoom, then we may have old lingering videos that we attempt to seek on.
+          // Make sure we only seek the current video.
+          if (this.id == currentVideoId) {
+            this.currentTime = newTime;
+          }
         };
       }
 
@@ -785,7 +790,6 @@ if (!window['$']) {
         if (!eventListeners[eventName]) {
           eventListeners[eventName] = [];
         }
-
         eventListeners[eventName].push(listener);
       }
     };

@@ -585,6 +585,15 @@ if (!org.gigapan.timelapse.Timelapse) {
       }
     };
 
+    // Gets a safe MODIS month lock value (String) from an unsafe object containing key-value pairs from the URL hash.
+    var getModisLockFromHash = function(unsafeHashObj) {
+      if (unsafeHashObj && unsafeHashObj.l) {
+        var newMonthLock = String(unsafeHashObj.l);
+        return newMonthLock;
+      }
+      return null;
+    };
+
     var createLockControl = function() {
       $noLock = $('<button class="toggleLock" id="noLock" title="Click to lock playback to month">None</button>');
       $withLock = $('<button class="toggleLock" id="withLock" title="Playback locked to month, click to unlock">None</button>');
@@ -617,7 +626,12 @@ if (!org.gigapan.timelapse.Timelapse) {
         UTIL.addGoogleAnalyticEvent('button', 'click', 'viewer-disable-month-lock');
       });
 
-      $noLock.show();
+      var unsafeHashObj = UTIL.getUnsafeHashVars();
+      var modisLock = getModisLockFromHash(unsafeHashObj);
+      if (modisLock == "month")
+        $withLock.show();
+      else
+        $noLock.show();
     };
 
     var createCustomButtons = function() {
