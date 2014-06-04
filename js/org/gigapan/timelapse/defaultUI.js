@@ -129,6 +129,7 @@ if (!org.gigapan.timelapse.Timelapse) {
 
     // Flags
     var isSafari = org.gigapan.Util.isSafari();
+    var originalIsPaused;
 
     // Parameters
     var minViewportHeight = timelapse.getMinViewportHeight();
@@ -692,11 +693,26 @@ if (!org.gigapan.timelapse.Timelapse) {
       $("#" + viewerDivId + " .timelineSlider .ui-slider-handle").attr("title", "Drag to go to a different point in time");
 
       $timelineSlider.bind("mousedown", function() {
+        originalIsPaused = timelapse.isPaused();
+        if (!originalIsPaused)
+          timelapse.handlePlayPause();
         if (window && (window.self !== window.top)) {
           $("body").one("mouseleave", function(event) {
             $timelineSlider.trigger("mouseup");
           });
         }
+        // Make sure we release mousedown upon exiting our viewport if we are inside an iframe
+        $("body").one("mouseleave", function(event) {
+          if (window && (window.self !== window.top)) {
+            if (!originalIsPaused)
+              timelapse.handlePlayPause();
+          }
+        });
+        // Release mousedown upon mouseup
+        $(document).one("mouseup", function(event) {
+          if (!originalIsPaused)
+            timelapse.handlePlayPause();
+        });
         UTIL.addGoogleAnalyticEvent('slider', 'click', 'viewer-seek');
       });
     };
