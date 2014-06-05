@@ -163,9 +163,9 @@ function playCachedSnaplapse(snaplapseId) {
       var $customHelpLabel = $(".customHelpLabel");
       var $customPlay = $(".customPlay");
       var $timeText = $("#" + timelapseViewerDivId + "_customTimeline_timeText");
-      var $zoomPanBar = $("#" + timelapseViewerDivId + " .zoomPanBar");
+      var $sideToolBar = $("#" + timelapseViewerDivId + " .sideToolBar").stop(true, true).fadeOut(200);
 
-      $zoomPanBar.hide();
+      $sideToolBar.hide();
       $customTimeline.stop(true, true).fadeOut(100);
       $speedControl.hide();
       $customHelpLabel.stop(true, true).fadeOut(100);
@@ -191,7 +191,7 @@ function playCachedSnaplapse(snaplapseId) {
       var $customHelpLabel = $(".customHelpLabel");
       var $customPlay = $(".customPlay");
       var $timeText = $("#" + timelapseViewerDivId + "_customTimeline_timeText");
-      var $zoomPanBar = $("#" + timelapseViewerDivId + " .zoomPanBar");
+      var $sideToolBar = $("#" + timelapseViewerDivId + " .sideToolBar").stop(true, true).fadeOut(200);
 
       $customTimeline.stop(true, true).fadeIn(100);
       $customHelpLabel.stop(true, true).fadeIn(100);
@@ -204,7 +204,7 @@ function playCachedSnaplapse(snaplapseId) {
       });
       $googleMapToggle.fadeIn(100);
       $contextMapResizer.fadeIn(100);
-      $zoomPanBar.stop(true, true).fadeIn(100);
+      $sideToolBar.stop(true, true).fadeIn(100);
       if (editorEnabled)
         moveDescriptionBox("up");
     };
@@ -424,12 +424,12 @@ function playCachedSnaplapse(snaplapseId) {
         var thisKeyframeId = $(event.target.parentNode).dialog("option", "keyframeId");
         displaySnaplapseFrameAnnotation(snaplapse.getKeyframeById(thisKeyframeId));
         checkTextareaMaxlength(this, maxSubtitleLength);
-      }).on("keyup", function(event) { // Save the text annotation on keyup, so that we don't need a save button
+      }).on("keyup", function(event) {// Save the text annotation on keyup, so that we don't need a save button
         var thisKeyframeId = $(event.target.parentNode).dialog("option", "keyframeId");
         snaplapse.setTextAnnotationForKeyframe(thisKeyframeId, $(this).val(), true);
         displaySnaplapseFrameAnnotation(snaplapse.getKeyframeById(thisKeyframeId));
         checkTextareaMaxlength(this, maxSubtitleLength);
-      }).on("paste", function() { // Set text limit
+      }).on("paste", function() {// Set text limit
         checkTextareaMaxlength(this, maxSubtitleLength);
       });
 

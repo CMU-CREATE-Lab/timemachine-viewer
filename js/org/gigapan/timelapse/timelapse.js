@@ -48,6 +48,7 @@
 var org;
 var availableTimelapses = [];
 var browserSupported;
+var timelapseMetadata;
 
 if (!org) {
   org = {};
@@ -142,11 +143,6 @@ if (!window['$']) {
     var datasetLayer = settings["layer"] && UTIL.isNumber(settings["layer"]) ? settings["layer"] : 0;
     var initialTime = settings["initialTime"] && UTIL.isNumber(settings["initialTime"]) ? settings["initialTime"] : 0;
     var initialView = settings["initialView"] || null;
-    var showShareBtn = ( typeof (settings["showShareBtn"]) == "undefined") ? true : settings["showShareBtn"];
-    var showHomeBtn = ( typeof (settings["showHomeBtn"]) == "undefined") ? true : settings["showHomeBtn"];
-    var showMainControls = ( typeof (settings["showMainControls"]) == "undefined") ? true : settings["showMainControls"];
-    var showZoomControls = ( typeof (settings["showZoomControls"]) == "undefined") ? true : settings["showZoomControls"];
-    var showFullScreenBtn = ( typeof (settings["showFullScreenBtn"]) == "undefined") ? true : settings["showFullScreenBtn"];
     var doChromeSeekableHack = ( typeof (settings["doChromeSeekableHack"]) == "undefined") ? true : settings["doChromeSeekableHack"];
     var doChromeBufferedHack = ( typeof (settings["doChromeBufferedHack"]) == "undefined") ? true : settings["doChromeBufferedHack"];
     var loopDwell = ( typeof (settings["loopDwell"]) == "undefined" || typeof (settings["loopDwell"]["startDwell"]) == "undefined" || typeof (settings["loopDwell"]["endDwell"]) == "undefined") ? null : settings["loopDwell"];
@@ -158,9 +154,19 @@ if (!window['$']) {
       height: ( typeof (settings["viewportGeometry"]) == "undefined" || typeof (settings["viewportGeometry"]['height']) == "undefined") ? undefined : settings["viewportGeometry"]['height'],
       ratio: ( typeof (settings["viewportGeometry"]) == "undefined" || typeof (settings["viewportGeometry"]['ratio']) == "undefined") ? undefined : settings["viewportGeometry"]['ratio']
     };
-    var skippedFrames = ( typeof (settings["skippedFrames"]) == "undefined") ? 0 : settings["skippedFrames"];
+    var skippedFramesAtEnd = ( typeof (settings["skippedFramesAtEnd"]) == "undefined" || settings["skippedFramesAtEnd"] < 0) ? 0 : settings["skippedFramesAtEnd"];
+    var skippedFramesAtStart = ( typeof (settings["skippedFramesAtStart"]) == "undefined" || settings["skippedFramesAtStart"] < 0) ? 0 : settings["skippedFramesAtStart"];
     var mediaType = ( typeof (settings["mediaType"]) == "undefined") ? null : settings["mediaType"];
     var showAddressLookup = ( typeof (settings["showAddressLookup"]) == "undefined") ? false : settings["showAddressLookup"];
+    var visualizerScale = ( typeof (settings["visualizerScale"]) == "undefined") ? 1 : settings["visualizerScale"];
+    var defaultVisualizerGeometry = {
+      width: viewportGeometry.width / 4.3,
+      height: viewportGeometry.height / 4.3
+    };
+    var visualizerGeometry = {
+      width: defaultVisualizerGeometry.width * visualizerScale,
+      height: defaultVisualizerGeometry.height * visualizerScale
+    };
 
     // Objects
     var videoset;
@@ -170,16 +176,20 @@ if (!window['$']) {
     var scaleBar;
     var smallGoogleMap;
     var annotator;
-    var customTimeline;
+    var customUI;
+    var defaultUI;
     var visualizer;
 
     // DOM elements
-    var scaleBar_DOM;
-    var $scaleBar_DOM;
-    var smallGoogleMap_DOM;
-    var $smallGoogleMap_DOM;
-    var videoQualityContainer_DOM;
-    var $videoQualityContainer_DOM;
+    var Tslider1Full;
+    var Tslider1Color;
+    var colorSelectorBot;
+    var ctx_colorSelectorBot;
+    var panoVideo;
+    var $subtitle_DOM;
+    var subtitle_DOM;
+    var subtitle_DOM_child;
+    var dataPanesId;
 
     // Canvas version
     var canvas;
@@ -195,15 +205,6 @@ if (!window['$']) {
     var videoStretchRatio = 1;
     var scaleRatio = 1;
     var paraBeforeFullScreen = {
-      homeViewX: undefined,
-      homeViewY: undefined,
-      homeViewScale: undefined,
-      panoWidth: undefined,
-      panoHeight: undefined,
-      videoWidth: undefined,
-      videoHeight: undefined,
-      tileWidth: undefined,
-      tileHeight: undefined,
       offset: {
         left: undefined,
         top: undefined
@@ -217,6 +218,8 @@ if (!window['$']) {
     var isIE9 = UTIL.isIE9();
     var doingLoopingDwell = false;
     var isFirefox = UTIL.isFirefox();
+    var enableSmallGoogleMap = true;
+    var enablePanoVideo = true;
 
     // Viewer
     var viewerType;
@@ -267,11 +270,10 @@ if (!window['$']) {
     var captureTimes = [];
     var homeView;
     var firstVideoId;
-    var videoViewer_projection;
     var originalPlaybackRate = playbackSpeed;
     var toursJSON = {};
-    var panInterval;
     var translationSpeedConstant = 20;
+    var leader;
 
     // levelThreshold sets the quality of display by deciding what level of tile to show for a given level of zoom:
     //
@@ -280,7 +282,8 @@ if (!window['$']) {
     //  0.0: select a tile that's shown between 100% and 200% size (never subsample)
     // -0.5: select a tile that's shown between 141% and 242% size (always supersample)
     // -1.0: select a tile that's shown between 200% and 400% size (always supersample)
-    var levelThreshold = 0.05;
+    var defaultLevelThreshold = 0.05;
+    var levelThreshold = defaultLevelThreshold;
 
     // Scale bar, small google map, editor, annotator
     var tagInfo_locationData = {
@@ -328,26 +331,41 @@ if (!window['$']) {
       "scale_map_nav": undefined,
       "scale_map_timewarp": undefined
     };
+    var tagInfo_timeData = {
+      "timelineX": undefined,
+      "color": {
+        "r": undefined,
+        "g": undefined,
+        "b": undefined
+      },
+    };
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////
     //
     // Public methods
     //
     this.disableEditorToolbarButtons = function() {
-      //defaultUI.disableEditorToolbarButtons();
+      defaultUI.disableEditorToolbarButtons();
     };
 
     this.enableEditorToolbarButtons = function() {
-      //defaultUI.enableEditorToolbarButtons();
+      defaultUI.enableEditorToolbarButtons();
     };
 
     this.getMode = function() {
-      //return defaultUI.getMode();
-      return "player";
+      return defaultUI.getMode();
+    };
+
+    this.getTimelapseCurrentCaptureTimeIndex = function() {
+      return timelapseCurrentCaptureTimeIndex;
     };
 
     this.getCaptureTimes = function() {
       return captureTimes;
+    };
+
+    this.getCurrentCaptureTime = function() {
+      return captureTimes[timelapseCurrentCaptureTimeIndex];
     };
 
     this.doChromeSeekableHack = function() {
@@ -370,8 +388,28 @@ if (!window['$']) {
       return videoStretchRatio;
     };
 
+    this.getScaleRatio = function() {
+      return scaleRatio;
+    };
+
     this.getVisualizer = function() {
       return visualizer;
+    };
+
+    this.getTagInfo_locationData = function() {
+      return tagInfo_locationData;
+    };
+
+    this.getTagInfo_timeData = function() {
+      return tagInfo_timeData;
+    };
+
+    this.setSmallGoogleMapEnableStatus = function(status) {
+      enableSmallGoogleMap = status;
+    };
+
+    this.isSmallGoogleMapEnable = function() {
+      return enableSmallGoogleMap;
     };
 
     this.getViewerDivId = function() {
@@ -398,8 +436,24 @@ if (!window['$']) {
       return annotator;
     };
 
+    this.getDataPanesId = function() {
+      return dataPanesId;
+    };
+
+    this.getLoopPlayback = function() {
+      return loopPlayback;
+    };
+
+    this.setLoopPlayback = function(newLoopPlayback) {
+      loopPlayback = newLoopPlayback;
+    };
+
     this.handleEditorModeToolbarChange = function() {
-      //defaultUI.handleEditorModeToolbarChange();
+      defaultUI.handleEditorModeToolbarChange();
+    };
+
+    this.handleAnnotatorModeToolbarChange = function() {
+      defaultUI.handleAnnotatorModeToolbarChange();
     };
 
     this.isFullScreen = function() {
@@ -407,26 +461,25 @@ if (!window['$']) {
     };
 
     this.handlePlayPause = function() {
-      if ($("#" + viewerDivId + " .timelineSlider").slider("option", "disabled"))
-        return;
       if (timelapseCurrentTimeInSeconds <= 0 && thisObj.getPlaybackRate() <= 0)
         return;
-      if (doingLoopingDwell) {
+      if (doingLoopingDwell && (snaplapse && !snaplapse.isPlaying())) {
         doingLoopingDwell = false;
         _pause();
         // Need to manually do this because of the looping dwell code
-        if (customTimeline) {
-          $(".customPlay").button({
-            icons: {
-              primary: "ui-icon-custom-play"
-            },
-            text: false
-          }).attr({
-            "title": "Play"
-          });
-        } else {
-          $("#" + viewerDivId + " .playbackButton").removeClass("pause").addClass("play").attr('title', 'Play');
-        }
+        var playPauseBtn;
+        if (customUI)
+          playPauseBtn = " .customPlay";
+        else
+          playPauseBtn = " .playbackButton";
+        $("#" + viewerDivId + playPauseBtn).button({
+          icons: {
+            primary: "ui-icon-custom-play"
+          },
+          text: false
+        }).attr({
+          "title": "Play"
+        });
         return;
       }
       if (_isPaused()) {
@@ -462,15 +515,15 @@ if (!window['$']) {
     this.convertTimeMachineToViewport = convertTimeMachineToViewport;
 
     var getCurrentZoom = function() {
-      return scaleToZoom(view.scale / scaleRatio);
+      return scaleToZoom(view.scale);
     };
     this.getCurrentZoom = getCurrentZoom;
 
     var scaleToZoom = function(scale) {
       if (scale == undefined) {
-        scale = view.scale / scaleRatio;
+        scale = view.scale;
       }
-      return Math.round(1e3 * Math.log(scale / (_homeView().scale / scaleRatio)) / Math.log(2)) / 1e3;
+      return Math.round(1e3 * Math.log(scale / (_homeView().scale)) / Math.log(2)) / 1e3;
     };
     this.scaleToZoom = scaleToZoom;
 
@@ -514,7 +567,7 @@ if (!window['$']) {
     var handleKeydownEvent = function(event) {
       var activeElement = document.activeElement;
       // If we are focused on a text field or the slider handlers, do not run any player specific controls.
-      if ($(".timelineSlider .ui-slider-handle:focus").length || $(".zoomSlider .ui-slider-handle:focus").length || document.activeElement == "[object HTMLInputElement]" || document.activeElement == "[object HTMLTextAreaElement]")
+      if ($("#" + viewerDivId + " .timelineSlider .ui-slider-handle:focus").length || $("#" + viewerDivId + " .zoomSlider .ui-slider-handle:focus").length || activeElement == "[object HTMLInputElement]" || activeElement == "[object HTMLTextAreaElement]")
         return;
 
       var moveFn;
@@ -522,18 +575,18 @@ if (!window['$']) {
         // Left arrow
         case 37:
           if ($(activeElement).hasClass("timeTickClickRegion")) {
-            if (customTimeline) {
+            if (customUI) {
               $(activeElement).removeClass("openHand closedHand");
               seekToFrame(getCurrentFrameNumber() - 1);
-              customTimeline.focusTimeTick(getCurrentFrameNumber() - 1);
+              customUI.focusTimeTick(getCurrentFrameNumber() - 1);
             }
             return;
           }
           moveFn = function() {
             if (event.shiftKey) {
-              targetView.x -= (translationSpeedConstant * 0.2) / view.scale;
+              targetView.x -= (translationSpeedConstant * videoStretchRatio * 0.4) / view.scale;
             } else {
-              targetView.x -= translationSpeedConstant / view.scale;
+              targetView.x -= (translationSpeedConstant * videoStretchRatio * 0.8) / view.scale;
             }
             setTargetView(targetView);
           };
@@ -541,18 +594,18 @@ if (!window['$']) {
         // Right arrow
         case 39:
           if ($(activeElement).hasClass("timeTickClickRegion")) {
-            if (customTimeline) {
+            if (customUI) {
               $(activeElement).removeClass("openHand closedHand");
               seekToFrame(getCurrentFrameNumber() + 1);
-              customTimeline.focusTimeTick(getCurrentFrameNumber() + 1);
+              customUI.focusTimeTick(getCurrentFrameNumber() + 1);
             }
             return;
           }
           moveFn = function() {
             if (event.shiftKey) {
-              targetView.x += (translationSpeedConstant * 0.2) / view.scale;
+              targetView.x += (translationSpeedConstant * videoStretchRatio * 0.4) / view.scale;
             } else {
-              targetView.x += translationSpeedConstant / view.scale;
+              targetView.x += (translationSpeedConstant * videoStretchRatio * 0.8) / view.scale;
             }
             setTargetView(targetView);
           };
@@ -561,9 +614,9 @@ if (!window['$']) {
         case 38:
           moveFn = function() {
             if (event.shiftKey) {
-              targetView.y -= (translationSpeedConstant * 0.2) / view.scale;
+              targetView.y -= (translationSpeedConstant * videoStretchRatio * 0.4) / view.scale;
             } else {
-              targetView.y -= translationSpeedConstant / view.scale;
+              targetView.y -= (translationSpeedConstant * videoStretchRatio * 0.8) / view.scale;
             }
             setTargetView(targetView);
           };
@@ -572,9 +625,9 @@ if (!window['$']) {
         case 40:
           moveFn = function() {
             if (event.shiftKey) {
-              targetView.y += (translationSpeedConstant * 0.2) / view.scale;
+              targetView.y += (translationSpeedConstant * videoStretchRatio * 0.4) / view.scale;
             } else {
-              targetView.y += translationSpeedConstant / view.scale;
+              targetView.y += (translationSpeedConstant * videoStretchRatio * 0.8) / view.scale;
             }
             setTargetView(targetView);
           };
@@ -694,9 +747,6 @@ if (!window['$']) {
     this.getView = function() {
       // Clone current view
       var originalView = $.extend({}, view);
-      originalView.x /= videoStretchRatio;
-      originalView.y /= videoStretchRatio;
-      originalView.scale /= scaleRatio;
       return originalView;
     };
 
@@ -805,21 +855,6 @@ if (!window['$']) {
     };
     this.normalizeView = _normalizeView;
 
-    var _shareView = function() {
-      $("#" + viewerDivId + " .shareurl").val(window.location.href.split("#")[0] + '#v=' + _getViewStr() + '&t=' + thisObj.getCurrentTime().toFixed(2));
-      $("#" + viewerDivId + " .shareurl").focus(function() {
-        $(this).select();
-      });
-      $("#" + viewerDivId + " .shareurl").click(function() {
-        $(this).select();
-      });
-      $("#" + viewerDivId + " .shareurl").mouseup(function(e) {
-        e.preventDefault();
-      });
-      $("#" + viewerDivId + " .shareView").dialog("open");
-    };
-    this.shareView = _shareView;
-
     var getShareView = function() {
       return '#v=' + _getViewStr() + '&t=' + thisObj.getCurrentTime().toFixed(2);
     };
@@ -891,6 +926,16 @@ if (!window['$']) {
       window.clearTimeout(loopEndTimeoutId);
       //thisObj.setPlaybackRate(originalPlaybackRate);
       videoset.pause();
+
+      // Pano video is used for the timewarp map in editor
+      if (panoVideo) {
+        panoVideo.pause();
+        // Rather than writing a sync function,
+        // we naively resync when the video is paused
+        if (panoVideo.currentTime != leader + videoset.getCurrentTime()) {
+          seek_panoVideo(videoset.getCurrentTime());
+        }
+      }
     };
     this.pause = _pause;
 
@@ -901,6 +946,7 @@ if (!window['$']) {
       if (isIE && seekTime < minIESeekTime)
         seekTime = minIESeekTime;
       videoset.seek(seekTime);
+      seek_panoVideo(seekTime);
     };
     this.seek = _seek;
 
@@ -916,8 +962,32 @@ if (!window['$']) {
     var _play = function() {
       updateCustomPlayback();
       videoset.play();
+
+      // Pano video is used for the timewarp map in editor
+      if (panoVideo && defaultUI.getMode() != "player" && !fullScreen && enablePanoVideo) {
+        // Rather than writing a sync function,
+        // we naively resync when the video is played
+        if (panoVideo.currentTime != leader + videoset.getCurrentTime()) {
+          seek_panoVideo(videoset.getCurrentTime());
+        }
+        panoVideo.play();
+      }
     };
     this.play = _play;
+
+    // Pano video is used for the timewarp map in editor
+    var seek_panoVideo = function(t) {
+      if (panoVideo && enablePanoVideo && !panoVideo.seeking && defaultUI.getMode() != "player" && !fullScreen && panoVideo.readyState >= 2) {
+        panoVideo.currentTime = leader + t;
+      }
+    };
+    this.seek_panoVideo = seek_panoVideo;
+
+    this.setPanoVideoEnableStatus = function(status) {
+      enablePanoVideo = status;
+      if (status == false)
+        panoVideo.pause();
+    };
 
     // The function is used for pausing the video for some duration
     // and optionally doing something afterwards
@@ -939,8 +1009,13 @@ if (!window['$']) {
     this.setPlaybackRate = function(rate, preserveOriginalRate, fromUI) {
       if (!preserveOriginalRate)
         originalPlaybackRate = rate;
-
       videoset.setPlaybackRate(rate);
+
+      // Pano video is used for the timewarp map in editor
+      // TODO: This should probably be done through a listener
+      if (panoVideo && defaultUI.getMode() != "player" && !fullScreen) {
+        panoVideo.playbackRate = rate;
+      }
 
       for (var i = 0; i < playbackRateChangeListeners.length; i++)
         playbackRateChangeListeners[i](rate, fromUI);
@@ -1067,8 +1142,10 @@ if (!window['$']) {
     this.getMinScale = _getMinScale;
 
     var _getMaxScale = function() {
-      return 1.05 * scaleRatio;
-      //return 2 * scaleRatio;
+      if (tmJSON['projection-bounds'])
+        return 1.05;
+      else
+        return 2;
     };
 
     this.getMaxScale = _getMaxScale;
@@ -1105,7 +1182,7 @@ if (!window['$']) {
 
     var _fullScreen = function(state) {
       var newViewportWidth, newViewportHeight;
-
+      var showMainControls = defaultUI.isShowMainControls();
       if (originalViewportWidth == null) {
         originalViewportWidth = $("#" + videoDivId).width();
         originalViewportHeight = $("#" + videoDivId).height();
@@ -1125,49 +1202,49 @@ if (!window['$']) {
         if (newViewportHeight < 468)
           newViewportHeight = 468;
         resetParaBeforeFullScreen();
-        var originalVideoWidth = datasetJSON["video_width"] - datasetJSON["tile_width"];
-        var originalVideoHeight = datasetJSON["video_height"] - datasetJSON["tile_height"];
-        // When the viewer is in full screen mode
-        // If the video is too small, we need to stretch the video to fit the viewport,
-        // so users don't see black bars around the viewport.
-        var newVideoStretchRatio;
-        // When the viewer is in full screen mode, view.scale changes
-        // view.scale in full screen mode = newScaleRatio * view.scale in nomal mode
-        var newScaleRatio = Math.max(newViewportWidth / originalViewportWidth, newViewportHeight / originalViewportHeight);
-        if (newViewportWidth > originalVideoWidth || newViewportHeight > originalVideoHeight) {
-          newVideoStretchRatio = Math.max(newViewportWidth / originalVideoWidth, newViewportHeight / originalVideoHeight);
-        } else {
-          newVideoStretchRatio = 1;
-        }
-        newScaleRatio = newScaleRatio / newVideoStretchRatio;
-        setViewportSize(newViewportWidth, newViewportHeight, timelapse);
-        setParaBeforeFullScreen(newVideoStretchRatio, newScaleRatio, newViewportWidth, newViewportHeight);
+        saveParaBeforeFullScreen();
+        fitVideoToViewport(newViewportWidth, newViewportHeight);
+        setParaBeforeFullScreen();
         window.scrollTo(0, 0);
       } else {
         fullScreen = false;
         $("body").css("overflow", "auto");
-        newViewportWidth = originalViewportWidth;
-        newViewportHeight = originalViewportHeight;
-        setViewportSize(newViewportWidth, newViewportHeight, timelapse);
-        resetParaBeforeFullScreen(newViewportWidth, newViewportHeight);
+        fitVideoToViewport(originalViewportWidth, originalViewportHeight);
+        resetParaBeforeFullScreen();
       }
-      _warpTo(view);
+      defaultUI.handleFullScreenChange(fullScreen);
+      updateTagInfo_timeData();
+      updateTagInfo_locationData();
     };
     this.fullScreen = _fullScreen;
 
-    var _toggleMainControls = function(state) {
-      showMainControls = !showMainControls;
-      $("#" + viewerDivId + " .controls").toggle();
-      $("#" + viewerDivId + " .timelineSlider").toggle();
-      _fullScreen(fullScreen);
+    var fitVideoToViewport = function(newViewportWidth, newViewportHeight) {
+      if (newViewportHeight == undefined)
+        newViewportHeight = viewportHeight;
+      var originalVideoStretchRatio = videoStretchRatio;
+      var originalVideoWidth = datasetJSON["video_width"] - datasetJSON["tile_width"];
+      var originalVideoHeight = datasetJSON["video_height"] - datasetJSON["tile_height"];
+      // If the video is too small, we need to stretch the video to fit the viewport,
+      // so users don't see black bars around the viewport
+      videoStretchRatio = Math.max(newViewportWidth / originalVideoWidth, newViewportHeight / originalVideoHeight);
+      levelThreshold = defaultLevelThreshold - log2(videoStretchRatio);
+      scaleRatio = videoStretchRatio / originalVideoStretchRatio;
+      setViewportSize(newViewportWidth, newViewportHeight);
+      readVideoDivSize();
+      // Stretching the video affects the home view,
+      // so set home view to undefined so that it gets recomputed
+      homeView = undefined;
+      _homeView();
+      // Set parameters
+      if (view) {
+        view.scale *= scaleRatio;
+      } else {
+        // If it is the first time that we call this function, set the view to home view
+        view = $.extend({}, _homeView());
+      }
+      _warpTo(view);
     };
-    this.toggleMainControls = _toggleMainControls;
-
-    var _toggleZoomControls = function(state) {
-      showZoomControls = !showZoomControls;
-      $("#" + viewerDivId + " .zoom").toggle();
-    };
-    this.toggleZoomControls = _toggleZoomControls;
+    this.fitVideoToViewport = fitVideoToViewport;
 
     var _computeMotion = function(start, end, timeRatio) {
       var s0 = start.xmax - start.xmin;
@@ -1257,91 +1334,51 @@ if (!window['$']) {
       return null;
     };
 
-    var updateSmallGoogleMap = function(newViewportWidth, newViewportHeight) {
-      var newLeft = viewportWidth + 1 - $smallGoogleMap_DOM.width();
-      var newTop = viewportHeight + 1 - $smallGoogleMap_DOM.height();
-      smallGoogleMap.updateMapGeometry(newTop, newLeft, newViewportWidth, newViewportHeight);
-    };
-
-    var updateScaleBar = function() {
-      var newTop = viewportHeight - $scaleBar_DOM.height();
-      scaleBar_DOM.style.top = newTop + "px";
-      scaleBar.updateVideoSize();
-      if (settings['scaleBarOptions']['enableVideoQualitySelector'] == true) {
-        newTop = newTop - $videoQualityContainer_DOM.height() - 1;
-        videoQualityContainer_DOM.style.top = newTop + "px";
-        scaleBar.setVideoRatioBar();
+    var updateEditor = function() {
+      var newScale;
+      if (scaleRatio > 1) {
+        newScale = 1 + (scaleRatio - 1) * 0.3;
+      } else {
+        newScale = 1;
       }
+      var newHeight = 65 * newScale;
+      subtitle_DOM.style.height = newHeight + "px";
+      subtitle_DOM_child.style.fontSize = 14 * newScale + "pt";
     };
 
     var saveParaBeforeFullScreen = function() {
-      paraBeforeFullScreen.homeViewX = homeView.x;
-      paraBeforeFullScreen.homeViewY = homeView.y;
-      paraBeforeFullScreen.homeViewScale = homeView.scale;
-      paraBeforeFullScreen.panoWidth = panoWidth;
-      paraBeforeFullScreen.panoHeight = panoHeight;
-      paraBeforeFullScreen.tileWidth = tileWidth;
-      paraBeforeFullScreen.tileHeight = tileHeight;
-      paraBeforeFullScreen.videoWidth = videoWidth;
-      paraBeforeFullScreen.videoHeight = videoHeight;
       var currentOffset = $("#" + viewerDivId).offset();
       paraBeforeFullScreen.offset.top = currentOffset.top;
       paraBeforeFullScreen.offset.left = currentOffset.left;
     };
 
-    var setParaBeforeFullScreen = function(newVideoStretchRatio, newScaleRatio, newViewportWidth, newViewportHeight) {
-      saveParaBeforeFullScreen();
-      videoStretchRatio = newVideoStretchRatio;
-      scaleRatio = newScaleRatio;
-      view.x *= videoStretchRatio;
-      view.y *= videoStretchRatio;
-      view.scale *= scaleRatio;
-      homeView.x *= videoStretchRatio;
-      homeView.y *= videoStretchRatio;
-      homeView.scale *= scaleRatio;
-      panoWidth *= videoStretchRatio;
-      panoHeight *= videoStretchRatio;
-      videoWidth *= videoStretchRatio;
-      videoHeight *= videoStretchRatio;
-      tileWidth *= videoStretchRatio;
-      tileHeight *= videoStretchRatio;
-      $("#" + viewerDivId).css("top", "0px").css("left", "0px");
-      if (smallGoogleMap) {
-        updateSmallGoogleMap(newViewportWidth, newViewportHeight);
-      }
-      if (scaleBar) {
-        updateScaleBar();
+    var setParaBeforeFullScreen = function() {
+      // If the viewer has an offset, we need to move it to the corner
+      $("#" + viewerDivId).css({
+        "top": "0px",
+        "left": "0px"
+      });
+      if (snaplapse)
+        updateEditor();
+      if (scaleBar)
+        scaleBar.updateVideoSize();
+    };
+
+    var resetParaBeforeFullScreen = function() {
+      if (paraBeforeFullScreen.offset.top != undefined) {
+        $("#" + viewerDivId).css({
+          "top": paraBeforeFullScreen.offset.top + "px",
+          "left": paraBeforeFullScreen.offset.left + "px"
+        });
+        if (snaplapse)
+          updateEditor();
+        if (scaleBar)
+          scaleBar.updateVideoSize();
       }
     };
 
-    var resetParaBeforeFullScreen = function(newViewportWidth, newViewportHeight) {
-      if (paraBeforeFullScreen.homeViewX != undefined) {
-        view.x /= videoStretchRatio;
-        view.y /= videoStretchRatio;
-        view.scale /= scaleRatio;
-        videoStretchRatio = 1;
-        scaleRatio = 1;
-        homeView.x = paraBeforeFullScreen.homeViewX;
-        homeView.y = paraBeforeFullScreen.homeViewY;
-        homeView.scale = paraBeforeFullScreen.homeViewScale;
-        panoWidth = paraBeforeFullScreen.panoWidth;
-        panoHeight = paraBeforeFullScreen.panoHeight;
-        tileWidth = paraBeforeFullScreen.tileWidth;
-        tileHeight = paraBeforeFullScreen.tileHeight;
-        videoWidth = paraBeforeFullScreen.videoWidth;
-        videoHeight = paraBeforeFullScreen.videoHeight;
-        $("#" + viewerDivId).css("top", paraBeforeFullScreen.offset.top + "px").css("left", paraBeforeFullScreen.offset.left + "px");
-        if (smallGoogleMap) {
-          updateSmallGoogleMap(newViewportWidth, newViewportHeight);
-        }
-        if (scaleBar) {
-          updateScaleBar();
-        }
-      }
-    };
-
-    var handleMousedownEvent = function(event) {
-      if (event.which != 1 || (annotator && (event.metaKey || event.ctrlKey || event.altKey)))
+    var handleMousedownEvent = function(event, fromTimewarpMap) {
+      if (event.which != 1 || (annotator && (event.metaKey || event.ctrlKey || event.altKey || annotator.getCanMoveAnnotation())))
         return;
       var mouseIsDown = true;
       var lastEvent = event;
@@ -1351,14 +1388,29 @@ if (!window['$']) {
       document.onmousemove = function(event) {
         if (mouseIsDown) {
           //if (videoset.isStalled()) return;
-          if (event.shiftKey) {
-            targetView.x += (lastEvent.pageX - event.pageX) * 0.2 / view.scale;
-            targetView.y += (lastEvent.pageY - event.pageY) * 0.2 / view.scale;
+          if (fromTimewarpMap) {
+            // This is for the timewarp map
+            // TODO: Each time we drag the box we do a new warp. This is inefficient
+            // and we should just warp once upon exiting the context map mode.
+            if (event.shiftKey) {
+              targetView.x += (event.pageX - lastEvent.pageX) * 0.2 / homeView.scale;
+              targetView.y += (event.pageY - lastEvent.pageY) * 0.2 / homeView.scale;
+            } else {
+              targetView.x += (event.pageX - lastEvent.pageX) / homeView.scale;
+              targetView.y += (event.pageY - lastEvent.pageY) / homeView.scale;
+            }
+            _warpTo(targetView);
           } else {
-            targetView.x += (lastEvent.pageX - event.pageX) / view.scale;
-            targetView.y += (lastEvent.pageY - event.pageY) / view.scale;
+            // This is for the tile content holder
+            if (event.shiftKey) {
+              targetView.x += (lastEvent.pageX - event.pageX) * 0.2 / view.scale;
+              targetView.y += (lastEvent.pageY - event.pageY) * 0.2 / view.scale;
+            } else {
+              targetView.x += (lastEvent.pageX - event.pageX) / view.scale;
+              targetView.y += (lastEvent.pageY - event.pageY) / view.scale;
+            }
+            setTargetView(targetView);
           }
-          setTargetView(targetView);
           lastEvent = event;
         }
         return false;
@@ -1399,14 +1451,22 @@ if (!window['$']) {
       return "[view x:" + view.x + " y:" + view.y + " scale:" + view.scale + "]";
     };
 
-    var setTargetView = function(newView, fromGoogleMapflag) {
-      var tempView = {};
-      tempView.scale = limitScale(newView.scale);
-      tempView.x = Math.max(0, Math.min(panoWidth, newView.x));
-      tempView.y = Math.max(0, Math.min(panoHeight, newView.y));
-      targetView.x = tempView.x;
-      targetView.y = tempView.y;
-      targetView.scale = tempView.scale;
+    var setTargetView = function(newView, fromGoogleMapflag, offset) {
+      if (newView) {
+        var tempView = {};
+        tempView.scale = limitScale(newView.scale);
+        tempView.x = Math.max(0, Math.min(panoWidth, newView.x));
+        tempView.y = Math.max(0, Math.min(panoHeight, newView.y));
+        targetView.x = tempView.x;
+        targetView.y = tempView.y;
+        targetView.scale = tempView.scale;
+      } else {
+        // Rather than specifying a new view, it is easier to just specify the offset for translating
+        if (offset) {
+          targetView.x += offset.x / view.scale;
+          targetView.y += offset.y / view.scale;
+        }
+      }
 
       if (animateInterval == null) {
         animateInterval = setInterval(function() {
@@ -1593,7 +1653,7 @@ if (!window['$']) {
     };
     this.computeBoundingBoxLatLng = computeBoundingBoxLatLng;
 
-    var onPanoLoadSuccessCallback = function(data, desiredView) {
+    var onPanoLoadSuccessCallback = function(data, desiredView, doWarp) {
       UTIL.log('onPanoLoadSuccessCallback(' + JSON.stringify(data) + ', ' + view + ', ' + ')');
       isSplitVideo = 'frames_per_fragment' in data;
       framesPerFragment = isSplitVideo ? data['frames_per_fragment'] : data['frames'];
@@ -1606,17 +1666,32 @@ if (!window['$']) {
       videoWidth = data['video_width'];
       videoHeight = data['video_height'];
       videoset.setFps(data['fps']);
-      frames = (data['frames'] - skippedFrames) >= 0 ? (data['frames'] - skippedFrames) : data['frames'];
+      var framesToSkipAtStart = (data['frames'] < skippedFramesAtStart) ? 0 : skippedFramesAtStart;
+      var framesToSkipAtEnd = (data['frames'] < skippedFramesAtEnd) ? 0 : skippedFramesAtEnd;
+      frames = data['frames'] - framesToSkipAtEnd - framesToSkipAtStart;
       videoset.setDuration((1 / data['fps']) * frames);
-      videoset.setLeader(data['leader'] / data['fps']);
+      videoset.setLeader((data['leader'] + framesToSkipAtStart) / data['fps']);
       videoset.setIsSplitVideo(isSplitVideo);
       videoset.setSecondsPerFragment(secondsPerFragment);
       maxLevel = data['nlevels'] - 1;
       levelInfo = data['level_info'];
       metadata = data;
+      timelapseDurationInSeconds = (frames - 0.7) / data['fps'];
 
       readVideoDivSize();
-      _warpTo( typeof (desiredView) != 'undefined' && desiredView ? desiredView : _homeView());
+
+      // Set capture time
+      if (tmJSON["capture-times"]) {
+        tmJSON["capture-times"].splice(0,framesToSkipAtStart);
+        captureTimes = tmJSON["capture-times"];
+      } else {
+        for (var i = 0; i < frames; i++) {
+          captureTimes.push("--");
+        }
+      }
+
+      if (doWarp != false)
+        _warpTo( typeof (desiredView) != 'undefined' && desiredView ? desiredView : _homeView());
     };
 
     var readVideoDivSize = function() {
@@ -1624,13 +1699,13 @@ if (!window['$']) {
       viewportHeight = $(videoDiv).height();
     };
 
-    var refresh = function(dragFromGoogleMapflag) {
+    var refresh = function() {
       if (!isFinite(view.scale))
         return;
 
       var bestIdx = computeBestVideo(targetView);
       if (bestIdx != currentIdx) {
-        currentVideo = addTileidx(bestIdx, currentVideo);
+        currentVideo = addTileidx(bestIdx);
         currentIdx = bestIdx;
       }
 
@@ -1657,123 +1732,97 @@ if (!window['$']) {
       $("#" + viewerDivId + " .addTimetag").button("option", "disabled", false);
     };
 
-    // Create the zoom bar
-    var createZoomPanbar = function(viewerDivId, obj) {
-      // Create pan left button
-      $(".panLeft").button({
-        icons: {
-          primary: "ui-icon-triangle-1-w"
-        },
-        text: false
-      }).position({
-        "my": "left center",
-        "at": "left center",
-        "of": $(".panLeft").parent()
-      }).on("mousedown", function() {
-        panInterval = setInterval(function() {
-          targetView.x -= translationSpeedConstant / view.scale;
-          setTargetView(targetView);
-        }, 50);
-        $(document).one("mouseup", function() {
-          clearInterval(panInterval);
-        });
-      });
-      // Create pan left button
-      $(".panRight").button({
-        icons: {
-          primary: "ui-icon-triangle-1-e"
-        },
-        text: false
-      }).position({
-        "my": "right center",
-        "at": "right center",
-        "of": $(".panLeft").parent()
-      }).on("mousedown", function() {
-        panInterval = setInterval(function() {
-          targetView.x += translationSpeedConstant / view.scale;
-          setTargetView(targetView);
-        }, 50);
-        $(document).one("mouseup", function() {
-          clearInterval(panInterval);
-        });
-      });
-      // Create pan left button
-      $(".panUp").button({
-        icons: {
-          primary: "ui-icon-triangle-1-n"
-        },
-        text: false
-      }).position({
-        "my": "center top",
-        "at": "center top",
-        "of": $(".panLeft").parent()
-      }).on("mousedown", function() {
-        panInterval = setInterval(function() {
-          targetView.y -= translationSpeedConstant / view.scale;
-          setTargetView(targetView);
-        }, 50);
-        $(document).one("mouseup", function() {
-          clearInterval(panInterval);
-        });
-      });
-      // Create pan left button
-      $(".panDown").button({
-        icons: {
-          primary: "ui-icon-triangle-1-s"
-        },
-        text: false
-      }).position({
-        "my": "center bottom",
-        "at": "center bottom",
-        "of": $(".panLeft").parent()
-      }).on("mousedown", function() {
-        panInterval = setInterval(function() {
-          targetView.y += translationSpeedConstant / view.scale;
-          setTargetView(targetView);
-        }, 50);
-        $(document).one("mouseup", function() {
-          clearInterval(panInterval);
-        });
-      });
-      // Create zoom in button
-      $(".zoomin").button({
-        icons: {
-          primary: "ui-icon-plus"
-        },
-        text: false
-      });
-      // Create zoom slider
-      createZoomSlider(viewerDivId, obj);
-      // Create zoom out button
-      $(".zoomout").button({
-        icons: {
-          primary: "ui-icon-minus"
-        },
-        text: false
-      });
-      // Create zoom all button
-      $(".zoomall").button({
-        icons: {
-          primary: "ui-icon-home"
-        },
-        text: false
-      });
+    // Initialize the color selector for the editor
+    var initColorSelector = function() {
+      // Set colors
+      var colorTimeLeft;
+      var colorTimeRight;
+      var colorTimeCenter;
+      if (tmJSON['projection-bounds']) {
+        colorTimeRight = "#000000";
+        colorTimeLeft = "#000000";
+        colorTimeCenter = "#000000";
+      } else {
+        colorTimeRight = "#dd0050";
+        colorTimeLeft = "#007030";
+        colorTimeCenter = "#c36500";
+      }
+      // Set the bottom color selector
+      var CS_bot = document.getElementsByClassName("timeSliderColorSelectorBot_canvas_editorMode")[0];
+      var newWidth_CS_bot = $("#" + viewerDivId + " .tiledContentHolder").outerWidth() - 1;
+      CS_bot.width = newWidth_CS_bot - 1;
+      CS_bot.height = CS_bot.offsetHeight - 1;
+      var ctx_CS_bot = CS_bot.getContext('2d');
+      ctx_CS_bot.lineWidth = CS_bot.height * 2;
+      var grad_bot = ctx_CS_bot.createLinearGradient(0, 0, CS_bot.offsetWidth, 0);
+      grad_bot.addColorStop(0, colorTimeLeft);
+      grad_bot.addColorStop(0.5, colorTimeCenter);
+      grad_bot.addColorStop(1, colorTimeRight);
+      ctx_CS_bot.strokeStyle = grad_bot;
+      ctx_CS_bot.beginPath();
+      ctx_CS_bot.moveTo(0, 0);
+      ctx_CS_bot.lineTo(CS_bot.offsetWidth, 0);
+      ctx_CS_bot.stroke();
     };
+
+    // Initialize the tag info with location data
+    var initializeTagInfo_locationData = function() {
+      var boundingBox = computeBoundingBox(homeView);
+      tagInfo_locationData.homeView.xmin = boundingBox.xmin;
+      tagInfo_locationData.homeView.ymin = boundingBox.ymin;
+      tagInfo_locationData.homeView.scale = homeView.scale;
+      if (visualizer) {
+        var navigationMap = visualizer.getNavigationMap();
+        var timewarpMap = visualizer.getTimewarpMap();
+        var navigationMapWidth = $(navigationMap).width();
+        var timewarpMapWidth = $(timewarpMap).width();
+        tagInfo_locationData.scale_map_nav = navigationMapWidth / (boundingBox.xmax - boundingBox.xmin);
+        tagInfo_locationData.scale_map_timewarp = timewarpMapWidth / (boundingBox.xmax - boundingBox.xmin);
+      }
+    };
+
+    // Update tag position on the timeline and color
+    var updateTagInfo_timeData = function() {
+      var mode = defaultUI.getMode();
+      if (fullScreen || mode == "player") {
+        return null;
+      }
+      if (visualizer) {
+        // Update information
+        var tagInfo = getTagColor();
+        tagInfo_timeData.color.r = tagInfo[0];
+        tagInfo_timeData.color.g = tagInfo[1];
+        tagInfo_timeData.color.b = tagInfo[2];
+        if (smallGoogleMap && enableSmallGoogleMap == true && (mode == "editor" || mode == "annotator")) {
+          smallGoogleMap.drawSmallMapBoxColor(tagInfo_timeData.color);
+        }
+        if (visualizer) {
+          tagInfo_timeData.timelineX = tagInfo[3];
+          visualizer.updateInterface_timeData(tagInfo_timeData);
+        }
+      }
+    };
+    this.updateTagInfo_timeData = updateTagInfo_timeData;
 
     // Update tag information of location data
     var updateTagInfo_locationData = function(dragFromGoogleMapflag) {
+      var mode = defaultUI.getMode();
       if (scaleBar == undefined && smallGoogleMap == undefined) {
-        if (fullScreen) {
+        if (fullScreen || mode == "player") {
           return null;
         }
       }
-      if (smallGoogleMap || scaleBar) {
+      if (visualizer || smallGoogleMap || scaleBar) {
+        // Need to get the projection dynamically when the viewer size changes
+        var videoViewer_projection;
+        if (tmJSON['projection-bounds'])
+          videoViewer_projection = _getProjection();
         // Get video viewer center location
         var scale = view.scale;
         var videoViewer_centerPoint = {
-          "x": view.x / videoStretchRatio,
-          "y": view.y / videoStretchRatio,
-          "scale": scale / scaleRatio
+          "x": view.x,
+          "y": view.y,
+          "scale": scale
         };
         var tagLatLngCenter_nav;
         if (videoViewer_projection) {
@@ -1784,9 +1833,9 @@ if (!window['$']) {
         if (scaleBar) {
           // Compute the the distance between two center pixels
           var videoViewer_nearCenterPoint = {
-            "x": (view.x + 1 / scale) / videoStretchRatio,
-            "y": view.y / videoStretchRatio,
-            "scale": scale / scaleRatio
+            "x": (view.x + 1 / scale),
+            "y": view.y,
+            "scale": scale
           };
           var tagLatLngNearCenter_nav, distance_pixel_lng;
           if (videoViewer_projection) {
@@ -1796,19 +1845,19 @@ if (!window['$']) {
             scaleBar.setScaleBar(distance_pixel_lng, tagLatLngCenter_nav);
           }
         }
-        if (smallGoogleMap) {
+        if (visualizer || smallGoogleMap) {
           // Get the location bound of the video viewer
           var offsetX = (viewportWidth / 2) / scale;
           var offsetY = (viewportHeight / 2) / scale;
           var videoViewer_leftTopPoint = {
-            "x": (view.x - offsetX) / videoStretchRatio,
-            "y": (view.y - offsetY) / videoStretchRatio,
-            "scale": scale / scaleRatio
+            "x": (view.x - offsetX),
+            "y": (view.y - offsetY),
+            "scale": scale
           };
           var videoViewer_rightBotPoint = {
-            "x": (view.x + offsetX) / videoStretchRatio,
-            "y": (view.y + offsetY) / videoStretchRatio,
-            "scale": scale / scaleRatio
+            "x": (view.x + offsetX),
+            "y": (view.y + offsetY),
+            "scale": scale
           };
           var tagLatLngNE_nav, tagLatLngSW_nav;
           if (videoViewer_projection) {
@@ -1820,19 +1869,68 @@ if (!window['$']) {
             tagInfo_locationData.tagLatLngSW_nav.lng = tagLatLngSW_nav.lng;
           }
           // Update the small google map
-          if (smallGoogleMap) {
-            if (dragFromGoogleMapflag != undefined) {
+          if (smallGoogleMap && enableSmallGoogleMap == true) {
+            if (dragFromGoogleMapflag) {
               smallGoogleMap.setSmallMapBoxLocation(tagLatLngNE_nav, tagLatLngSW_nav);
             } else {
               smallGoogleMap.setSmallGoogleMap(tagLatLngCenter_nav, videoViewer_centerPoint.scale);
               smallGoogleMap.setSmallMapBoxLocation(tagLatLngNE_nav, tagLatLngSW_nav);
             }
           }
-
-        }
-      }
+          if (visualizer) {
+            // Calculate the position on the navigation map
+            var video = videoset.getCurrentActiveVideo();
+            var video_top;
+            var video_left;
+            if (viewerType == "video") {
+              video_top = parseInt(video.style.top);
+              video_left = parseInt(video.style.left);
+            } else if (viewerType == "canvas") {
+              video_top = video.geometry.top;
+              video_left = video.geometry.top;
+            }
+            var x_NE = videoViewer_leftTopPoint.x - tagInfo_locationData.homeView.xmin;
+            var y_NE = videoViewer_leftTopPoint.y - tagInfo_locationData.homeView.ymin;
+            var x_SW = videoViewer_rightBotPoint.x - tagInfo_locationData.homeView.xmin;
+            var y_SW = videoViewer_rightBotPoint.y - tagInfo_locationData.homeView.ymin;
+            var x_Center = view.x - tagInfo_locationData.homeView.xmin;
+            var y_Center = view.y - tagInfo_locationData.homeView.ymin;
+            var scale_map_nav = tagInfo_locationData.scale_map_nav;
+            var scale_map_timewarp = tagInfo_locationData.scale_map_timewarp;
+            tagInfo_locationData.tagPointNE_nav.x = x_NE * scale_map_nav;
+            tagInfo_locationData.tagPointNE_nav.y = y_NE * scale_map_nav;
+            tagInfo_locationData.tagPointSW_nav.x = x_SW * scale_map_nav;
+            tagInfo_locationData.tagPointSW_nav.y = y_SW * scale_map_nav;
+            tagInfo_locationData.tagPointCenter_nav.x = x_Center * scale_map_nav;
+            tagInfo_locationData.tagPointCenter_nav.y = y_Center * scale_map_nav;
+            tagInfo_locationData.tagPointNE_timewarp.x = x_NE * scale_map_timewarp;
+            tagInfo_locationData.tagPointNE_timewarp.y = y_NE * scale_map_timewarp;
+            tagInfo_locationData.tagPointSW_timewarp.x = x_SW * scale_map_timewarp;
+            tagInfo_locationData.tagPointSW_timewarp.y = y_SW * scale_map_timewarp;
+            tagInfo_locationData.tagPointCenter_timewarp.x = x_Center * scale_map_timewarp;
+            tagInfo_locationData.tagPointCenter_timewarp.y = y_Center * scale_map_timewarp;
+            visualizer.updateInterface_locationData(tagInfo_locationData);
+          }// End of if (visualizer)
+        }// End of if (visualizer || smallGoogleMap)
+      }// End of if (visualizer != undefined || smallGoogleMap != undefined || scaleBar != undefined)
     };
     this.updateTagInfo_locationData = updateTagInfo_locationData;
+
+    // Select tag color according to time
+    var getTagColor = function(time) {
+      var timelineX;
+      if (time == undefined) {
+        timelineX = Tslider1Full.offsetWidth - Tslider1Color.offsetWidth - 1;
+      } else {
+        timelineX = ((time * _getFps()) / (_getNumFrames() - 1)) * Tslider1Full.width() - 1;
+      }
+      if (timelineX < 0)
+        timelineX = 0;
+      // Get color selector element
+      var pixel = ctx_colorSelectorBot.getImageData(timelineX, 0, 1, 1).data;
+      return [pixel[0], pixel[1], pixel[2], timelineX];
+    };
+    this.getTagColor = getTagColor;
 
     // Get the location bound of the viewer
     var getViewerLocationBound = function() {
@@ -1886,7 +1984,7 @@ if (!window['$']) {
       return false;
     };
 
-    var addTileidx = function(tileidx, videoToUnload) {
+    var addTileidx = function(tileidx) {
       var url = getTileidxUrl(tileidx);
       var geom = tileidxGeometry(tileidx);
       //UTIL.log("adding tile " + dumpTileidx(tileidx) + " from " + url + " and geom = (left:" + geom['left'] + " ,top:" + geom['top'] + ", width:" + geom['width'] + ", height:" + geom['height'] + ")");
@@ -2004,106 +2102,12 @@ if (!window['$']) {
       return "{l:" + getTileidxLevel(t) + ",c:" + getTileidxColumn(t) + ",r:" + getTileidxRow(t) + "}";
     };
 
-    function createTimelineSlider(div) {
-      if (tmJSON["capture-times"]) {
-        captureTimes = tmJSON["capture-times"];
-      } else {
-        for (var i = 0; i < _getNumFrames(); i++) {
-          captureTimes.push("--");
-        }
-      }
-
-      timelapseDurationInSeconds = (_getNumFrames() - 0.7) / _getFps();
-
-      $("#" + div + " .currentTime").html(UTIL.formatTime(timelapseCurrentTimeInSeconds, true));
-      $("#" + div + " .totalTime").html(UTIL.formatTime(timelapseDurationInSeconds, true));
-      $("#" + div + " .currentCaptureTime").html(UTIL.htmlForTextWithEmbeddedNewlines(captureTimes[timelapseCurrentCaptureTimeIndex]));
-
-      $("#" + div + " .timelineSlider").slider({
-        min: 0,
-        max: _getNumFrames() - 1, // this way the time scrubber goes exactly to the end of timeline
-        range: "min",
-        step: 1,
-        slide: function(e, ui) {
-          // $(this).slider('value')  --> previous value
-          // ui.value                 --> current value
-          // If we are manually using the slider and we are pulling it back to the start
-          // we wont actually get to time 0 because of how we are snapping.
-          // Manually seek to position 0 when this happens.
-          if (($(this).slider('value') > ui.value) && ui.value == 0)
-            _seek(0);
-          else
-            _seek((ui.value + 0.3) / _getFps());
-        }
-      }).removeClass("ui-corner-all").children().removeClass("ui-corner-all");
-      $("#" + div + " .timelineSlider .ui-slider-handle").attr("title", "Drag to go to a different point in time");
-    }
-
-    function createPlaybackSpeedSlider(div, timelapseObj) {
-      // Populate playback speed dropdown
-      populateSpeedPlaybackChoices(div, timelapseObj);
-
-      // Add click event to each of the options to change the speed
-      $("#" + div + " .playbackSpeedChoices li a").bind("click", function() {
-        changePlaybackRate(this);
-      });
-
-      _addPlaybackRateChangeListener(function(rate, fromUI) {
-        var speedChoice;
-        // Set the playback speed dropdown
-        $("#" + viewerDivId + " .playbackSpeedChoices li a").each(function() {
-          speedChoice = $(this);
-          if (speedChoice.attr("data-speed") == rate) {
-            return false;
-          }
-        });
-        $("#" + viewerDivId + " li.playbackSpeedOptions").hide();
-        $("#" + viewerDivId + " li.playbackSpeedOptions a").removeClass("current");
-        speedChoice.addClass("current");
-        $("#" + viewerDivId + " .playbackSpeedText").text(speedChoice.text());
-      });
-
-      timelapseObj.setPlaybackRate(playbackSpeed);
-    }
-
-    function changePlaybackRate(obj) {
-      var rate = $(obj).attr("data-speed") - 0; // convert to number
+    var changePlaybackRate = function(obj) {
+      var rate = $(obj).attr("data-speed") - 0; // Convert to number
       thisObj.setPlaybackRate(rate);
       playbackSpeed = rate;
-    }
-
-    function populateSizes(viewerDivId) {
-      // populate the player size dropdown
-      var html = "";
-      var numSizes = tmJSON["sizes"].length;
-      for (var i = 0; i < numSizes; i++) {
-        html += '<li><a href="javascript:void(0);" data-index=\'' + i + '\'>' + tmJSON["sizes"][i] + '</a></li>';
-      }
-      $("#" + viewerDivId + " .sizechoices").append(html);
-
-      // set the size dropdown
-      $("#" + viewerDivId + " .sizechoices li a:contains(" + tmJSON["datasets"][datasetIndex]["name"] + ")").addClass("current");
-      $("#" + viewerDivId + " .playerSizeText").text(tmJSON["datasets"][datasetIndex]["name"]);
-
-      $("#" + viewerDivId + " .sizechoices li a").bind("click", function() {
-        thisObj.switchSize($(this).attr("data-index"));
-        $("#" + viewerDivId + " li.sizeoptions a").removeClass("current");
-        $(this).addClass("current");
-      });
-    }
-
-    function populateLayers() {
-      var numLayers = tmJSON["layers"].length;
-      var html = "";
-      for (var i = 0; i < numLayers; i++) {
-        html += "<li data-index=" + i + "><img src=\"" + tmJSON["layers"][i]["tn-path"] + "\" " + "alt='layer' width='45' height='45' ><br/><span style='font-size:small; text-align:center; display:block; margin: -5px 0px 0px 0px !important;'>" + tmJSON['layers'][i]['description'] + "</span></li>";
-      }
-      $("#" + viewerDivId + " .layerChoices").append(html);
-
-      $("#" + viewerDivId + " .layerChoices li").bind("click", function() {
-        thisObj.switchLayer($(this).attr("data-index"));
-      });
-    }
+    };
+    this.changePlaybackRate = changePlaybackRate;
 
     this.switchSize = function(index) {
       playerSize = index;
@@ -2140,183 +2144,20 @@ if (!window['$']) {
       datasetJSON = data;
       thisObj.changeDataset(data);
       if (!fullScreen)
-        setViewportSize(data["video_width"] - data["tile_width"], data["video_height"] - data["tile_height"], thisObj);
+        setViewportSize(data["video_width"] - data["tile_width"], data["video_height"] - data["tile_height"]);
       hideSpinner(viewerDivId);
     }
 
-    function doHelpOverlay(obj) {
-      if ($("#" + viewerDivId + " .zoomSlider").slider("option", "disabled"))
-        return;
-      $("#" + viewerDivId + " li.sizeoptions").hide(); // might be already opened
-      $("#" + viewerDivId + " li.playbackSpeedOptions").hide(); // might be already opened
-      $("#" + viewerDivId + " .instructions").fadeIn(100);
-      $("#" + viewerDivId + " .repeat").addClass("disabled");
-      $("#" + viewerDivId + " .help").addClass("on");
-      if ($("#" + viewerDivId + " .playbackButton").hasClass('pause')) {
-        obj.handlePlayPause();
-        $("#" + viewerDivId + " .playbackButton").addClass("pause_disabled from_help");
-      } else {
-        $("#" + viewerDivId + " .playbackButton").addClass("play_disabled");
-      }
-      $("#" + viewerDivId + " .timelineSlider").slider("option", "disabled", true);
-    }
-
-    function removeHelpOverlay(obj) {
-      if ($("#" + viewerDivId + " .zoomSlider").slider("option", "disabled"))
-        return;
-      $("#" + viewerDivId + " .instructions").fadeOut(50);
-      $("#" + viewerDivId + " .repeat").removeClass("disabled");
-      $("#" + viewerDivId + " .help").removeClass("on");
-      if ($("#" + viewerDivId + " .playbackButton").hasClass('from_help')) {
-        obj.handlePlayPause();
-        $("#" + viewerDivId + " .playbackButton").addClass("pause");
-        $("#" + viewerDivId + " .playbackButton").removeClass("from_help");
-      } else {
-        $("#" + viewerDivId + " .playbackButton").addClass("play");
-      }
-      $("#" + viewerDivId + " .timelineSlider").slider("option", "disabled", false);
-    }
-
-    function setupUIHandlers(viewerDivId, obj) {
-      var intervalId;
-
-      $("#" + viewerDivId + " .shareView").dialog({
-        resizable: false,
-        autoOpen: false,
-        width: 640,
-        height: 110,
-        create: function(event, ui) {
-          $(this).parents(".ui-dialog").css({
-            'border': '1px solid #000'
-          });
+    function setupUIHandlers() {
+      // Leave Page Alert
+      window.onbeforeunload = function() {
+        if ((snaplapse && snaplapse.getKeyframes().length > 0) || (annotator && annotator.getAnnotationList().length > 0)) {
+          return "You are attempting to leave this page while creating a tour.";
         }
-      }).parent().appendTo($("#" + viewerDivId));
+      };
 
-      if (showShareBtn) {
-        $("#" + viewerDivId + " .share").bind("click", function() {
-          _shareView();
-        });
-      } else {
-        $("#" + viewerDivId + " .share").hide();
-      }
-
-      if (tmJSON["layers"]) {
-        $("#" + viewerDivId + " .layerSlider").show();
-        populateLayers();
-
-        $("#" + viewerDivId + " .layerSlider .jCarouselLite").jCarouselLite({
-          btnNext: "#" + viewerDivId + " .layerSlider .next",
-          btnPrev: "#" + viewerDivId + " .layerSlider .prev",
-          circular: true,
-          visible: 3.5
-        });
-      }
-
-      $("#" + viewerDivId + " a.playbackspeed").click(function() {
-        if ($("#" + viewerDivId + " .help").hasClass("on") || $("#" + viewerDivId + " .zoomSlider").slider("option", "disabled"))
-          return;
-        $("#" + viewerDivId + " li.playbackSpeedOptions").fadeIn(100);
-      });
-
-      $("#" + viewerDivId + " a.size").click(function() {
-        if ($("#" + viewerDivId + " .help").hasClass("on") || $("#" + viewerDivId + " .zoomSlider").slider("option", "disabled"))
-          return;
-        $("#" + viewerDivId + " li.sizeoptions").fadeIn(100);
-      });
-
-      $(document).click(function(event) {
-        if ($(event.target).closest("#" + viewerDivId + " a.playbackspeed").get(0) == null) {
-          $("#" + viewerDivId + " li.playbackSpeedOptions").hide();
-        }
-        if ($(event.target).closest("#" + viewerDivId + " a.size").get(0) == null) {
-          $("#" + viewerDivId + " li.sizeoptions").hide();
-        }
-        if ($(event.target).closest("#" + viewerDivId + " .help").get(0) == null) {
-          if ($("#" + viewerDivId + " .help").hasClass("on"))
-            removeHelpOverlay(obj);
-        }
-      });
-
-      $("#" + viewerDivId + " .help").click(function() {
-        if ($("#" + viewerDivId + " .help").hasClass("on"))
-          removeHelpOverlay(obj);
-        else
-          doHelpOverlay(obj);
-      });
-
-      createZoomPanbar(viewerDivId, obj);
-
-      $("#" + viewerDivId + " .playbackButton").bind("click", function() {
-        thisObj.handlePlayPause();
-      });
-
-      $("#" + viewerDivId + " .fullScreen").bind("click", function() {
-        if ($(this).hasClass("disabled") || $("#" + viewerDivId + " .zoomSlider").slider("option", "disabled") == true)
-          return;
-
-        if (!fullScreen) {
-          $(this).toggleClass("inactive active");
-          $(this).prop('title', 'Exit full screen');
-          _fullScreen(true);
-        } else {
-          $(this).toggleClass("active inactive");
-          $(this).prop('title', 'Full screen');
-          _fullScreen(false);
-        }
-      });
-
-      $("#" + viewerDivId + " .repeat").bind("click", function() {
-        if ($(this).hasClass("disabled") || $("#" + viewerDivId + " .zoomSlider").slider("option", "disabled") == true)
-          return;
-        loopPlayback = !loopPlayback;
-        if (loopPlayback) {
-          $(this).toggleClass("inactive active");
-        } else {
-          $(this).toggleClass("active inactive");
-          // Set playback back to what the dropdown says
-          changePlaybackRate($("#" + viewerDivId + " .playbackSpeedChoices .current"));
-        }
-      });
-
-      $("#" + viewerDivId + " .zoomall").click(function() {
-        if ($("#" + viewerDivId + " .zoomSlider").slider("option", "disabled") == true)
-          return;
-        obj.warpTo(obj.homeView());
-      });
-
-      $("#" + viewerDivId + " .zoomin").mousedown(function() {
-        if ($("#" + viewerDivId + " .zoomSlider").slider("option", "disabled") == true)
-          return;
-        intervalId = setInterval(function() {
-          zoomIn(viewerDivId, obj);
-        }, 50);
-      }).click(function() {
-        if ($("#" + viewerDivId + " .zoomSlider").slider("option", "disabled") == true)
-          return;
-        zoomIn(viewerDivId, obj);
-      }).mouseup(function() {
-        clearInterval(intervalId);
-      }).mouseout(function() {
-        clearInterval(intervalId);
-      });
-
-      $("#" + viewerDivId + " .zoomout").mousedown(function() {
-        if ($("#" + viewerDivId + " .zoomSlider").slider("option", "disabled") == true)
-          return;
-        intervalId = setInterval(function() {
-          zoomOut(viewerDivId, obj);
-        }, 50);
-      }).click(function() {
-        if ($("#" + viewerDivId + " .zoomSlider").slider("option", "disabled") == true)
-          return;
-        zoomOut(viewerDivId, obj);
-      }).mouseup(function() {
-        clearInterval(intervalId);
-      }).mouseout(function() {
-        clearInterval(intervalId);
-      });
-
-      window.onresize = function(event) {
+      // Full screen
+      window.onresize = function() {
         clearTimeout(resizeTimeout);
         if (fullScreen) {
           resizeTimeout = setTimeout(function() {
@@ -2346,7 +2187,7 @@ if (!window['$']) {
           annotator.updateAnnotationPositions();
 
         timelapseCurrentTimeInSeconds = t;
-        timelapseCurrentCaptureTimeIndex = Math.min(frames - 1, Math.floor(t * _getFps()));
+        timelapseCurrentCaptureTimeIndex = Math.min(frames - 1,Math.floor(t * _getFps()));
         if (timelapseCurrentTimeInSeconds.toFixed(3) < 0 || (timelapseCurrentTimeInSeconds.toFixed(3) == 0 && thisObj.getPlaybackRate() < 0)) {
           timelapseCurrentTimeInSeconds = 0;
           _pause();
@@ -2386,6 +2227,7 @@ if (!window['$']) {
         $("#" + viewerDivId + " .currentTime").html(UTIL.formatTime(timelapseCurrentTimeInSeconds, true));
         $("#" + viewerDivId + " .currentCaptureTime").html(UTIL.htmlForTextWithEmbeddedNewlines(captureTimes[timelapseCurrentCaptureTimeIndex]));
         $("#" + viewerDivId + " .timelineSlider").slider("value", (timelapseCurrentTimeInSeconds * _getFps() - 0.3));
+        updateTagInfo_timeData();
       });
 
       _addTargetViewChangeListener(function(view) {
@@ -2395,7 +2237,6 @@ if (!window['$']) {
       _addViewChangeListener(function(view) {
         if (annotator)
           annotator.updateAnnotationPositions();
-
         updateTagInfo_locationData();
       });
 
@@ -2405,8 +2246,9 @@ if (!window['$']) {
         // so we need to make sure the play button is updated.
         if (doingLoopingDwell)
           return;
-        if (customTimeline) {
-          $(".customPlay").button({
+        // TODO: UI Class should handle this
+        if (customUI) {
+          $("#" + viewerDivId + " .customPlay").button({
             icons: {
               primary: "ui-icon-custom-play"
             },
@@ -2415,6 +2257,12 @@ if (!window['$']) {
             "title": "Play"
           });
         }
+        // TODO: UI Class should handle this
+        $("#" + viewerDivId + " .playbackButton").button({
+          icons: {
+            secondary: "ui-icon-custom-play"
+          }
+        }).attr('title', 'Play');
         $("#" + viewerDivId + " .playbackButton").removeClass("pause").addClass("play").attr('title', 'Play');
       });
 
@@ -2422,8 +2270,9 @@ if (!window['$']) {
         // Always make sure that when we are playing, the button status is updated
         if (doingLoopingDwell)
           return;
-        if (customTimeline) {
-          $(".customPlay").button({
+        // TODO: UI Class should handle this
+        if (customUI) {
+          $("#" + viewerDivId + " .customPlay").button({
             icons: {
               primary: "ui-icon-custom-pause"
             },
@@ -2432,22 +2281,34 @@ if (!window['$']) {
             "title": "Pause"
           });
         }
+        // TODO: UI Class should handle this
+        $("#" + viewerDivId + " .playbackButton").button({
+          icons: {
+            secondary: "ui-icon-custom-pause"
+          }
+        }).attr('title', 'Pause');
         $("#" + viewerDivId + " .playbackButton").removeClass("play").addClass("pause").attr('title', 'Pause');
       });
 
-      _makeVideoVisibleListener(function(videoId, theTime) {
+      _makeVideoVisibleListener(function(videoId) {
         if (videoId == firstVideoId) {
+          if (visualizer) {
+            initializeTagInfo_locationData();
+            visualizer.loadNavigationMap(tagInfo_locationData);
+            panoVideo = visualizer.clonePanoVideo(firstVideoId);
+          }
+
           // Hash params override the view set during initialization
           if (handleHashChange()) {
             // handleHashChange() already did what we wanted
           } else {
-            // Seek to the initial time
-            if (initialTime != 0) {
-              _seek(initialTime);
-            }
             // Set the initial view
             if (initialView) {
               _setNewView(initialView, true);
+            }
+            // Seek to the initial time
+            if (initialTime != 0) {
+              _seek(initialTime);
             }
           }
           // Fire onTimeMachinePlayerReady when the first video is ready
@@ -2455,29 +2316,37 @@ if (!window['$']) {
             onTimeMachinePlayerReady(viewerDivId);
           }
           updateTagInfo_locationData();
+          updateTagInfo_timeData();
         }
       });
 
       if (settings["composerDiv"]) {
         $("#" + videoDivId).append('<div class="snaplapse-annotation-description"><div></div></div>');
         snaplapse = new org.gigapan.timelapse.Snaplapse(settings["composerDiv"], thisObj, settings);
+
+        initColorSelector();
+        // Timewarp visualizer that shows the location of the current view and transitions between keyframes
+        if (!tmJSON['projection-bounds']) {
+          visualizer = new org.gigapan.timelapse.Visualizer(thisObj, snaplapse, visualizerGeometry);
+        }
       }
       if (settings["annotatorDiv"])
         annotator = new org.gigapan.timelapse.Annotator(settings["annotatorDiv"], thisObj);
 
-      populateSizes(viewerDivId);
       //hasLayers = timelapseMetadataJSON["has_layers"] || false;
-      createTimelineSlider(viewerDivId);
-      createZoomSlider(viewerDivId, thisObj);
-      createPlaybackSpeedSlider(viewerDivId, thisObj);
-      setupUIHandlers(viewerDivId, thisObj);
+      setupUIHandlers();
+      defaultUI = new org.gigapan.timelapse.DefaultUI(thisObj, settings);
+      if (settings["enableCustomUI"] == true)
+        customUI = new org.gigapan.timelapse.CustomUI(thisObj, settings);
       //handlePluginVideoTagOverride(); //TODO
 
       if (settings["scaleBarOptions"] && tmJSON['projection-bounds'])
         scaleBar = new org.gigapan.timelapse.ScaleBar(settings["scaleBarOptions"], thisObj);
       // Must be placed after TimelineSlider is created
-      if (settings["smallGoogleMapOptions"] && tmJSON['projection-bounds'])
+      if (settings["smallGoogleMapOptions"] && tmJSON['projection-bounds'] && typeof google !== "undefined")
         smallGoogleMap = new org.gigapan.timelapse.SmallGoogleMap(settings["smallGoogleMapOptions"], thisObj);
+
+      thisObj.setPlaybackRate(playbackSpeed);
 
       // Fixes Safari bug which causes the video to not be displayed if the video has no leader and the initial
       // time is zero (the video seeked event is never fired, so videoset never gets the cue that the video
@@ -2490,28 +2359,21 @@ if (!window['$']) {
 
       setupSliderHandlers(viewerDivId);
       cacheAndInitializeElements();
-
-      if (settings["enableCustomTimeline"] == true)
-        customTimeline = new org.gigapan.timelapse.CustomTimeline(thisObj, settings);
     }
 
     // TODO: factor out most of this map related code
     // Cache and initialize DOM elements
     var cacheAndInitializeElements = function() {
-      if (tmJSON['projection-bounds'])
-        videoViewer_projection = _getProjection();
-      if (scaleBar) {
-        scaleBar_DOM = scaleBar.getScaleBarContainer();
-        $scaleBar_DOM = $(scaleBar_DOM);
-        if (settings['scaleBarOptions']['enableVideoQualitySelector'] == true) {
-          videoQualityContainer_DOM = scaleBar.getVideoQualityContainer();
-          $videoQualityContainer_DOM = $(videoQualityContainer_DOM);
-        }
-      }
-      // must be placed after TimelineSlider is created
-      if (smallGoogleMap) {
-        smallGoogleMap_DOM = smallGoogleMap.getSmallMapContainer();
-        $smallGoogleMap_DOM = $(smallGoogleMap_DOM);
+      leader = videoset.getLeader();
+      Tslider1Full = $("#Tslider1");
+      Tslider1Color = Tslider1Full.find(" .ui-slider-range.ui-widget-header.ui-slider-range-max").get(0);
+      Tslider1Full = Tslider1Full.get(0);
+      colorSelectorBot = $("#" + viewerDivId + " .timeSliderColorSelectorBot_canvas_editorMode").get(0);
+      ctx_colorSelectorBot = colorSelectorBot.getContext('2d');
+      if (snaplapse) {
+        $subtitle_DOM = $("#" + viewerDivId + " .snaplapse-annotation-description");
+        subtitle_DOM = $subtitle_DOM.get(0);
+        subtitle_DOM_child = subtitle_DOM.children[0];
       }
     };
 
@@ -2537,22 +2399,32 @@ if (!window['$']) {
         }
         newWidth = viewportGeometry.width;
         newHeight = viewportGeometry.height;
+        var viewerPosition = $("#" + viewerDivId).position();
         if (viewportGeometry.height == "max") {
-          newHeight = window.innerHeight - $(".controls").outerHeight() - $(".timelineSliderFiller").outerHeight() * 2 - 2;
+          newHeight = window.innerHeight - $("#" + viewerDivId + " .controls").outerHeight() - $("#" + viewerDivId + " .timelineSliderFiller").outerHeight() - viewerPosition.top * 2 - 2;
+          if (settings['composerDiv'] || settings['annotatorDiv']) {
+            // This is the height of the keyframe container
+            newHeight -= 180;
+          }
         }
         if (viewportGeometry.width == "max") {
-          newWidth = window.innerWidth * 2;
-          if (settings['composerDiv'] || settings['annotatorDiv']) {
-            newWidth -= $(".timelineSliderFiller2").outerWidth() + 19;
-          }
+          newWidth = window.innerWidth - viewerPosition.left * 2;
         }
         if (viewportGeometry.width == "max" && viewportGeometry.height == "max") {
           if (viewportGeometry.ratio != undefined) {
             newWidth = newHeight * viewportGeometry.ratio;
           }
         }
+        if (settings['composerDiv'] || settings['annotatorDiv']) {
+          if (viewportGeometry.height == "max")
+            newHeight -= visualizerGeometry.height;
+          if (viewportGeometry.width == "max")
+            newWidth -= visualizerGeometry.width;
+        }
         if (newHeight < 468) {
           newHeight = 468;
+          visualizerGeometry.height = defaultVisualizerGeometry.height;
+          visualizerGeometry.width = visualizerGeometry.height * (newWidth / newHeight);
         }
         if (newWidth < 816) {
           newWidth = 816;
@@ -2574,6 +2446,7 @@ if (!window['$']) {
       tmJSON = json;
       // Assume tiles and json are on same host
       tileRootPath = settings["url"];
+
       for (var i = 0; i < tmJSON["sizes"].length; i++) {
         playerSize = i;
         if (settings["playerSize"] && tmJSON["sizes"][i].toLowerCase() == settings["playerSize"].toLowerCase())
@@ -2590,22 +2463,19 @@ if (!window['$']) {
     var _loadInitialVideoSet = function(data) {
       datasetJSON = data;
 
-      view = _homeView();
+      onPanoLoadSuccessCallback(data, null, false);
 
       var newViewportGeometry = computeViewportGeometry(data);
-      setViewportSize(newViewportGeometry.width, newViewportGeometry.height, thisObj);
-
-      onPanoLoadSuccessCallback(data, null);
+      fitVideoToViewport(newViewportGeometry.width, newViewportGeometry.height);
 
       setupTimelapse();
 
-      if (loopPlayback)
-        $("#" + viewerDivId + " .repeat").toggleClass("inactive active");
       if (playOnLoad)
         _play();
 
       hideSpinner(viewerDivId);
 
+      // TODO: this should be in UI class
       $("#" + viewerDivId + " img " + ", #" + viewerDivId + " a").css({
         "-moz-user-select": "none",
         "-webkit-user-select": "none",
@@ -2635,6 +2505,9 @@ if (!window['$']) {
         '-ms-user-select': 'none',
         'user-select': 'none'
       });
+
+      dataPanesId = tmp.id + "_dataPanes";
+      $("#" + videoDivId).append("<div id=" + dataPanesId + "></div>");
 
       if (viewerType == "canvas") {
         canvas = document.createElement('canvas');
@@ -2674,21 +2547,133 @@ if (!window['$']) {
       // which in any browser will reslove relative paths correctly. We choose the latter to keep the message console clean.
       $('<style type="text/css">.closedHand {cursor: url("./css/cursors/closedhand.cur"), move !important;} .openHand {cursor: url("./css/cursors/openhand.cur"), move !important;} .tiledContentHolder {cursor: url("./css/cursors/openhand.cur"), move;}</style>').appendTo($('head'));
 
-      if (!showZoomControls) {
-        $("#" + viewerDivId + " .zoom").hide();
-      }
-
-      if (!showMainControls) {
-        $("#" + viewerDivId + " .controls").hide();
-        $("#" + viewerDivId + " .timelineSlider").hide();
-      }
-
-      if (!showHomeBtn) {
-        $("#" + viewerDivId + " .zoomall").hide();
-      }
-
       UTIL.ajax("json", settings["url"], "tm.json", _loadTimelapseJSON);
     }
+
+    function setupSliderHandlers(viewerDivId) {
+      $("#" + viewerDivId + " .ui-slider-handle").bind("mouseover mouseup", function() {
+        $(this).removeClass("openHand closedHand").addClass("openHand");
+      });
+
+      $("#" + viewerDivId + " .ui-slider").bind({
+        slide: function() {
+          $(this).removeClass("openHand closedHand").addClass("closedHand");
+          $("#" + viewerDivId + " .ui-slider-handle").bind("mousemove", function() {
+            $(this).removeClass("openHand closedHand").addClass("closedHand");
+          });
+        },
+        slidestop: function() {
+          $("#" + viewerDivId + " .ui-slider-handle").bind("mousemove", function() {
+            $(this).removeClass("openHand closedHand").addClass("openHand");
+          });
+        },
+        mouseover: function() {
+          $(this).removeClass("openHand closedHand");
+        }
+      });
+    }
+
+    function handlePluginVideoTagOverride() {
+      if (browserSupported && $("#1").is("EMBED")) {
+        $("#player").hide();
+        $("#time_warp_composer").hide();
+        $("#html5_overridden_message").show();
+      }
+    }
+    this.handlePluginVideoTagOverride = handlePluginVideoTagOverride;
+
+    function setViewportSize(newWidth, newHeight) {
+      thisObj.updateDimensions(newWidth, newHeight);
+
+      // Viewport
+      $("#" + videoDivId).css({
+        "width": newWidth + "px",
+        "height": newHeight + "px"
+      });
+      $(canvas).attr({
+        width: newWidth,
+        height: newHeight
+      });
+      $(canvasTmp).attr({
+        width: newWidth,
+        height: newHeight
+      });
+
+      // Annotation stage (kineticjs)
+      var annotator = thisObj.getAnnotator();
+      if (annotator) {
+        var annotationStage = annotator.getAnnotationStage();
+        if (annotationStage) {
+          var annotationLayer = annotator.getAnnotationLayer();
+          annotationStage.setSize(newWidth, newHeight);
+          annotationLayer.draw();
+        }
+      }
+
+      // Spinner
+      var spinnerCenterHeight = newHeight / 2 - $("#" + viewerDivId + " .spinner").height() / 2 + "px";
+      var spinnerCenterWidth = newWidth / 2 - $("#" + viewerDivId + " .spinner").width() / 2 + "px";
+
+      // Controls
+      $("#" + viewerDivId + " .controls").width(newWidth);
+      $("#" + viewerDivId + " .timelineSliderFiller").width(newWidth);
+      $("#" + viewerDivId + " .timelineSlider").width(newWidth);
+
+      $("#" + viewerDivId + " .spinnerOverlay").css({
+        "margin": spinnerCenterHeight + " " + spinnerCenterWidth
+      });
+
+      // Extra 2px for the borders
+      $("#" + viewerDivId + " .instructions").css({
+        "width": newWidth + 2 + "px",
+        "height": newHeight + 2 + "px"
+      });
+
+      //$("#"+timelapseViewerDivId+" .layerSlider").css({"top": newHeight+2+$("#" + timelapseViewerDivId + " .controls").height()+"px", "right": "28px"}); // extra 2px for the borders
+
+      // Wiki specific css
+      if (newWidth == 816) {//large video
+        $("#content").css({
+          "padding": "0px 0px 0px 305px"
+        });
+        $("#firstHeading").css({
+          "top": "628px"
+        });
+      } else {
+        $("#content").css({
+          "padding": "0px 0px 0px 0px"
+        });
+        $("#firstHeading").css({
+          "top": "450px"
+        });
+      }
+      // End wiki specific css
+    }
+    this.setViewportSize = setViewportSize;
+
+    var showSpinner = function(viewerDivId) {
+      UTIL.log("showSpinner");
+      $("#" + viewerDivId + " .spinnerOverlay").show();
+    };
+    this.showSpinner = showSpinner;
+
+    var hideSpinner = function(viewerDivId) {
+      UTIL.log("hideSpinner");
+      $("#" + viewerDivId + " .spinnerOverlay").hide();
+    };
+    this.hideSpinner = hideSpinner;
+
+    function getTileHostUrlPrefix() {
+      // Get the tile host URL prefixes from the JSON, or use a default if undefined
+      var prefixes = ["http://g7.gigapan.org/alpha/timelapses/"];
+      if ( typeof gigapanDatasetsJSON["tile-host-url-prefixes"] != "undefined" && $.isArray(gigapanDatasetsJSON["tile-host-url-prefixes"]) && gigapanDatasetsJSON["tile-host-url-prefixes"].length > 0) {
+        prefixes = gigapanDatasetsJSON["tile-host-url-prefixes"];
+      }
+      // Now pick one at random
+      //return prefixes[Math.floor(Math.random() * prefixes.length)];
+      return prefixes;
+    }
+    this.getTileHostUrlPrefix = getTileHostUrlPrefix;
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////
     //
