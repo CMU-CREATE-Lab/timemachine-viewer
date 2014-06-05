@@ -2642,7 +2642,7 @@ if (!window['$']) {
         initialTime = 0;
       }
 
-      // Set the initial desired date
+      // Set the initial desired date (Date object)
       desiredInitialDate = desiredDate;
 
       loadTimelapseWithPreviousViewAndTime = !!preserveCurrentViewAndTime;
