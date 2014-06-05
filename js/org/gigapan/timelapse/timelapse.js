@@ -250,6 +250,7 @@ if (!window['$']) {
     var parabolicMotionObj = org.gigapan.timelapse.parabolicMotion;
     var previousCaptureTime;
     var mediaType = null;
+    var desiredInitialDate;
 
     // animateRate in milliseconds, 40 means 25 FPS
     var animateRate = isHyperwall ? 10 : 40;
@@ -1337,7 +1338,6 @@ if (!window['$']) {
 
     var _fullScreen = function(state) {
       // TODO: Real full screen
-      console.log("Fullscreen unimplemented.");
     };
     this.fullScreen = _fullScreen;
 
@@ -1513,7 +1513,7 @@ if (!window['$']) {
             view = _normalizeView(newView);
           }
         }
-        if (newTime) {
+        if (newTime && typeof desiredInitialDate == "undefined") {
           if (didFirstTimeOnLoad) {
             _seek(newTime);
           } else {
@@ -2516,6 +2516,9 @@ if (!window['$']) {
             seekToFrame(closestFrame);
             timelapseCurrentTimeInSeconds = closestFrame / _getFps();
           } else {
+            if (desiredInitialDate) {
+              initialTime = findExactOrClosestCaptureTime(desiredInitialDate.toTimeString().substr(0, 5)) / _getFps();
+            }
             if (initialTime == 0) {
               timelapseCurrentTimeInSeconds = 0;
               // Fixes Safari/IE bug which causes the video to not be displayed if the video has no leader and the initial
@@ -2526,7 +2529,7 @@ if (!window['$']) {
                 var halfOfAFrame = 1 / _getFps() / 2;
                 _seek(halfOfAFrame);
               }
-            } else  {
+            } else {
               timelapseCurrentTimeInSeconds = initialTime;
               _seek(initialTime);
             }
@@ -2606,6 +2609,7 @@ if (!window['$']) {
       $("#" + viewerDivId).css("visibility", "visible");
     }
 
+
     this.switchLayer = function(layerNum) {
       var newIndex = layerNum * tmJSON["sizes"].length;
       datasetLayer = layerNum;
@@ -2614,7 +2618,7 @@ if (!window['$']) {
       loadTimelapseCallback(tmJSON);
     };
 
-    var loadTimelapse = function(url, desiredView, desiredTime, preserveCurrentViewAndTime) {
+    var loadTimelapse = function(url, desiredView, desiredTime, preserveCurrentViewAndTime, desiredDate) {
       showSpinner(viewerDivId);
 
       settings["url"] = url;
@@ -2637,6 +2641,9 @@ if (!window['$']) {
       } else {
         initialTime = 0;
       }
+
+      // Set the initial desired date
+      desiredInitialDate = desiredDate;
 
       loadTimelapseWithPreviousViewAndTime = !!preserveCurrentViewAndTime;
 
