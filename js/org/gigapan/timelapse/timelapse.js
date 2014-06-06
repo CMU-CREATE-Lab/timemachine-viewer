@@ -251,6 +251,7 @@ if (!window['$']) {
     var previousCaptureTime;
     var mediaType = null;
     var desiredInitialDate;
+    var onNewTimelapseLoadCompleteCallBack;
 
     // animateRate in milliseconds, 40 means 25 FPS
     var animateRate = isHyperwall ? 10 : 40;
@@ -2554,6 +2555,8 @@ if (!window['$']) {
           }
 
           hideSpinner(viewerDivId);
+          if (typeof onNewTimelapseLoadCompleteCallBack === "function")
+            onNewTimelapseLoadCompleteCallBack();
         }
       });
 
@@ -2618,7 +2621,7 @@ if (!window['$']) {
       loadTimelapseCallback(tmJSON);
     };
 
-    var loadTimelapse = function(url, desiredView, desiredTime, preserveCurrentViewAndTime, desiredDate) {
+    var loadTimelapse = function(url, desiredView, desiredTime, preserveCurrentViewAndTime, desiredDate, onLoadCompleteCallBack) {
       showSpinner(viewerDivId);
 
       settings["url"] = url;
@@ -2644,6 +2647,9 @@ if (!window['$']) {
 
       // Set the initial desired date (Date object)
       desiredInitialDate = desiredDate;
+
+      // Set the call back
+      onNewTimelapseLoadCompleteCallBack = onLoadCompleteCallBack;
 
       loadTimelapseWithPreviousViewAndTime = !!preserveCurrentViewAndTime;
 
