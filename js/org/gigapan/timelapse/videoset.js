@@ -121,16 +121,16 @@ if (!window['$']) {
   // instead of "new RegExp()" for better performance (see https://developer.mozilla.org/en/JavaScript/Guide/Regular_Expressions)
   var SPLIT_VIDEO_FRAGMENT_URL_PATTERN = /_(\d+).(mp4|webm)(?:\?time=[0-9]+)?$/i;
 
-  org.gigapan.timelapse.Videoset = function(viewerDivId, videoDivId, timelapse, canvasId, canvasTmpId) {
+  org.gigapan.timelapse.Videoset = function(viewerDivId, videoDivId, timelapse, canvasId, blackFrameDetectionCanvasId) {
     var mediaType = UTIL.getMediaType();
     var viewerType = UTIL.getViewerType();
     var videoDiv = document.getElementById(videoDivId);
     if (viewerType == "canvas") {
       var canvas = document.getElementById(canvasId);
       var canvasContext = canvas.getContext('2d');
-      var canvasTmp = document.getElementById(canvasTmpId);
-      if (canvasTmp) {
-        var canvasTmpContext = canvasTmp.getContext('2d');
+      var blackFrameDetectionCanvas = document.getElementById(blackFrameDetectionCanvasId);
+      if (blackFrameDetectionCanvas) {
+        var blackFrameDetectionCanvasContext = blackFrameDetectionCanvas.getContext('2d');
       }
     }
     var isStatusLoggingEnabled = false;
@@ -169,20 +169,26 @@ if (!window['$']) {
 
     var isIE = UTIL.isIE();
     var isIE9 = UTIL.isIE9();
-    var isOpera = UTIL.isOpera();
+    var isOperaLegacy = UTIL.isOperaLegacy();
     var isChrome = UTIL.isChrome();
     var isSafari = UTIL.isSafari();
     var isFirefox = UTIL.isFirefox();
     var doChromeSeekableHack = timelapse.doChromeSeekableHack();
     var doChromeBufferedHack = timelapse.doChromeBufferedHack();
+    var doChromeCacheBreaker = timelapse.doChromeCacheBreaker();
     var spinnerTimeoutId;
     var videoIsSeekingIntervalCheck;
     var browserSupportsPlaybackRate = UTIL.playbackRateSupported();
+    var activeVideoSrcList = {};
 
     ////////////////////////
     //
     // Public methods
     //
+    this.getCurrentVideoId = function() {
+      return id;
+    };
+
     this.getCurrentActiveVideo = function() {
       return activeVideos[currentVideoId];
     };
@@ -232,10 +238,11 @@ if (!window['$']) {
     };
 
     this.setLeader = function(newLeader) {
+      timeOffset = 0;
       var currentTime = _getCurrentTime();
       // Subtract 0 to force this to be a number
       leader = newLeader - 0;
-      _seek(currentTime);
+      //_seek(currentTime);
     };
 
     this.getLeader = function() {
@@ -351,8 +358,24 @@ if (!window['$']) {
           return this.currentTime;
         };
         video.setCurrentTime = function(newTime) {
-          this.currentTime = newTime;
+          // If we rapidly zoom, then we may have old lingering videos that we attempt to seek on.
+          // Make sure we only seek the current video.
+          if (this.id == currentVideoId) {
+            this.currentTime = newTime;
+          }
         };
+      }
+
+      // New workaround for the Chrome cache loading bug.
+      // https://code.google.com/p/chromium/issues/detail?id=31014
+      if (isChrome && doChromeCacheBreaker) {
+        var creationTime = (new Date()).getTime();
+        if (activeVideoSrcList[src]) {
+          UTIL.log("Video found in local storage, adding cache breaker: " + src);
+          src = src + "?time=" + creationTime
+        }
+        activeVideoSrcList[src] = creationTime;
+        window.localStorage.setItem('activeVideoSrcList', JSON.stringify(activeVideoSrcList));
       }
 
       //UTIL.log(getVideoSummaryAsString(video));
@@ -383,8 +406,8 @@ if (!window['$']) {
           target: video
         });
       }
-      if (isOpera) {
-        // Opera seems to queue too many videos and then gets stuck in the stalling state.
+      if (isOperaLegacy) {
+        // Opera <= 12 seems to queue too many videos and then gets stuck in the stalling state.
         // This ensures that we remove old videos that are no longer necessary, specifically
         // *really* old ones that never got removed for some reason.
         if (viewerType == "canvas") {
@@ -396,7 +419,7 @@ if (!window['$']) {
             }
           }
         }
-        // Videos in Opera often seem to get stuck in a state of always seeking.
+        // Videos in Opera <= 12 often seem to get stuck in a state of always seeking.
         // This will ensure that if we are stuck, we reload the video.
         video.addEventListener('seeking', videoSeeking, false);
       }
@@ -405,13 +428,18 @@ if (!window['$']) {
       video.bwLastBuf = 0;
       video.bandwidth = 0;
 
-      if (isChrome && (doChromeSeekableHack || doChromeBufferedHack)) {
+      // 20140506: Chrome buffered workaround replaced with new method
+      // utilizing window.localStorage. The seekable case left in
+      // just in case the issue still exists in Chrome. From some testing,
+      // it is not clear whether the bug still exists in situations of
+      // low bandwidth or high tile server load.
+      if (isChrome && (doChromeSeekableHack /*|| doChromeBufferedHack*/)) {
         var check;
         var timeout = 2000;
         check = function() {
           UTIL.log("check load for video(" + video.id + ")");
           UTIL.log("readyState: " + video.readyState);
-          if ((video.seekable.length == 0 || video.buffered.length == 0) && activeVideos[video.id] == video) {
+          if ((video.seekable.length == 0 /*|| video.buffered.length == 0*/) && activeVideos[video.id] == video) {
             // Ouch.  A brand new bug in Chrome 15 (apparently) causes videos to never load
             // if they've been loaded recently and are being loaded again now.
             // It's pretty weird, but this disgusting code seems to work around the problem.
@@ -421,9 +449,8 @@ if (!window['$']) {
             UTIL.log("Chrome bug detected, adding cache buster");
             video.setAttribute('src', src + "?time=" + (new Date().getTime()));
             video.load();
-            if (advancing) {
+            if (advancing)
               video.play();
-            }
           }
         };
         setTimeout(check, timeout);
@@ -466,6 +493,7 @@ if (!window['$']) {
 
         video.style.width = geometry.width + "px";
         video.style.height = geometry.height + "px";
+        video.geometry = geometry;
       } else if (viewerType == "canvas") {
         video.geometry = geometry;
         drawToCanvas(video);
@@ -474,7 +502,23 @@ if (!window['$']) {
     this.repositionVideo = _repositionVideo;
 
     var stopStreaming = function(video) {
+      if (isChrome && doChromeCacheBreaker) {
+        delete activeVideoSrcList[video.src];
+        UTIL.log("Video deleted from local storage: " + video.src);
+        window.localStorage.setItem('activeVideoSrcList', JSON.stringify(activeVideoSrcList));
+      }
       video.src = "";
+    };
+
+    var clearOutVideoLocalStore = function(checkTimestamps) {
+      var currentTimeInMs = (new Date()).getTime();
+      for (var videoSrc in activeVideoSrcList) {
+        // Check if >= 1 day or if we just need to delete the item
+        if ((checkTimestamps && (currentTimeInMs - activeVideoSrcList[videoSrc] >= 86400000)) || typeof(checkTimestamps) !== 'boolean') {
+          delete activeVideoSrcList[videoSrc];
+        }
+      }
+      window.localStorage.setItem('activeVideoSrcList', JSON.stringify(activeVideoSrcList));
     };
 
     var garbageCollect = function() {
@@ -686,8 +730,8 @@ if (!window['$']) {
       // Safari *can* go slower than -2x, but playback becomes questionable and sometimes stops entirely
       if (isSafari)
         return 0.0 == rate || (0.5 <= Math.abs(rate) && Math.abs(rate) <= 2.0);
-      // Opera does not support rates slower than 1x
-      if (isOpera)
+      // Opera <= 12 does not support rates slower than 1x
+      if (isOperaLegacy)
         return 0.0 == rate || 1.0 <= rate;
       // Firefox bounds rates to be between 0.25x and 5x
       if (isFirefox)
@@ -746,7 +790,6 @@ if (!window['$']) {
         if (!eventListeners[eventName]) {
           eventListeners[eventName] = [];
         }
-
         eventListeners[eventName].push(listener);
       }
     };
@@ -985,7 +1028,7 @@ if (!window['$']) {
     var videoSeeking = function(event) {
       window.clearInterval(videoIsSeekingIntervalCheck);
       videoIsSeekingIntervalCheck = window.setInterval(function() {
-        UTIL.error("We're still seeking after 250ms, so let's reload the video. This is an Opera only workaround.");
+        UTIL.error("We're still seeking after 250ms, so let's reload the video. This is an Opera <= 12 only workaround.");
         event.target.load();
       }, 250);
     };
@@ -1324,11 +1367,11 @@ if (!window['$']) {
       if (video.active && video.ready && !video.seeking && video.readyState >= 2 && video.canDraw == true) {
         // Black frame detection
         var videoGeometry = video.geometry;
-        if (canvasTmp) {
-          canvasTmpContext.clearRect(0, 0, canvasTmp.width, canvasTmp.height);
-          canvasTmpContext.drawImage(video, videoGeometry.left, videoGeometry.top, videoGeometry.width, videoGeometry.height);
+        if (blackFrameDetectionCanvas) {
+          blackFrameDetectionCanvasContext.clearRect(0, 0, blackFrameDetectionCanvas.width, blackFrameDetectionCanvas.height);
+          blackFrameDetectionCanvasContext.drawImage(video, videoGeometry.left, videoGeometry.top, videoGeometry.width, videoGeometry.height);
 
-          var image = canvasTmpContext.getImageData(0, 0, canvasTmp.width, canvasTmp.height);
+          var image = blackFrameDetectionCanvasContext.getImageData(0, 0, blackFrameDetectionCanvas.width, blackFrameDetectionCanvas.height);
           var imgData = image.data;
           var len = imgData.length;
 
@@ -1372,6 +1415,15 @@ if (!window['$']) {
     //
     // Constructor code
     //
+
+    // Clear out the local storage related to videos loaded.
+    // This is a workaround for a Chrome cache bug.
+    // See new code (and bug report link) in _addVideo()
+    if (isChrome && doChromeCacheBreaker) {
+      activeVideoSrcList = JSON.parse(window.localStorage.getItem('activeVideoSrcList')) || {};
+      $(window).on('beforeunload', clearOutVideoLocalStore);
+      clearOutVideoLocalStore(true)
+    }
 
     this.setStatusLoggingEnabled(false);
   };

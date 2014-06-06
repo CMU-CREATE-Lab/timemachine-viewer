@@ -73,7 +73,7 @@ org.gigapan.timelapse.UrlEncoder = function(encoded) {
     }
     // Terminating character is always in the range CODE[0 <= i < SINGLE_CHAR_THRESH]
     this.encoded += this.CODE[x];
-  }
+  };
 
   // Decodes unsigned integer using variable-length encoding
   // Returns null if invalid encoding
@@ -95,7 +95,7 @@ org.gigapan.timelapse.UrlEncoder = function(encoded) {
       decoded += (index - this.SINGLE_CHAR_THRESH) * significance;
       significance *= (this.CODE.length - this.SINGLE_CHAR_THRESH);
     }
-  }
+  };
 
   // Encodes unsigned integer in range 0 <= x < (64 ^ nchars) using fixed-length little-endian base-64 encoding.
   this.write_uint_fixed = function(nchars, x) {
@@ -110,7 +110,7 @@ org.gigapan.timelapse.UrlEncoder = function(encoded) {
       this.encoded += this.CODE[x % this.CODE.length];
       x = Math.floor(x / this.CODE.length);
     }
-  }
+  };
 
   // Decodes unsigned integer in range 0 <= x < (64 ^ nchars) using fixed-length encoding.
   // Returns null if invalid encoding.
@@ -130,37 +130,37 @@ org.gigapan.timelapse.UrlEncoder = function(encoded) {
     }
     this.encoded = this.encoded.substr(nchars);
     return decoded;
-  }
+  };
 
   // Write unsigned fixed-point number, with decimal_digits digits of precision (in base 10) after the decimal
   this.write_udecimal = function(num, decimal_digits) {
     return this.write_uint(Math.round(num * Math.pow(10, decimal_digits)));
-  }
+  };
 
   // Read unsigned fixed-point number, with decimal_digits digits of precision (in base 10) after the decimal
   this.read_udecimal = function(decimal_digits) {
     return this.read_uint() / Math.pow(10, decimal_digits);
-  }
+  };
 
   // Lat is in the range -90 to 90, and is stored with 5 digits after the decimal, e.g. 89.76543
   this.write_lat = function(lat) {
     this.write_uint_fixed(4, Math.round((lat + 90) * 8e4));
-  }
+  };
 
   this.read_lat = function() {
     return this.read_uint_fixed(4) / 8e4 - 90;
-  }
+  };
 
   // Lon is in the range -180 to 180, and is stored with 5 digits after the decimal,
   // with the limitation that the last digit is rounded to the nearest of (0,2,4,5,6,8).
   // E.g. 179.65432
   this.write_lon = function(lon) {
     this.write_uint_fixed(4, Math.round((lon + 180) * 4e4));
-  }
+  };
 
   this.read_lon = function() {
     return this.read_uint_fixed(4) / 4e4 - 180;
-  }
+  };
 
   // Strings are URL-encoded and terminated with "_".  It supports unicode strings.
   this.string_delimeter = "_";
@@ -176,7 +176,7 @@ org.gigapan.timelapse.UrlEncoder = function(encoded) {
       }
     }
     this.encoded += this.string_delimeter;
-  }
+  };
 
   // Decodes string.  Returns null if invalid encoding
   // Any variable that stores the return value from this method should be marked as unsafe,
@@ -190,5 +190,5 @@ org.gigapan.timelapse.UrlEncoder = function(encoded) {
     var decoded = decodeURIComponent(this.encoded.substr(0, delim));
     this.encoded = this.encoded.substr(delim + 1);
     return decoded;
-  }
-}
+  };
+};

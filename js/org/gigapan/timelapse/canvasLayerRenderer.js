@@ -134,7 +134,7 @@ if (!window['$']) {
       var elemYPosPlusRadius = elementAttributes.y + radius;
       // Distance formula: sqrt((x1-x2)^2+(y1-y2)^2)
       // Use only multiplication for better performance.
-      return ((mouseX - elemXPosPlusRadius) * (mouseX - elemXPosPlusRadius) + (mouseY - elemYPosPlusRadius) * (mouseY - elemYPosPlusRadius) < radius*radius)
+      return ((mouseX - elemXPosPlusRadius) * (mouseX - elemXPosPlusRadius) + (mouseY - elemYPosPlusRadius) * (mouseY - elemYPosPlusRadius) < radius*radius);
       //var distance = Math.sqrt(Math.pow(mouseX - (element.attrs.x + radius), 2) + Math.pow(mouseY - (element.attrs.y + radius), 2));
       //return distance <= radius;
     }

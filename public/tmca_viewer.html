@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8"/>
+
+    <link href="css/snaplapse.css" rel="stylesheet" type="text/css"/>
+    <link href="css/jquery-ui/smoothness/jquery-ui.custom.css" rel="stylesheet" type="text/css"/>
+    <link href="css/defaultUI.css" rel="stylesheet" type="text/css"/>
+    <link href="css/visualizer.css" rel="stylesheet" type="text/css"/>
+    <link href="css/annotator.css" rel="stylesheet" type="text/css"/>
+
+    <script src="js/jquery/jquery.min.js" type="text/javascript"></script>
+    <script src="js/jquery/jquery-ui.custom.min.js" type="text/javascript"></script>
+    <script src="js/jquery/plugins/mouse/jquery.mousewheel.min.js" type="text/javascript"></script>
+    <script src="js/kinetic/kinetic.min.js" type="text/javascript"></script>
+    <script src="js/org/gigapan/util.js" type="text/javascript"></script>
+    <script src="js/org/gigapan/timelapse/videoset.js" type="text/javascript"></script>
+    <script src="js/org/gigapan/timelapse/parabolicMotion.js" type="text/javascript"></script>
+    <script src="js/org/gigapan/timelapse/timelapse.js" type="text/javascript"></script>
+    <script src="js/Math.uuid.js" type="text/javascript"></script>
+    <script src="js/org/gigapan/timelapse/snaplapse.js" type="text/javascript"></script>
+    <script src="js/org/gigapan/timelapse/snaplapseViewer.js" type="text/javascript"></script>
+    <script src="js/org/gigapan/timelapse/mercator.js" type="text/javascript"></script>
+    <script src="js/org/gigapan/timelapse/visualizer.js" type="text/javascript"></script>
+    <script src="js/org/gigapan/timelapse/annotator.js" type="text/javascript"></script>
+    <script src="js/org/gigapan/timelapse/defaultUI.js" type="text/javascript"></script>
+    <script src="js/org/gigapan/timelapse/urlEncoder.js" type="text/javascript"></script>
+    <script src="ajax_includes.js" type="text/javascript"></script>
+    <script src="template_includes.js" type="text/javascript"></script>
+
+    <script type="text/javascript">
+      jQuery.support.cors = true;
+
+      var url = "./";
+
+      function init() {
+        var settings = {
+          url: url,
+          enableEditor: true,
+          onTimeMachinePlayerReady: function(viewerDivId) {
+          },
+          disableTourLooping: true,
+          mediaType: ".mp4",
+          showFullScreenBtn: false,
+          useThumbnailServer: false,
+          showEditorModeButton: false
+        };
+        timelapse = new org.gigapan.timelapse.Timelapse("timeMachine", settings);
+      }
+
+      $(init);
+    </script>
+  </head>
+  <body>
+    <div id="timeMachine"></div>
+  </body>
+</html>

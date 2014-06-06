@@ -97,12 +97,11 @@ if (!org.gigapan.timelapse.Timelapse) {
     // Class variables
     //
     var videoset = timelapse.getVideoset();
-    var viewerType = UTIL.getViewerType();
-    var composerDivId = snaplapse.getComposerDivId();
-    var visualizerDivId = composerDivId + "_visualizer";
+    var timeMachineDivId = timelapse.getTimeMachineDivId();
+    var visualizerDivId = timeMachineDivId + "_visualizer";
     var videoDivID = timelapse.getVideoDivId();
     var viewerDivId = timelapse.getViewerDivId();
-    var navigationMap_drawImage = {
+    var navigationMapGeometry = {
       "x": undefined,
       "y": undefined,
       "width": undefined,
@@ -110,32 +109,18 @@ if (!org.gigapan.timelapse.Timelapse) {
     };
     var navWidth = visualizerGeometry.width;
     var navHeight = visualizerGeometry.height;
+
     // Variables for all visualizer elements
-    var visualizer;
     var navigationMap_container;
     var $navigationMap_container;
     var navigationMap;
-    var tagsTimewarp;
-    var $tagsTimewarp;
     var tagsNavigation;
     var $tagsNavigation;
-    var timewarpMap;
-    var timewarpMap_panoVideo;
-    var timewarpMap_container;
-    var $timewarpMap_container;
-    var $toggleMapCheckbox;
-    var $toggleMapLabel;
     var $hideMapCheckbox;
     var $hideMapLabel;
     var panoVideo;
+
     // Variables for kinetic JS
-    var timewarpMap_stage;
-    var timewarpMap_layer_navigation;
-    var timewarpMap_box;
-    var timewarpMap_circle;
-    var timewarpMap_mask;
-    var timewarpMap_layer_mask;
-    var timewarpMap_layer_tag;
     var navigationMap_layer_background;
     var navigationMap_layer_mask;
     var navigationMap_layer_navigation;
@@ -145,40 +130,31 @@ if (!org.gigapan.timelapse.Timelapse) {
     var navigationMap_mask;
     var navigationMap_box;
     var navigationMap_circle;
+
     // Variables for attributes
-    var timewarpMap_width;
-    var timewarpMap_height;
     var navigationMap_width;
     var navigationMap_height;
     var tagsNavigation_position;
-    var tagsTimewarp_position;
     var isHideNavigationMap = false;
-    // Parameters for tagBot and tagRight
+    var panoViewBox;
+    var contextMapScale;
+
+    // Parameters for context map
+    var defaultTagRGB = "255,0,0";
     var tagOpacity = 0.5;
     var maskOpacity = 0.8;
-    var strokeOpacity = 0.8;
     var dotsPerSecond = 8;
-    // Parameters for navigation map
     var navigationMapBox_borderWidth = 1;
     var navigationMapCircle_borderWidth = 1;
-    var navigationMap_box_strokeOpacity = 0.8;
+    var navigationMap_box_strokeOpacity = 0.5;
     var navigationMap_circle_radius = 5;
-    var navigationMap_circle_strokeOpacity = 0.8;
+    var navigationMap_circle_strokeOpacity = 0.7;
+    var navigationMap_circle_fillOpacity = 0.6;
     var navigationMap_tag_strokeWidth = 1;
     var navigationMap_tag_strokeOpacity = 0.7;
+    var navigationMap_tag_fillOpacity = 0.4;
     var navigationMap_line_strokeOpacity = 0.4;
     var navigationMap_line_strokeWidth = 2;
-    // Parameters for timewarp map
-    var timewarpMapBox_borderWidth = 1;
-    var timewarpMapCircle_borderWidth = 1;
-    var timewarpMap_box_strokeOpacity = 0.8;
-    var timewarpMap_circle_radius = 5;
-    var timewarpMap_circle_strokeOpacity = 0.8;
-    var timewarpMap_tag_strokeWidth = 1;
-    var timewarpMap_tag_fillOpacity = 0.5;
-    var timewarpMap_tag_strokeOpacity = 0.7;
-    var timewarpMap_line_strokeOpacity = 0.4;
-    var timewarpMap_line_strokeWidth = 2.5;
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////
     //
@@ -188,58 +164,21 @@ if (!org.gigapan.timelapse.Timelapse) {
     // Create snaplapse visualizer elements
     var createSnaplapseVisualizerElements = function() {
       // Create div elements
-      visualizer = createAnElement("div", "", visualizerDivId);
+      var $visualizer = $('<div class="visualizer"></div>');
       navigationMap_container = createAnElement("div", "navigationMap_container", visualizerDivId + "_navigationMap_container");
       navigationMap = createAnElement("div", "navigationMap", visualizerDivId + "_navigationMap");
-      tagsTimewarp = createAnElement("div", "tagsTimewarp", visualizerDivId + "_tagsTimewarp");
       tagsNavigation = createAnElement("div", "tagsNavigation", visualizerDivId + "_tagsNavigation");
-      timewarpMap = createAnElement("div", "timewarpMap", visualizerDivId + "_timewarpMap");
-      timewarpMap_panoVideo = createAnElement("div", "timewarpMap_panoVideo", visualizerDivId + "_timewarpMap_panoVideo");
-      timewarpMap_container = createAnElement("div", "timewarpMap_container", visualizerDivId + "_timewarpMap_container");
-      $toggleMapCheckbox = $('<input type="checkbox" class="toggleMapCheckbox"/>');
-      $toggleMapLabel = $('<label class="toggleMapLabel" title="Toggle map"></label>');
-      $toggleMapCheckbox.attr("id", viewerDivId + "_toggleMapCheckbox");
-      $toggleMapLabel.attr("for", viewerDivId + "_toggleMapCheckbox");
       $hideMapCheckbox = $('<input type="checkbox" class="hideMapCheckbox"/>');
       $hideMapLabel = $('<label class="hideMapLabel" title="Hide/Show map"></label>');
-      $hideMapCheckbox.attr("id", viewerDivId + "_hideMapCheckbox");
-      $hideMapLabel.attr("for", viewerDivId + "_hideMapCheckbox");
+      $hideMapCheckbox.attr("id", timeMachineDivId + "_hideMapCheckbox");
+      $hideMapLabel.attr("for", timeMachineDivId + "_hideMapCheckbox");
       // jQuery
       $navigationMap_container = $(navigationMap_container);
-      $timewarpMap_container = $(timewarpMap_container);
-      $tagsTimewarp = $(tagsTimewarp);
       $tagsNavigation = $(tagsNavigation);
       // Append elements
       $navigationMap_container.append(navigationMap, tagsNavigation);
-      $timewarpMap_container.append(timewarpMap_panoVideo, timewarpMap, tagsTimewarp);
-      $("#" + viewerDivId).append(navigationMap_container, timewarpMap_container, $toggleMapCheckbox, $toggleMapLabel, $hideMapCheckbox, $hideMapLabel);
-      $(document.body).append(visualizer);
-      // Create toggle map button
-      $toggleMapCheckbox.button({
-        icons: {
-          secondary: "ui-icon-newwin"
-        },
-        text: false
-      }).change(function(event) {
-        event.stopPropagation();
-        if ($toggleMapCheckbox.is(":checked")) {
-          $toggleMapCheckbox.button({
-            icons: {
-              secondary: "ui-icon-minus"
-            }
-          });
-          displayTimewarpMap();
-          $navigationMap_container.stop(true, true).fadeOut(200);
-        } else {
-          $toggleMapCheckbox.button({
-            icons: {
-              secondary: "ui-icon-newwin"
-            }
-          });
-          hideTimewarpMap();
-          $navigationMap_container.stop(true, true).fadeIn(200);
-        }
-      });
+      $visualizer.append(navigationMap_container, $hideMapCheckbox, $hideMapLabel);
+      $("#" + viewerDivId).append($visualizer);
       // Create hide/show map button
       $hideMapCheckbox.button({
         icons: {
@@ -254,6 +193,7 @@ if (!org.gigapan.timelapse.Timelapse) {
               secondary: "ui-icon-arrowthick-1-sw"
             }
           });
+          UTIL.addGoogleAnalyticEvent('button', 'click', 'viewer-hide-context-map');
         } else {
           showNavigationMap();
           $hideMapCheckbox.button({
@@ -261,33 +201,25 @@ if (!org.gigapan.timelapse.Timelapse) {
               secondary: "ui-icon-arrowthick-1-ne"
             }
           });
+          UTIL.addGoogleAnalyticEvent('button', 'click', 'viewer-show-context-map');
         }
       });
       // Set position and size
-      var playerWidth = $("#" + videoDivID).outerWidth();
-      var playerHeight = $("#" + videoDivID).outerHeight();
       $navigationMap_container.css({
         "right": "20px",
         "top": "20px",
         "height": navHeight + "px",
         "width": navWidth + "px"
       });
-      $timewarpMap_container.css({
-        "width": (playerWidth - 2) + "px",
-        "height": (playerHeight - 2) + "px"
-      });
       // Get attributes
-      timewarpMap_width = $(timewarpMap).width();
-      timewarpMap_height = $(timewarpMap).height();
       navigationMap_width = $(navigationMap).width();
       navigationMap_height = $(navigationMap).height();
       tagsNavigation_position = $(tagsNavigation).position();
-      tagsTimewarp_position = $(tagsTimewarp).position();
       // Initialize kineticJS for navigation map
       navigationMap_stage = new Kinetic.Stage({
         container: navigationMap.id,
         width: navigationMap_width,
-        height: navigationMap_height,
+        height: navigationMap_height
       });
       navigationMap_layer_background = new Kinetic.Layer();
       navigationMap_layer_mask = new Kinetic.Layer();
@@ -304,7 +236,7 @@ if (!org.gigapan.timelapse.Timelapse) {
       // Initialize kineticJS for navigation map background layer
       navigationMap_background = new Kinetic.Image({
         x: 0,
-        y: 0,
+        y: 0
       });
       navigationMap_layer_background.add(navigationMap_background);
       navigationMap_layer_background.draw();
@@ -314,7 +246,7 @@ if (!org.gigapan.timelapse.Timelapse) {
         y: 0,
         width: 0,
         height: 0,
-        stroke: "rgba(255,255,255,0)",
+        stroke: "rgb(" + defaultTagRGB + ")",
         opacity: navigationMap_box_strokeOpacity,
         strokeWidth: navigationMapBox_borderWidth
       });
@@ -322,8 +254,8 @@ if (!org.gigapan.timelapse.Timelapse) {
         x: 0,
         y: 0,
         radius: navigationMap_circle_radius,
-        fill: "rgba(255,255,255,0)",
-        stroke: "rgba(255,255,255,0)",
+        fill: "rgba(" + defaultTagRGB + "," + navigationMap_circle_strokeOpacity + ")",
+        stroke: "rgba(" + defaultTagRGB + "," + navigationMap_circle_fillOpacity + ")",
         strokeWidth: navigationMapCircle_borderWidth
       });
       navigationMap_layer_navigation.add(navigationMap_circle);
@@ -343,62 +275,6 @@ if (!org.gigapan.timelapse.Timelapse) {
       });
       navigationMap_layer_mask.add(navigationMap_mask);
       navigationMap_layer_mask.draw();
-      // Initialize kineticJS for timewarp map
-      timewarpMap_stage = new Kinetic.Stage({
-        container: timewarpMap.id,
-        width: timewarpMap_width,
-        height: timewarpMap_height
-      });
-      timewarpMap_layer_navigation = new Kinetic.Layer();
-      timewarpMap_layer_mask = new Kinetic.Layer();
-      timewarpMap_layer_tag = new Kinetic.Layer();
-      timewarpMap_stage.add(timewarpMap_layer_mask);
-      timewarpMap_stage.add(timewarpMap_layer_navigation);
-      timewarpMap_stage.add(timewarpMap_layer_tag);
-      timewarpMap_layer_mask.setZIndex(1);
-      timewarpMap_layer_navigation.setZIndex(3);
-      timewarpMap_layer_tag.setZIndex(5);
-      // Initialize kineticJS for timewarp map navigation layer
-      timewarpMap_box = new Kinetic.Rect({
-        x: 0,
-        y: 0,
-        width: 0,
-        height: 0,
-        stroke: "rgba(255,255,255)",
-        opacity: timewarpMap_box_strokeOpacity,
-        strokeWidth: timewarpMapBox_borderWidth
-      });
-      timewarpMap_circle = new Kinetic.Circle({
-        x: 0,
-        y: 0,
-        radius: timewarpMap_circle_radius,
-        fill: "rgba(255,255,255,0)",
-        stroke: "rgba(255,255,255,0)",
-        strokeWidth: timewarpMapCircle_borderWidth
-      });
-      timewarpMap_layer_navigation.add(timewarpMap_circle);
-      timewarpMap_layer_navigation.add(timewarpMap_box);
-      timewarpMap_layer_navigation.draw();
-      // Initialize kineticJS for timewarp map mask layer
-      timewarpMap_mask = new Kinetic.Polygon({
-        points: [{
-          "x": 0,
-          "y": 0
-        }, {
-          "x": 0,
-          "y": 0
-        }],
-        fill: "rgb(255,255,255)",
-        opacity: maskOpacity
-      });
-      timewarpMap_layer_mask.add(timewarpMap_mask);
-      timewarpMap_layer_mask.draw();
-      // Set event listener
-      $timewarpMap_container.mousewheel(timelapse.handleMousescrollEvent);
-      $timewarpMap_container.mousedown(function(event) {
-        timelapse.handleMousedownEvent(event, true);
-      });
-      $timewarpMap_container.dblclick(timelapse.handleDoubleClick_warp);
     };
 
     // Create an element
@@ -413,7 +289,7 @@ if (!org.gigapan.timelapse.Timelapse) {
       //console.log(kineticLayer.getChildren());
     };
 
-    // Draw a Catmull-Rom spline on the canvas (Cardinal spline with tension=1)
+    // (Unused) Draw a Catmull-Rom spline on the canvas (Cardinal spline with tension=1)
     var drawSpline = function(kineticLayer, pStart, pEnd, lineW, lineColor, id, name) {
       var controlPoint = {
         x: (pStart.x + pEnd.x) / 3,
@@ -447,9 +323,9 @@ if (!org.gigapan.timelapse.Timelapse) {
     // Compute the span for dash lines on the visualizer
     var computeDashSpan = function(keyframe, lineW, lineLength) {
       var loopTimes = typeof keyframe['loopTimes'] == 'undefined' ? 0 : keyframe['loopTimes'];
-      var waitStart = typeof keyframe['waitStart'] == 'undefined' ? 0 : keyframe['waitStart'];
-      var waitEnd = typeof keyframe['waitEnd'] == 'undefined' ? 0 : keyframe['waitEnd'];
-      var duration_withoutWaiting = keyframe['duration'] - loopTimes * (waitStart + waitEnd);
+      var startDwell = timelapse.getStartDwell();
+      var endDwell = timelapse.getEndDwell();
+      var duration_withoutWaiting = keyframe['duration'] - loopTimes * (startDwell + endDwell);
       var dashSpan;
       if (duration_withoutWaiting == 0) {
         dashSpan = lineW / 1.5;
@@ -490,7 +366,7 @@ if (!org.gigapan.timelapse.Timelapse) {
           fill: arrowHeadColor,
           strokeWidth: 0,
           id: id + "_arrowHead",
-          name: name + "_arrowHead",
+          name: name + "_arrowHead"
         });
         kineticLayer.add(arrowHead);
       }
@@ -515,7 +391,7 @@ if (!org.gigapan.timelapse.Timelapse) {
       var connection = {
         "pEnd": {
           "x": undefined,
-          "y": undefined,
+          "y": undefined
         },
         "tagEndId": undefined,
         "color": undefined
@@ -545,11 +421,11 @@ if (!org.gigapan.timelapse.Timelapse) {
       var connection = {
         "pStart": {
           "x": undefined,
-          "y": undefined,
+          "y": undefined
         },
         "pEnd": {
           "x": undefined,
-          "y": undefined,
+          "y": undefined
         },
         "tagStartId": undefined,
         "tagEndId": undefined,
@@ -579,7 +455,7 @@ if (!org.gigapan.timelapse.Timelapse) {
       return connection;
     };
 
-    // Draw a polygon on the canvas
+    // (Unused) Draw a polygon on the canvas
     var drawPolygon_4Point = function(kineticLayer, p1, p2, p3, p4, color1, color2, grad_direction) {
       var gradientStartPoint, gradientEndPoint;
       if (grad_direction == "x") {
@@ -606,7 +482,7 @@ if (!org.gigapan.timelapse.Timelapse) {
         fillLinearGradientStartPoint: [gradientStartPoint.x, gradientStartPoint.y],
         fillLinearGradientEndPoint: [gradientEndPoint.x, gradientEndPoint.y],
         fillLinearGradientColorStops: [0, color1, 1, color2],
-        strokeWidth: 0,
+        strokeWidth: 0
       });
       // Add the shape to the layer
       kineticLayer.add(linearGradPolygon);
@@ -638,7 +514,8 @@ if (!org.gigapan.timelapse.Timelapse) {
       tagElement.addEventListener("click", function(event) {
         var snaplapseID = event.target.id.match(/[a-zA-Z0-9]+(_snaplapse_keyframe_)[a-zA-Z0-9]+/);
         snaplapseID = snaplapseID[0];
-        UTIL.selectSelectableElements($("#" + composerDivId + " .snaplapse_keyframe_list"), $("#" + snaplapseID));
+        var keyframeId = snaplapseID.split("_")[3];
+        snaplapse.getSnaplapseViewer().selectAndGo($("#" + snaplapseID), keyframeId);
       }, false);
       tagElement.addEventListener("mouseover", function(event) {
         var tagColor = event.target.style.backgroundColor;
@@ -659,16 +536,42 @@ if (!org.gigapan.timelapse.Timelapse) {
     var hideNavigationMap = function() {
       isHideNavigationMap = true;
       $navigationMap_container.stop(true, true).hide(200);
-      if (!$toggleMapCheckbox.is(":checked"))
-        $toggleMapLabel.stop(true, true).fadeOut(200);
     };
 
     var showNavigationMap = function() {
       isHideNavigationMap = false;
-      if (!$toggleMapCheckbox.is(":checked")) {
-        $navigationMap_container.stop(true, true).show(200);
-        $toggleMapLabel.stop(true, true).fadeIn(200);
-      }
+      $navigationMap_container.stop(true, true).show(200);
+    };
+
+    var viewPointToContextMapPoint = function(view) {
+      return {
+        x: (view.x - panoViewBox.xmin) * contextMapScale,
+        y: (view.y - panoViewBox.ymin) * contextMapScale
+      };
+    };
+
+    var computeContextMapPoint = function(bbox) {
+      var pointNE = viewPointToContextMapPoint({
+        "x": bbox.xmin,
+        "y": bbox.ymin
+      });
+      var pointSW = viewPointToContextMapPoint({
+        "x": bbox.xmax,
+        "y": bbox.ymax
+      });
+      var pointCenter = viewPointToContextMapPoint({
+        "x": (bbox.xmin + bbox.xmax) / 2,
+        "y": (bbox.ymin + bbox.ymax) / 2
+      });
+      var radius = 4.7667 * Math.log(Math.abs(pointNE.x - pointSW.x) + Math.abs(pointNE.y - pointSW.y)) - 16.525;
+      if (radius < 2)
+        radius = 2;
+      return {
+        pointNE: pointNE,
+        pointSW: pointSW,
+        pointCenter: pointCenter,
+        radius: radius
+      };
     };
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -683,218 +586,106 @@ if (!org.gigapan.timelapse.Timelapse) {
       return navigationMap_layer_tag;
     };
 
-    this.getTimewarpMap_box = function() {
-      return timewarpMap_box;
-    };
-
-    this.getTimewarpMap_circle = function() {
-      return timewarpMap_circle;
-    };
-
-    this.getTimewarpMap = function() {
-      return timewarpMap;
-    };
-
-    this.getTimewarpMapContainer = function() {
-      return timewarpMap_container;
-    };
-
     this.getNavigationMap = function() {
       return navigationMap;
-    };
-
-    this.getTagsTimewarp = function() {
-      return tagsTimewarp;
     };
 
     var handleShowHideNavigationMap = function(showHide) {
       if (showHide == "show" && !snaplapse.isPlaying()) {
         $hideMapLabel.stop(true, true).fadeIn(200);
-        if (!isHideNavigationMap) {
-          if (!$toggleMapCheckbox.is(":checked"))
-            $navigationMap_container.stop(true, true).fadeIn(200);
-          $toggleMapLabel.stop(true, true).fadeIn(200);
-        }
+        if (!isHideNavigationMap)
+          $navigationMap_container.stop(true, true).fadeIn(200);
       } else if (showHide == "hide") {
         $navigationMap_container.stop(true, true).fadeOut(200);
         $hideMapLabel.stop(true, true).fadeOut(200);
-        $toggleMapLabel.stop(true, true).fadeOut(200);
       }
     };
     this.handleShowHideNavigationMap = handleShowHideNavigationMap;
 
-    var displayTimewarpMap = function() {
-      $hideMapCheckbox.button("disable");
-      $timewarpMap_container.css("visibility", "visible");
-      $tagsTimewarp.css("visibility", "visible");
-      $timewarpMap_container.stop(true, true).animate({
-        "opacity": "1",
-      }, {
-        duration: 200
-      });
-      $tagsTimewarp.stop(true, true).animate({
-        "opacity": "1",
-      }, {
-        duration: 200
-      });
-    };
-    this.displayTimewarpMap = displayTimewarpMap;
-
-    var hideTimewarpMap = function(noAnimation) {
-      $hideMapCheckbox.button("enable");
-      if (noAnimation == true) {
-        $timewarpMap_container.css({
-          "opacity": "0"
-        });
-        $tagsTimewarp.css({
-          "opacity": "0"
-        });
-      } else {
-        $timewarpMap_container.stop(true, true).animate({
-          "opacity": "0"
-        }, {
-          duration: 200,
-          complete: function() {
-            $timewarpMap_container.css("visibility", "hidden");
-          }
-        });
-        $tagsTimewarp.stop(true, true).animate({
-          "opacity": "0"
-        }, {
-          duration: 200,
-          complete: function() {
-            $tagsTimewarp.css("visibility", "hidden");
-          }
-        });
-      }
-    };
-    this.hideTimewarpMap = hideTimewarpMap;
-
     // Update lines on the canvas
     var updateTagPaths = function(tagIdHead, keyframe) {
-      updateLine(timewarpMap_layer_tag, tagIdHead + "_timeTagTimewarp", keyframe);
       updateLine(navigationMap_layer_tag, tagIdHead + "_timeTagNavigation", keyframe);
-      timewarpMap_layer_tag.draw();
       navigationMap_layer_tag.draw();
     };
     this.updateTagPaths = updateTagPaths;
 
     // Clone the pano video
-    this.clonePanoVideo = function() {
-      var firstVideo = videoset.getCurrentActiveVideo();
-      panoVideo = document.createElement("video");
+    this.clonePanoVideo = function(topLevelVideo) {
+      if (!panoVideo) {
+        panoVideo = document.createElement("video");
+        panoVideo.addEventListener("timeupdate", function() {
+          if (!panoVideo.seeking) {
+            navigationMap_background.setAttrs({
+              image: panoVideo,
+              x: navigationMapGeometry.x,
+              y: navigationMapGeometry.y,
+              width: navigationMapGeometry.width,
+              height: navigationMapGeometry.height
+            });
+            navigationMap_layer_background.draw();
+          }
+        }, false);
+        panoVideo.addEventListener("seeked", function() {
+          navigationMap_background.setAttrs({
+            image: panoVideo,
+            x: navigationMapGeometry.x,
+            y: navigationMapGeometry.y,
+            width: navigationMapGeometry.width,
+            height: navigationMapGeometry.height
+          });
+          navigationMap_layer_background.draw();
+        }, false);
+        panoVideo.addEventListener("loadeddata", function() {
+          timelapse.seek_panoVideo(timelapse.getCurrentTime());
+        }, false);
+      }
       // Ouch.  A brand new bug in Chrome 15 (apparently) causes videos to never load
       // if they've been loaded recently and are being loaded again now.
       // It's pretty weird, but this disgusting code seems to work around the problem.
-      panoVideo.setAttribute('src', firstVideo.src + "?time=" + (new Date().getTime()));
+      panoVideo.setAttribute('src', topLevelVideo.src + "?time=" + (new Date().getTime()) + "1765");
       panoVideo.setAttribute('preload', 'auto');
       panoVideo.style.position = "absolute";
-      if (viewerType == "video") {
-        panoVideo.style.top = firstVideo.style.top;
-        panoVideo.style.left = firstVideo.style.left;
-        panoVideo.style.width = firstVideo.style.width;
-        panoVideo.style.height = firstVideo.style.height;
-      } else if (viewerType == "canvas") {
-        panoVideo.style.top = firstVideo.geometry.top + "px";
-        panoVideo.style.left = firstVideo.geometry.left + "px";
-        panoVideo.style.width = firstVideo.geometry.width + "px";
-        panoVideo.style.height = firstVideo.geometry.height + "px";
-      }
-      panoVideo.id = "panoVideo";
-      $(timewarpMap_panoVideo).append(panoVideo);
-      panoVideo.addEventListener("loadeddata", function() {
-        panoVideo.currentTime = timelapse.getVideoset().getLeader();
-      }, false);
-      // TODO
-      panoVideo.addEventListener("timeupdate", function() {
-        if (!panoVideo.seeking) {
-          navigationMap_background.setAttrs({
-            image: panoVideo,
-            x: navigationMap_drawImage.x,
-            y: navigationMap_drawImage.y,
-            width: navigationMap_drawImage.width,
-            height: navigationMap_drawImage.height
-          });
-          navigationMap_layer_background.draw();
-        }
-      }, false);
-      panoVideo.addEventListener("seeked", function() {
-        navigationMap_background.setAttrs({
-          image: panoVideo,
-          x: navigationMap_drawImage.x,
-          y: navigationMap_drawImage.y,
-          width: navigationMap_drawImage.width,
-          height: navigationMap_drawImage.height
-        });
-        navigationMap_layer_background.draw();
-      }, false);
+      panoVideo.style.top = topLevelVideo.geometry.top + "px";
+      panoVideo.style.left = topLevelVideo.geometry.left + "px";
+      panoVideo.style.width = topLevelVideo.geometry.width + "px";
+      panoVideo.style.height = topLevelVideo.geometry.height + "px";
       panoVideo.load();
       return panoVideo;
     };
 
-    // Load the navigation map
-    var loadNavigationMap = function(tagInfo_locationData) {
-      // Draw the home view to the canvas
-      var xmin_homeView = tagInfo_locationData.homeView.xmin;
-      var ymin_homeView = tagInfo_locationData.homeView.ymin;
-      var scale_homeView = tagInfo_locationData.homeView.scale;
-      var videoDiv = document.getElementById(videoDivID);
-      var videoLeft = -(xmin_homeView * scale_homeView);
-      var videoTop = -(ymin_homeView * scale_homeView);
-      var scale = $(navigationMap).width() / $(videoDiv).width();
+    // Load the context map
+    var loadContextMap = function() {
+      // Cache variables
+      panoViewBox = timelapse.pixelCenterToPixelBoundingBoxView(timelapse.getPanoView()).bbox;
+      contextMapScale = navigationMap_width / (panoViewBox.xmax - panoViewBox.xmin);
+
+      // Initialize the map
+      var scale = navigationMap_width / $("#" + videoDivID).width();
       var video = videoset.getCurrentActiveVideo();
-      navigationMap_drawImage.x = videoLeft * scale;
-      navigationMap_drawImage.y = videoTop * scale;
-      if (viewerType == "video") {
-        navigationMap_drawImage.width = video.offsetWidth * scale + 2;
-        navigationMap_drawImage.height = video.offsetHeight * scale + 2;
-      } else if (viewerType == "canvas") {
-        navigationMap_drawImage.width = video.geometry.width * scale + 2;
-        navigationMap_drawImage.height = video.geometry.height * scale + 2;
-      }
-      // The setTimeout is a hack for chrome video bug
-      //setTimeout(function() {
-      //navigationMap_background.setAttrs({
-      //  image: video,
-      //  x: navigationMap_drawImage.x,
-      //  y: navigationMap_drawImage.y,
-      //  width: navigationMap_drawImage.width,
-      //  height: navigationMap_drawImage.height
-      //});
-      //navigationMap_layer_background.draw();
-      //}, 100);
+      navigationMapGeometry.x = video.geometry.left * scale;
+      navigationMapGeometry.y = video.geometry.top * scale;
+      navigationMapGeometry.width = video.geometry.width * scale + 2;
+      navigationMapGeometry.height = video.geometry.height * scale + 2;
     };
-    this.loadNavigationMap = loadNavigationMap;
+    this.loadContextMap = loadContextMap;
 
     // Set the mode of the visualizer
-    var setMode = function(mode, fullScreen, noAnimation) {
-      if (mode == "player" || mode == "annotator") {
+    var setMode = function(mode, isFitToWindow, noAnimation) {
+      if (mode == "player") {
         navigationMap_layer_tag.show();
         $tagsNavigation.show();
         if (noAnimation == true) {
           $navigationMap_container.hide();
-          $toggleMapLabel.hide();
           $hideMapLabel.hide();
         } else {
           $navigationMap_container.stop(true, true).fadeOut(200);
-          $toggleMapLabel.stop(true, true).fadeOut(200);
           $hideMapLabel.stop(true, true).fadeOut(200);
-          $toggleMapCheckbox.prop("checked", false).button({
-            icons: {
-              secondary: "ui-icon-newwin"
-            }
-          });
-          hideTimewarpMap();
         }
+        if (panoVideo)
+          panoVideo.pause();
       } else if (mode == "editor") {
-        $toggleMapCheckbox.prop("checked", false).button({
-          icons: {
-            secondary: "ui-icon-newwin"
-          }
-        });
-        hideTimewarpMap(true);
-        if (fullScreen) {
-          handleShowHideNavigationMap("hide");
+        if (isFitToWindow) {
+          //handleShowHideNavigationMap("hide");
         } else {
           navigationMap_layer_tag.show();
           $tagsNavigation.show();
@@ -906,53 +697,22 @@ if (!org.gigapan.timelapse.Timelapse) {
     };
     this.setMode = setMode;
 
-    // Update the elements in the interface related to time data
-    var updateInterface_timeData = function(tagInfo_timeData) {
-      // Set the color of elements in the visualizer
-      var RGB = tagInfo_timeData.color.r + "," + tagInfo_timeData.color.g + "," + tagInfo_timeData.color.b;
-      var tagColorRGB = "rgb(" + RGB + ")";
-      var tagColorRGBA_dark = "rgba(" + RGB + "," + strokeOpacity + ")";
-      // Set the color of navigation map box
-      navigationMap_box.setAttrs({
-        stroke: tagColorRGB,
-      });
-      navigationMap_circle.setAttrs({
-        stroke: "rgba(" + RGB + "," + navigationMap_circle_strokeOpacity + ")",
-        fill: tagColorRGBA_dark
-      });
-      navigationMap_layer_navigation.draw();
-      // Set the color of timewarp map box
-      timewarpMap_box.setAttrs({
-        stroke: tagColorRGB,
-      });
-      timewarpMap_circle.setAttrs({
-        stroke: "rgba(" + RGB + "," + timewarpMap_circle_strokeOpacity + ")",
-        fill: tagColorRGBA_dark
-      });
-      timewarpMap_layer_navigation.draw();
-      // The reason to hide and show the elements is the workaround for a webkit refresh bug
-      //$(visualizer).hide().show(0);
-    };
-    this.updateInterface_timeData = updateInterface_timeData;
-
-    // Update the elements in the interface related to location data
-    var updateInterface_locationData = function(tagInfo_locationData) {
+    // Update the map
+    var setMap = function(bbox) {
       // Draw the bounding box on the small navigation map
-      var nowWidth_nav = Math.abs(tagInfo_locationData.tagPointNE_nav.x - tagInfo_locationData.tagPointSW_nav.x);
-      var nowHeight_nav = Math.abs(tagInfo_locationData.tagPointNE_nav.y - tagInfo_locationData.tagPointSW_nav.y);
+      var contextMapPoint = computeContextMapPoint(bbox);
+      var nowWidth_nav = Math.abs(contextMapPoint.pointNE.x - contextMapPoint.pointSW.x);
+      var nowHeight_nav = Math.abs(contextMapPoint.pointNE.y - contextMapPoint.pointSW.y);
       navigationMap_box.setAttrs({
-        x: tagInfo_locationData.tagPointNE_nav.x,
-        y: tagInfo_locationData.tagPointNE_nav.y,
+        x: contextMapPoint.pointNE.x,
+        y: contextMapPoint.pointNE.y,
         width: nowWidth_nav,
         height: nowHeight_nav
       });
-      var nowRadius_nav = 4.7667 * Math.log(nowWidth_nav + nowHeight_nav) - 16.525;
-      if (nowRadius_nav < 2)
-        nowRadius_nav = 2;
       navigationMap_circle.setAttrs({
-        x: tagInfo_locationData.tagPointCenter_nav.x,
-        y: tagInfo_locationData.tagPointCenter_nav.y,
-        radius: nowRadius_nav
+        x: contextMapPoint.pointCenter.x,
+        y: contextMapPoint.pointCenter.y,
+        radius: contextMapPoint.radius
       });
       navigationMap_mask.setAttrs({
         points: [{
@@ -971,109 +731,46 @@ if (!org.gigapan.timelapse.Timelapse) {
           "x": 0,
           "y": 0
         }, {
-          "x": tagInfo_locationData.tagPointNE_nav.x,
-          "y": tagInfo_locationData.tagPointNE_nav.y
+          "x": contextMapPoint.pointNE.x,
+          "y": contextMapPoint.pointNE.y
         }, {
-          "x": tagInfo_locationData.tagPointSW_nav.x,
-          "y": tagInfo_locationData.tagPointNE_nav.y
+          "x": contextMapPoint.pointSW.x,
+          "y": contextMapPoint.pointNE.y
         }, {
-          "x": tagInfo_locationData.tagPointSW_nav.x,
-          "y": tagInfo_locationData.tagPointSW_nav.y
+          "x": contextMapPoint.pointSW.x,
+          "y": contextMapPoint.pointSW.y
         }, {
-          "x": tagInfo_locationData.tagPointNE_nav.x,
-          "y": tagInfo_locationData.tagPointSW_nav.y
+          "x": contextMapPoint.pointNE.x,
+          "y": contextMapPoint.pointSW.y
         }, {
-          "x": tagInfo_locationData.tagPointNE_nav.x,
-          "y": tagInfo_locationData.tagPointNE_nav.y
+          "x": contextMapPoint.pointNE.x,
+          "y": contextMapPoint.pointNE.y
         }, {
           "x": 0,
           "y": 0
-        }],
+        }]
       });
       navigationMap_layer_navigation.draw();
       navigationMap_layer_mask.draw();
-      // Draw the bounding box on the timewarp map
-      var nowWidth_timewarp = Math.abs(tagInfo_locationData.tagPointNE_timewarp.x - tagInfo_locationData.tagPointSW_timewarp.x);
-      var nowHeight_timewarp = Math.abs(tagInfo_locationData.tagPointNE_timewarp.y - tagInfo_locationData.tagPointSW_timewarp.y);
-      timewarpMap_box.setAttrs({
-        x: tagInfo_locationData.tagPointNE_timewarp.x,
-        y: tagInfo_locationData.tagPointNE_timewarp.y,
-        width: nowWidth_timewarp,
-        height: nowHeight_timewarp
-      });
-      var nowRadius_timewarp = 0.6334 * Math.pow(nowWidth_timewarp + nowHeight_timewarp, 0.4993);
-      if (nowRadius_timewarp < 4)
-        nowRadius_timewarp = 4;
-      timewarpMap_circle.setAttrs({
-        x: tagInfo_locationData.tagPointCenter_timewarp.x,
-        y: tagInfo_locationData.tagPointCenter_timewarp.y,
-        radius: nowRadius_timewarp
-      });
-      timewarpMap_mask.setAttrs({
-        points: [{
-          "x": 0,
-          "y": 0
-        }, {
-          "x": 0,
-          "y": timewarpMap_height
-        }, {
-          "x": timewarpMap_width,
-          "y": timewarpMap_height
-        }, {
-          "x": timewarpMap_width,
-          "y": 0
-        }, {
-          "x": 0,
-          "y": 0
-        }, {
-          "x": tagInfo_locationData.tagPointNE_timewarp.x,
-          "y": tagInfo_locationData.tagPointNE_timewarp.y
-        }, {
-          "x": tagInfo_locationData.tagPointSW_timewarp.x,
-          "y": tagInfo_locationData.tagPointNE_timewarp.y
-        }, {
-          "x": tagInfo_locationData.tagPointSW_timewarp.x,
-          "y": tagInfo_locationData.tagPointSW_timewarp.y
-        }, {
-          "x": tagInfo_locationData.tagPointNE_timewarp.x,
-          "y": tagInfo_locationData.tagPointSW_timewarp.y
-        }, {
-          "x": tagInfo_locationData.tagPointNE_timewarp.x,
-          "y": tagInfo_locationData.tagPointNE_timewarp.y
-        }, {
-          "x": 0,
-          "y": 0
-        }],
-      });
-      timewarpMap_layer_navigation.draw();
-      timewarpMap_layer_mask.draw();
     };
-    this.updateInterface_locationData = updateInterface_locationData;
+    this.setMap = setMap;
 
     // Add a time tag on the visualization area
-    var addTimeTag = function(keyframes, index) {
+    var addTimeTag = function(keyframes, index, isKeyframeFromLoad) {
       var keyframe = keyframes[index];
       var keyframe_last = keyframes[index - 1];
       var keyframe_next = keyframes[index + 1];
-      var tagInfo_timeData = timelapse.getTagInfo_timeData();
-      var idHead = composerDivId + "_snaplapse_keyframe_" + keyframe.id;
+      var idHead = timeMachineDivId + "_snaplapse_keyframe_" + keyframe.id;
       var idHead_last;
       var idHead_next;
-      if (keyframe_last != undefined) {
-        idHead_last = composerDivId + "_snaplapse_keyframe_" + keyframe_last.id;
-      }
-      if (keyframe_next != undefined) {
-        idHead_next = composerDivId + "_snaplapse_keyframe_" + keyframe_next.id;
-      }
+      if (keyframe_last != undefined)
+        idHead_last = timeMachineDivId + "_snaplapse_keyframe_" + keyframe_last.id;
+      if (keyframe_next != undefined)
+        idHead_next = timeMachineDivId + "_snaplapse_keyframe_" + keyframe_next.id;
       // Get the color of tags
-      var r = tagInfo_timeData.color.r;
-      var g = tagInfo_timeData.color.g;
-      var b = tagInfo_timeData.color.b;
-      var color_head = "rgba(" + r + "," + g + "," + b + ",";
-      var color_timewarpFill = color_head + timewarpMap_tag_fillOpacity + ")";
-      var color_timewarpStroke = color_head + timewarpMap_tag_strokeOpacity + ")";
+      var color_head = "rgba(" + defaultTagRGB + ",";
+      var color_navigationFill = color_head + navigationMap_tag_fillOpacity + ")";
       var color_navigationStroke = color_head + navigationMap_tag_strokeOpacity + ")";
-      var color_timewarpStroke_line = color_head + timewarpMap_line_strokeOpacity + ")";
       var color_navigationStroke_line = color_head + navigationMap_line_strokeOpacity + ")";
       // Variables for tag transition line
       var pNow;
@@ -1082,10 +779,20 @@ if (!org.gigapan.timelapse.Timelapse) {
       var navigationMap_circle_x = navigationMap_circle.getX();
       var navigationMap_circle_y = navigationMap_circle.getY();
       var navigationMap_circle_radius = navigationMap_circle.getRadius();
+      if (keyframe.timeTagNavigation) {
+        navigationMap_circle_x = keyframe.timeTagNavigation.x;
+        navigationMap_circle_y = keyframe.timeTagNavigation.y;
+        navigationMap_circle_radius = keyframe.timeTagNavigation.r;
+      } else if (isKeyframeFromLoad) {
+        var contextMapPoint = computeContextMapPoint(keyframe.bounds);
+        navigationMap_circle_x = contextMapPoint.pointCenter.x;
+        navigationMap_circle_y = contextMapPoint.pointCenter.y;
+        navigationMap_circle_radius = contextMapPoint.radius;
+      }
       var tagInfoNavigation = {
         "id": idHead + "_timeTagNavigation",
         "position": "absolute",
-        "backgroundColor": color_timewarpFill,
+        "backgroundColor": color_navigationFill,
         "top": navigationMap_circle_y - navigationMap_circle_radius - navigationMap_tag_strokeWidth / 2 + "px",
         "left": navigationMap_circle_x - navigationMap_circle_radius - navigationMap_tag_strokeWidth / 2 + "px",
         "height": navigationMap_circle_radius * 2 + "px",
@@ -1096,35 +803,8 @@ if (!org.gigapan.timelapse.Timelapse) {
         "borderStyle": "solid"
       };
       addTagOnCanvas(tagInfoNavigation, tagsNavigation);
-      // Add tagsTimewarp div element
-      var timewarpMap_circle_x = timewarpMap_circle.getX();
-      var timewarpMap_circle_y = timewarpMap_circle.getY();
-      var timewarpMap_circle_radius = timewarpMap_circle.getRadius();
-      var tagInfoTimewarp = {
-        "id": idHead + "_timeTagTimewarp",
-        "position": "absolute",
-        "backgroundColor": color_timewarpFill,
-        "top": timewarpMap_circle_y - timewarpMap_circle_radius - timewarpMap_tag_strokeWidth / 2 + "px",
-        "left": timewarpMap_circle_x - timewarpMap_circle_radius - timewarpMap_tag_strokeWidth / 2 + "px",
-        "height": timewarpMap_circle_radius * 2 + "px",
-        "width": timewarpMap_circle_radius * 2 + "px",
-        "className": "circleBase",
-        "borderWidth": timewarpMap_tag_strokeWidth + "px",
-        "borderColor": color_timewarpStroke,
-        "borderStyle": "solid"
-      };
-      addTagOnCanvas(tagInfoTimewarp, tagsTimewarp);
+
       if (keyframe_last != undefined) {
-        // Draw timewarpMap_tag transition
-        connection = deleteLine_out(timewarpMap_layer_tag, idHead_last + "_timeTagTimewarp");
-        pNow = {
-          "x": timewarpMap_circle_x,
-          "y": timewarpMap_circle_y
-        };
-        addLine(timewarpMap_layer_tag, keyframe_last.timeTagTimewarp, pNow, timewarpMap_line_strokeWidth, color_timewarpStroke_line, idHead + "_timeTagTimewarp", idHead_last + "_timeTagTimewarp", keyframe_last, timewarpMap_circle_radius);
-        if (connection.tagEndId != undefined) {
-          addLine(timewarpMap_layer_tag, pNow, connection.pEnd, timewarpMap_line_strokeWidth, connection.color, connection.tagEndId, idHead + "_timeTagTimewarp", keyframe, timewarpMap_circle_radius);
-        }
         // Draw navigation_tag transition
         connection = deleteLine_out(navigationMap_layer_tag, idHead_last + "_timeTagNavigation");
         pNow = {
@@ -1138,12 +818,6 @@ if (!org.gigapan.timelapse.Timelapse) {
       } else {
         // Insert a keyframe before the first keyframe
         if (keyframe_next != undefined) {
-          // Draw timewarpMap_tag transition
-          pNow = {
-            "x": timewarpMap_circle_x,
-            "y": timewarpMap_circle_y
-          };
-          addLine(timewarpMap_layer_tag, pNow, keyframe_next.timeTagTimewarp, timewarpMap_line_strokeWidth, color_timewarpStroke_line, idHead_next + "_timeTagTimewarp", idHead + "_timeTagTimewarp", keyframe, timewarpMap_circle_radius);
           // Draw navigation_tag transition
           pNow = {
             "x": navigationMap_circle_x,
@@ -1153,16 +827,12 @@ if (!org.gigapan.timelapse.Timelapse) {
         }
       }
       // Redraw the layers
-      timewarpMap_layer_tag.draw();
       navigationMap_layer_tag.draw();
       // Save tag
-      keyframe.timeTagTimewarp = {
-        "x": timewarpMap_circle_x,
-        "y": timewarpMap_circle_y
-      };
       keyframe.timeTagNavigation = {
         "x": navigationMap_circle_x,
-        "y": navigationMap_circle_y
+        "y": navigationMap_circle_y,
+        "r": navigationMap_circle_radius
       };
       return color_head;
     };
@@ -1171,28 +841,19 @@ if (!org.gigapan.timelapse.Timelapse) {
     // Delete a time tag
     var deleteTimeTag = function(keyframeId, keyframe_last) {
       // Delete tags
-      var idHead = composerDivId + "_snaplapse_keyframe_" + keyframeId;
-      var tagTimewarpId = idHead + "_timeTagTimewarp";
+      var idHead = timeMachineDivId + "_snaplapse_keyframe_" + keyframeId;
       var tagNavigationId = idHead + "_timeTagNavigation";
-      var $tagTimewarp = $("#" + tagTimewarpId);
       var $tagNavigation = $("#" + tagNavigationId);
-      var circle_radius_timewarp = $tagTimewarp.width() / 2;
       var circle_radius_navigation = $tagNavigation.width() / 2;
-      $tagTimewarp.remove();
       $tagNavigation.remove();
       // Delete paths
       var connectNavigation = deleteLine_in_out(navigationMap_layer_tag, tagNavigationId);
-      var connectTimewarp = deleteLine_in_out(timewarpMap_layer_tag, tagTimewarpId);
       // Reconnect path
       if (connectNavigation.tagStartId != undefined && connectNavigation.tagEndId != undefined) {
         addLine(navigationMap_layer_tag, connectNavigation.pStart, connectNavigation.pEnd, navigationMap_line_strokeWidth, connectNavigation.color, connectNavigation.tagEndId, connectNavigation.tagStartId, keyframe_last, circle_radius_navigation);
       }
-      if (connectTimewarp.tagStartId != undefined && connectTimewarp.tagEndId != undefined) {
-        addLine(timewarpMap_layer_tag, connectTimewarp.pStart, connectTimewarp.pEnd, timewarpMap_line_strokeWidth, connectTimewarp.color, connectTimewarp.tagEndId, connectTimewarp.tagStartId, keyframe_last, circle_radius_timewarp);
-      }
       // Redraw layers
       navigationMap_layer_tag.draw();
-      timewarpMap_layer_tag.draw();
     };
     this.deleteTimeTag = deleteTimeTag;
 
@@ -1200,12 +861,9 @@ if (!org.gigapan.timelapse.Timelapse) {
     var deleteAllTags = function() {
       // Delete elements
       $tagsNavigation.children().remove();
-      $tagsTimewarp.children().remove();
       navigationMap_layer_tag.removeChildren();
-      timewarpMap_layer_tag.removeChildren();
       // Redraw layers
       navigationMap_layer_tag.draw();
-      timewarpMap_layer_tag.draw();
     };
     this.deleteAllTags = deleteAllTags;
 

@@ -1,76 +1,163 @@
 @charset "UTF-8";
 
-.customEditorControl {
-  display: block;
-  width: inherit;
-  height: 40px;
-  background-color: rgb(220,220,220);
-  position: relative;
-  border-right: 1px solid #656565;
-  border-left: 1px solid #656565;
-  border-top: 0px solid #656565;
-  border-bottom: 1px solid #656565;
-  z-index: 20;
-  font-family: Arial, Helvetica, sans-serif;
-  font-size: 12px;
-  -webkit-user-select: none;
-  -khtml-user-select: none;
-  -moz-user-select: none;
-  -ms-user-select: none;
-  -o-user-select: none;
-  user-select: none;
-}
-
-.customEditorModeToolbar .ui-state-default {
+.modisCustomPlay.ui-button {
+  position: absolute;
+  width: 50px;
+  height: 50px;
+  bottom: 7px;
+  left: 21px;
   background: white;
+  border: 1px solid #656565;
+  border-radius: 35px !important;
+  box-shadow: 2px 2px 3px rgba(0,0,0,0.3);
+  z-index: 10;
+  outline: none;
 }
 
-.customEditorModeToolbar .ui-state-active {
-  border: 0px solid #959595;
-  background: #959595/*{bgColorActive}*/;
+.modisTimeText {
+  position: absolute;
+  top: 0px;
+  width: 91px;
+  height: 26px;
+  font-size: 28pt;
+  text-shadow: -1px 0 #656565, 0 1px #656565, 1px 0 #656565, 0 -1px #656565, 2px 2px 3px rgba(0,0,0,0.3);
+  font-family: Arial, Helvetica, sans-serif;
+  text-align: right;
+  margin-top: -42px;
+  margin-left: 14px;
   color: white;
+  font-weight: lighter;
+  background-color: transparent;
+  border: 0px solid #656565;
+  z-index: 9;
+  border-radius: 3px;
+  cursor: default;
 }
 
-.customEditorModeToolbar .ui-state-active .ui-icon {
-  background-image: url(../images/ui-icons_custom_256x240.png)/*{iconsActive}*/;
+.modisCustomToggleSpeed.ui-button {
+  position: absolute;
+  width: 56px;
+  height: 16px;
+  top: 36px;
+  left: 105px;
+  background: white;
+  border: 1px solid #656565;
+  border-radius: 3px !important;
+  box-shadow: 2px 2px 3px rgba(0,0,0,0.3);
+  z-index: 10;
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 8pt;
+  color: #656565;
+  display: none;
 }
 
-.customEditorModeToolbar {
-  margin-top: 0px;
-  margin-left: 0px;
-  margin-right: 0px;
-  margin-bottom: 0px;
-  padding: 0;
-  float: right;
-  height: 100%;
-}
-
-.customEditorModeToolbar .playStopTimewarp {
-	width: 70px !important;
-}
-
-.customEditorModeToolbar .ui-button {
-  min-width: 35px;
-  margin-right: 0px;
+.modisCustomToggleSpeed .ui-button-text {
+  text-align: center;
+  padding: 0px;
+  padding-top: 0px;
   margin-left: 1px;
-  border-radius: 0px !important;
-  vertical-align: middle;
-  border: 0px solid white;
-  height: 100%;
-  border-left: 0px solid #656565;
+}
+
+.toggleLock.ui-button {
+  position: absolute;
+  width: 20px;
+  height: 16px;
+  top: -6px;
+  left: 124px;
+  background: white;
+  border: 1px solid #656565;
+  border-radius: 3px !important;
+  box-shadow: 2px 2px 3px rgba(0,0,0,0.3);
+  z-index: 11;
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 8pt;
+  color: #656565;
+  display: none;
+}
+
+.toggleLock .ui-button-text {
+  text-align: center;
+  padding: 0px;
+  margin-left: 12px;
+}
+
+.toggleLock .ui-icon {
+  padding: 0px;
+  margin-left: -8px;
+}
+
+.toggleLockType.ui-button {
+  position: absolute;
+  width: 38px;
+  height: 16px;
+  top: 30px;
+  left: 161px;
+  background: white;
+  border: 1px solid #656565;
+  border-radius: 3px !important;
+  box-shadow: 2px 2px 3px rgba(0,0,0,0.3);
+  z-index: 9;
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 8pt;
+  color: #656565;
+  display: none;
+}
+
+.toggleLockType .ui-button-text {
+  text-align: center;
+  padding: 0px;
+  margin-left: 0px;
+}
+
+.toggleLockType .ui-icon {
+  padding: 0px;
+  margin-left: 0px;
+}
+
+.monthSpinnerContainer {
+  left: 77px;
+  top: -76px;
+  position: absolute;
+  cursor: pointer;
+  z-index: 10;
+}
+
+.monthSpinnerTxt {
+  left: 32px;
+  top: 46px;
+  text-shadow: -1px 0 #656565, 0 1px #656565, 1px 0 #656565, 0 -1px #656565, 2px 2px 3px rgba(0,0,0,0.3);
+  position: absolute;
+  font-size: 18px;
+  color: white;
+  width: 48px;
+  text-align: center;
+  font-family: Arial, Helvetica, sans-serif;
+  font-weight: 550;
 }
 
 .googleLogo {
-  width: 78px;
+  width: 156px;
+  height: 58px;
   position: absolute;
-  bottom: 69px;
-  right: 15px;
+  bottom: 68px;
+  right: 19px;
+  background-image: url("../images/googleLogo.png");
+  -ms-transform: scale(0.5); /* IE 9 */
+  -webkit-transform: scale(0.5); /* Chrome, Safari, Opera */
+  transform: scale(0.5);
+  -ms-transform-origin: 100% 100%;
+  -webkit-transform-origin: 100% 100%;
+  transform-origin: 100% 100%;
 }
 
 .customControl {
   position: absolute;
   background-color: rgba(255,255,255,0);
   height: 60px;
+  left: 0px;
+  right: 0px;
+  bottom: 0px;
+  width: auto;
   z-index: 19;
   -webkit-user-select: none;
   -khtml-user-select: none;
@@ -83,6 +170,8 @@
 .customTimeline {
   position: absolute;
   height: inherit;
+  margin-top: 0px;
+  width: auto;
 }
 
 .timeTextLeft {
@@ -109,14 +198,17 @@
 
 .timeText {
   position: absolute;
-  width: 85px;
-  height: 27px;
+  top: 0px;
+  left: 41px;
+  width: 60px;
+  height: 21px;
   font-size: 16pt;
   box-shadow: 2px 2px 3px rgba(0,0,0,0.3);
   font-family: Arial, Helvetica, sans-serif;
-  text-align: right;
   padding-top: 5px;
-  padding-right: 12px;
+  padding-bottom: 5px;
+  padding-left: 37px;
+  padding-right: 0px;
   color: #656565;
   font-weight: normal;
   background-color: white;
@@ -124,6 +216,13 @@
   z-index: 9;
   border-radius: 3px;
   cursor: default;
+  text-align: left;
+}
+
+.timeTextTour {
+  left: 23px;
+  width: 81px;
+  padding-left: 35px;
 }
 
 .timeTextHover {
@@ -139,6 +238,27 @@
   opacity: 1;
   cursor: pointer;
   display: none;
+}
+
+.endTimeDotClickRegion {
+  position: absolute;
+  border: 0px;
+  opacity: 0;
+  cursor: pointer;
+  z-index: 6;
+}
+
+.endTimeDotContainer {
+  position: absolute;
+  border: 0px;
+}
+
+.endTimeDot {
+  border: 1px solid #656565;
+  background-color: white;
+  opacity: 1;
+  box-shadow: 2px 2px 3px rgba(0,0,0,0.3);
+  margin: 0px auto;
 }
 
 .timeTickContainer {
@@ -181,7 +301,7 @@
   z-index: 6;
 }
 
-.toggleSpeed.ui-button {
+.customToggleSpeed.ui-button {
   position: absolute;
   width: 55px;
   height: 23px;
@@ -198,7 +318,7 @@
   display: none;
 }
 
-.toggleSpeed .ui-button-text {
+.customToggleSpeed .ui-button-text {
   text-align: center;
   padding: 0px;
   padding-top: 3px;
@@ -215,6 +335,7 @@
   border-radius: 35px !important;
   box-shadow: 2px 2px 3px rgba(0,0,0,0.3);
   z-index: 10;
+  outline: none;
 }
 
 .customHelpLabel.ui-button {
@@ -234,20 +355,21 @@
 }
 
 .customInstructions {
-  width: 100%;
-  height: 100%;
   background-color: rgba(0, 0, 0, 0.5);
   position: absolute;
   top: 0px;
   left: 0px;
-  margin: auto;
+  bottom: 0px;
+  right: 0px;
+  width: auto;
+  height: auto;
   z-index: 999;
   display: none;
 }
 
 .customInstructions span {
   font-size: 12px;
-  color: #fff;
+  color: black;
   position: absolute;
   display: block;
   line-height: 18px;
@@ -262,52 +384,62 @@
   left: 110px;
   width: 140px;
   padding: 68px 0px 0px 0px;
+  color: white !important;
   background-repeat: no-repeat;
   background-position: center top;
-  background-image: url(../images/drag_mouse.png);
+  background-image: url(../images/drag_mouse_white.png);
 }
 
 .customInstructions span.customZoomhelp {
-  background-color: #262626;
-  border: 1px solid #444;
+  background-color: white;
+  border: 1px solid #656565;
   top: 150px;
   left: 67px;
   overflow: visible;
   border-radius: 3px;
 }
 
-/*.customInstructions span.customZoomallhelp {
- background-color: #262626;
- border: 1px solid #444;
- top: 248px;
- left: 67px;
- overflow: visible;
- border-radius: 3px;
- }*/
-
-.customInstructions span.customSpeedhelp {
-  background-color: #262626;
-  border: 1px solid #444;
-  bottom: 75px;
-  left: 82px;
+.customInstructions span.modisCustomSpeedhelp {
+  background-color: white;
+  border: 1px solid #656565;
+  bottom: 32px;
+  left: 105px;
   overflow: visible;
   border-radius: 3px;
 }
 
-.customInstructions span.customZoomhelp p, .customInstructions span.customZoomallhelp p {
-  margin: 0px 0px 0px -11px;
-  padding: 12px 0px 12px 36px;
+.customInstructions span.customSpeedhelp {
+  background-color: white;
+  border: 1px solid #656565;
+  bottom: 35px;
+  left: 74px;
+  overflow: visible;
+  border-radius: 3px;
+}
+
+.customInstructions span.customZoomhelp p {
+  margin: 0px -6px 0px -11px;
+  padding: 12px 0px 12px 30px;
   background-repeat: no-repeat;
   background-position: center left;
-  background-image: url(../images/bubble_edge_vertical.png);
+  background-image: url(../images/bubble_edge_vertical_white.png);
+  width: 190px;
+}
+
+.customInstructions span.modisCustomSpeedhelp p {
+  margin: 0px 0px -11px 0px;
+  padding: 12px 15px 22px 15px;
+  background-repeat: no-repeat;
+  background-position: 20px 100%;
+  background-image: url(../images/bubble_edge_horizontal_white.png);
   width: 190px;
 }
 
 .customInstructions span.customSpeedhelp p {
-  margin: 0px 0px -11px 10px;
+  margin: 0px 0px -11px 0px;
   padding: 12px 15px 22px 15px;
   background-repeat: no-repeat;
-  background-position: bottom left;
-  background-image: url(../images/bubble_edge_horizontal.png);
+  background-position: 20px 100%;
+  background-image: url(../images/bubble_edge_horizontal_white.png);
   width: 190px;
 }

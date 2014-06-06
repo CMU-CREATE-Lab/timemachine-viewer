@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8"/>
+
+    <link href="../css/snaplapse.css" rel="stylesheet" type="text/css"/>
+    <link href="../css/jquery-ui/smoothness/jquery-ui.custom.css" rel="stylesheet" type="text/css"/>
+    <link href="../css/defaultUI.css" rel="stylesheet" type="text/css"/>
+    <link href="../css/visualizer.css" rel="stylesheet" type="text/css"/>
+    <link href="../css/annotator.css" rel="stylesheet" type="text/css"/>
+
+    <script src="../js/jquery/jquery.min.js" type="text/javascript"></script>
+    <script src="../js/jquery/jquery-ui.custom.min.js" type="text/javascript"></script>
+    <script src="../js/jquery/plugins/mouse/jquery.mousewheel.min.js" type="text/javascript"></script>
+    <script src="../js/kinetic/kinetic.min.js" type="text/javascript"></script>
+    <script src="../js/org/gigapan/util.js" type="text/javascript"></script>
+    <script src="../js/org/gigapan/timelapse/videoset.js" type="text/javascript"></script>
+    <script src="../js/org/gigapan/timelapse/parabolicMotion.js" type="text/javascript"></script>
+    <script src="../js/org/gigapan/timelapse/timelapse.js" type="text/javascript"></script>
+    <script src="../js/Math.uuid.js" type="text/javascript"></script>
+    <script src="../js/org/gigapan/timelapse/snaplapse.js" type="text/javascript"></script>
+    <script src="../js/org/gigapan/timelapse/snaplapseViewer.js" type="text/javascript"></script>
+    <script src="../js/org/gigapan/timelapse/mercator.js" type="text/javascript"></script>
+    <script src="../js/org/gigapan/timelapse/visualizer.js" type="text/javascript"></script>
+    <script src="../js/org/gigapan/timelapse/annotator.js" type="text/javascript"></script>
+    <script src="../js/org/gigapan/timelapse/defaultUI.js" type="text/javascript"></script>
+    <script src="../js/org/gigapan/timelapse/urlEncoder.js" type="text/javascript"></script>
+
+    <script src="../js/org/gigapan/postmessage.js" type="text/javascript"></script>
+    <script src="../js/org/gigapan/timelapse/crossdomain_api.js" type="text/javascript"></script>
+
+    <script src="../template_includes.js" type="text/javascript"></script>
+
+    <style>
+      #timeMachine {
+        position: absolute;
+        width: 100%;
+        height: 100%;
+      }
+    </style>
+
+    <script type="text/javascript">
+      jQuery.support.cors = true;
+
+      var queryStr = window.location.href.slice(window.location.href.indexOf('?') + 1).split("#")[0];
+      timelapseMetadata = org.gigapan.Util.unpackVars(queryStr);
+
+      url = "http://g7.gigapan.org/timemachines/" + timelapseMetadata["id"];
+
+      function init() {
+        var myView = null;
+        var myTime = 0;
+
+        var settings = {
+          url: url,
+          showFullScreenBtn: false,
+          enablePresentationSlider: true,
+          onTimeMachinePlayerReady: function(viewerDivId) {
+            setupPostMessageHandlers();
+          },
+          disableTourLooping: true,
+          isGoogleAnalyticEventTrackingEnabled: true
+        };
+        if (timelapseMetadata && !timelapseMetadata['forceMP4'])
+          delete settings["mediaType"];
+        timelapse = new org.gigapan.timelapse.Timelapse("timeMachine", settings);
+      }
+
+      $(init);
+
+      // For Google Analytics
+      (function(i, s, o, g, r, a, m) {
+        i['GoogleAnalyticsObject'] = r;
+        i[r] = i[r] ||
+        function() {
+          (i[r].q = i[r].q || []).push(arguments)
+        }, i[r].l = 1 * new Date();
+        a = s.createElement(o), m = s.getElementsByTagName(o)[0];
+        a.async = 1;
+        a.src = g;
+        m.parentNode.insertBefore(a, m)
+      })(window, document, 'script', '//www.google-analytics.com/analytics.js', 'ga');
+
+      ga('create', 'UA-4157572-7', 'gigapan.org');
+      ga('send', 'pageview');
+    </script>
+  </head>
+  <body>
+    <div id="timeMachine"></div>
+  </body>
+</html>
