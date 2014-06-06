@@ -1403,10 +1403,10 @@ if (!window['$']) {
     };
 
     var setInitialView = function() {
-      if (loadSharedViewFromUnsafeURL(UTIL.getUnsafeHashString())) {
-        // loadSharedViewFromUnsafeURL() sets our view (if valid) and returns a boolean
-      } else if (initialView) {
+      if (initialView) {
         view = initialView;
+      } else if (loadSharedViewFromUnsafeURL(UTIL.getUnsafeHashString())) {
+        // loadSharedViewFromUnsafeURL() sets our view (if valid) and returns a boolean
       } else if (!loadTimelapseWithPreviousViewAndTime) {
         view = null;
       }
@@ -2555,7 +2555,7 @@ if (!window['$']) {
           }
 
           hideSpinner(viewerDivId);
-          if (typeof onNewTimelapseLoadCompleteCallBack === "function")
+          if ( typeof onNewTimelapseLoadCompleteCallBack === "function")
             onNewTimelapseLoadCompleteCallBack();
         }
       });

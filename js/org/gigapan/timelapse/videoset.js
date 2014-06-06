@@ -301,6 +301,10 @@ if (!window['$']) {
     //
 
     var _addVideo = function(src, geometry, video) {
+      // If the src is already added, do not add it again
+      if (Object.keys(activeVideoSrcList).indexOf(src) > -1){
+        return activeVideos[videoDiv.id + "_" + id];
+      }
       //perfAdded++;
       id++;
       // Note: Safari and Chrome already let you do this
@@ -514,7 +518,7 @@ if (!window['$']) {
       var currentTimeInMs = (new Date()).getTime();
       for (var videoSrc in activeVideoSrcList) {
         // Check if >= 1 day or if we just need to delete the item
-        if ((checkTimestamps && (currentTimeInMs - activeVideoSrcList[videoSrc] >= 86400000)) || typeof(checkTimestamps) !== 'boolean') {
+        if ((checkTimestamps && (currentTimeInMs - activeVideoSrcList[videoSrc] >= 86400000)) || typeof (checkTimestamps) !== 'boolean') {
           delete activeVideoSrcList[videoSrc];
         }
       }
@@ -744,7 +748,8 @@ if (!window['$']) {
     };
 
     this.setPlaybackRate = function(rate) {
-      if (isSafari && rate > 0 && rate <= 0.25) rate = 0.5;
+      if (isSafari && rate > 0 && rate <= 0.25)
+        rate = 0.5;
 
       if (rate != playbackRate) {
         var t = _getCurrentTime();
