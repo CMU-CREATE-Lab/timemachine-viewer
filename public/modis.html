@@ -41,12 +41,35 @@
     <script src="https://maps.google.com/maps/api/js?sensor=false&libraries=places" type="text/javascript" ></script>
 
     <style>
+      #share {
+        position: absolute;
+        left: 10px;
+        top: 660px;
+        height: 30px;
+        width: 85px;
+        font-size: 14px;
+        background: #71AF71;
+        color: white;
+        border-radius: 2px;
+        outline: none;
+      }
+      #share:hover {
+        background-color: #529952;
+      }
+      #share.ui-state-active {
+        background-color: #656565;
+      }
+      #shareURL {
+        width: 600px;
+        height: 32px;
+        resize: none;
+      }
       #timeMachine {
         position: relative;
         margin-top: 10px;
         margin-left: 10px;
         width: 985px;
-        height: 752px;
+        height: 640px;
       }
     </style>
 
@@ -64,11 +87,11 @@
         };
         var settings = {
           url: url,
-          enableEditor: true,
           enablePresentationSlider: true,
           datasetType: "modis",
           onTimeMachinePlayerReady: function(viewerDivId) {
             setupPostMessageHandlers();
+            timelapse.loadSharedDataFromUnsafeURL("#presentation=ERBAA9ndHxmNSjRThe%2012000-year-old%20Larsen%20B%20Ice%20Shelf%20disintegrated%20in%20February%2C%202002_Larsen%20B%20Ice%20Shelf_BkDiOI7hYfYhT_TDeforestation%20in%20the%20Amazon%20Rainforest%20south%20of%20Parque%20Estadual%20do%20Xingu_N%20Mato%20Grosso_BkDAX6VTPhJxgTSeasonal%20flooding%20fills%20the%20Cooper%20Creek%20Flood%20Plain%20and%20Lake%20Yamma%20Yamma%20in%20Queensland%2C%20Australia%2E_Lake%20Yamma%20Yamma_BkDuCoSvQN24w_TFires%20in%20Wyperfield%2C%20Murray%20Sunset%2C%20and%20Big%20Desert%20Parks%20in%20New%20South%20Wales%2C%20and%20Ngarkat%20Park%20in%20South%20Australia_Australian%20Fires_BAA6FXpl1mkjR_Drying%20of%20Aral%20Sea_BkDgGrO-mQNYi_T_Drying%20of%20Lake%20Urmia_BkD1Gd0xQ1tySjR_Mouth%20of%20Rio%20Uruguay_BkD4PcOCnMD_I_T_CA%3A%20%20Bay%20to%20Sierras_BkDiGC1Pn03OLhT_Rocky%20Mountains_BkDxFY5DoHQTK_T_Great%20Salt%20Lake_BkDrCJOBnWm6NqN_Midwest_BkDVvToeX0ne-K_African%20Savannah_BkDAuikfp4nd_T_Seasonal%20Lake%20Chad_BkDlOFWoVJV5e_T_Okavango_BkD6LOKXoLUEPxS_Lake%20Erie_BkDpJGP6rfz0r7M_Lake%20Baikal%2C%20Russia_BkD-Hy4gkrZXorM_Himalayas_Untitled_B");
           },
           scaleBarOptions: {
             scaleBarDiv: "scaleBar1"
@@ -81,6 +104,36 @@
           newHomeView: myHomeView
         };
         timelapse = new org.gigapan.timelapse.Timelapse("timeMachine", settings);
+        $("#shareDialog").dialog({
+          resizable: false,
+          autoOpen: false,
+          width: 632,
+          height: 95
+        });
+        $("#share").button().click(function() {
+          var $shareDialog = $("#shareDialog");
+          if ($shareDialog.dialog("isOpen"))
+            $shareDialog.dialog("close");
+          else {
+            var parentUrl = "";
+            if (window.top === window.self) {
+              // no iframe
+              parentUrl = window.location.href.split("#")[0];
+            } else {
+              // inside iframe
+              parentUrl = document.referrer.split("#")[0];
+            }
+            var shareUrl = timelapse.getShareView();
+            $("#shareURL").val(parentUrl + shareUrl).focus(function() {
+              $(this).select();
+            }).click(function() {
+              $(this).select();
+            }).mouseup(function(e) {
+              e.preventDefault();
+            });
+            $shareDialog.dialog("open");
+          }
+        });
       }
 
       $(init);
@@ -88,11 +141,9 @@
   </head>
   <body>
     <div id="timeMachine"></div>
-    <div style="position: relative; margin-left: 10px; margin-top: 10px;">
-      <button onclick="console.log(timelapse.getShareView())">Get share view in console</button>
-      <button onclick="timelapse.loadSharedDataFromUnsafeURL('#presentation=EKBkD9FHgPpnuikzRThe%20shrinking%20of%20the%20Aral%20Sea%20destroys%20fishing%20industry%20and%20brings%20unemployment%20and%20public%20health%20problems_Aral%20Sea_BkDiF0ykZ2cxViSThe%20Federative%20Republic%20of%20Brazil%2C%20is%20the%20largest%20country%20in%20both%20South%20America%20and%20the%20Latin%20American%20region_Brazil%27s%20Dry%20Season_BkD4MJfnHS-KS2PThe%20Larsen%20Ice%20Shelf%20is%20a%20long%20series%20of%20three%20fringing%20ice%20shelves%20in%20the%20northwest%20part%20of%20the%20Weddell%20Sea_Larsen%20Ice%20Shelf_BkDpN03_mHuCJ2PCalifornia%20is%20a%20state%20located%20on%20the%20West%20Coast%20of%20the%20United%20States%20and%20is%20the%20most%20populous%20U%2ES%2E%20state_California_BkD0F1IInX6apnFAsia%20is%20the%20world%27s%20largest%20and%20most%20populous%20continent%2C%20located%20primarily%20in%20the%20eastern%20and%20northern%20hemispheres_Asia_BkDnKjdqU7GaxqNQueensland%20is%20the%20second-largest%20and%20third-most%20populous%20state%20in%20Australia_Queensland_BkDhEvK3uI9mfvKNorthern%20Europe%20is%20the%20northern%20part%20or%20region%20of%20the%20European%20continent_North%20Europe_BkDqLWCdf5RWrgTThe%20Tonl%C3%A9%20Sap%2C%20%22Large%20Fresh%20Water%20River%22%2C%20is%20a%20combined%20lake%20and%20river%20system%20of%20major%20importance%20to%20Cambodia_Tonl%C3%A9%20Sap%20Lake_BkD8E9xXvwioY7MThe%20Republic%20of%20Iceland%20is%20a%20Nordic%20island%20country%20marking%20the%20juncture%20between%20the%20North%20Atlantic%20and%20the%20Arctic%20Ocean_Iceland_BA4GJ6icEN4e4EAfrica%20is%20the%20world%27s%20second-largest%20and%20second-most-populous%20continent_Africa_Untitled_B')">Load a presentation</button>
-      <button onclick="timelapse.loadSharedDataFromUnsafeURL('#tour=EDBoGAU6xplJiliH__BoG0FcnOpVGpkvSAral%20Sea_Aral%20Sea_BAnTZIRpUEfk7U__Aral%20Sea_B')">Load a tour</button>
-      <button onclick="timelapse.loadSharedDataFromUnsafeURL('#tour=EDBoGAH_iNmVXRnE__BoGxCQRmH47PSxRLarsen%20Ice%20Shelf_Larsen%20Ice%20Shelf_BAqLQRmH47PSxR__Larsen%20Ice%20Shelf_B', true)">Load and play a tour</button>
+    <button type="button" id="share">Share</button>
+    <div id="shareDialog" title="Share Current View">
+      <textarea id="shareURL"></textarea>
     </div>
   </body>
 </html>
