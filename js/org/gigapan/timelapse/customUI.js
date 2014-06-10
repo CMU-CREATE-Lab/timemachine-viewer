@@ -782,7 +782,7 @@ if (!org.gigapan.timelapse.Timelapse) {
           "height": "100%"
         }).attr("tabindex", i);
         $timeTick.css({
-          "margin-top": (timeTick_height / 2) + "px",
+          "margin-top": ((currentTimeTick_height - timeTick_height) / 2) + "px",
           "width": timeTick_width + "px",
           "height": timeTick_height + "px"
         });
