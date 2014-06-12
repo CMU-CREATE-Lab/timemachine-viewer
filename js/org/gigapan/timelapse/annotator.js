@@ -270,7 +270,7 @@ if (!window['$']) {
       }
     };
 
-    function createAnnotation(id, xPos, yPos, minZoom, startTime, endTime, kineticObj, type) {
+    function createAnnotation(id, xPos, yPos, minZoom, startTime, endTime, kineticObj, type, time, zoom) {
       return {
         id: id,
         xPos: xPos,
@@ -279,7 +279,9 @@ if (!window['$']) {
         startTime: startTime,
         endTime: endTime,
         kineticObj: kineticObj,
-        type: type
+        type: type,
+        time: time,
+        zoom: zoom
       };
     }
 
@@ -312,15 +314,15 @@ if (!window['$']) {
               x: annotation.xPos,
               y: annotation.yPos
             },
-            zoom: annotation.minZoom
+            zoom: annotation.zoom
           }, true);
-          timelapse.seek(annotation.startTime);
+          timelapse.seek(annotation.time);
         }
       }
     }
 
-    function addAnnotation(id, xPos, yPos, minZoom, startTime, endTime, kineticObj, type) {
-      var newAnnot = createAnnotation(id, xPos, yPos, minZoom, startTime, endTime, kineticObj, type);
+    function addAnnotation(id, xPos, yPos, minZoom, startTime, endTime, kineticObj, type, time, zoom) {
+      var newAnnot = createAnnotation(id, xPos, yPos, minZoom, startTime, endTime, kineticObj, type, time, zoom);
       annotationList.push(newAnnot);
       var annotListItem = document.createElement("div");
       annotListItem.id = kineticObj.attrs.id + "_item";
@@ -447,7 +449,7 @@ if (!window['$']) {
 
       // Delect the item
       $annotListItem.get(0).triggerWarpAndSeek = false;
-      UTIL.selectSelectableElements($("#" + annotatorDivId + " .annotation_list"), $annotListItem);
+      UTIL.selectSelectableElements($("#" + annotatorDivId + " .annotation_list"), $annotListItem, true);
       // Hide the last annotation item's right border
       hideLastAnnotationItemBorder();
       handleAnnotatorModeToolbarChange();
@@ -518,6 +520,8 @@ if (!window['$']) {
         annotation["min-zoom"] = annotationList[i].minZoom;
         annotation["start-time"] = annotationList[i].startTime;
         annotation["end-time"] = annotationList[i].endTime;
+        annotation["time"] = annotationList[i].time;
+        annotation["zoom"] = annotationList[i].zoom;
         annotatorJSON['annotator']['annotations'].push(annotation);
       }
       return JSON.stringify(annotatorJSON, null, 3);
@@ -552,13 +556,13 @@ if (!window['$']) {
           UTIL.log("Found [" + obj['annotator']['annotations'].length + "] annotations in the json:\n\n" + json);
           for (var i = 0; i < obj['annotator']['annotations'].length; i++) {
             var annotation = obj['annotator']['annotations'][i];
-            if ( typeof annotation['id'] != 'undefined' && typeof annotation['marker-src'] != 'undefined' && typeof annotation['type'] != 'undefined' && typeof annotation['type-src'] != 'undefined' && typeof annotation['x-pos'] != 'undefined' && typeof annotation['y-pos'] != 'undefined' && typeof annotation['min-zoom'] != 'undefined' && typeof annotation['start-time'] != 'undefined' && typeof annotation['end-time'] != 'undefined') {
-
-              addAnnotationFromLoad(annotation['id'], annotation['x-pos'], annotation['y-pos'], annotation['marker-src'], annotation['type'], annotation['type-src'], annotation['min-zoom'], annotation['start-time'], annotation['end-time']);
-
+            if ( typeof annotation['id'] != 'undefined' && typeof annotation['marker-src'] != 'undefined' && typeof annotation['type'] != 'undefined' && typeof annotation['type-src'] != 'undefined' && typeof annotation['x-pos'] != 'undefined' && typeof annotation['y-pos'] != 'undefined' && typeof annotation['min-zoom'] != 'undefined' && typeof annotation['start-time'] != 'undefined' && typeof annotation['end-time'] != 'undefined' && typeof annotation['time'] != 'undefined' && typeof annotation['zoom'] != 'undefined') {
+              addAnnotationFromLoad(annotation['id'], annotation['x-pos'], annotation['y-pos'], annotation['marker-src'], annotation['type'], annotation['type-src'], annotation['min-zoom'], annotation['start-time'], annotation['end-time'], annotation['time'], annotation['zoom']);
             } else {
               UTIL.error("Ignoring invalid annotation during annotator load.");
             }
+            if (i == obj['annotator']['annotations'].length - 1)
+              UTIL.selectSelectableElements($("#" + annotatorDivId + " .annotation_list"), $("#" + annotation['id']), true);
           }
         } else {
           UTIL.error("ERROR: Invalid annotation file.");
@@ -572,9 +576,9 @@ if (!window['$']) {
       return true;
     }
 
-    function addAnnotationFromLoad(id, xPos, yPos, markerSrc, type, typeSrc, minZoom, startTime, endTime) {
+    function addAnnotationFromLoad(id, xPos, yPos, markerSrc, type, typeSrc, minZoom, startTime, endTime, time, zoom) {
       var kineticImage = addKineticObj(xPos, yPos, markerSrc, true);
-      addAnnotation(kineticImage.attrs.id + "_item", xPos, yPos, minZoom, startTime, endTime, kineticImage, type);
+      addAnnotation(kineticImage.attrs.id + "_item", xPos, yPos, minZoom, startTime, endTime, kineticImage, type, time, zoom);
       annotationList[annotationList.length - 1].type_src = typeSrc;
 
       var $mediaSrcElem = $("#" + kineticImage.attrs.id + "_item_type_src");
@@ -665,7 +669,7 @@ if (!window['$']) {
           // refresh event is actually fired.
           $annotationListItem.removeClass("ui-selected");
           $annotationListItem.get(0).willWarpAndSeek = false;
-          UTIL.selectSelectableElements($("#" + annotatorDivId + " .annotation_list"), $annotationListItem);
+          UTIL.selectSelectableElements($("#" + annotatorDivId + " .annotation_list"), $annotationListItem, true);
 
           var annotation = getAnnotationByListId($annotationListItem.get(0).id);
 
@@ -776,7 +780,7 @@ if (!window['$']) {
           });
           var currentTime = timelapse.getCurrentTime();
           //addAnnotation(kineticImage.attrs.id + "_item", timeMachinePosition.x, timeMachinePosition.y, timelapse.getCurrentZoom(), Math.max(currentTime - 1, 0).toFixed(2), Math.min(currentTime + 1, timelapse.getDuration()).toFixed(2), kineticImage, null);
-          addAnnotation(kineticImage.attrs.id + "_item", timeMachinePosition.x, timeMachinePosition.y, -1, 0, timelapse.getDuration().toFixed(2), kineticImage, null);
+          addAnnotation(kineticImage.attrs.id + "_item", timeMachinePosition.x, timeMachinePosition.y, -1, 0, timelapse.getDuration().toFixed(2), kineticImage, null, currentTime, timelapse.getCurrentZoom());
         }
         annotationLayer.draw();
       };
