@@ -2225,6 +2225,7 @@ if (!window['$']) {
       //UTIL.log("adding tile " + dumpTileidx(tileidx) + " from " + url + " and geom = (left:" + geom['left'] + " ,top:" + geom['top'] + ", width:" + geom['width'] + ", height:" + geom['height'] + ")");
       var video = videoset.addVideo(url, geom);
       video.tileidx = tileidx;
+      UTIL.log(videoset.videoName(video) + ': Added, with ' + getTileidxName(tileidx) + ' and url ' + url);
       return video;
     };
 
@@ -2332,6 +2333,10 @@ if (!window['$']) {
     var getTileidxParent = function(t) {
       return tileidxCreate(getTileidxLevel(t) - 1, getTileidxColumn(t) >> 1, getTileidxRow(t) >> 1);
     };
+
+    var getTileidxName = function(t) {
+      return 'tileidx(' + getTileidxLevel(t) + ',' + getTileidxRow(t) + ',' + getTileidxColumn(t) + ')';
+    }
 
     var dumpTileidx = function(t) {
       return "{l:" + getTileidxLevel(t) + ",c:" + getTileidxColumn(t) + ",r:" + getTileidxRow(t) + "}";

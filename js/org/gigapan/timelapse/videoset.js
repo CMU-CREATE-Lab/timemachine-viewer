@@ -302,10 +302,6 @@ if (!window['$']) {
     //
 
     var _addVideo = function(src, geometry, video) {
-      // If the src is already added, do not add it again
-      if (Object.keys(activeVideoSrcList).indexOf(src) > -1){
-        return activeVideos[videoDiv.id + "_" + id];
-      }
       //perfAdded++;
       id++;
       // Note: Safari and Chrome already let you do this
@@ -326,9 +322,6 @@ if (!window['$']) {
       video.id = currentVideoId;
       video.active = true;
       video.ready = false;
-      if ( typeof videoBeingReplaced !== 'undefined' && videoBeingReplaced != null) {
-        video.idOfVideoBeingReplaced = videoBeingReplaced.id;
-      }
 
       // Add methods getCurrentTime() and setCurrentTime() to the video.  We MUST use these methods instead of accessing
       // the currentTime property directly so that we can abstract away the time offset calculations required for split
@@ -485,6 +478,11 @@ if (!window['$']) {
       return videoIdArray[videoIdArray.length - 1] - 0;
     };
 
+    var _videoName = function(video) {
+      return 'video(' + _idNumFromVideo(video) + ')';
+    }
+    this.videoName = _videoName;
+
     var _deleteUnneededVideos = function() {
       var lastValidId = id - 2; // Delete any videos earlier than two before the one most recently requested
 
@@ -496,7 +494,6 @@ if (!window['$']) {
       for (var videoId in activeVideos) {
         var video = activeVideos[videoId];
         if (video != currentlyShownVideo && _idNumFromVideo(video) < lastValidId) {
-          console.log('Deleting unneeded video ' + _idNumFromVideo(video));
           _deleteVideo(video);
         }
       }
@@ -504,7 +501,7 @@ if (!window['$']) {
     this.deleteUnneededVideos = _deleteUnneededVideos;
 
     var _repositionVideo = function(video, geometry) {
-      UTIL.log("video(" + video.id + ") reposition to left=" + geometry.left + ",top=" + geometry.top + ", w=" + geometry.width + ",h=" + geometry.height + "; ready="+video.ready);
+      //UTIL.log("video(" + video.id + ") reposition to left=" + geometry.left + ",top=" + geometry.top + ", w=" + geometry.width + ",h=" + geometry.height + "; ready="+video.ready);
       if (viewerType == "video") {
         // toFixed prevents going to scientific notation when close to zero;  this confuses the DOM
         video.style.left = geometry.left.toFixed(4) - (video.ready ? 0 : 100000) + "px";
