@@ -136,6 +136,7 @@ if (!window['$']) {
     var isStatusLoggingEnabled = false;
     var activeVideos = {};
     var inactiveVideos = {};
+    var currentlyShownVideo = null;
     var playbackRate = 1;
     var id = 0;
     var fps = 25;
@@ -410,19 +411,10 @@ if (!window['$']) {
           target: video
         });
       }
+ 
+      _deleteUnneededVideos();
+
       if (isOperaLegacy) {
-        // Opera <= 12 seems to queue too many videos and then gets stuck in the stalling state.
-        // This ensures that we remove old videos that are no longer necessary, specifically
-        // *really* old ones that never got removed for some reason.
-        if (viewerType == "canvas") {
-          for (var videoId in activeVideos) {
-            var videoIdArray = videoId.split("_");
-            var videoIdNum = videoIdArray[videoIdArray.length - 1];
-            if (id - 2 > videoIdNum) {
-              _deleteVideo(activeVideos[videoDiv.id + "_" + videoIdNum]);
-            }
-          }
-        }
         // Videos in Opera <= 12 often seem to get stuck in a state of always seeking.
         // This will ensure that if we are stuck, we reload the video.
         video.addEventListener('seeking', videoSeeking, false);
@@ -488,8 +480,31 @@ if (!window['$']) {
     };
     this.addVideo = _addVideo;
 
+    var _idNumFromVideo = function(video) {
+      var videoIdArray = video.id.split("_");
+      return videoIdArray[videoIdArray.length - 1] - 0;
+    };
+
+    var _deleteUnneededVideos = function() {
+      var lastValidId = id - 2; // Delete any videos earlier than two before the one most recently requested
+
+      if (currentlyShownVideo) {
+        // Delete any videos earlier than currently shown video
+        lastValidId = Math.max(lastValidId, _idNumFromVideo(currentlyShownVideo));
+      }
+
+      for (var videoId in activeVideos) {
+        var video = activeVideos[videoId];
+        if (video != currentlyShownVideo && _idNumFromVideo(video) < lastValidId) {
+          console.log('Deleting unneeded video ' + _idNumFromVideo(video));
+          _deleteVideo(video);
+        }
+      }
+    }
+    this.deleteUnneededVideos = _deleteUnneededVideos;
+
     var _repositionVideo = function(video, geometry) {
-      //UTIL.log("video(" + video.id + ") reposition to left=" + geometry.left + ",top=" + geometry.top + ", w=" + geometry.width + ",h=" + geometry.height + "; ready="+video.ready);
+      UTIL.log("video(" + video.id + ") reposition to left=" + geometry.left + ",top=" + geometry.top + ", w=" + geometry.width + ",h=" + geometry.height + "; ready="+video.ready);
       if (viewerType == "video") {
         // toFixed prevents going to scientific notation when close to zero;  this confuses the DOM
         video.style.left = geometry.left.toFixed(4) - (video.ready ? 0 : 100000) + "px";
@@ -997,6 +1012,8 @@ if (!window['$']) {
       }
 
       video.ready = true;
+      currentlyShownVideo = video;
+
       if (viewerType == "video") {
         video.style.left = parseFloat(video.style.left) + 100000 + "px";
       }
@@ -1009,25 +1026,13 @@ if (!window['$']) {
         drawToCanvas(video);
       }
 
+      // Delete all videos earlier than new visible video
+
       // Delete video which is being replaced, following the chain until we get to a null.  We do this in a timeout
       // to give the browser a chance to update the GUI so that it can render the new video positioned above.  This
       // (mostly) fixes the blanking problem we saw in Safari.
       var timeoutLength = (viewerType == "video") ? 5 : 0;
-      window.setTimeout(function() {
-        var videoToDelete = activeVideos[video.idOfVideoBeingReplaced];
-        var chainOfDeletes = "";
-        //var deletedVideoUrls = [];
-        while (videoToDelete) {
-          //deletedVideoUrls.push(videoToDelete.src);
-          var nextVideoToDelete = activeVideos[videoToDelete.idOfVideoBeingReplaced];
-          delete videoToDelete.idOfVideoBeingReplaced;
-          // Delete this to prevent multiple deletes
-          chainOfDeletes += videoToDelete.id + ",";
-          _deleteVideo(videoToDelete, video);
-          videoToDelete = nextVideoToDelete;
-        }
-        UTIL.log("video(" + video.id + ") _makeVideoVisible(" + callingFunction + "): chain of deletes: " + chainOfDeletes);
-      }, timeoutLength);
+      window.setTimeout(_deleteUnneededVideos(), timeoutLength);
     };
 
     var videoSeeking = function(event) {
