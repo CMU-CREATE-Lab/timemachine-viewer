@@ -404,7 +404,7 @@ if (!window['$']) {
           target: video
         });
       }
- 
+
       _deleteUnneededVideos();
 
       if (isOperaLegacy) {
@@ -422,28 +422,28 @@ if (!window['$']) {
       // just in case the issue still exists in Chrome. From some testing,
       // it is not clear whether the bug still exists in situations of
       // low bandwidth or high tile server load.
-      if (isChrome && (doChromeSeekableHack /*|| doChromeBufferedHack*/)) {
-        var check;
-        var timeout = 2000;
-        check = function() {
-          UTIL.log("check load for video(" + video.id + ")");
-          UTIL.log("readyState: " + video.readyState);
-          if ((video.seekable.length == 0 /*|| video.buffered.length == 0*/) && activeVideos[video.id] == video) {
-            // Ouch.  A brand new bug in Chrome 15 (apparently) causes videos to never load
-            // if they've been loaded recently and are being loaded again now.
-            // It's pretty weird, but this disgusting code seems to work around the problem.
-            //
-            // 20130509: Added seekable case as well, which seems to occur when Chrome tries
-            // to receive a video from a server under heavy load. Very strange.
-            UTIL.log("Chrome bug detected, adding cache buster");
-            video.setAttribute('src', src + "?time=" + (new Date().getTime()));
-            video.load();
-            if (advancing)
-              video.play();
-          }
-        };
-        setTimeout(check, timeout);
-      }
+      //if (isChrome && (doChromeSeekableHack /*|| doChromeBufferedHack*/)) {
+      //  var check;
+      //  var timeout = 2000;
+      //  check = function() {
+      //    UTIL.log("check load for video(" + video.id + ")");
+      //    UTIL.log("readyState: " + video.readyState);
+      //    if ((video.seekable.length == 0 /*|| video.buffered.length == 0*/) && activeVideos[video.id] == video) {
+      //      // Ouch.  A brand new bug in Chrome 15 (apparently) causes videos to never load
+      //      // if they've been loaded recently and are being loaded again now.
+      //      // It's pretty weird, but this disgusting code seems to work around the problem.
+      //      //
+      //      // 20130509: Added seekable case as well, which seems to occur when Chrome tries
+      //      // to receive a video from a server under heavy load. Very strange.
+      //      UTIL.log("Chrome seek bug detected, adding cache buster");
+      //      video.setAttribute('src', src + "?time=" + (new Date().getTime()));
+      //      video.load();
+      //      if (advancing)
+      //        video.play();
+      //    }
+      //  };
+      //  setTimeout(check, timeout);
+      //}
 
       publishVideoEvent(video.id, 'video-added', currentTime);
 
@@ -484,7 +484,7 @@ if (!window['$']) {
     this.videoName = _videoName;
 
     var _deleteUnneededVideos = function() {
-      var lastValidId = id - 2; // Delete any videos earlier than two before the one most recently requested
+      var lastValidId = id - 1; // Delete any videos earlier than the one most recently requested
 
       if (currentlyShownVideo) {
         // Delete any videos earlier than currently shown video
@@ -1029,7 +1029,7 @@ if (!window['$']) {
       // to give the browser a chance to update the GUI so that it can render the new video positioned above.  This
       // (mostly) fixes the blanking problem we saw in Safari.
       var timeoutLength = (viewerType == "video") ? 5 : 0;
-      window.setTimeout(_deleteUnneededVideos(), timeoutLength);
+      window.setTimeout(_deleteUnneededVideos, timeoutLength);
     };
 
     var videoSeeking = function(event) {
@@ -1159,21 +1159,6 @@ if (!window['$']) {
         spinnerTimeoutId = window.setTimeout(function() {
           timelapse.showSpinner(viewerDivId);
         }, 250);
-        // TODO: stop streaming old videos
-        if (viewerType == "canvas") {
-          for (var videoId in activeVideos) {
-            if (videoId != currentVideoId && !activeVideos[videoId].ready) {
-              if (isIE9)
-                activeVideos[videoId].canDraw = false;
-              try {
-                activeVideos[videoId].pause();
-              } catch(e) {
-                UTIL.error(e.name + " while pausing " + activeVideos[videoId] + " in stall(). Most likely you are running IE 9.");
-              }
-              stopStreaming(activeVideos[videoId]);
-            }
-          }
-        }
         notifyStallEventListeners();
         _updateVideoAdvance();
       }

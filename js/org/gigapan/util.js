@@ -112,9 +112,9 @@ if (!org.gigapan) {
     if (!!!v.canPlayType)
       return false;
     // See what video formats are actually supported
-    if (!mediaType) {
+    //if (!mediaType) {
       setMediaType(forcedMediaType);
-    }
+    //}
     // We may support the video tag, but perhaps we do not support the formats that our viewer uses
     if (supportedMediaTypes.length == 0)
       return false;

@@ -967,7 +967,7 @@ if (!window['$']) {
       if (datasetType == "modis" && customUI.getLocker() != "none")
         shareStr += '&l=' + customUI.getLocker();
       if (datasetType == "breathecam")
-        shareStr += '&d=' + settings["url"].match(/\d\d\d\d-\d\d-\d\d/);
+        shareStr += '&d=' + settings["url"].match(/\d\d\d\d-\d\d-\d\d/) + "&s=" + tmJSON['id'];
       return shareStr;
     };
     this.getShareView = getShareView;
@@ -2558,7 +2558,7 @@ if (!window['$']) {
               settings["onTimeMachinePlayerReady"](timeMachineDivId);
             }
           }
-
+          loadTimelapseWithPreviousViewAndTime = false;
           hideSpinner(viewerDivId);
           if ( typeof onNewTimelapseLoadCompleteCallBack === "function")
             onNewTimelapseLoadCompleteCallBack();
