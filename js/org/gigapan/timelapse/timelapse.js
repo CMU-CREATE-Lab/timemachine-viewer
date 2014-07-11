@@ -937,6 +937,8 @@ if (!window['$']) {
     this.setNewView = _setNewView;
 
     var _normalizeView = function(newView) {
+      if (!newView) return null;
+
       if (newView.center) {// Center view
         var newCenterView = newView.center;
         if (( typeof (tmJSON['projection-bounds']) !== 'undefined') && UTIL.isNumber(newCenterView.lat) && UTIL.isNumber(newCenterView.lng) && UTIL.isNumber(newView.zoom)) {
@@ -972,7 +974,7 @@ if (!window['$']) {
     };
     this.getShareView = getShareView;
 
-    // Extract a safe view from either a view object (i.e. {center:{x:val, y:val}, zoom:val}) or
+    // Extract a safe view from either a view object (e.g. {center:{x:val, y:val}, zoom:val}) or
     // from an array of strings (i.e. a share URL, such as #v=44.96185,59.06233,4.5,latLng&t=0.10,
     // that has been unpacked).
     var unsafeViewToView = function(unsafe_viewParam) {
@@ -1011,6 +1013,12 @@ if (!window['$']) {
           isLatLng ? tmpViewParam.push("latLng") : tmpViewParam.push("pts");
           unsafe_viewParam = tmpViewParam;
         }
+      }
+
+      // If we still have a share URL (e.g. #v=44.96185,59.06233,4.5,latLng&t=0.10)
+      // that has not been unpacked into an array of strings, do so now.
+      if (typeof(unsafe_viewParam) === "string") {
+        unsafe_viewParam = unsafe_viewParam.split(",");
       }
 
       if (unsafe_viewParam.indexOf("latLng") != -1) {
