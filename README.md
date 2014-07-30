@@ -4,7 +4,7 @@ Look at the examples directory for how to embed a time machine or use the tour e
 
 Places where this viewer is used:
 
- * [Main Time Machine site](http://timemachine.cmucreatelab.org/wiki/Main_Page)
+ * [Time Machine site @ CMU](http://timemachine.cmucreatelab.org/wiki/Main_Page)
  * [Google Earth Engine Earth Timelapse](http://earthengine.google.org)
  * [TIME Magazine TIMELapse site](http://world.time.com/timelapse/)
 
