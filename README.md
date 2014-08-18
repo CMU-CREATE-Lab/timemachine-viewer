@@ -11,5 +11,5 @@ Places where this viewer is used:
 Some additional documentation:
 
  * [How to create Time Machine content for the viewer in this repo](http://timemachine.cmucreatelab.org/wiki/Create_your_own)
- * [List of Settings for Time Machine Viewing Client](https://docs.google.com/document/d/1OezimfDgzPSaq1aVOtLTp5re8e2F0PLkJ5ycr1ZTyq0/edit)
+ * [API Documentation (Still a work in progress)](https://docs.google.com/document/d/1y8CpIrLynYGl_IpxNxUczTeUAQATvSKb78hoGM-_YGw)
  * [How to create a Time Machine viewing directory if you already have a directory of tiles](https://docs.google.com/document/d/1O-kOoOoPczCZIOkehgBj2olm1-NgKX6CxGRFJl21jwI/edit?usp=sharing)
