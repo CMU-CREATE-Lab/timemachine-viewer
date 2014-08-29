@@ -516,6 +516,15 @@ if (!Math.uuid) {
             frame["speed"] = encoder.read_uint();
             frame["duration"] = null;
           }
+          // TODO:
+          // If the embed from which the tour was created has a different dwell time
+          // than the embed the tour is being run on, then playback may look slightly different.
+          // These waitStart/waitEnd properties below are not used anymore and are here as legacy
+          // code for rendering tours to videos. While these have been refactored, dwell time is still
+          // used during tour playback, but we always use the value set by the current embed, not what
+          // embed the tour may have come from.
+          frame["waitStart"] = timelapse.getStartDwell();
+          frame["waitEnd"] = timelapse.getEndDwell();
           // Decode frame number
           var frameNumber = encoder.read_uint();
           frame["time"] = frameNumber / fps;
@@ -596,10 +605,8 @@ if (!Math.uuid) {
       snaplapseJSON['snaplapse']['fps'] = timelapse.getFps();
       snaplapseJSON['snaplapse']['keyframes'] = keyframes;
       for (var i = 0; i < keyframes.length; i++) {
-        delete snaplapseJSON['snaplapse']['keyframes'][i]["timeTagBot"];
-        delete snaplapseJSON['snaplapse']['keyframes'][i]["timeTagRight"];
-        delete snaplapseJSON['snaplapse']['keyframes'][i]["timeTagTimewarp"];
-        delete snaplapseJSON['snaplapse']['keyframes'][i]["timeTagNavigation"];
+        snaplapseJSON['snaplapse']['keyframes'][i]['waitStart'] = timelapse.getStartDwell();
+        snaplapseJSON['snaplapse']['keyframes'][i]['waitEnd'] = timelapse.getEndDwell();
       }
       return JSON.stringify(snaplapseJSON, null, 3);
     };
