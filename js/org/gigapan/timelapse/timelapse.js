@@ -1365,13 +1365,18 @@ if (!window['$']) {
           viewerBottomPx = 100;
       }
 
-      if ($timeMachineDiv.css("position") == "static") {
+      var userDefinedtimeMachineDivWidth = UTIL.getElementStyle("#" + timeMachineDivId, "width");
+      var userDefinedtimeMachineDivHeight = UTIL.getElementStyle("#" + timeMachineDivId, "height");
+
+      // If the user does not specify width and height for the div containing the Time Machine,
+      // then default to the dimensions of the dataset specified in its json.
+      if ($timeMachineDiv.css("position") == "static" || userDefinedtimeMachineDivWidth == null || userDefinedtimeMachineDivHeight == null) {
         $timeMachineDiv.css({
           "position": "absolute",
           "top": "0px",
           "left": "0px",
-          "width": originalVideoWidth + "px",
-          "height": (originalVideoHeight + viewerBottomPx) + "px"
+          "width": userDefinedtimeMachineDivWidth ? userDefinedtimeMachineDivWidth : originalVideoWidth + "px",
+          "height": userDefinedtimeMachineDivHeight ? userDefinedtimeMachineDivHeight : (originalVideoHeight + viewerBottomPx) + "px"
         });
       }
 

@@ -449,6 +449,55 @@ if (!org.gigapan) {
       ga('send', 'event', category, action, label);
   };
 
+  // Compute the actual style for an element as defined inline or in a stylesheet.
+  // This is useful because jQuery will return a value no matter what, even if it uses
+  // default browser values. With this function, we see whether the user actually defined
+  // the style manually.
+  org.gigapan.Util.getElementStyle = function(selector, style, sheet) {
+    var sheets = typeof sheet !== 'undefined' ? [sheet] : document.styleSheets;
+    for (var i = 0, l = sheets.length; i < l; i++) {
+        var sheet = sheets[i];
+        // cssRules respects same-origin policy, as per
+        // https://code.google.com/p/chromium/issues/detail?id=49001#c10.
+        try {
+          // In Chrome, if the stylesheet originates from a different domain,
+          // sheet.cssRules simply won't exist. I believe the same is true for IE, but
+          // I haven't tested it.
+          //
+          // In Firefox, if stylesheet originates from a different domain, trying
+          // to access sheet.cssRules will throw a SecurityError. Hence, we must use
+          // try/catch to detect this condition in Firefox.
+          if (!sheet.cssRules)
+            continue;
+        } catch(e) {
+          // Rethrow exception if it's not a SecurityError. Note that SecurityError
+          // exception is specific to Firefox.
+          if (e.name !== 'SecurityError')
+            throw e;
+          continue;
+        }
+        for (var j = 0, k = sheet.cssRules.length; j < k; j++) {
+          var rule = sheet.cssRules[j];
+          if (rule.selectorText && rule.selectorText.split(',').indexOf(selector) !== -1) {
+            if (!rule.style[style])
+              break;
+            return rule.style[style];
+          }
+        }
+    }
+    var $selector = $(selector);
+    if ($selector.length > 0) {
+      var styleValue = $selector[0].style[style];
+      return styleValue ? styleValue : null;
+    }
+    return null;
+  }
+
+  // Compute the root URL for where all the Time Machine files exist.
+  // Note: Need to be run when loading a Time Machine file or the returned
+  // path will not useful For example, if we call this after everything is loaded
+  // and the last include is of say external Google Maps, then we get an
+  // external path and not one that points to the Time Machine source directory.
   function computeRootAppURL() {
     var jsFiles = $("script");
     var pathOfCurrentScript = $(jsFiles[jsFiles.length - 1]).attr("src");
@@ -465,11 +514,9 @@ if (!org.gigapan) {
       }
     } else {
       // Include is a relative URL
-      var relativeURL = pathOfCurrentScript.substr(0, pathOfCurrentScript.substring(1).indexOf('/') + 1);
-      if (relativeURL === "" || (relativeURL.substr(0, 1) !== "/" && relativeURL.substr(0, 1) !== "." && relativeURL.substr(0, 2) !== ".."))
-        return "";
-      else
-        return relativeURL + "/";
+      var relativeURL = pathOfCurrentScript.substr(0, pathOfCurrentScript.indexOf('/js/'));
+      if (relativeURL !== "") relativeURL += "/"
+      return relativeURL;
     }
   }
 
