@@ -45,7 +45,8 @@
       var queryStr = window.location.href.slice(window.location.href.indexOf('?') + 1).split("#")[0];
       timelapseMetadata = org.gigapan.Util.unpackVars(queryStr);
 
-      url = "http://g7.gigapan.org/timemachines/" + timelapseMetadata["id"];
+      var host = (timelapseMetadata["use_tm1"] === "true") ? "http://timemachine1.gc.cs.cmu.edu/" : "http://g7.gigapan.org/";
+      var url = host + "timemachines/" + timelapseMetadata["id"];
 
       function init() {
         var myView = null;
@@ -61,8 +62,8 @@
           disableTourLooping: true,
           isGoogleAnalyticEventTrackingEnabled: true
         };
-        if (timelapseMetadata && !timelapseMetadata['forceMP4'])
-          delete settings["mediaType"];
+        if (timelapseMetadata && timelapseMetadata["forceMP4"] === "true")
+          settings["mediaType"] = ".mp4";
         timelapse = new org.gigapan.timelapse.Timelapse("timeMachine", settings);
       }
 
