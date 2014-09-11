@@ -985,7 +985,8 @@ if (!org.gigapan.timelapse.snaplapse) {
             $sortable.css("opacity", "1");
           } else {
             // If users play tours from the viewer
-            if (timelapse.getSnaplapseForPresentationSlider().getKeyframes().length > 0)
+            var presentationSlider = timelapse.getSnaplapseForPresentationSlider();
+            if (presentationSlider && presentationSlider.getKeyframes().length > 0)
               $("#" + timeMachineDivId + " .presentationSlider").show();
             if (useCustomUI)
               $("#" + timeMachineDivId + " .composer").show();
