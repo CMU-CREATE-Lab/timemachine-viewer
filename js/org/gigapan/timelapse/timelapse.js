@@ -2580,8 +2580,10 @@ if (!window['$']) {
 
       snaplapseForSharedTour = new org.gigapan.timelapse.Snaplapse(thisObj, settings, "noUI");
 
+      // Always add to the DOM. We need it when we display tours, even without the editor UI actually visible.
+      $("#" + videoDivId).append('<div class="snaplapse-annotation-description"><div></div></div>');
+
       if (editorEnabled) {
-        $("#" + videoDivId).append('<div class="snaplapse-annotation-description"><div></div></div>');
         snaplapse = new org.gigapan.timelapse.Snaplapse(thisObj, settings);
 
         // TODO:
