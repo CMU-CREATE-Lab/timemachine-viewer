@@ -493,6 +493,20 @@ if (!org.gigapan) {
     return null;
   }
 
+  // Convert relative paths to absolute ones.
+  org.gigapan.Util.relativeToAbsolutePath = function(url) {
+    var loc = location.href;
+    loc = loc.substring(0, loc.lastIndexOf('/'));
+    while (/^\.*\//.test(url)) {
+      var numToChop = (url.substr(0,2) == "./") ? 2 : 3;
+      // We are of the form ../ and need to backtrack a level.
+      if (numToChop == 3)
+        loc = loc.substring(0, loc.lastIndexOf('/'));
+      url = url.substring(numToChop);
+    }
+    return loc + '/' + url;
+  }
+
   // Compute the root URL for where all the Time Machine files exist.
   // Note: Need to be run when loading a Time Machine file or the returned
   // path will not useful For example, if we call this after everything is loaded
