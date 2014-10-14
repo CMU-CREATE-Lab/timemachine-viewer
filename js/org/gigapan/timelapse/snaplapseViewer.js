@@ -586,7 +586,7 @@ if (!org.gigapan.timelapse.snaplapse) {
           $("#" + composerDivId + " .toolbar .toggleMode .ui-button-text").text(getEditorModeText("tour"));
         $editorModeOptions.hide().menu();
         // Set the dropdown
-        $("#" + composerDivId + " .toolbar .editorModeOptions li a").click(function() {
+        $("#" + composerDivId + " .toolbar .editorModeOptions li").click(function() {
           var selectedModeTxt = $(this).text();
           if (selectedModeTxt == getEditorModeText("tour")) {
             setPresentationMode(false);
@@ -818,6 +818,7 @@ if (!org.gigapan.timelapse.snaplapse) {
     var setPresentationMode = function(status) {
       var $snaplapseContainer = $("#" + composerDivId + " .snaplapse_keyframe_container");
       if (status == true) {
+        snaplapse.setKeyframeTitleState("enable");
         startEditorFromPresentationMode = true;
         $("#" + composerDivId + " .toolbar .playStopTimewarp").hide();
         $("#" + viewerDivId + " .videoQualityContainer").hide();
@@ -827,6 +828,7 @@ if (!org.gigapan.timelapse.snaplapse) {
         if ($videoSizeSelect)
           $videoSizeSelect.find("option[value='750,530']").attr('selected', 'selected');
       } else {
+        snaplapse.setKeyframeTitleState("disable");
         startEditorFromPresentationMode = false;
         $("#" + composerDivId + " .toolbar .playStopTimewarp").show();
         $("#" + viewerDivId + " .videoQualityContainer").show();
