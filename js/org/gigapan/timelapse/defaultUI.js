@@ -130,6 +130,7 @@ if (!org.gigapan.timelapse.Timelapse) {
     // Flags
     var isSafari = org.gigapan.Util.isSafari();
     var originalIsPaused;
+    var useTouchFriendlyUI = timelapse.useTouchFriendlyUI();
 
     // Parameters
     var minViewportHeight = timelapse.getMinViewportHeight();
@@ -196,7 +197,7 @@ if (!org.gigapan.timelapse.Timelapse) {
       $helpPlayerLabel.attr("for", timeMachineDivId + "_helpPlayerCheckbox");
       helpPlayerCheckbox.button({
         icons: {
-          primary: "ui-icon-help"
+          primary: useTouchFriendlyUI ? "ui-icon-custom-help" : "ui-icon-help"
         },
         text: true
       }).change(function() {
@@ -384,9 +385,13 @@ if (!org.gigapan.timelapse.Timelapse) {
       var $zoom = $("#" + viewerDivId + " .zoom");
       // Create zoom in button
       $zoom.append('<button class="zoomin" title="Zoom in"></button>');
+
+      if (useTouchFriendlyUI)
+        $zoom.addClass("zoom-touchFriendly")
+
       $("#" + viewerDivId + " .zoomin").button({
         icons: {
-          primary: "ui-icon-plus"
+          primary: useTouchFriendlyUI ? "ui-icon-custom-plus" : "ui-icon-plus"
         },
         text: false
       }).mousedown(function() {
@@ -407,7 +412,7 @@ if (!org.gigapan.timelapse.Timelapse) {
       $zoom.append('<button class="zoomout" title="Zoom out"></button>');
       $("#" + viewerDivId + " .zoomout").button({
         icons: {
-          primary: "ui-icon-minus"
+          primary: useTouchFriendlyUI ? "ui-icon-custom-minus" : "ui-icon-minus"
         },
         text: false
       }).mousedown(function() {
@@ -427,7 +432,7 @@ if (!org.gigapan.timelapse.Timelapse) {
         $zoom.append('<button class="zoomall" title="Home"></button>');
         $("#" + viewerDivId + " .zoomall").button({
           icons: {
-            primary: "ui-icon-home"
+            primary: useTouchFriendlyUI ? "ui-icon-custom-home" : "ui-icon-home"
           },
           text: false
         }).click(function() {
@@ -445,7 +450,7 @@ if (!org.gigapan.timelapse.Timelapse) {
         value: timelapse.viewScaleToZoomSlider(timelapse.getHomeView().scale),
         min: 0,
         max: 1,
-        step: 0.01,
+        step: useTouchFriendlyUI ? 0.003 : 0.01,
         slide: function(e, ui) {
           timelapse.setScaleFromSlider(ui.value);
         }
@@ -461,6 +466,10 @@ if (!org.gigapan.timelapse.Timelapse) {
       });
 
       $("#" + viewerDivId + " .zoomSlider .ui-slider-handle").attr("title", "Drag to zoom");
+
+      if (useTouchFriendlyUI)
+        $("#" + viewerDivId + " .pan, .zoomSlider").hide();
+
     };
 
     var createSpeedControl = function() {
@@ -623,12 +632,12 @@ if (!org.gigapan.timelapse.Timelapse) {
     };
 
     var zoomIn = function() {
-      var val = Math.min($("#" + viewerDivId + " .zoomSlider").slider("value") + 0.01, 1);
+      var val = Math.min($("#" + viewerDivId + " .zoomSlider").slider("value") + (useTouchFriendlyUI ? 0.003 : 0.01), 1);
       timelapse.setScaleFromSlider(val);
     };
 
     var zoomOut = function() {
-      var val = Math.max($("#" + viewerDivId + " .zoomSlider").slider("value") - 0.01, 0);
+      var val = Math.max($("#" + viewerDivId + " .zoomSlider").slider("value") - (useTouchFriendlyUI ? 0.003 : 0.01), 0);
       timelapse.setScaleFromSlider(val);
     };
 

@@ -99,15 +99,16 @@ if (!org.gigapan.timelapse.Timelapse) {
     var enableVideoQualitySelector = ( typeof (scaleBarOptions["enableVideoQualitySelector"]) == "undefined") ? false : scaleBarOptions["enableVideoQualitySelector"];
     var barLength;
     var datasetType = timelapse.getDatasetType();
+    var useTouchFriendlyUI = timelapse.useTouchFriendlyUI();
     var scaleBarGeometryLandsat = {
       "x": 9,
-      "y": 77,
+      "y": useTouchFriendlyUI ? 106 : 77,
       "position": "left",
-      "barLength": 113
+      "barLength": useTouchFriendlyUI ? 155 : 113
     };
     var scaleBarGeometryMODIS = {
       "x": 9,
-      "y": 127,
+      "y": useTouchFriendlyUI ? 154 : 127,
       "position": "left",
       "barLength": 135
     };

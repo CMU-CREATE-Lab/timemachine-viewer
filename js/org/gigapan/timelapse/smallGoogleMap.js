@@ -96,12 +96,13 @@ if (!org.gigapan.timelapse.Timelapse) {
     // Class variables
     //
     var isHyperwall = settings["isHyperwall"];
+    var useTouchFriendlyUI = timelapse.useTouchFriendlyUI();
     var minHeight = isHyperwall ? 450 : 120;
     var minWidth = isHyperwall ? 500 : 160;
-    var maxHeight = isHyperwall ? 768 : 220;
-    var maxWidth = isHyperwall ? 1024 : 330;
-    var startWidth = minWidth;
-    var startHeight = minHeight;
+    var maxHeight = isHyperwall ? 768 : 380;
+    var maxWidth = isHyperwall ? 1024 : 504;
+    var startWidth = useTouchFriendlyUI ? 300 : minWidth;
+    var startHeight = useTouchFriendlyUI ? 235 : minHeight;
     var smallGoogleMapDivId = ( typeof (smallGoogleMapOptions["smallGoogleMapDiv"]) == "undefined") ? "smallGoogleMap2013" : smallGoogleMapOptions["smallGoogleMapDiv"];
     var resizable = ( typeof (smallGoogleMapOptions["resizable"]) == "undefined") ? true : smallGoogleMapOptions["resizable"];
     var showToggleBtn = ( typeof (smallGoogleMapOptions["showToggleBtn"]) == "undefined") ? true : smallGoogleMapOptions["showToggleBtn"];
@@ -110,8 +111,8 @@ if (!org.gigapan.timelapse.Timelapse) {
       "y": undefined
     };
     var mapGeometry = {
-      "width": minWidth,
-      "height": minHeight,
+      "width": startWidth,
+      "height": startHeight,
       "right": 21,
       "top": 21
     };
@@ -282,13 +283,15 @@ if (!org.gigapan.timelapse.Timelapse) {
           }
         }
       }).dblclick(function(event) {
+        if (useTouchFriendlyUI) return;
         event.stopPropagation();
         var $target = $(event.target);
         if ($target.hasClass("smallMapResizer") || $target.hasClass("toggleGoogleMapBtn"))
           return;
         timelapse.zoomAbout(2, undefined, undefined, true);
       });
-      google.maps.event.addListener(googleMap, 'drag', updateLocation);
+      if (!useTouchFriendlyUI)
+        google.maps.event.addListener(googleMap, 'drag', updateLocation);
       google.maps.event.addListener(googleMap, 'resize', function() {
         google.maps.event.addListenerOnce(googleMap, 'bounds_changed', function() {
           timelapse.updateLocationContextUI();
@@ -317,28 +320,30 @@ if (!org.gigapan.timelapse.Timelapse) {
       }
       // Create toggle button
       if (showToggleBtn && !isHyperwall) {
+        var toggleIconClose = useTouchFriendlyUI ? "ui-icon-custom-arrowthick-1-ne" : "ui-icon-arrowthick-1-ne";
+        var toggleIconOpen = useTouchFriendlyUI ? "ui-icon-custom-arrowthick-1-sw" : "ui-icon-arrowthick-1-sw";
         $smallMapContainer.append('<button class="toggleGoogleMapBtn" title="Toggle the map">Toggle</button>');
         var $toggleGoogleMapBtn = $(".toggleGoogleMapBtn");
         $toggleGoogleMapBtn.button({
           icons: {
-            primary: "ui-icon-arrowthick-1-ne"
+            primary: toggleIconClose
           },
           text: false
         }).click(function() {
           toggleSmallMapSize();
           var $icon = $(this).children(".ui-icon");
-          if ($icon.hasClass("ui-icon-arrowthick-1-sw")) {
+          if ($icon.hasClass(toggleIconOpen)) {
             $toggleGoogleMapBtn.button({
               icons: {
-                primary: "ui-icon-arrowthick-1-ne"
+                primary: toggleIconClose
               },
               text: false
             }).children(".ui-icon").css("margin-left", "-8px");
             UTIL.addGoogleAnalyticEvent('button', 'click', 'viewer-show-context-map');
-          } else if ($icon.hasClass("ui-icon-arrowthick-1-ne")) {
+          } else if ($icon.hasClass(toggleIconClose)) {
             $toggleGoogleMapBtn.button({
               icons: {
-                primary: "ui-icon-arrowthick-1-sw"
+                primary: toggleIconOpen
               },
               text: false
             }).children(".ui-icon").css("margin-left", "-8px");
@@ -349,6 +354,9 @@ if (!org.gigapan.timelapse.Timelapse) {
           right: "0px",
           top: "0px"
         });
+
+        if (useTouchFriendlyUI)
+          $toggleGoogleMapBtn.addClass("ui-custom-button");
       }
       // Compute the zoom offset
       var maxView = timelapse.getView();

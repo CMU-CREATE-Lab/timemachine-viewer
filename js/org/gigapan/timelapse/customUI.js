@@ -162,10 +162,11 @@ if (!org.gigapan.timelapse.Timelapse) {
     var sliderRightMargin;
 
     var isShowHoverEffect = true;
+    var useTouchFriendlyUI = timelapse.useTouchFriendlyUI();
     var timeTick_width = 2;
-    var timeTick_height = 15;
-    var currentTimeTick_width = 10;
-    var currentTimeTick_height = 31;
+    var timeTick_height = useTouchFriendlyUI ? 21 : 15;
+    var currentTimeTick_width = useTouchFriendlyUI ? 15 : 10;
+    var currentTimeTick_height = useTouchFriendlyUI ? 43 : 31;
     var timeTickGrow_width = 2;
     var timeTickGrow_height = currentTimeTick_height;
     var originalIsPaused;
@@ -259,11 +260,16 @@ if (!org.gigapan.timelapse.Timelapse) {
     };
 
     var createCustomControl = function() {
+      if (useTouchFriendlyUI)
+        $video.addClass("tiledContentHolder-touchFriendly");
+
       $customControl = $('<div class="customControl"></div>');
       // Append element
       $viewer.append($customControl);
       // Create google logo
       $customControl.append('<div class="googleLogo"></div>');
+      if (useTouchFriendlyUI)
+        $(".googleLogo").addClass("googleLogo-touchFriendly");
       // Create the spinner for months
       if (datasetType == "modis")
         createMonthSpinner();
@@ -475,6 +481,10 @@ if (!org.gigapan.timelapse.Timelapse) {
 
       $customControl.prepend(speedOptions);
 
+      if (useTouchFriendlyUI) {
+        $(".customToggleSpeed").addClass("customToggleSpeed-touchFriendly");
+      }
+
       $fastSpeed.button({
         text: true
       }).click(function() {
@@ -643,9 +653,15 @@ if (!org.gigapan.timelapse.Timelapse) {
       // Instruction mask
       var content_instruction = "";
       content_instruction += '<div class="customInstructions">';
-      content_instruction += '  <span class="customZoomhelp"><p>Zoom in and out to explore in greater detail. Click or use the mouse scroll wheel.</p></span>';
-      content_instruction += '  <span class="customMovehelp"><p>Click and drag to explore.</p></span>';
-      content_instruction += '  <span class="customSpeedhelp"><p>Click to toggle the playback speed.</p></span>';
+      content_instruction += '  <span class="customZoomhelp"><p>'
+      content_instruction += useTouchFriendlyUI ? 'Zoom in and out to explore in greater detail.' : 'Zoom in and out to explore in greater detail. Click or use the mouse scroll wheel.';
+      content_instruction += '  </p></span>';
+      content_instruction += '  <span class="customMovehelp"><p>';
+      content_instruction += useTouchFriendlyUI ? 'Drag or pinch to explore in greater detail.' : 'Click and drag to explore.';
+      content_instruction += '  </p></span>';
+      content_instruction += '  <span class="customSpeedhelp"><p>';
+      content_instruction += useTouchFriendlyUI ? 'Tap to toggle the playback speed.' : 'Click to toggle the playback speed.';
+      content_instruction += '  </p></span>';
       content_instruction += '</div>';
       $viewer.append(content_instruction);
       $customSpeedhelp = $("#" + viewerDivId + " .customSpeedhelp");
@@ -654,6 +670,12 @@ if (!org.gigapan.timelapse.Timelapse) {
 
       // Play and stop button
       $customControl.append('<button class="customPlay" title="Play"></button>');
+
+      if (useTouchFriendlyUI) {
+        $(".customPlay").addClass("customPlay-touchFriendly");
+        $(".customInstructions").addClass("customInstructions-touchFriendly");
+      }
+
       $customPlay = $("#" + viewerDivId + " .customPlay");
       $customPlay.button({
         icons: {
@@ -679,13 +701,18 @@ if (!org.gigapan.timelapse.Timelapse) {
       // Help button
       $customControl.append('<input type="checkbox" class="customHelpCheckbox"/>');
       $customControl.append('<label class="customHelpLabel" title="Show instructions"></label>');
+
+      if (useTouchFriendlyUI) {
+        $(".customHelpLabel").addClass("customHelpLabel-touchFriendly");
+      }
+
       var $customHelpCheckbox = $("#" + viewerDivId + " .customHelpCheckbox");
       $customHelpCheckbox.attr("id", timeMachineDivId + "_customHelpCheckbox");
       $customHelpLabel = $("#" + viewerDivId + " .customHelpLabel");
       $customHelpLabel.attr("for", timeMachineDivId + "_customHelpCheckbox");
       $customHelpCheckbox.button({
         icons: {
-          primary: "ui-icon-help"
+          primary: useTouchFriendlyUI ? "ui-icon-custom-help" : "ui-icon-help"
         },
         text: false
       }).change(function() {
@@ -709,6 +736,10 @@ if (!org.gigapan.timelapse.Timelapse) {
         $timeText.toggleClass("timeText modisTimeText");
       $customTimeline = $('<div class="customTimeline"></div>');
       $customControl.append($timeText, $customTimeline);
+      if (useTouchFriendlyUI) {
+        $(".customTimeline").addClass("customTimeline-touchFriendly");
+        $(".timeText").addClass("timeText-touchFriendly");
+      }
       var extraSliderLeftMargin = (datasetType == "landsat") ? 50 : 60;
       sliderLeftMargin = $customPlay.width() + $timeText.width() + extraSliderLeftMargin;
       var extraSliderRightMargin;
@@ -826,18 +857,18 @@ if (!org.gigapan.timelapse.Timelapse) {
       var firstFrameForFirstYear = frameDictionary[0];
       $timeTextLeft.text(firstFrameForFirstYear["year"]).css({
         "left": firstFrameForFirstYear["x"] + "%",
-        "top": currentTimeTick_height + 5 + "px",
+        "top": currentTimeTick_height + (useTouchFriendlyUI ? 8 : 5) + "px",
         "margin-left": ($timeTextLeft.width() / -2) + "px"
       });
       var firstFrameForEndYear = frameDictionary[yearDictionary[endYear]["previousStackEndIdx"] + 1];
       $timeTextRight.text(firstFrameForEndYear["year"]).css({
         "left": firstFrameForEndYear["x"] + "%",
-        "top": currentTimeTick_height + 5 + "px",
+        "top": currentTimeTick_height + (useTouchFriendlyUI ? 8 : 5) + "px",
         "margin-left": ($timeTextRight.width() / -2) + "px"
       });
       $timeTextHover.text(firstFrameForFirstYear["year"]).css({
         "left": "50%",
-        "top": currentTimeTick_height + 5 + "px",
+        "top": currentTimeTick_height + (useTouchFriendlyUI ? 8 : 5) + "px",
         "margin-left": ($timeTextHover.width() / -2) + "px"
       });
       videoset.addEventListener('sync', function() {

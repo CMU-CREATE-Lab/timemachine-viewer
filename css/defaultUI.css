@@ -79,6 +79,10 @@ body, html {
   overflow: hidden;
 }
 
+.tiledContentHolder-touchFriendly {
+  border: 0px;
+}
+
 .ui-button .ui-icon.ui-icon-custom-stop {
   background-image: url(../images/buttons/custom_stop.png);
   margin-top: -8px;
@@ -101,6 +105,16 @@ body, html {
   opacity: 0.7;
 }
 
+.customPlay-touchFriendly .ui-icon.ui-icon-custom-play {
+  background-image: url(../images/touch/play.png);
+  margin-top: -14px;
+  margin-left: -11px;
+  width: 28px;
+  height: 28px;
+  opacity: 0.55;
+  background-size: contain !important;
+}
+
 .ui-button.ui-state-hover .ui-icon.ui-icon-custom-play {
   opacity: 1;
 }
@@ -112,6 +126,16 @@ body, html {
   width: 24px;
   height: 24px;
   opacity: 0.7;
+}
+
+.customPlay-touchFriendly .ui-icon.ui-icon-custom-pause {
+  background-image: url(../images/touch/pause.png);
+  margin-top: -15px;
+  margin-left: -15px;
+  width: 30px;
+  height: 30px;
+  opacity: 0.55;
+  background-size: contain !important;
 }
 
 .ui-button.ui-state-hover .ui-icon.ui-icon-custom-pause {
@@ -449,6 +473,13 @@ body, html {
   box-shadow: 2px 2px 3px rgba(0,0,0,0.3);
 }
 
+.zoom-touchFriendly .ui-button {
+  width: 50px;
+  height: 50px;
+  margin: 0px 0px 18px 0px;
+  border-radius: 35px !important;
+}
+
 .zoom .ui-icon {
   margin-top: -9px;
 }
@@ -550,4 +581,81 @@ body, html {
 .toggleSpeed .ui-button-text {
   text-align: center;
   padding: 0px;
+}
+
+/* Touch support */
+.ui-button .ui-icon.ui-icon-custom-plus {
+  background: url(../images/touch/plus.png) !important;
+  left: 23px;
+  top: 24px;
+  width: 18px;
+  height: 18px;
+  background-size: contain !important;
+  opacity: .55;
+}
+
+.ui-button .ui-icon.ui-icon-custom-minus {
+  background-image: url(../images/touch/minus.png) !important;
+  left: 23px;
+  top: 25px;
+  width: 18px;
+  height: 18px;
+  background-size: contain !important;
+  opacity: .55;
+  background-repeat: no-repeat;
+}
+
+.ui-button .ui-icon.ui-icon-custom-home {
+  background-image: url(../images/touch/home.png) !important;
+  left: 23px;
+  top: 25px;
+  width: 18px;
+  height: 18px;
+  background-size: contain !important;
+  opacity: .55;
+  background-repeat: no-repeat;
+}
+
+.ui-button .ui-icon.ui-icon-custom-help {
+  background-image: url(../images/touch/help.png) !important;
+  left: 15px;
+  top: 17px;
+  width: 25px;
+  height: 25px;
+  background-size: contain !important;
+  opacity: .55;
+  background-repeat: no-repeat;
+}
+
+.ui-button .ui-icon.ui-icon-custom-help {
+  background-image: url(../images/touch/help.png) !important;
+  left: 17px;
+  top: 19px;
+  width: 21px;
+  height: 21px;
+  background-size: contain !important;
+  opacity: .55;
+  background-repeat: no-repeat;
+}
+
+.ui-button .ui-icon-custom-arrowthick-1-ne {
+  background-image: url(../images/touch/ne-arrow.png) !important;
+  left: 12px;
+  top: 12px;
+  width: 22px;
+  height: 22px;
+  background-size: contain !important;
+  opacity: .55;
+  background-repeat: no-repeat;
+}
+
+.ui-button .ui-icon-custom-arrowthick-1-sw {
+  background-image: url(../images/touch/sw-arrow.png) !important;
+  left: 12px;
+  top: 12px;
+  width: 22px;
+  height: 22px;
+  background-size: contain !important;
+  opacity: .55;
+  background-repeat: no-repeat;
 }

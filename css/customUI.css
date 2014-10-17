@@ -150,6 +150,10 @@
   transform-origin: 100% 100%;
 }
 
+.googleLogo-touchFriendly {
+  bottom: 95px;
+}
+
 .customControl {
   position: absolute;
   background-color: rgba(255,255,255,0);
@@ -172,6 +176,10 @@
   height: inherit;
   margin-top: 0px;
   width: auto;
+}
+
+.customTimeline-touchFriendly {
+  margin-top: -29px;
 }
 
 .timeTextLeft {
@@ -217,6 +225,14 @@
   border-radius: 3px;
   cursor: default;
   text-align: left;
+}
+
+.timeText-touchFriendly {
+  top: -28px;
+  left: 63px;
+  width: 81px;
+  height: 33px;
+  font-size: 23pt;
 }
 
 .timeTextTour {
@@ -318,6 +334,14 @@
   display: none;
 }
 
+.customToggleSpeed-touchFriendly.ui-button {
+  width: 67px;
+  height: 25px;
+  top: 14px;
+  left: 102px;
+  font-size: 10pt;
+}
+
 .customToggleSpeed .ui-button-text {
   text-align: center;
   padding: 0px;
@@ -338,6 +362,12 @@
   outline: none;
 }
 
+.customPlay-touchFriendly.ui-button {
+  width: 70px;
+  height: 70px;
+  bottom: 30px;
+}
+
 .customHelpLabel.ui-button {
   position: absolute;
   width: 25px;
@@ -348,6 +378,13 @@
   border: 1px solid #656565;
   border-radius: 15px !important;
   box-shadow: 2px 2px 3px rgba(0,0,0,0.3);
+}
+
+.customHelpLabel-touchFriendly.ui-button {
+  width: 40px;
+  height: 40px;
+  bottom: 44px;
+  border-radius: 21px !important;
 }
 
 .customHelpLabel .ui-icon {
@@ -379,6 +416,10 @@
   font-size: 12px;
 }
 
+.customInstructions-touchFriendly p {
+  font-size: 16px;
+}
+
 .customInstructions span.customMovehelp {
   top: 30px;
   left: 110px;
@@ -390,6 +431,15 @@
   background-image: url(../images/drag_mouse_white.png);
 }
 
+.customInstructions-touchFriendly span.customMovehelp {
+  position: absoulte;
+  top: 35%;
+  left: 30%;
+  width: 380px;
+  padding: 112px 0px 0px 88px;
+  background-image: url(../images/touch/drag_mouse_white.png);
+}
+
 .customInstructions span.customZoomhelp {
   background-color: white;
   border: 1px solid #656565;
@@ -397,6 +447,10 @@
   left: 67px;
   overflow: visible;
   border-radius: 3px;
+}
+
+.customInstructions-touchFriendly span.customZoomhelp {
+  top: 50px;
 }
 
 .customInstructions span.modisCustomSpeedhelp {
@@ -417,6 +471,11 @@
   border-radius: 3px;
 }
 
+.customInstructions-touchFriendly span.customSpeedhelp {
+  bottom: 48px;
+  left: 104px;
+}
+
 .customInstructions span.customZoomhelp p {
   margin: 0px -6px 0px -11px;
   padding: 12px 0px 12px 30px;
@@ -424,6 +483,10 @@
   background-position: center left;
   background-image: url(../images/bubble_edge_vertical_white.png);
   width: 190px;
+}
+
+.customInstructions-touchFriendly span.customZoomhelp p {
+  width: 240px;
 }
 
 .customInstructions span.modisCustomSpeedhelp p {
@@ -435,6 +498,10 @@
   width: 190px;
 }
 
+.customInstructions-touchFriendly span.modisCustomSpeedhelp p {
+  width: 290px;
+}
+
 .customInstructions span.customSpeedhelp p {
   margin: 0px 0px -11px 0px;
   padding: 12px 15px 22px 15px;
@@ -442,4 +509,8 @@
   background-position: 20px 100%;
   background-image: url(../images/bubble_edge_horizontal_white.png);
   width: 190px;
+}
+
+.customInstructions-touchFriendly span.customSpeedhelp p {
+  width: 250px;
 }
