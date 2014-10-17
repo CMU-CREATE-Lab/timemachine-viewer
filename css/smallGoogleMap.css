@@ -52,3 +52,12 @@
   height: 20px;
   cursor: sw-resize;
 }
+
+.smallMapResizer-touchFriendly {
+  background-image: url(../images/touch/resize-sw.png) !important;
+  width: 30px;
+  height: 30px;
+  background-size: contain !important;
+  opacity: .55;
+  background-repeat: no-repeat;
+}

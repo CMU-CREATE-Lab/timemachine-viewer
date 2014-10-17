@@ -290,8 +290,15 @@ if (!org.gigapan.timelapse.Timelapse) {
           return;
         timelapse.zoomAbout(2, undefined, undefined, true);
       });
-      if (!useTouchFriendlyUI)
+      if (useTouchFriendlyUI) {
+        // Prevent the user from accidently tapping the Google logo/Terms of Use links on the context map.
+        $(smallMapContainer).click(function(event) {
+          event.preventDefault();
+          event.stopPropagation();
+        });
+      } else {
         google.maps.event.addListener(googleMap, 'drag', updateLocation);
+      }
       google.maps.event.addListener(googleMap, 'resize', function() {
         google.maps.event.addListenerOnce(googleMap, 'bounds_changed', function() {
           timelapse.updateLocationContextUI();
@@ -302,6 +309,8 @@ if (!org.gigapan.timelapse.Timelapse) {
         smallMapResizer = document.createElement("div");
         $smallMapResizer = $(smallMapResizer);
         $smallMapResizer.addClass("smallMapResizer");
+        if (useTouchFriendlyUI)
+          $smallMapResizer.addClass("smallMapResizer-touchFriendly");
         smallMapResizer.id = smallGoogleMapDivId + "_smallMapResizer";
         smallMapResizer.title = "Drag for resizing. Double click for resetting.";
         $smallMapContainer.append(smallMap, smallMapResizer);
