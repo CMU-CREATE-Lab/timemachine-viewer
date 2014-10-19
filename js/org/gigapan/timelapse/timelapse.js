@@ -257,9 +257,9 @@ if (!window['$']) {
     var onNewTimelapseLoadCompleteCallBack;
 
     // animateRate in milliseconds, 40 means 25 FPS
-    var animateRate = isHyperwall ? 10 : 40;
+    var animateRate = isHyperwall ? 10 : 10;
     // animationFractionPerSecond, 3 means goes 300% toward goal in 1 sec
-    var animationFractionPerSecond = isHyperwall ? 3 : 5;
+    var animationFractionPerSecond = isHyperwall ? 12 : 12;
     // minTranslateSpeedPixelsPerSecond in pixels
     var minTranslateSpeedPixelsPerSecond = isHyperwall ? 25 : 25;
     // minZoomSpeedPerSecond in log2 scale
@@ -2226,6 +2226,7 @@ if (!window['$']) {
     };
 
     var refresh = function() {
+      return;  // DISABLE TILES
       if (!isFinite(view.scale))
         return;
 
@@ -2568,6 +2569,7 @@ if (!window['$']) {
         $("#" + viewerDivId + " .currentTime").html(UTIL.formatTime(timelapseCurrentTimeInSeconds, true));
         $("#" + viewerDivId + " .currentCaptureTime").html(UTIL.htmlForTextWithEmbeddedNewlines(captureTimes[timelapseCurrentCaptureTimeIndex]));
         $("#" + viewerDivId + " .timelineSlider").slider("value", (timelapseCurrentTimeInSeconds * _getFps() - 0.3));
+
       });
 
       _addTargetViewChangeListener(function(view) {
@@ -2616,6 +2618,8 @@ if (!window['$']) {
             secondary: "ui-icon-custom-play"
           }
         }).attr('title', 'Play');
+
+
         $("#" + viewerDivId + " .playbackButton").removeClass("pause").addClass("play").attr('title', 'Play');
       });
 
@@ -2758,6 +2762,8 @@ if (!window['$']) {
 
       // The UI is now ready and we can display it
       $("#" + viewerDivId).css("visibility", "visible");
+
+      hideSpinner(viewerDivId);
     }
 
 
