@@ -462,6 +462,10 @@ if (!window['$']) {
       return viewerDivId;
     };
 
+    this.getViewerDiv = function() {
+      return $('#' + this.getViewerDivId())[0];
+    }
+
     this.getVideoDivId = function() {
       return videoDivId;
     };
