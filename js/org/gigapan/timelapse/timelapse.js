@@ -302,9 +302,7 @@ if (!window['$']) {
     // Touch support
     var hasTouchSupport = UTIL.isTouchDevice();
     var tapped = false;
-    var pinching = false;
-    var previousTouches = [];
-    var lastDist = -1;
+    var lastDist = null;
     var pinchPoint = null;
     var draggingSlider = false;
 
@@ -463,8 +461,8 @@ if (!window['$']) {
     };
 
     this.getViewerDiv = function() {
-      return $('#' + this.getViewerDivId())[0];
-    }
+      return $('#' + viewerDivId)[0];
+    };
 
     this.getVideoDivId = function() {
       return videoDivId;
@@ -751,76 +749,65 @@ if (!window['$']) {
 
     // Map touch events to mouse events.
     var touch2Mouse = function(e) {
-      var theTouch = e.changedTouches[0];
-      var mouseEvent;
-      var count = 0;
+      e.preventDefault();
 
-      if (e.type == "touchend") {
-        pinchPoint = null;
-        pinching = false;
-        lastDist = -1;
-      }
+      var theTouch = e.changedTouches[0];
+      var thisTouchCount = e.touches.length;
+      var mouseEvent;
+      var theMouse;
 
       switch (e.type) {
         case "touchstart":
           mouseEvent = "mousedown";
           break;
+        case "touchcancel":
         case "touchend":
           mouseEvent = "mouseup";
-          break;
-        case "touchcancel":
-          mouseEvent = "mouseup";
+          pinchPoint = null;
+          lastDist = null;
+          if (thisTouchCount == 1) {
+            // Handle going from 2 fingers to 1 finger pan.
+            theTouch = e.touches[0];
+
+            theMouse = document.createEvent("MouseEvent");
+            theMouse.initMouseEvent("mouseup", true, true, window, 1, theTouch.screenX, theTouch.screenY, theTouch.clientX, theTouch.clientY, false, false, false, false, 0, null);
+            theTouch.target.dispatchEvent(theMouse);
+
+            theMouse = document.createEvent("MouseEvent");
+            theMouse.initMouseEvent("mousedown", true, true, window, 1, theTouch.screenX, theTouch.screenY, theTouch.clientX, theTouch.clientY, false, false, false, false, 0, null);
+            theTouch.target.dispatchEvent(theMouse);
+
+            return;
+          }
           break;
         case "touchmove":
           mouseEvent = "mousemove";
+          if (thisTouchCount == 1) {
+            // Translate
+          } else if (thisTouchCount == 2) {
+            // Pinch
+            // TODO: Two finger pan support
+
+            if (pinchPoint == null) {
+              pinchPoint = {"pageX" : ((e.touches[0].pageX + e.touches[1].pageX) / 2), "pageY" : ((e.touches[0].pageY + e.touches[1].pageY) / 2)};
+            }
+            var dist = Math.abs(Math.sqrt((e.touches[0].pageX - e.touches[1].pageX) * (e.touches[0].pageX - e.touches[1].pageX) + (e.touches[0].pageY - e.touches[1].pageY) * (e.touches[0].pageY - e.touches[1].pageY)));
+            if (lastDist) {
+              var zoom = dist / lastDist;
+              zoomAbout(zoom, pinchPoint.pageX, pinchPoint.pageY);
+            }
+            lastDist = dist;
+            return;
+          } else {
+            // TODO: More than 2 finger support
+            return;
+          }
           break;
         default: return;
       }
-
-      // TODO: No more than 2 fingers currently supported.
-      if (e.touches.length > 2) return;
-
-      if (e.type == "touchmove" && e.touches.length == 2) {
-        for (var i = 0; i < e.touches.length; i++) {
-          if (Math.floor(e.touches[i].pageX) == Math.floor(previousTouches[i].pageX) && Math.floor(e.touches[i].pageY) == Math.floor(previousTouches[i].pageY)) {
-            count++;
-          }
-        }
-        previousTouches = e.touches;
-        // We have not moved our fingers.
-        if (count == e.touches.length) {
-          e.preventDefault();
-          return;
-        }
-      }
-
-      if (e.type == "touchmove" && pinching && e.touches.length == 2) {
-        if (pinchPoint == null) {
-          pinchPoint = {"pageX" : ((e.touches[0].pageX + e.touches[1].pageX) / 2), "pageY" : ((e.touches[0].pageY + e.touches[1].pageY) / 2)};
-        }
-
-        if (lastDist != -1) {
-          var dist = Math.abs(Math.sqrt((e.touches[0].pageX-e.touches[1].pageX) * (e.touches[0].pageX-e.touches[1].pageX) + (e.touches[0].pageY-e.touches[1].pageY) * (e.touches[0].pageY-e.touches[1].pageY)));
-          var magnitude = dist - lastDist;
-          if (Math.abs(magnitude) > 0.8)
-            timelapse.handleMousescrollEvent(pinchPoint, magnitude, null, null, true);
-        }
-        lastDist = dist;
-        e.preventDefault();
-        return;
-      }
-
-      // If we are pinching, do not tigger normal mouse events below, since they were already handled above.
-      if (pinching) {
-        e.preventDefault();
-        return;
-      }
-
-      var theMouse = document.createEvent("MouseEvent");
+      theMouse = document.createEvent("MouseEvent");
       theMouse.initMouseEvent(mouseEvent, true, true, window, 1, theTouch.screenX, theTouch.screenY, theTouch.clientX, theTouch.clientY, false, false, false, false, 0, null);
       theTouch.target.dispatchEvent(theMouse);
-
-      e.preventDefault();
     };
 
     // Add horizontal scroll touch support to an HTML element.
@@ -2457,7 +2444,7 @@ if (!window['$']) {
 
     var getTileidxName = function(t) {
       return 'tileidx(' + getTileidxLevel(t) + ',' + getTileidxRow(t) + ',' + getTileidxColumn(t) + ')';
-    }
+    };
 
     var dumpTileidx = function(t) {
       return "{l:" + getTileidxLevel(t) + ",c:" + getTileidxColumn(t) + ",r:" + getTileidxRow(t) + "}";
@@ -2807,7 +2794,7 @@ if (!window['$']) {
 
     // Assumes dates are being used as capture times.
     var findExactOrClosestCaptureTime = function(timeToFind) {
-      var low = 0, high = captureTimes.length - 1, i, comparison;
+      var low = 0, high = captureTimes.length - 1, i;
       while (low <= high) {
         i = Math.floor((low + high) / 2);
         if (captureTimes[i].length < 11)
@@ -2817,11 +2804,11 @@ if (!window['$']) {
         if (newCompare < timeToFind) {
           low = i + 1;
           continue;
-        };
+        }
         if (newCompare > timeToFind) {
           high = i - 1;
           continue;
-        };
+        }
         return i;
       }
       return i;
@@ -2917,9 +2904,7 @@ if (!window['$']) {
         document.addEventListener("touchend", touch2Mouse, true);
         document.addEventListener("touchcancel", touch2Mouse, true);
         $("#" + timeMachineDivId).on("touchstart", function(e){
-          previousTouches = e.originalEvent.touches;
           if (tapped && e.originalEvent.touches.length == 2) {
-            pinching = true;
             clearTimeout(tapped); //stop single tap callback
             tapped = null;
             e.preventDefault();
