@@ -3043,6 +3043,8 @@ if (!window['$']) {
     //
 
     browserSupported = UTIL.browserSupported(settings["mediaType"]);
+    // TODO(rsargent): Hack to copy with goofy user agent for hyperwall
+    browserSupported = true;
 
     if (!browserSupported) {
       UTIL.ajax("html", rootAppURL, "templates/browser_not_supported_template.html", function(html) {
