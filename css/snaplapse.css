@@ -430,8 +430,6 @@
   left: 0px;
   margin: 0;
   padding: 0;
-  width: 126px;
-  height: 101px; /* TODO: was 73 */
   border: solid 0px black;
   background-color: black;
   z-index: 1;
