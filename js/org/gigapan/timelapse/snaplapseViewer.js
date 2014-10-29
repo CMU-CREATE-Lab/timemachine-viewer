@@ -1054,6 +1054,15 @@ if (!org.gigapan.timelapse.snaplapse) {
                       $firstFrameThumbnailButton.click();
                     }
                   }
+                  // Check if there are not enough slides to fit into the slider
+                  var firstFrame = snaplapse.getKeyframes()[0];
+                  var $firstFrameThumbnailButton = $("#" + timeMachineDivId + "_snaplapse_keyframe_" + firstFrame.id).children(".snaplapse_keyframe_list_item_thumbnail_container_presentation");
+                  var slideWidth = $firstFrameThumbnailButton.width() + 2;
+                  var stripWidth = slideWidth*keyframes.length;
+                  var maxWidth = $("#" + timeMachineDivId + " .player").width();
+                  if(stripWidth < maxWidth - slideWidth/2) {
+                    $("#" + timeMachineDivId + " .presentationSlider .snaplapse_keyframe_container").css("right", "auto");
+                  }
                 } else {
                   if (!uiEnabled) {
                     // If the editor UI is not enabled, then we are in view-only mode
@@ -1403,6 +1412,7 @@ if (!org.gigapan.timelapse.snaplapse) {
           setKeyframeCaptionUI(thisKeyframe, this, true);
         }).click(function() {
           // Change the hash to the current slide
+          // TODO: do not override the original hash
           var slideId = $(this).attr("id");
           if (window && (window.self !== window.top)) {
             // If this is an iframe page
