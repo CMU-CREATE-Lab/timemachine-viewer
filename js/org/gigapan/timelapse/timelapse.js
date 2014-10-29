@@ -1487,28 +1487,32 @@ if (!window['$']) {
 
       resizeViewer();
 
-      window.onresize = function() {
-        if (viewportWidth == $viewerDiv.width() && viewportHeight == $viewerDiv.height())
-          return;
-        resizeViewer();
-        // TODO implement a resize listener and put this in the snaplapseViewer class
-        if (snaplapse)
-          snaplapse.getSnaplapseViewer().resizeUI();
-        // TODO implement a resize listener and put this in the snaplapseViewer class
-        if (snaplapseForPresentationSlider)
-          snaplapseForPresentationSlider.getSnaplapseViewer().resizeUI();
-        // TODO implement a resize listener and put this in the scaleBar class
-        if (scaleBar)
-          scaleBar.updateCachedVideoSize();
-        // TODO implement a resize listener and put this in the visualizer class
-        if (visualizer && defaultUI)
-          visualizer.setMode(defaultUI.getMode(), false);
-        // TODO implement a resize listener and put this in the annotator class
-        if (annotator)
-          annotator.resizeUI();
-        updateLocationContextUI();
-      };
+      window.onresize = onresize;
     };
+
+    var onresize  = function() {
+      var $viewerDiv = $("#" + viewerDivId);
+      if (viewportWidth == $viewerDiv.width() && viewportHeight == $viewerDiv.height())
+        return;
+      resizeViewer();
+      // TODO implement a resize listener and put this in the snaplapseViewer class
+      if (snaplapse)
+        snaplapse.getSnaplapseViewer().resizeUI();
+      // TODO implement a resize listener and put this in the snaplapseViewer class
+      if (snaplapseForPresentationSlider)
+        snaplapseForPresentationSlider.getSnaplapseViewer().resizeUI();
+      // TODO implement a resize listener and put this in the scaleBar class
+      if (scaleBar)
+        scaleBar.updateCachedVideoSize();
+      // TODO implement a resize listener and put this in the visualizer class
+      if (visualizer && defaultUI)
+        visualizer.setMode(defaultUI.getMode(), false);
+      // TODO implement a resize listener and put this in the annotator class
+      if (annotator)
+        annotator.resizeUI();
+      updateLocationContextUI();
+    };
+    this.onresize = onresize;
 
     var setInitialView = function() {
       if (initialView) {
@@ -1522,7 +1526,6 @@ if (!window['$']) {
 
     var resizeViewer = function() {
       var $viewerDiv = $("#" + viewerDivId);
-
       viewportWidth = $viewerDiv.width();
       viewportHeight = $viewerDiv.height();
 
