@@ -420,12 +420,14 @@ if (!org.gigapan) {
           scrollLeft: scrollLeftPx
         }, {
           duration: scrollDuration,
-          start: function() {
+          complete: function() {
             if (scrollStartCallback)
               scrollStartCallback();
           }
         });
       } else {
+        if (scrollStartCallback)
+          scrollStartCallback();
         // The reason to hide and show the elements is the workaround for a webkit refresh bug
         //$keyframeContainer.hide().show(0);
       }

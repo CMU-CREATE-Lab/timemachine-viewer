@@ -40,7 +40,8 @@
  VERIFY NAMESPACE
 
  Create the global symbol "org" if it doesn't exist.  Throw an error if it does exist but is not an object.
- */"use strict";
+*/
+"use strict";
 
 // Create the global symbol "org" if it doesn't exist.  Throw an error if it does exist but is not an object.
 var org;
@@ -103,6 +104,16 @@ if (!org.gigapan.timelapse.Timelapse) {
     var maxWidth = isHyperwall ? 1024 : 504;
     var startWidth = useTouchFriendlyUI ? 300 : minWidth;
     var startHeight = useTouchFriendlyUI ? 235 : minHeight;
+    if ((typeof (smallGoogleMapOptions["geometry"]) != "undefined")) {
+      if ((typeof (smallGoogleMapOptions["geometry"]["width"]) != "undefined")) {
+        startWidth = smallGoogleMapOptions["geometry"]["width"];
+        maxWidth = smallGoogleMapOptions["geometry"]["width"] + 100;
+      }
+      if ((typeof(smallGoogleMapOptions["geometry"]["height"]) != "undefined")) {
+        startHeight = smallGoogleMapOptions["geometry"]["height"];
+        maxHeight = smallGoogleMapOptions["geometry"]["height"] + 100;
+      }
+    }
     var smallGoogleMapDivId = ( typeof (smallGoogleMapOptions["smallGoogleMapDiv"]) == "undefined") ? "smallGoogleMap2013" : smallGoogleMapOptions["smallGoogleMapDiv"];
     var resizable = ( typeof (smallGoogleMapOptions["resizable"]) == "undefined") ? true : smallGoogleMapOptions["resizable"];
     var showToggleBtn = ( typeof (smallGoogleMapOptions["showToggleBtn"]) == "undefined") ? true : smallGoogleMapOptions["showToggleBtn"];
@@ -446,23 +457,11 @@ if (!org.gigapan.timelapse.Timelapse) {
       $smallMapContainer.append(smallMap);
       $("#" + videoDivID).append(smallMapContainer);
       // Set geometry
-      if (( typeof (smallGoogleMapOptions["geometry"]) != "undefined")) {
-        if (( typeof (smallGoogleMapOptions["geometry"]["width"]) != "undefined")) {
-          var newWidth = smallGoogleMapOptions["geometry"]["width"];
-          if (newWidth <= maxWidth && newWidth >= minWidth)
-            mapGeometry.width = newWidth;
-        }
-        if (( typeof (smallGoogleMapOptions["geometry"]["height"]) != "undefined")) {
-          var newHeight = smallGoogleMapOptions["geometry"]["height"];
-          if (newHeight <= maxHeight && newHeight >= minHeight)
-            mapGeometry.height = newHeight;
-        }
-      }
-      setSmallMapShadow(true);
       $smallMapContainer.css({
         "width": mapGeometry.width + "px",
         "height": mapGeometry.height + "px"
       });
+      setSmallMapShadow(true);
       // Set position
       if (isHyperwall) {
         if (fields.mapPosition == "topRight") {
@@ -495,8 +494,6 @@ if (!org.gigapan.timelapse.Timelapse) {
       // Get attribute
       smallMapContainer_width = $smallMapContainer.width();
       smallMapContainer_height = $smallMapContainer.height();
-      startHeight = mapGeometry.height;
-      startWidth = mapGeometry.width;
     };
 
     var setSmallMapShadow = function(flag) {
@@ -606,6 +603,4 @@ if (!org.gigapan.timelapse.Timelapse) {
     createSmallGoogleMapElements();
     loadSmallGoogleMap();
   };
-  //end of org.gigapan.timelapse.SmallGoogleMap
 })();
-//end of (function() {

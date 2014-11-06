@@ -141,6 +141,7 @@ if (!window['$']) {
     var datasetType = settings["datasetType"];
     var useCustomUI = (settings["datasetType"] == "landsat" || settings["datasetType"] == "modis");
     var useTouchFriendlyUI = ( typeof (settings["useTouchFriendlyUI"]) == "undefined") ? false : settings["useTouchFriendlyUI"];
+    var thumbnailServerRootTileUrl = ( typeof (settings["thumbnailServerRootTileUrl"]) == "undefined") ? settings["url"] : settings["thumbnailServerRootTileUrl"];
     var visualizerGeometry = {
       width: 250,
       height: 142
@@ -226,6 +227,7 @@ if (!window['$']) {
     var viewChangeListeners = [];
     var viewEndChangeListeners = [];
     var playbackRateChangeListeners = [];
+    var zoomChangeListeners = [];
     var thisObj = this;
     var tmJSON;
     var datasetJSON = null;
@@ -920,7 +922,7 @@ if (!window['$']) {
     };
     this.addViewEndChangeListener = _addViewEndChangeListener;
 
-    var _removeEndViewChangeListener = function(listener) {
+    var _removeViewEndChangeListener = function(listener) {
       for (var i = 0; i < viewEndChangeListeners.length; i++) {
         if (viewEndChangeListeners[i] == listener[0]) {
           viewEndChangeListeners.splice(i, 1);
@@ -928,17 +930,42 @@ if (!window['$']) {
         }
       }
     };
-    this.removeEndViewChangeListener = _removeEndViewChangeListener;
+    this.removeViewEndChangeListener = _removeViewEndChangeListener;
+
+    var _addZoomChangeListener = function(listener) {
+      zoomChangeListeners.push(listener);
+    };
+    this.addZoomChangeListener = _addZoomChangeListener;
+
+    var _removeZoomChangeListener = function(listener) {
+      for (var i = 0; i < zoomChangeListeners.length; i++) {
+        if (zoomChangeListeners[i] == listener[0]) {
+          zoomChangeListeners.splice(i, 1);
+          break;
+        }
+      }
+    };
+    this.removeZoomChangeListener = _removeZoomChangeListener;
 
     var _addVideoPauseListener = function(listener) {
       videoset.addEventListener('videoset-pause', listener);
     };
     this.addVideoPauseListener = _addVideoPauseListener;
 
+    var _removeVideoPauseListener = function(listener) {
+      videoset.removeEventListener('videoset-pause', listener);
+    };
+    this.removeVideoPauseListener = _removeVideoPauseListener;
+
     var _addVideoPlayListener = function(listener) {
       videoset.addEventListener('videoset-play', listener);
     };
     this.addVideoPlayListener = _addVideoPlayListener;
+
+    var _removeVideoPlayListener = function(listener) {
+      videoset.removeEventListener('videoset-play', listener);
+    };
+    this.removeVideoPlayListener = _removeVideoPlayListener;
 
     var _makeVideoVisibleListener = function(listener) {
       videoset.addEventListener('video-made-visible', listener);
@@ -995,7 +1022,7 @@ if (!window['$']) {
       newView = _normalizeView(newView);
 
       var defaultEndViewCallback = function() {
-        _removeEndViewChangeListener(this);
+        _removeViewEndChangeListener(this);
         parabolicMotionController = null;
         if (doPlay)
           thisObj.handlePlayPause();
@@ -1178,7 +1205,7 @@ if (!window['$']) {
           width = 126;
         if (!height)
           height = 73;
-        return snaplapseViewer.generateThumbnailURL(tileRootPath, thisObj.getBoundingBoxForCurrentView(), width, height, thisObj.getCurrentTime().toFixed(2));
+        return snaplapseViewer.generateThumbnailURL(thumbnailServerRootTileUrl, thisObj.getBoundingBoxForCurrentView(), width, height, thisObj.getCurrentTime().toFixed(2));
       }
     };
 
@@ -1730,7 +1757,6 @@ if (!window['$']) {
     this.handleMousedownEvent = handleMousedownEvent;
 
     var zoomAbout = function(zoom, x, y, isFromGoogleMap) {
-      //if (videoset.isStalled()) return;
       var newScale = limitScale(targetView.scale * zoom);
       var actualZoom = newScale / targetView.scale;
       // We want to zoom to the center of the current view if we zoom from google map
@@ -1740,6 +1766,8 @@ if (!window['$']) {
       }
       targetView.scale = newScale;
       setTargetView(targetView);
+      for (var i = 0; i < zoomChangeListeners.length; i++)
+        zoomChangeListeners[i](targetView);
     };
     this.zoomAbout = zoomAbout;
 
