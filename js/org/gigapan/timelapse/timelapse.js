@@ -305,8 +305,9 @@ if (!window['$']) {
     var hasTouchSupport = UTIL.isTouchDevice();
     var tapped = false;
     var lastDist = null;
-    var pinchPoint = null;
     var draggingSlider = false;
+    var lastLocation;
+    var thisLocation;
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////
     //
@@ -765,7 +766,6 @@ if (!window['$']) {
         case "touchcancel":
         case "touchend":
           mouseEvent = "mouseup";
-          pinchPoint = null;
           lastDist = null;
           if (thisTouchCount == 1) {
             // Handle going from 2 fingers to 1 finger pan.
@@ -787,18 +787,20 @@ if (!window['$']) {
           if (thisTouchCount == 1) {
             // Translate
           } else if (thisTouchCount == 2) {
-            // Pinch
-            // TODO: Two finger pan support
-
-            if (pinchPoint == null) {
-              pinchPoint = {"pageX" : ((e.touches[0].pageX + e.touches[1].pageX) / 2), "pageY" : ((e.touches[0].pageY + e.touches[1].pageY) / 2)};
-            }
             var dist = Math.abs(Math.sqrt((e.touches[0].pageX - e.touches[1].pageX) * (e.touches[0].pageX - e.touches[1].pageX) + (e.touches[0].pageY - e.touches[1].pageY) * (e.touches[0].pageY - e.touches[1].pageY)));
+            thisLocation = {pageX: (e.touches[0].pageX + e.touches[1].pageX) / 2,
+                            pageY: (e.touches[0].pageY + e.touches[1].pageY) / 2};
             if (lastDist) {
+              // Zoom
               var zoom = dist / lastDist;
-              zoomAbout(zoom, pinchPoint.pageX, pinchPoint.pageY);
+              zoomAbout(zoom, thisLocation.pageX, thisLocation.pageY);
+              // Translate
+              targetView.x += (lastLocation.pageX - thisLocation.pageX) / view.scale;
+              targetView.y += (lastLocation.pageY - thisLocation.pageY) / view.scale;
+              setTargetView(targetView);
             }
             lastDist = dist;
+            lastLocation = thisLocation;
             return;
           } else {
             // TODO: More than 2 finger support
