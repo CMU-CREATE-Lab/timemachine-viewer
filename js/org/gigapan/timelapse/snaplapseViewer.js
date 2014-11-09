@@ -122,7 +122,7 @@ if (!org.gigapan.timelapse.snaplapse) {
     var useTouchFriendlyUI = timelapse.useTouchFriendlyUI();
     var screenIdleTimeout;
     var waypointDelayTimeout;
-    var currentAutoModeWaypointIdx = initialWaypointIndex ? initialWaypointIndex : 0;
+    var currentAutoModeWaypointIdx = (initialWaypointIndex >= 0) ? initialWaypointIndex : -1;
     var isAutoModeWaypointDelayTimeoutRunning = false;
 
     // DOM elements
@@ -1056,8 +1056,9 @@ if (!org.gigapan.timelapse.snaplapse) {
                     // Go to the desired keyframe if there is no shared view and no tour
                     if ( typeof unsafeHashObj.v == "undefined" && typeof unsafeHashObj.tour == "undefined") {
                       var $desiredSlide;
-                      if ( typeof unsafeHashObj.slide != "undefined")
+                      if ( typeof unsafeHashObj.slide != "undefined") {
                         $desiredSlide = $("#" + unsafeHashObj.slide);
+                      }
                       if (!$desiredSlide || $desiredSlide.length == 0) {
                         if (initialWaypointIndex > 0) {
                           var waypointId = $("#" + composerDivId + " .snaplapse_keyframe_list").children().eq(initialWaypointIndex).children()[0].id;
@@ -1077,7 +1078,8 @@ if (!org.gigapan.timelapse.snaplapse) {
                       timelapse.setNewView(timelapse.pixelBoundingBoxToLatLngCenterView(frames['bounds']), true, presentationSliderPlayAfterAnimation);
                     }
                     selectAndGo($("#" + timeMachineDivId + "_snaplapse_keyframe_" + keyframeId), keyframeId, true, true, true);
-
+                  } else {
+                    if (currentAutoModeWaypointIdx != -1) currentAutoModeWaypointIdx--;
                   }
                   // Check if there are not enough slides to fit into the slider
                   var firstFrame = snaplapse.getKeyframes()[0];
@@ -1449,7 +1451,7 @@ if (!org.gigapan.timelapse.snaplapse) {
           var thisKeyframeId = $(this).parent().attr("id").split("_")[3];
           var thisKeyframe = snaplapse.getKeyframeById(thisKeyframeId);
           setKeyframeCaptionUI(thisKeyframe, this, true);
-        }).click(function() {
+        });/*.click(function() {
           // Change the hash to the current slide
           // TODO: do not override the original hash
           var slideId = $(this).attr("id");
@@ -1460,7 +1462,7 @@ if (!org.gigapan.timelapse.snaplapse) {
             // If this is a source page
             window.location.hash = "#slide=" + slideId;
           }
-        });
+        });*/
       }
 
       if (disableTourLooping) {
@@ -1656,11 +1658,22 @@ if (!org.gigapan.timelapse.snaplapse) {
     };
 
     var selectAndGo = function($select, keyframeId, skipAnnotation, skipGo, doNotFireListener) {
+      var setViewCallback = null;
+
+      if (doAutoMode) {
+        setViewCallback = function() {
+          waypointDelayTimeout = setTimeout(function() {
+            triggerAutoModeClick();
+          }, waypointDelayTime);
+        }
+      } else if (usePresentationSlider) {
+        setKeyframeCaptionUI(undefined, undefined, true);
+      }
+
       UTIL.selectSortableElements($sortable, $select, true, function() {
-        if (doAutoMode)
+        if (doAutoMode) {
           setKeyframeCaptionUI(snaplapse.getKeyframeById(keyframeId), $("#timeMachine_snaplapse_keyframe_" + keyframeId));
-        //if (usePresentationSlider)
-        //  setKeyframeCaptionUI(undefined, undefined, true);
+        }
       });
       if (usePresentationSlider) {
         $sortable.children().children().children(".snaplapse_keyframe_list_item_thumbnail_overlay_presentation").removeClass("thumbnail_highlight");
@@ -1674,9 +1687,9 @@ if (!org.gigapan.timelapse.snaplapse) {
         }
         if (skipGo != true) {
           if (usePresentationSlider && useCustomUI) {
-            timelapse.setNewView(timelapse.pixelBoundingBoxToLatLngCenterView(keyframe['bounds']), false, false);
+            timelapse.setNewView(timelapse.pixelBoundingBoxToLatLngCenterView(keyframe['bounds']), false, false, setViewCallback);
           } else {
-            timelapse.setNewView(timelapse.pixelBoundingBoxToLatLngCenterView(keyframe['bounds']), true, false);
+            timelapse.setNewView(timelapse.pixelBoundingBoxToLatLngCenterView(keyframe['bounds']), true, false, setViewCallback);
           }
           timelapse.seek(keyframe['time']);
           if (usePresentationSlider && doNotFireListener != true) {
@@ -1921,9 +1934,6 @@ if (!org.gigapan.timelapse.snaplapse) {
         currentAutoModeWaypointIdx = 0;
       var waypoint = $("#" + composerDivId + " .snaplapse_keyframe_list").children().eq(currentAutoModeWaypointIdx).children()[0];
       waypoint.click();
-      waypointDelayTimeout = setTimeout(function() {
-        triggerAutoModeClick();
-      }, waypointDelayTime);
     };
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////

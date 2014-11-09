@@ -172,11 +172,12 @@
           url: url,
           enablePresentationSlider: true,
           useThumbnailServer: true,
+          playOnLoad: true,
           thumbnailServerRootTileUrl: "http://earthengine.google.org/timelapse/data/20130507/",
           presentationSliderSettings: {
-            onLoadAnimation: "warp",
-            playAfterAnimation: true,
-            initialWaypointIndex: 5,
+            onLoadAnimation: "none",
+            playAfterAnimation: false,
+            initialWaypointIndex: 0,
             doAutoMode: true,
             screenIdleTime: 5000,
             waypointDelayTime: 10000
