@@ -196,6 +196,7 @@ if (!window['$']) {
     var loadTimelapseWithPreviousViewAndTime = false;
     var didHashChangeFirstTimeOnLoad = false;
     var didFirstTimeOnLoad = false;
+    var isMovingToWaypoint = false;
 
     // Viewer
     var viewerDivId = timeMachineDivId + " .player";
@@ -313,6 +314,10 @@ if (!window['$']) {
     //
     // Public methods
     //
+    this.isMovingToWaypoint = function() {
+      return isMovingToWaypoint;
+    };
+
     this.useTouchFriendlyUI = function() {
       return useTouchFriendlyUI;
     };
@@ -1024,6 +1029,7 @@ if (!window['$']) {
       newView = _normalizeView(newView);
 
       var defaultEndViewCallback = function() {
+        isMovingToWaypoint = false;
         _removeViewEndChangeListener(this);
         parabolicMotionController = null;
         if (doPlay)
@@ -1042,6 +1048,7 @@ if (!window['$']) {
           setTargetView(newView);
         } else {
           if (!parabolicMotionController) {
+            isMovingToWaypoint = true;
             parabolicMotionController = new parabolicMotionObj.MotionController({
               animationFPS: 1000 / animateRate,
               pathSpeed: parabolicMotionPathSpeed,
