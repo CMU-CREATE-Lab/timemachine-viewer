@@ -121,10 +121,9 @@ if (!org.gigapan.timelapse.snaplapse) {
     var presentationSliderEnabled = timelapse.isPresentationSliderEnabled();
     var isHidingCustomUI = false;
     var useTouchFriendlyUI = timelapse.useTouchFriendlyUI();
-    var screenIdleTimeout;
-    var waypointDelayTimeout;
+    var autoModeTimeout;
     var currentAutoModeWaypointIdx = (initialWaypointIndex >= 0) ? initialWaypointIndex : -1;
-    var isAutoModeWaypointDelayTimeoutRunning = false;
+    var wayPointClickedByAutoMode = false;
 
     // DOM elements
     var composerDivId = snaplapse.getComposerDivId();
@@ -910,8 +909,8 @@ if (!org.gigapan.timelapse.snaplapse) {
       if (!didOnce) {
         if (usePresentationSlider) {
           setToPresentationViewOnlyMode();
-          $("#" + timeMachineDivId).on("mousedown", stopScreenIdleTimeout).on("mouseup", startScreenIdleTimeout);
-          timelapse.addZoomChangeListener(startScreenIdleTimeout);
+          $("#" + timeMachineDivId).on("mousedown", clearAutoModeTimeout).on("mouseup", startAutoModeIdleTimeout);
+          timelapse.addZoomChangeListener(startAutoModeIdleTimeout);
         }
         var $playbackButton = $("#" + viewerDivId + ' .playbackButton');
         var $controls = $("#" + viewerDivId + ' .controls');
@@ -1104,7 +1103,7 @@ if (!org.gigapan.timelapse.snaplapse) {
                     "height": "auto"
                   });
                   timelapse.onresize();
-                  startScreenIdleTimeout();
+                  startAutoModeIdleTimeout();
                 } else {
                   if (!uiEnabled) {
                     // If the editor UI is not enabled, then we are in view-only mode
@@ -1434,6 +1433,8 @@ if (!org.gigapan.timelapse.snaplapse) {
       var $thumbnailButton = $("#" + thumbnailButtonId);
 
       $thumbnailButton.click(function(event) {
+        clearAutoModeTimeout();
+        wayPointClickedByAutoMode = (event.pageX == 0 && event.pageY == 0) ? true : false;
         //event.stopPropagation();
         var keyframeId = $(this).parent().attr("id").split("_")[3];
         selectAndGo($("#" + keyframeListItem.id), keyframeId);
@@ -1663,9 +1664,11 @@ if (!org.gigapan.timelapse.snaplapse) {
 
       if (doAutoMode) {
         setViewCallback = function() {
-          waypointDelayTimeout = setTimeout(function() {
-            triggerAutoModeClick();
-          }, waypointDelayTime);
+          if (wayPointClickedByAutoMode) {
+            startAutoModeWaypointTimeout();
+          } else {
+            startAutoModeIdleTimeout();
+          }
         }
       } else if (usePresentationSlider) {
         setKeyframeCaptionUI(undefined, undefined, true);
@@ -1904,32 +1907,32 @@ if (!org.gigapan.timelapse.snaplapse) {
     };
     this.resizeUI = resizeUI;
 
-    var startScreenIdleTimeout = function() {
+    var startAutoModeIdleTimeout = function() {
       if (!doAutoMode)
         return;
-      stopScreenIdleTimeout();
-      screenIdleTimeout = setTimeout(function() {
+      clearAutoModeTimeout();
+      autoModeTimeout = setTimeout(function() {
         runAutoMode();
       }, screenIdleTime);
     };
 
-    var stopScreenIdleTimeout = function() {
+    var startAutoModeWaypointTimeout = function() {
       if (!doAutoMode)
         return;
-      if (isAutoModeWaypointDelayTimeoutRunning)
-        stopAutoMode();
-      clearTimeout(screenIdleTimeout);
+      clearAutoModeTimeout();
+      autoModeTimeout = setTimeout(function() {
+        runAutoMode();
+      }, waypointDelayTime);
+    };
+
+    var clearAutoModeTimeout = function() {
+      clearTimeout(autoModeTimeout);
+      autoModeTimeout = null;
       $("#" + composerDivId + " .keyframeSubtitleBoxForHovering").fadeOut(200);
     };
 
     var runAutoMode = function() {
-      isAutoModeWaypointDelayTimeoutRunning = true;
       triggerAutoModeClick();
-    };
-
-    var stopAutoMode = function() {
-      isAutoModeWaypointDelayTimeoutRunning = false;
-      clearTimeout(waypointDelayTimeout);
     };
 
     var triggerAutoModeClick = function() {
