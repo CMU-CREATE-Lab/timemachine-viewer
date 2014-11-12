@@ -112,6 +112,7 @@ if (!org.gigapan.timelapse.snaplapse) {
     var screenIdleTime = ( settings["presentationSliderSettings"] && typeof (settings["presentationSliderSettings"]["screenIdleTime"]) != "undefined") ? settings["presentationSliderSettings"]["screenIdleTime"] : 20000;
     var waypointDelayTime = ( settings["presentationSliderSettings"] && typeof (settings["presentationSliderSettings"]["waypointDelayTime"]) != "undefined") ? settings["presentationSliderSettings"]["waypointDelayTime"] : 10000;
     var doAutoMode = ( settings["presentationSliderSettings"] && typeof (settings["presentationSliderSettings"]["doAutoMode"]) != "undefined") ? settings["presentationSliderSettings"]["doAutoMode"] : false;
+    var showAnnotations = ( settings["presentationSliderSettings"] && typeof (settings["presentationSliderSettings"]["showAnnotations"]) != "undefined") ?  settings["presentationSliderSettings"]["showAnnotations"] : true;
     var initialWaypointIndex = ( settings["presentationSliderSettings"] && typeof (settings["presentationSliderSettings"]["initialWaypointIndex"]) != "undefined") ? settings["presentationSliderSettings"]["initialWaypointIndex"] : 0;
     var presentationSliderLoadAnimation = ( settings["presentationSliderSettings"] && typeof (settings["presentationSliderSettings"]["onLoadAnimation"]) != "undefined") ? settings["presentationSliderSettings"]["onLoadAnimation"] : "zoom";
     var presentationSliderPlayAfterAnimation = ( settings["presentationSliderSettings"] && typeof (settings["presentationSliderSettings"]["playAfterAnimation"]) != "undefined") ? settings["presentationSliderSettings"]["playAfterAnimation"] : "true";
@@ -1671,7 +1672,7 @@ if (!org.gigapan.timelapse.snaplapse) {
       }
 
       UTIL.selectSortableElements($sortable, $select, true, function() {
-        if (doAutoMode) {
+        if (doAutoMode && showAnnotations) {
           setKeyframeCaptionUI(snaplapse.getKeyframeById(keyframeId), $("#timeMachine_snaplapse_keyframe_" + keyframeId));
         }
       });
@@ -1686,10 +1687,13 @@ if (!org.gigapan.timelapse.snaplapse) {
           setKeyframeTitleUI(keyframe);
         }
         if (skipGo != true) {
+          var newView = timelapse.pixelBoundingBoxToLatLngCenterView(keyframe['bounds']);
+          // TODO: Hack for hyperwall
+          newView.zoom += 0.8;
           if (usePresentationSlider && useCustomUI) {
-            timelapse.setNewView(timelapse.pixelBoundingBoxToLatLngCenterView(keyframe['bounds']), false, false, setViewCallback);
+            timelapse.setNewView(newView, false, false, setViewCallback);
           } else {
-            timelapse.setNewView(timelapse.pixelBoundingBoxToLatLngCenterView(keyframe['bounds']), true, false, setViewCallback);
+            timelapse.setNewView(newView, true, false, setViewCallback);
           }
           timelapse.seek(keyframe['time']);
           if (usePresentationSlider && doNotFireListener != true) {
