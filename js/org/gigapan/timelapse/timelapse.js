@@ -557,8 +557,10 @@ if (!window['$']) {
     };
 
     var stopParabolicMotion = function() {
-      if (parabolicMotionController)
+      if (parabolicMotionController) {
+        isMovingToWaypoint = false;
         parabolicMotionController._disableAnimation();
+      }
     };
     this.stopParabolicMotion = stopParabolicMotion;
 
@@ -1048,7 +1050,6 @@ if (!window['$']) {
           setTargetView(newView);
         } else {
           if (!parabolicMotionController) {
-            isMovingToWaypoint = true;
             parabolicMotionController = new parabolicMotionObj.MotionController({
               animationFPS: 1000 / animateRate,
               pathSpeed: parabolicMotionPathSpeed,
@@ -1062,6 +1063,7 @@ if (!window['$']) {
           var b = parabolicMotionObj.viewToPixelPoint(viewportWidth, viewportHeight, newView);
           var path = org.gigapan.timelapse.parabolicMotion.computeParabolicPath(a, b);
           parabolicMotionController.moveAlongPath(path);
+          isMovingToWaypoint = true;
         }
       }
     };
