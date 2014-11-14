@@ -1912,6 +1912,12 @@ if (!org.gigapan.timelapse.snaplapse) {
         return;
       clearAutoModeTimeout();
       autoModeTimeout = setTimeout(function() {
+        var listeners = eventListeners["automode-start"];
+        if (listeners) {
+          for (var i = 0; i < listeners.length; i++) {
+            listeners[i]();
+          }
+        }
         runAutoMode();
       }, screenIdleTime);
     };
