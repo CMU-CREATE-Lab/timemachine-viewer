@@ -194,6 +194,46 @@ body, html {
   background-image: url(../images/ui-icons_custom_256x240.png);
 }
 
+.fullScreen .ui-icon.ui-icon-custom-fullScreenOn {
+  background-image: url(../images/fullScreenOn.png);
+  width: 34px;
+  height: 34px;
+  opacity: 0.55;
+  background-size: contain !important;
+  margin-left: -17px;
+  margin-top: -17px;
+}
+
+.fullScreen .ui-icon.ui-icon-custom-fullScreenOff {
+  background-image: url(../images/fullScreenOff.png);
+  width: 34px;
+  height: 34px;
+  opacity: 0.55;
+  background-size: contain !important;
+  margin-left: -17px;
+  margin-top: -17px;
+}
+
+.fullScreen {
+  position: absolute;
+  height: 46px;
+  bottom: 86px;
+  width: 58px;
+  right: 20px;
+  background: white;
+  border: 1px solid #656565;
+  border-radius: 3px !important;
+  box-shadow: 2px 2px 3px rgba(0,0,0,0.3);
+  z-index: 30;
+  outline: none;
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 11px;
+}
+
+.ui-button.ui-state-hover .ui-icon.ui-icon-custom-fullScreenOn, .ui-button.ui-state-hover .ui-icon.ui-icon-custom-fullScreenOff {
+  opacity: 0.8;
+}
+
 .share {
   position: absolute;
   width: 60px;
@@ -216,7 +256,7 @@ body, html {
 
 .share .ui-button-text {
   margin-left: -1px;
-  margin-top: -2px;
+  margin-top: -1px;
 }
 
 .helpPlayerLabel.ui-button {
@@ -240,7 +280,7 @@ body, html {
 }
 
 .helpPlayerLabel .ui-button-text {
-  margin-top: -2px;
+  margin-top: -1px;
   margin-left: 3px;
 }
 

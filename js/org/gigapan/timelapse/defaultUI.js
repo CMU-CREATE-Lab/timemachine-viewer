@@ -117,6 +117,7 @@ if (!org.gigapan.timelapse.Timelapse) {
     // Settings
     var showShareBtn = ( typeof (settings["showShareBtn"]) == "undefined") ? true : settings["showShareBtn"];
     var showHomeBtn = ( typeof (settings["showHomeBtn"]) == "undefined") ? true : settings["showHomeBtn"];
+    var showFullScreenBtn = ( typeof (settings["showFullScreenBtn"]) == "undefined") ? true : settings["showFullScreenBtn"];
     var showMainControls = ( typeof (settings["showMainControls"]) == "undefined") ? true : settings["showMainControls"];
     var showZoomControls = ( typeof (settings["showZoomControls"]) == "undefined") ? true : settings["showZoomControls"];
     var showPanControls = ( typeof (settings["showPanControls"]) == "undefined") ? true : settings["showPanControls"];
@@ -212,6 +213,45 @@ if (!org.gigapan.timelapse.Timelapse) {
           removeHelpOverlay();
         }
       });
+      // Create Full Screen button
+      if (showFullScreenBtn) {
+        $(document).on('webkitfullscreenchange mozfullscreenchange fullscreenchange MSFullscreenChange', function() {
+          timelapse.changeFullScreenState();
+          var $fullScreenPlayer = $("#" + viewerDivId + " .fullScreen");
+          if (timelapse.isFullScreen()) {
+            // Safari 5 and older webkit browsers causes the screen to be white and not show the video once we enter
+            // full screen mode. So we do a hack and seek 10% further into the video to make the browser repaint the canvas.
+            // Sadly, this needs to be done on a timer...
+            if (document.webkitCancelFullScreen && !document.webkitExitFullscreen) {
+              setTimeout(function(){
+                timelapse.seek(timelapse.getCurrentTime() + ((1 / timelapse.getFps()) * 0.1));
+              }, 500);
+            }
+            $fullScreenPlayer.button({
+              icons: {
+                primary: "ui-icon-custom-fullScreenOff"
+              }
+            });
+          } else {
+            $fullScreenPlayer.button({
+              icons: {
+                primary: "ui-icon-custom-fullScreenOn"
+              }
+            });
+          }
+        });
+        var $fullScreenPlayer = $("<div class='fullScreen'></div>");
+        $fullScreenPlayer.attr("id", timeMachineDivId + "_fullScreen");
+        $fullScreenPlayer.button({
+          icons: {
+            primary: "ui-icon-custom-fullScreenOn"
+          },
+          text: false
+        }).on("click", function() {
+          timelapse.fullScreen();
+        });
+        $fullScreenPlayer.appendTo($("#" + viewerDivId + " .controls"));
+      }
       // Create editor mode switch button
       var $editorToggle = $("#" + viewerDivId + " .editorToggle");
       $editorToggleCheckbox = $("#" + viewerDivId + " .editorToggleCheckbox");

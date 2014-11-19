@@ -199,6 +199,10 @@ if (!org.gigapan) {
     return !!video.playbackRate;
   };
 
+  org.gigapan.Util.fullScreenAPISupported = function() {
+    return !!(document.documentElement.requestFullscreen || document.documentElement.msRequestFullscreen || document.documentElement.mozRequestFullScreen || document.documentElement.webkitRequestFullScreen);
+  }
+
   org.gigapan.Util.isNumber = function(n) {
     // Code taken from http://stackoverflow.com/questions/18082/validate-numbers-in-javascript-isnumeric
     // Added check to ensure that the value being checked is defined
