@@ -241,7 +241,7 @@ if (!org.gigapan.timelapse.Timelapse) {
           }
         });
         var $fullScreenPlayer = $("<div class='fullScreen'></div>");
-        $fullScreenPlayer.attr("id", timeMachineDivId + "_fullScreen");
+        $fullScreenPlayer.attr({"id" : timeMachineDivId + "_fullScreen", "title" : "Toggle fullscreen mode"});
         $fullScreenPlayer.button({
           icons: {
             primary: "ui-icon-custom-fullScreenOn"
