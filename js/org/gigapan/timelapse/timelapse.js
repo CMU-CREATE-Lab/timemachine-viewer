@@ -230,6 +230,7 @@ if (!window['$']) {
     var viewEndChangeListeners = [];
     var playbackRateChangeListeners = [];
     var zoomChangeListeners = [];
+    var fullScreenChangeListeners = [];
     var thisObj = this;
     var tmJSON;
     var datasetJSON = null;
@@ -525,6 +526,8 @@ if (!window['$']) {
 
     this.changeFullScreenState = function() {
       fullScreen = !fullScreen;
+      for (var i = 0; i < fullScreenChangeListeners.length; i++)
+        fullScreenChangeListeners[i]();
     };
 
     this.handlePlayPause = function() {
@@ -900,6 +903,21 @@ if (!window['$']) {
     this.getVideoset = function() {
       return videoset;
     };
+
+    var _addFullScreenChangeListener = function(listener) {
+      fullScreenChangeListeners.push(listener);
+    };
+    this.addFullScreenChangeListener = _addFullScreenChangeListener;
+
+    var _removeFullScreenChangeListener = function(listener) {
+      for (var i = 0; i < fullScreenChangeListeners.length; i++) {
+        if (fullScreenChangeListeners[i] == listener[0]) {
+          fullScreenChangeListeners.splice(i, 1);
+          break;
+        }
+      }
+    };
+    this.removeFullScreenChangeListener = _removeFullScreenChangeListener;
 
     var _addTargetViewChangeListener = function(listener) {
       targetViewChangeListeners.push(listener);
