@@ -1774,7 +1774,14 @@ if (!window['$']) {
       if (event.which != 1 || (annotator && (event.metaKey || event.ctrlKey || event.altKey || annotator.getCanMoveAnnotation())))
         return;
       var mouseIsDown = true;
-      var lastEvent = event;
+      var lastEvent;
+      if (!event.pageX && !event.pageY) {
+        lastEvent = $.extend({}, event);
+        lastEvent.pageX = event.clientX;
+        lastEvent.pageY = event.clientY;
+      } else {
+        lastEvent = event;
+      }
       var saveMouseMove = document.onmousemove;
       var saveMouseUp = document.onmouseup;
       $(videoDiv).removeClass("openHand closedHand").addClass('closedHand');
@@ -1831,7 +1838,15 @@ if (!window['$']) {
     this.zoomAbout = zoomAbout;
 
     var handleDoubleClickEvent = function(event, isFromGoogleMap) {
-      zoomAbout(2.0, event.pageX, event.pageY, isFromGoogleMap);
+      var eventCoords = {};
+      if (!event.pageX && !event.pageY) {
+        eventCoords.pageX = event.clientX;
+        eventCoords.pageY = event.clientY;
+      } else {
+        eventCoords.pageX = event.pageX;
+        eventCoords.pageY = event.pageY;
+      }
+      zoomAbout(2.0, eventCoords.pageX, eventCoords.pageY, isFromGoogleMap);
     };
 
     var limitScale = function(scale) {
