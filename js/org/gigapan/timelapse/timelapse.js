@@ -183,6 +183,7 @@ if (!window['$']) {
     var videoStretchRatio = 1;
     var scaleRatio = 1;
     var browserSupportsFullScreen = UTIL.fullScreenAPISupported();
+    var preFullScreenProperties = {width: null, height: null, zIndex: null};
 
     // Flags
     var isSplitVideo = false;
@@ -527,7 +528,7 @@ if (!window['$']) {
     this.changeFullScreenState = function() {
       fullScreen = !fullScreen;
       for (var i = 0; i < fullScreenChangeListeners.length; i++)
-        fullScreenChangeListeners[i]();
+        fullScreenChangeListeners[i](browserSupportsFullScreen);
     };
 
     this.handlePlayPause = function() {
@@ -637,6 +638,12 @@ if (!window['$']) {
         return;
       var moveFn;
       switch (event.which) {
+        // Escape key
+        case 27:
+          if (fullScreen && !browserSupportsFullScreen) {
+            _fullScreen();
+          }
+          break;
         // Left arrow
         case 37:
           if ($(activeElement).hasClass("timeTickClickRegion")) {
@@ -1527,6 +1534,29 @@ if (!window['$']) {
             viewerDiv.webkitRequestFullScreen();
           }
         }
+      } else {
+        // Fallback to 'fill' screen
+        var $timeMachineDiv = $("#" + timeMachineDivId);
+        if (fullScreen) {
+          $timeMachineDiv.css({
+            width: preFullScreenProperties.width,
+            height: preFullScreenProperties.height,
+            zIndex: preFullScreenProperties.zIndex
+          });
+        } else {
+          preFullScreenProperties = {
+            width: "auto",
+            height: $timeMachineDiv.height(),
+            zIndex: $timeMachineDiv.css("zIndex")
+          };
+          $timeMachineDiv.css({
+            width: "100%",
+            height: "100%",
+            zIndex: 9001
+          });
+        }
+        resizeViewer();
+        thisObj.changeFullScreenState();
       }
     };
     this.fullScreen = _fullScreen;
