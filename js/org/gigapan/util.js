@@ -200,6 +200,10 @@ if (!org.gigapan) {
   };
 
   org.gigapan.Util.fullScreenAPISupported = function() {
+    // Older webkits do not support fullscreen across iframes.
+    if (document.webkitCancelFullScreen && !document.webkitExitFullscreen) {
+      return (self === top)
+    }
     return !!(document.documentElement.requestFullscreen || document.documentElement.msRequestFullscreen || document.documentElement.mozRequestFullScreen || document.documentElement.webkitRequestFullScreen);
   }
 
