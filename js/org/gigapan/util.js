@@ -189,7 +189,7 @@ if (!org.gigapan) {
   };
 
   org.gigapan.Util.setViewerType = function(type) {
-    if (type != "canvas" && type != "video")
+    if (type != "canvas" && type != "webgl" && type != "video")
       return;
     viewerType = type;
   };

@@ -1263,7 +1263,7 @@ if (!org.gigapan.timelapse.snaplapse) {
             var vTopLeftX = vid.position().left;
             var vTopLeftY = vid.position().top;
             ctx.drawImage(vid.get(0), 0, 0, timelapse.getVideoWidth(), timelapse.getVideoHeight(), vTopLeftX * scale, vTopLeftY * scale, vWidth * scale, vHeight * scale);
-          } else if (viewerType == "canvas") {
+          } else {
             var canvas = timelapse.getCanvas();
             var cWidth = canvas.width;
             var cHeight = canvas.height;

@@ -261,9 +261,17 @@ if (!window['$']) {
     var onNewTimelapseLoadCompleteCallBack;
 
     // animateRate in milliseconds, 40 means 25 FPS
-    var animateRate = isHyperwall ? 10 : 40;
-    // animationFractionPerSecond, 3 means goes 300% toward goal in 1 sec
-    var animationFractionPerSecond = isHyperwall ? 3 : 5;
+    var animateRate = 40;
+    if (isHyperwall)
+      animateRate = 10;
+    else if (viewerType == "webgl")
+      animateRate = 10;
+    // animationFractionPerSecond, 5 means goes 500% toward goal in 1 sec
+    var animationFractionPerSecond = 5;
+    if (isHyperwall)
+      animateRate = 3;
+    else if (viewerType == "webgl")
+      animateRate = 12;
     // minTranslateSpeedPixelsPerSecond in pixels
     var minTranslateSpeedPixelsPerSecond = isHyperwall ? 25 : 25;
     // minZoomSpeedPerSecond in log2 scale
@@ -2328,7 +2336,7 @@ if (!window['$']) {
     };
 
     var refresh = function() {
-      if (!isFinite(view.scale))
+      if (viewerType == "webgl" || !isFinite(view.scale))
         return;
 
       var bestIdx = computeBestVideo(targetView);
@@ -2860,8 +2868,9 @@ if (!window['$']) {
 
       // The UI is now ready and we can display it
       $("#" + viewerDivId).css("visibility", "visible");
+      if (viewerType == "webgl")
+        hideSpinner(viewerDivId);
     }
-
 
     this.switchLayer = function(layerNum) {
       var newIndex = layerNum * tmJSON["sizes"].length;
@@ -3013,7 +3022,9 @@ if (!window['$']) {
       dataPanesId = tmp.id + "_dataPanes";
       $("#" + videoDivId).append("<div id=" + dataPanesId + "></div>");
 
-      if (viewerType == "canvas") {
+      if (viewerType == "video") {
+        videoset = new org.gigapan.timelapse.Videoset(viewerDivId, videoDivId, thisObj);
+      } else {
         canvas = document.createElement('canvas');
         canvas.id = videoDivId + "_canvas";
         videoDiv.appendChild(canvas);
@@ -3023,8 +3034,6 @@ if (!window['$']) {
         if (blackFrameDetection)
           videoDiv.appendChild(blackFrameDetectionCanvas);
         videoset = new org.gigapan.timelapse.Videoset(viewerDivId, videoDivId, thisObj, canvas.id, blackFrameDetectionCanvas.id);
-      } else if (viewerType == "video") {
-        videoset = new org.gigapan.timelapse.Videoset(viewerDivId, videoDivId, thisObj);
       }
 
       // Setup viewport event handlers.
@@ -3140,7 +3149,8 @@ if (!window['$']) {
     // Constructor code
     //
 
-    browserSupported = UTIL.browserSupported(settings["mediaType"]);
+    // TODO: This is because of goofy user agent for Google hyperwall
+    browserSupported = (settings["viewerType"] == "webgl") ? true : UTIL.browserSupported(settings["mediaType"]);
 
     if (!browserSupported) {
       UTIL.ajax("html", rootAppURL, "templates/browser_not_supported_template.html", function(html) {

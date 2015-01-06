@@ -125,7 +125,7 @@ if (!window['$']) {
     var mediaType = UTIL.getMediaType();
     var viewerType = UTIL.getViewerType();
     var videoDiv = document.getElementById(videoDivId);
-    if (viewerType == "canvas") {
+    if (viewerType != "video") {
       var canvas = document.getElementById(canvasId);
       var canvasContext = canvas.getContext('2d');
       var blackFrameDetectionCanvas = document.getElementById(blackFrameDetectionCanvasId);
@@ -389,7 +389,7 @@ if (!window['$']) {
         video.setAttribute('controls', true);
       }
       video.setAttribute('preload', 'auto');
-      if (viewerType == "canvas") {
+      if (viewerType != "video") {
         video.geometry = {};
       }
       _repositionVideo(video, geometry);
@@ -456,7 +456,7 @@ if (!window['$']) {
 
       mostRecentlyAddedVideo = video;
 
-      if (viewerType == "canvas") {
+      if (viewerType != "video") {
         video.addEventListener('playing', function() {
           if (video.drawIntervalId == null)
             video.drawIntervalId = setInterval(function() {
@@ -515,7 +515,7 @@ if (!window['$']) {
         video.style.width = geometry.width + "px";
         video.style.height = geometry.height + "px";
         video.geometry = geometry;
-      } else if (viewerType == "canvas") {
+      } else {
         video.geometry = geometry;
         drawToCanvas(video);
       }
@@ -584,7 +584,7 @@ if (!window['$']) {
       video.removeEventListener('seeking', videoSeeking, false);
       video.removeEventListener('seeked', videoSeeked, false);
 
-      if (viewerType == "canvas") {
+      if (viewerType != "video") {
         clearInterval(video.drawIntervalId);
         video.drawIntervalId = null;
       }
@@ -1024,7 +1024,7 @@ if (!window['$']) {
       publishVideoEvent(video.id, 'video-made-visible', new Date(), id);
       UTIL.log("video(" + video.id + ") _makeVideoVisible(" + callingFunction + "): ready=[" + video.ready + "] error=[" + error + "] " + videoStats(video));
 
-      if (viewerType == "canvas") {
+      if (viewerType != "video") {
         drawToCanvas(video);
       }
 
@@ -1051,7 +1051,7 @@ if (!window['$']) {
       if (video.active == false)
         return;
 
-      if (viewerType == "canvas") {
+      if (viewerType != "video") {
         if (isIE9) {
           // IE 9 is lying, it has not fully seeked yet
           setTimeout(function() {
