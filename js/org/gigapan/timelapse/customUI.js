@@ -180,7 +180,7 @@ if (!org.gigapan.timelapse.Timelapse) {
     //
     var preProcessLandsat = function() {
       for (var i = 0; i < captureTimes.length; i++) {
-        var year = parseInt(captureTimes[i]);
+        var year = captureTimes[i];
         frameDictionary[i] = {
           "x": undefined,
           "year": year
@@ -192,16 +192,11 @@ if (!org.gigapan.timelapse.Timelapse) {
         if (yearDictionary[year] == undefined) {
           yearDictionary[year] = {
             "numFramesThisYear": 0,
-            "currentStackEndIdx": -1,
-            "previousStackEndIdx": -1
+            "currentStackEndIdx": i,
+            "previousStackEndIdx": i - 1
           };
-          if (yearDictionary[year - 1]) {
-            yearDictionary[year]["currentStackEndIdx"] = yearDictionary[year - 1]["currentStackEndIdx"];
-            yearDictionary[year]["previousStackEndIdx"] = yearDictionary[year - 1]["currentStackEndIdx"];
-          }
         }
         yearDictionary[year]["numFramesThisYear"]++;
-        yearDictionary[year]["currentStackEndIdx"]++;
       }
       numYears = numFrames;
     };
@@ -782,7 +777,7 @@ if (!org.gigapan.timelapse.Timelapse) {
       var previousTargetFrameIdx = undefined;
       var targetFrame, targetFrameX, previousTargetFrameX, invisibleSpan;
       for (var i = 0; i < numYears; i++) {
-        targetFrame = yearDictionary[firstYear + i]["previousStackEndIdx"] + 1;
+        targetFrame = yearDictionary[captureTimes[i]]["previousStackEndIdx"] + 1;
         // Save the x position of every frame
         frameDictionary[targetFrame]["x"] = timeTickSpan * (i + 0.5);
         // Save the x position of every time tick
@@ -927,7 +922,7 @@ if (!org.gigapan.timelapse.Timelapse) {
       if (!originalIsPaused)
         timelapse.handlePlayPause();
       var currentYearIdx = parseInt(this.id.split("_")[3]);
-      var currentYear = firstYear + currentYearIdx;
+      var currentYear = captureTimes[currentYearIdx];
       if (locker != "year") {
         if (locker == "month") {
           if (isPlaying)
@@ -955,7 +950,7 @@ if (!org.gigapan.timelapse.Timelapse) {
 
     var handleTimeTickMouseover = function(event) {
       if (isShowHoverEffect) {
-        var currentYearIdx = firstYear + parseInt(this.id.split("_")[3]);
+        var currentYearIdx = captureTimes[parseInt(this.id.split("_")[3])];
         var currentFrameIdx = yearDictionary[currentYearIdx]["previousStackEndIdx"] + 1;
         if (timelapse.getCurrentFrameNumber() == currentFrameIdx)
           $(event.target).removeClass("closedHand").addClass("openHand").attr("title", "Drag to go to a different point in time");
