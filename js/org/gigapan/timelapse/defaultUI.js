@@ -115,7 +115,8 @@ if (!org.gigapan.timelapse.Timelapse) {
     var $annotatorToggleCheckbox;
 
     // Settings
-    var showShareBtn = ( typeof (settings["showShareBtn"]) == "undefined") ? true : settings["showShareBtn"];
+    var useCustomUI = timelapse.useCustomUI();
+    var showShareBtn = ( typeof (settings["showShareBtn"]) == "undefined") ? (useCustomUI ? false : true) : settings["showShareBtn"];
     var showHomeBtn = ( typeof (settings["showHomeBtn"]) == "undefined") ? true : settings["showHomeBtn"];
     var showFullScreenBtn = ( typeof (settings["showFullScreenBtn"]) == "undefined") ? true : settings["showFullScreenBtn"];
     var showMainControls = ( typeof (settings["showMainControls"]) == "undefined") ? true : settings["showMainControls"];
@@ -126,7 +127,6 @@ if (!org.gigapan.timelapse.Timelapse) {
     var editorEnabled = timelapse.isEditorEnabled();
     var presentationSliderEnabled = timelapse.isPresentationSliderEnabled();
     var annotatorEnabled = timelapse.isAnnotatorEnabled();
-    var useCustomUI = timelapse.useCustomUI();
 
     // Flags
     var isSafari = org.gigapan.Util.isSafari();
@@ -162,35 +162,14 @@ if (!org.gigapan.timelapse.Timelapse) {
           UTIL.addGoogleAnalyticEvent('button', 'click', 'viewer-pause');
       });
       // Create share button
+      var $shareToggle = $("#" + viewerDivId + " .share");
+      var $shareViewModal = $("#" + viewerDivId + " .shareView");
       if (showShareBtn) {
-        $("#" + viewerDivId + " .share").button({
-          icons: {
-            primary: "ui-icon-person"
-          },
-          text: true
-        }).click(function() {
-          var shareViewDialog = $("#" + viewerDivId + " .shareView");
-          if (shareViewDialog.dialog("isOpen"))
-            shareViewDialog.dialog("close");
-          else {
-            shareView();
-            UTIL.addGoogleAnalyticEvent('button', 'click', 'viewer-show-share-dialog');
-          }
-        });
+        createShareButton();
+      } else {
+        $shareToggle.remove();
+        $shareViewModal.remove();
       }
-      // Share view window
-      $("#" + viewerDivId + " .shareView").dialog({
-        resizable: false,
-        autoOpen: false,
-        appendTo: "#" + viewerDivId,
-        width: 632,
-        height: 95,
-        create: function() {
-          $(this).parents("#" + viewerDivId + " .ui-dialog").css({
-            'border': '1px solid #000'
-          });
-        }
-      });
       // Create help button
       var helpPlayerCheckbox = $("#" + viewerDivId + " .helpPlayerCheckbox");
       helpPlayerCheckbox.attr("id", timeMachineDivId + "_helpPlayerCheckbox");
@@ -311,6 +290,36 @@ if (!org.gigapan.timelapse.Timelapse) {
       }
       if (!showLogoOnDefaultUI)
         $("#" + viewerDivId + " .logo").hide();
+    };
+
+    var createShareButton = function() {
+      $("#" + viewerDivId + " .share").button({
+        icons: {
+          primary: "ui-icon-person"
+        },
+        text: true
+      }).click(function() {
+        var shareViewDialog = $("#" + viewerDivId + " .shareView");
+        if (shareViewDialog.dialog("isOpen"))
+          shareViewDialog.dialog("close");
+        else {
+          shareView();
+          UTIL.addGoogleAnalyticEvent('button', 'click', 'viewer-show-share-dialog');
+        }
+      });
+      // Share view modal
+      $("#" + viewerDivId + " .shareView").dialog({
+        resizable: false,
+        autoOpen: false,
+        appendTo: "#" + viewerDivId,
+        width: 632,
+        height: 95,
+        create: function() {
+          $(this).parents("#" + viewerDivId + " .ui-dialog").css({
+            'border': '1px solid #000'
+          });
+        }
+      });
     };
 
     var createSideToolBar = function() {
@@ -781,9 +790,17 @@ if (!org.gigapan.timelapse.Timelapse) {
       createMainUI();
       if (timelapse.getPlayOnLoad())
         timelapse.play();
-    } else {
-      $("#" + viewerDivId + " .controls").remove();
-      $("#" + viewerDivId + " .shareView").remove();
+    } else { // custom UI is being used, alter main UI accordingly
+      // Create share button
+      if (showShareBtn) {
+        createShareButton();
+        var shareButton = $("#" + viewerDivId + " .share");
+        $("#" + viewerDivId + " .controls").children().not(shareButton).remove();
+        shareButton.css("bottom", "110px");
+      } else {
+        $("#" + viewerDivId + " .controls").remove();
+        $("#" + viewerDivId + " .shareView").remove();
+      }
       $("#" + viewerDivId + " .captureTime").remove();
     }
   };
