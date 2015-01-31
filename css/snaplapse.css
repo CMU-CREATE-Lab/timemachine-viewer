@@ -246,7 +246,7 @@
 }
 
 .snaplapse_keyframe_container {
-  position: absolute;
+  position: relative;
   top: 37px;
   left: 1px;
   right: 1px;
@@ -709,7 +709,7 @@
   position: absolute;
   top: 0px;
   left: 1px;
-  right: 1px;
+  right: -1px;
   width: auto;
   height: 36px;
   background-color: rgb(220,220,220);

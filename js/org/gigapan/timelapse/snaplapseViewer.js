@@ -1899,7 +1899,7 @@ if (!org.gigapan.timelapse.snaplapse) {
         "position": "absolute",
         "top": newTop + "px",
         "left": "0px",
-        "right": "0px",
+        "right": "2px",
         "bottom": "",
         "width": "auto",
         "height": ""
