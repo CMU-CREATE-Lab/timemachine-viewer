@@ -130,7 +130,7 @@ if (!window['$']) {
     // deprecated
     var doChromeBufferedHack = ( typeof (settings["doChromeBufferedHack"]) == "undefined") ? true : settings["doChromeBufferedHack"];
     var doChromeCacheBreaker = ( typeof (settings["doChromeCacheBreaker"]) == "undefined") ? true : settings["doChromeCacheBreaker"];
-    var loopDwell = ( typeof (settings["loopDwell"]) == "undefined" || typeof (settings["loopDwell"]["startDwell"]) == "undefined" || typeof (settings["loopDwell"]["endDwell"]) == "undefined") ? null : settings["loopDwell"];
+    var loopDwell = ( typeof (settings["loopDwell"]) == "undefined") ? null : settings["loopDwell"];
     var startDwell = (!loopDwell || typeof (settings["loopDwell"]["startDwell"]) == "undefined") ? 0 : settings["loopDwell"]["startDwell"];
     var endDwell = (!loopDwell || typeof (settings["loopDwell"]["endDwell"]) == "undefined") ? 0 : settings["loopDwell"]["endDwell"];
     var blackFrameDetection = ( typeof (settings["blackFrameDetection"]) == "undefined") ? false : settings["blackFrameDetection"];
@@ -2662,8 +2662,8 @@ if (!window['$']) {
                   loopEndTimeoutId = window.setTimeout(function() {
                     _play();
                     doingLoopingDwell = false;
-                  }, endDwell * 1000);
-                }, startDwell * 1000);
+                  }, startDwell * 1000);
+                }, endDwell * 1000);
               } else {
                 updateCustomPlayback();
                 _seek(0);
