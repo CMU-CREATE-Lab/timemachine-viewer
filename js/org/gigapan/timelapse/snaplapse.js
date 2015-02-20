@@ -1107,6 +1107,17 @@ if (!Math.uuid) {
         _stop(true);
         if (uiEnabled)
           UTIL.selectSortableElements($("#" + composerDivId + " .snaplapse_keyframe_list"), $("#" + timeMachineDivId + "_snaplapse_keyframe_" + keyframes[keyframes.length - 1].id));
+          var listeners = eventListeners['snaplapse-ended'];
+          if (listeners) {
+            for (var i = 0; i < listeners.length; i++) {
+              try {
+                listeners[i]();
+              } catch(e) {
+                UTIL.error(e.name + " while calling snaplapse 'tour-ended' event listener: " + e.message, e);
+              }
+            }
+          }
+
       }
     };
 
