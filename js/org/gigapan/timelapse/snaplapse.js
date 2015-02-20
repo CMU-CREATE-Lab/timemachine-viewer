@@ -1113,7 +1113,7 @@ if (!Math.uuid) {
               try {
                 listeners[i]();
               } catch(e) {
-                UTIL.error(e.name + " while calling snaplapse 'tour-ended' event listener: " + e.message, e);
+                UTIL.error(e.name + " while calling snaplapse 'snaplapse-ended' event listener: " + e.message, e);
               }
             }
           }
