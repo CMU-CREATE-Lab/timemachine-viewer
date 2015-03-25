@@ -641,8 +641,9 @@ if (!window['$']) {
 
     var handleKeydownEvent = function(event) {
       var activeElement = document.activeElement;
+      var sliderActive = $("#" + viewerDivId + " .timelineSlider .ui-slider-handle:focus").length || $("#" + viewerDivId + " .zoomSlider .ui-slider-handle:focus").length;
       // If we are focused on a text field or the slider handlers, do not run any player specific controls.
-      if ($("#" + viewerDivId + " .timelineSlider .ui-slider-handle:focus").length || $("#" + viewerDivId + " .zoomSlider .ui-slider-handle:focus").length || activeElement == "[object HTMLInputElement]" || activeElement == "[object HTMLTextAreaElement]")
+      if (activeElement == "[object HTMLInputElement]" || activeElement == "[object HTMLTextAreaElement]")
         return;
       var moveFn;
       switch (event.which) {
@@ -654,63 +655,69 @@ if (!window['$']) {
           break;
         // Left arrow
         case 37:
-          if ($(activeElement).hasClass("timeTickClickRegion")) {
+          if (sliderActive) return;
+          if (event.shiftKey) {
+            moveFn = function() {
+              targetView.x -= (translationSpeedConstant * videoStretchRatio * 0.4) / view.scale;
+              setTargetView(targetView);
+            };
+          } else {
+            if (!thisObj.isPaused())
+              thisObj.handlePlayPause();
+            $(activeElement).removeClass("openHand closedHand");
+            seekToFrame(getCurrentFrameNumber() - 1);
             if (customUI) {
-              $(activeElement).removeClass("openHand closedHand");
-              seekToFrame(getCurrentFrameNumber() - 1);
               customUI.focusTimeTick(getCurrentFrameNumber() - 1);
             }
-            return;
           }
-          moveFn = function() {
-            if (event.shiftKey) {
-              targetView.x -= (translationSpeedConstant * videoStretchRatio * 0.4) / view.scale;
-            } else {
-              targetView.x -= (translationSpeedConstant * videoStretchRatio * 0.8) / view.scale;
-            }
-            setTargetView(targetView);
-          };
+          event.preventDefault();
           break;
         // Right arrow
         case 39:
-          if ($(activeElement).hasClass("timeTickClickRegion")) {
+          if (sliderActive) return;
+          if (event.shiftKey) {
+            moveFn = function() {
+              targetView.x += (translationSpeedConstant * videoStretchRatio * 0.4) / view.scale;
+              setTargetView(targetView);
+            };
+          } else {
+            if (!thisObj.isPaused())
+              thisObj.handlePlayPause();
+            $(activeElement).removeClass("openHand closedHand");
+            seekToFrame(getCurrentFrameNumber() + 1);
             if (customUI) {
-              $(activeElement).removeClass("openHand closedHand");
-              seekToFrame(getCurrentFrameNumber() + 1);
               customUI.focusTimeTick(getCurrentFrameNumber() + 1);
             }
-            return;
           }
-          moveFn = function() {
-            if (event.shiftKey) {
-              targetView.x += (translationSpeedConstant * videoStretchRatio * 0.4) / view.scale;
-            } else {
-              targetView.x += (translationSpeedConstant * videoStretchRatio * 0.8) / view.scale;
-            }
-            setTargetView(targetView);
-          };
+          event.preventDefault();
           break;
         // Up arrow
         case 38:
-          moveFn = function() {
-            if (event.shiftKey) {
-              targetView.y -= (translationSpeedConstant * videoStretchRatio * 0.4) / view.scale;
-            } else {
-              targetView.y -= (translationSpeedConstant * videoStretchRatio * 0.8) / view.scale;
-            }
-            setTargetView(targetView);
-          };
+          if (sliderActive) return;
+          if (event.shiftKey) {
+            moveFn = function() {
+              if (event.shiftKey) {
+                targetView.y -= (translationSpeedConstant * videoStretchRatio * 0.4) / view.scale;
+              } else {
+                targetView.y -= (translationSpeedConstant * videoStretchRatio * 0.8) / view.scale;
+              }
+              setTargetView(targetView);
+            };
+          }
           break;
         // Down arrow
         case 40:
-          moveFn = function() {
-            if (event.shiftKey) {
-              targetView.y += (translationSpeedConstant * videoStretchRatio * 0.4) / view.scale;
-            } else {
-              targetView.y += (translationSpeedConstant * videoStretchRatio * 0.8) / view.scale;
-            }
-            setTargetView(targetView);
-          };
+          if (sliderActive) return;
+          if (event.shiftKey) {
+            moveFn = function() {
+              if (event.shiftKey) {
+                targetView.y += (translationSpeedConstant * videoStretchRatio * 0.4) / view.scale;
+              } else {
+                targetView.y += (translationSpeedConstant * videoStretchRatio * 0.8) / view.scale;
+              }
+              setTargetView(targetView);
+            };
+          }
           break;
         // Minus
         case 173:
@@ -738,9 +745,11 @@ if (!window['$']) {
             setTargetView(targetView);
           };
           break;
-        // P
+        // P or Spacebar
         case 80:
+        case 32:
           thisObj.handlePlayPause();
+          event.preventDefault();
           break;
         default:
           return;
@@ -749,10 +758,6 @@ if (!window['$']) {
       // Each arrow key and +/- has its own interval, so multiple can be down at once
       if (keyIntervals[event.which] == undefined)
         keyIntervals[event.which] = setInterval(moveFn, 50);
-      // Don't propagate arrow events -- prevent scrolling of the document
-      if (event.which <= 40) {
-        event.preventDefault();
-      }
     };
 
     var handleKeyupEvent = function(event) {
@@ -2870,6 +2875,9 @@ if (!window['$']) {
       $("#" + viewerDivId).css("visibility", "visible");
       if (viewerType == "webgl")
         hideSpinner(viewerDivId);
+
+      // Force initial focus on viewer
+      $(videoDiv).focus();
     }
 
     this.switchLayer = function(layerNum) {
@@ -3080,10 +3088,7 @@ if (!window['$']) {
         });
       }
 
-      $viewerDiv.one("click", function() {
-        $(document).on("keydown.tm_keydown", handleKeydownEvent);
-        $(document).on("keyup.tm_keyup", handleKeyupEvent);
-      });
+      $("body").on("keydown.tm_keydown", handleKeydownEvent).on("keyup.tm_keyup", handleKeyupEvent);
 
       // Remove focus from other UI elements (such as the timeline) when
       // the view port is clicked. This ensures when, for example, keyboard shortcuts
