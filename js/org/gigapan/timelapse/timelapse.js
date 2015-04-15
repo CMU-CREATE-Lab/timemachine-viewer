@@ -2323,9 +2323,8 @@ if (!window['$']) {
       metadata = data;
       timelapseDurationInSeconds = (frames - 0.7) / data['fps'];
 
-      if (loadTimelapseWithPreviousViewAndTime && captureTimes.length > 0 && captureTimes[timelapseCurrentCaptureTimeIndex].length >= 11) {
-        var captureTimeStamp = captureTimes[timelapseCurrentCaptureTimeIndex].substring(11);
-        previousCaptureTime = new Date("2000/01/01 " + captureTimeStamp).toTimeString().substr(0, 5);
+      if (loadTimelapseWithPreviousViewAndTime && captureTimes.length > 0 && captureTimes[timelapseCurrentCaptureTimeIndex] && captureTimes[timelapseCurrentCaptureTimeIndex].length >= 11) {
+        previousCaptureTime = new Date(captureTimes[timelapseCurrentCaptureTimeIndex].replace(/-/g, "/"));
       }
 
       // Set capture time
@@ -2774,12 +2773,12 @@ if (!window['$']) {
         if (videoId == firstVideoId) {
           // If the user requested the same point spatial and temporal point in the previous dataset, calculate and seek there.
           if (loadTimelapseWithPreviousViewAndTime) {
-            var closestFrame = findExactOrClosestCaptureTime(previousCaptureTime);
+            var closestFrame = findExactOrClosestCaptureTime(String(previousCaptureTime));
             seekToFrame(closestFrame);
             timelapseCurrentTimeInSeconds = closestFrame / _getFps();
           } else {
             if (desiredInitialDate) {
-              initialTime = findExactOrClosestCaptureTime(desiredInitialDate.toTimeString().substr(0, 5)) / _getFps();
+              initialTime = findExactOrClosestCaptureTime(String(desiredInitialDate)) / _getFps();
             }
             if (initialTime == 0) {
               timelapseCurrentTimeInSeconds = 0;
@@ -2944,24 +2943,56 @@ if (!window['$']) {
       UTIL.ajax("json", settings["url"], path + "r.json" + getMetadataCacheBreaker(), loadVideoSetCallback);
     };
 
-    // Assumes dates are being used as capture times.
-    var findExactOrClosestCaptureTime = function(timeToFind) {
-      var low = 0, high = captureTimes.length - 1, i;
+    // NOTE: Assumes dates are being used as capture times and a date string (of various formats) is being passed in.
+    // 2015-04-08 16:30:25.000
+    // 2015-04-08 16:30:25
+    // 2015-04-08 16:30
+    // 16:30:25
+    // 16:30
+    // Wed Apr 08 2015 16:30:25 GMT-0400 (Eastern Daylight Time)
+    // Wed Apr 08 2015, 16:30:25.000
+    var findExactOrClosestCaptureTime = function(timeToFind, direction) {
+      var low = 0, high = captureTimes.length - 1, i, newCompare;
+      if (!timeToFind) return null;
+      // Requested date may not have seconds
+      var subStrLength = captureTimes[0].match(/\d\d:\d\d:\d\d/) ? 8 : 5;
+      // FireFox/IE cannot parse a Date in the form of "Thu Apr 09 2015, 08:52:35.000" (milliseconds must be removed)
+      var sanitized_timeToFind = timeToFind.split(".")[0];
+      // If a date string has dashes (i.e. 2015-04-09 08:52:35 GMT-0400), replace with slashes since IE/FireFox Date parser does not support this.
+      // However, be sure not to remove the dash from the timezone field.
+      var dashSubString = sanitized_timeToFind.match(/\d\d\d\d-\d\d-\d\d/)
+      if (dashSubString) {
+        var slashSubString = dashSubString[0].replace(/-/g, "/")
+        sanitized_timeToFind.replace(dashSubString, slashSubString);
+      }
+      sanitized_timeToFind = (new Date(sanitized_timeToFind)).toTimeString().substr(0, subStrLength).trim();
+      // If date parsing fails, we assume the input only included the hour, min, [sec], so manually insert a year, month, day
+      if (sanitized_timeToFind === "Invalid") {
+        sanitized_timeToFind = (new Date("2001/01/01 " + timeToFind)).toTimeString().substr(0, subStrLength);
+      }
       while (low <= high) {
         i = Math.floor((low + high) / 2);
-        if (captureTimes[i].length < 11)
-          return 0;
-        var captureTimeStamp = captureTimes[i].substring(11);
-        var newCompare = new Date("2000/01/01 " + captureTimeStamp).toTimeString().substr(0, 5);
-        if (newCompare < timeToFind) {
+        newCompare = (new Date(captureTimes[i].replace(/-/g, "/"))).toTimeString().substr(0, subStrLength);
+        if (newCompare < sanitized_timeToFind) {
           low = i + 1;
           continue;
-        }
-        if (newCompare > timeToFind) {
+        } else if (newCompare > sanitized_timeToFind) {
           high = i - 1;
           continue;
         }
+        // Exact match
         return i;
+      }
+      if (low >= captureTimes.length) return (captureTimes.length - 1);
+      if (high < 0) return 0;
+      // No exact match. Now find the closest and alter direction if requested by user
+      var lowCompare = Date.parse(new Date(captureTimes[low].replace(/-/g, "/")));
+      var highCompare = Date.parse(new Date(captureTimes[high].replace(/-/g, "/")));
+      var timeToFindCompare = Date.parse(captureTimes[low].replace(/-/g, "/").substr(0, 11) + sanitized_timeToFind);
+      if (Math.abs(lowCompare - timeToFindCompare) > Math.abs(highCompare - timeToFindCompare)) {
+        i = (direction === "up") ? low : high;
+      } else {
+        i = (direction === "down") ? high: low;
       }
       return i;
     };
