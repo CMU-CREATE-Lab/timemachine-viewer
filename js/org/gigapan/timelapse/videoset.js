@@ -181,6 +181,7 @@ if (!window['$']) {
     var videoIsSeekingIntervalCheck;
     var browserSupportsPlaybackRate = UTIL.playbackRateSupported();
     var activeVideoSrcList = {};
+    var seekRedrawTimer = null;
 
     ////////////////////////
     //
@@ -1052,6 +1053,7 @@ if (!window['$']) {
         return;
 
       if (viewerType != "video") {
+        video.fromSeek = true;
         if (isIE9) {
           // IE 9 is lying, it has not fully seeked yet
           setTimeout(function() {
@@ -1413,6 +1415,15 @@ if (!window['$']) {
             }
           }
         }
+        if (isIE && video.fromSeek && video.readyState != 4) {
+           if (!seekRedrawTimer) {
+             seekRedrawTimer = setTimeout(function() {
+               seekRedrawTimer = null;
+               drawToCanvas(video);
+             }, 1);
+           }
+        }
+        video.fromSeek = false;
       }
     };
 
