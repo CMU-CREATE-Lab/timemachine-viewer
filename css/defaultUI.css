@@ -699,3 +699,13 @@ body, html {
   opacity: .55;
   background-repeat: no-repeat;
 }
+
+.dataPanesContainer {
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  top: 0px;
+  display: inline-block;
+  /*pointer-events: auto;*/
+  z-index: 1;
+}

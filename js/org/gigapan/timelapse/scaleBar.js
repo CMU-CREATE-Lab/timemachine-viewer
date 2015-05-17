@@ -116,8 +116,8 @@ if (!org.gigapan.timelapse.Timelapse) {
     var viewerDivId = timelapse.getViewerDivId();
     var videoDivHeight;
     var videoDivWidth;
-    var metricUnitArray = [16000, 8000, 4000, 2000, 1000, 500, 200, 100, 50, 20, 10, 5, 2, 1, 0.5, 0.2, 0.1, 0.05];
-    var englishUnitArray = [8000, 4000, 2000, 1000, 500, 200, 100, 50, 20, 10, 5, 2, 1, 0.4735, 0.3788, 0.1894, 0.0947, 0.0947, 0.0379, 0.0189];
+    var metricUnitArray = [16000, 8000, 4000, 2000, 1000, 500, 200, 100, 50, 20, 10, 5, 2, 1, 0.5, 0.2, 0.1, 0.05, 0.25, 0.125, 0.0625, 0.03125, 0.015625, 0.0078125, 0.00390625, 0.001953125, 0.0009765625, 0.00048828125, 0.000244140625];
+    var englishUnitArray = [8000, 4000, 2000, 1000, 500, 200, 100, 50, 20, 10, 5, 2, 1, 0.4735, 0.3788, 0.1894, 0.0947, 0.0947, 0.0379, 0.0189, 0.00945, 0.004725, 0.0023625, 0.00118125, 0.000590625, 0.0002953125];
     var nowMetricUnitIndex = 1;
     var nowEnglishUnitIndex = 1;
     var videoQualityHeight;
@@ -224,6 +224,8 @@ if (!org.gigapan.timelapse.Timelapse) {
         } else
           break;
       }
+      // Ensure that if we zoom further than we have scale values computed for, we don't print undefined values
+      nowUnitIndex = Math.min(unitArray.length - 1, nowUnitIndex);
       // Update
       var newBarUnit = unitArray[nowUnitIndex];
       if (unitArray[nowUnitIndex] < 1) {

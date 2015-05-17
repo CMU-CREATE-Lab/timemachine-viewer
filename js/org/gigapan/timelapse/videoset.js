@@ -1401,6 +1401,18 @@ if (!window['$']) {
             UTIL.error(e.message);
           }
         }
+        // Notify draw listeners
+        var listeners = eventListeners['videoset-draw'];
+        if (listeners) {
+          var currentDrawView = timelapse.getView();
+          for (var i = 0; i < listeners.length; i++) {
+            try {
+              listeners[i](currentDrawView);
+            } catch(e) {
+              UTIL.error(e.name + " while publishing to videoset 'videoset-draw' event listener: " + e.message, e);
+            }
+          }
+        }
       }
     };
 

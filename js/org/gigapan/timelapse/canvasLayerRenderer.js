@@ -1,10 +1,13 @@
 // @license
 // Redistribution and use in source and binary forms ...
 
-// This is a class that manages canvas layers
+// A class that manages canvas layers for Time Machine
+//
+// Shapes (circles and rectangles) or shapefiles in the form of geoJSON are supported.
 //
 // Dependencies:
 // * jQuery (http://jquery.com/)
+// * org.gigapan.timelapse.Timelapse
 //
 // Copyright 2013 Carnegie Mellon University. All rights reserved.
 //
@@ -52,7 +55,6 @@ if (!org) {
     throw new Error(orgExistsMessage);
   }
 }
-
 // Repeat the creation and type-checking for the next level
 if (!org.gigapan) {
   org.gigapan = {};
@@ -63,7 +65,6 @@ if (!org.gigapan) {
     throw new Error(orgGigapanExistsMessage);
   }
 }
-
 // Repeat the creation and type-checking for the next level
 if (!org.gigapan.timelapse) {
   org.gigapan.timelapse = {};
@@ -83,20 +84,25 @@ if (!window['$']) {
   alert(nojQueryMsg);
   throw new Error(nojQueryMsg);
 }
+if (!org.gigapan.timelapse.Timelapse) {
+  var noTimelapseMsg = "The org.gigapan.timelapse.Timelapse library is required by org.gigapan.timelapse.CanvasLayerRenderer";
+  alert(noTimelapseMsg);
+  throw new Error(noTimelapseMsg);
+}
 
 //
 // CODE
 //
 (function() {
-  org.gigapan.timelapse.CanvasLayerRenderer = function(stageName, baseLayerId) {
+  org.gigapan.timelapse.CanvasLayerRenderer = function(options) {
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////
     //
     // Class variables
     //
+    var timelapse;
     var thisRenderer = this;
     var stage;
-    var layers = [];
-    var baseLayer = $("#" + baseLayerId);
+    var layers = {};
     // Offscreen canvas that holds shapes being drawn
     var shapeCanvas = document.createElement('canvas');
     // Cannot have a canvas less than 1x1
@@ -108,6 +114,9 @@ if (!window['$']) {
     var previousActiveElement = null;
     var didMouseEnter = false;
     var didMouseOver = false;
+    var numLayers = 0;
+    var timelapseViewNotChanging = true;
+    var currentScale;
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////
     //
@@ -127,39 +136,112 @@ if (!window['$']) {
       shapeCanvasCtx.fillRect(shape.position, 0, shape.width, shape.height);
     }
 
+    function addImageToShapeCanvas(shape) {
+      var img = new Image();
+      img.onload = function() {
+        shapeCanvasCtx.drawImage(this, shape.position, 0, shape.width, shape.height);
+      };
+      img.src = shape.src;
+    }
+
     function inCircleHitArea(mouseX, mouseY, element) {
       var elementAttributes = element.attrs;
-      var radius = elementAttributes.shape.width / 2;
-      var elemXPosPlusRadius = elementAttributes.x + radius;
-      var elemYPosPlusRadius = elementAttributes.y + radius;
+      var radius = (elementAttributes.shape.width / currentScale) / 2;
+      var elemXPosPlusRadius = elementAttributes.worldX + radius;
+      var elemYPosPlusRadius = elementAttributes.worldY + radius;
       // Distance formula: sqrt((x1-x2)^2+(y1-y2)^2)
       // Use only multiplication for better performance.
       return ((mouseX - elemXPosPlusRadius) * (mouseX - elemXPosPlusRadius) + (mouseY - elemYPosPlusRadius) * (mouseY - elemYPosPlusRadius) < radius*radius);
-      //var distance = Math.sqrt(Math.pow(mouseX - (element.attrs.x + radius), 2) + Math.pow(mouseY - (element.attrs.y + radius), 2));
-      //return distance <= radius;
     }
 
     function inRectangleHitArea(mouseX, mouseY, element) {
       var elementAttributes = element.attrs;
       var shape = elementAttributes.shape;
-      return (mouseY > elementAttributes.y && mouseY < elementAttributes.y + shape.height && mouseX > elementAttributes.x && mouseX < elementAttributes.x + shape.width);
+      return (mouseY > elementAttributes.worldY && mouseY < elementAttributes.worldY + (shape.height / currentScale) && mouseX > elementAttributes.worldX && mouseX < elementAttributes.worldX + (shape.width / currentScale));
     }
 
     function inHitArea(mouseX, mouseY, element) {
       var type = element.attrs.shape.type;
+      var mouseInWorldCoords = timelapse.convertViewportToTimeMachine({x: mouseX, y: mouseY});
       if (type == "circle") {
-        return inCircleHitArea(mouseX, mouseY, element);
-      } else if (type == "rectangle") {
-        return inRectangleHitArea(mouseX, mouseY, element);
+        return inCircleHitArea(mouseInWorldCoords.x, mouseInWorldCoords.y, element);
+      } else if (type == "rectangle" || "image") {
+        return inRectangleHitArea(mouseInWorldCoords.x, mouseInWorldCoords.y, element);
       }
+    }
+
+    function addEvents(type) {
+      stage.on(type, function(event) {
+        var types;
+        var offset = $(this).offset();
+        var mouseX = event.pageX - offset.left;
+        var mouseY = event.pageY - offset.top;
+        for (var layerName in layers) {
+          var elements = layers[layerName].elements;
+          for (var j = 0; j < elements.length; j++) {
+            var element = layers[layerName].elements[j];
+            if (element.attrs.visible && Object.keys(element.events).length > 0 && inHitArea(mouseX, mouseY, element)) {
+              if (!previousActiveElement) {
+                previousActiveElement = element;
+              }
+              if (type == "mousemove") {
+                types = ["mouseover", "mouseenter"];
+                for (var jj = 0; jj < types.length; jj++) {
+                  var type3 = types[jj];
+                  if (!element.events[type3]) continue;
+                  for (var jjj = 0; jjj < element.events[type3].length; jjj++) {
+                    if (didMouseOver || didMouseEnter) break;
+                    if (type3 == "mouseover") didMouseOver = true;
+                    if (type3 == "mouseenter") didMouseEnter = true;
+                    element.events[type3][jjj].call(element, {worldX: element.attrs.worldX, worldY: element.attrs.worldY});
+                  }
+                }
+              }
+              if (!element.events[type]) continue;
+              for (var k = 0; k < element.events[type].length; k++) {
+                element.events[type][k].call(element, {worldX: element.attrs.worldX, worldY: element.attrs.worldY});
+              }
+              return;
+            }
+          }
+          if (previousActiveElement && type == "mousemove") {
+            if (inHitArea(mouseX, mouseY, previousActiveElement)) continue;
+            types = ["mouseout", "mouseleave", "mouseover", "mouseenter"];
+            for (var kk = 0; kk < types.length; kk++) {
+              var type2 = types[kk];
+              if (!previousActiveElement.events[type2]) continue;
+              for (var kkk = 0; kkk < previousActiveElement.events[type2].length; kkk++) {
+                if (didMouseOver) didMouseOver = false;
+                if (didMouseEnter) didMouseEnter = false;
+                if (kk < 2)
+                  previousActiveElement.events[type2][kkk].call(previousActiveElement, {worldX: previousActiveElement.attrs.worldX, worldY: previousActiveElement.attrs.worldY});
+              }
+            }
+            previousActiveElement = null;
+          }
+        }
+      });
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////
     //
     // Public methods
     //
+    window.requestAnimFrame = (function(){
+      return  window.requestAnimationFrame       ||
+              window.webkitRequestAnimationFrame ||
+              window.mozRequestAnimationFrame    ||
+              function( callback ){
+                window.setTimeout(callback, 1000 / 60);
+              };
+    })();
+
+    this.resetTimelapseViewNotChanging = function() {
+      timelapseViewNotChanging = true;
+    };
+
     this.numLayers = function() {
-      return layers.length;
+      return numLayers;
     };
 
     this.getLayers = function() {
@@ -167,81 +249,23 @@ if (!window['$']) {
     };
 
     this.getLayer = function(layerName) {
-      for (var i = 0; i < layers.length; i++) {
-        if (layers[i].name == layerName)
-          return layers[i];
-      }
-      return null;
+      return layers[layerName];
     };
 
-    this.drawAllLayers = function() {
-      for (var i = 0; i < layers.length; i++) {
-        layers[i].draw();
+    this.drawLayers = function() {
+      for (var layerName in layers) {
+        layers[layerName].draw();
       }
     };
 
     this.resizeLayers = function() {
       var stageWidth = stage.width();
       var stageHeight = stage.height();
-      for (var i = 0; i < layers.length; i++) {
-        layers[i].setWidth(stageWidth);
-        layers[i].setHeight(stageHeight);
-        layers[i].draw();
+      for (var layerName in layers) {
+        layers[layerName].setWidth(stageWidth);
+        layers[layerName].setHeight(stageHeight);
+        layers[layerName].draw();
       }
-    };
-
-    this.addEvents = function(type) {
-      stage.on(type, function(event) {
-        var offset = $(this).offset();
-        var mouseX = event.pageX - offset.left;
-        var mouseY = event.pageY - offset.top;
-        for (var i = 0; i < layers.length; i++) {
-          var elements = layers[i].elements;
-          for (var j = 0; j < elements.length; j++) {
-            var element = layers[i].elements[j];
-
-            if (element.attrs.visible && Object.keys(element.events).length > 0 && inHitArea(mouseX, mouseY, element)) {
-              if (!previousActiveElement) {
-                previousActiveElement = element;
-              }
-
-              if (type == "mousemove") {
-                var types = ["mouseover", "mouseenter"];
-                for (var jj = 0; jj < types.length; jj++) {
-                  var type3 = types[jj];
-                  if (!element.events[type3]) continue;
-                  for (var jjj = 0; jjj < element.events[type3].length; jjj++) {
-                    if (didMouseOver) break;
-                    if (didMouseEnter) break;
-                    if (type3 == "mouseover") didMouseOver = true;
-                    if (type3 == "mouseenter") didMouseEnter = true;
-                    element.events[type3][jjj].call(element);
-                  }
-                }
-              }
-              if (!element.events[type]) continue;
-              for (var k = 0; k < element.events[type].length; k++) {
-                element.events[type][k].call(element);
-              }
-              return;
-            }
-          }
-
-          if (previousActiveElement && type == "mousemove") {
-            var types = ["mouseout", "mouseleave"];
-            for (var kk = 0; kk < types.length; kk++) {
-              var type2 = types[kk];
-              if (!previousActiveElement.events[type2]) continue;
-              for (var kkk = 0; kkk < previousActiveElement.events[type2].length; kkk++) {
-                if (didMouseOver) didMouseOver = false;
-                if (didMouseEnter) didMouseEnter = false;
-                previousActiveElement.events[type2][kkk].call(previousActiveElement);
-              }
-            }
-            previousActiveElement = null;
-          }
-        }
-      });
     };
 
     this.Shape = function(data) {
@@ -253,6 +277,7 @@ if (!window['$']) {
       //
       this.type = data.type;
       this.color = data.color;
+      this.src = data.src;
       this.width = (typeof data.radius !== 'undefined') ? data.radius * 2 : data.width;
       this.height = (typeof data.radius !== 'undefined') ? data.radius * 2 : data.height;
 
@@ -274,14 +299,19 @@ if (!window['$']) {
           addCircleToShapeCanvas(shapes[j]);
         } else if (shapes[j].type == "rectangle") {
           addRectangleToShapeCanvas(shapes[j]);
+        } else if (shapes[j].type == "image") {
+          addImageToShapeCanvas(shapes[j]);
+        } else {
+          console.log("ERROR: Shape type '" + shapes[j].type + "' not supported. Only types 'circle, rectangle, image' allowed.");
         }
       }
     };
 
-    this.Layer = function(layerName, position) {
+    this.Layer = function(layerName, attributes) {
       if (typeof layerName === "undefined") return null;
 
       var thisLayer = this;
+      attributes = attributes || {};
 
       this.Element = function(attributes) {
         if (typeof attributes === "undefined") return null;
@@ -291,17 +321,17 @@ if (!window['$']) {
 
         this.on = function(eventType, listener) {
           if (typeof availableEvents[eventType] === "undefined") {
-            if (typeof availableEvents["mousemove"] === "undefined" && eventType == "mouseover" || eventType == "mouseenter") {
-              availableEvents["mousemove"] = true;
-              thisRenderer.addEvents("mousemove");
-              if (typeof thisElement.events["mousemove"] === "undefined") {
-                thisElement.events["mousemove"] = [];
-                thisElement.events["mousemove"].push(function() {});
+            // If we need to do a mouse event, we need to use mousemove to track where we are to trigger these events.
+            if (typeof availableEvents.mousemove === "undefined" && (eventType == "mouseover" || eventType == "mouseenter" || eventType == "mouseout" || eventType == "mouseleave")) {
+              availableEvents.mousemove = true;
+              addEvents("mousemove");
+              if (typeof thisElement.events.mousemove === "undefined") {
+                thisElement.events.mousemove = [];
+                thisElement.events.mousemove.push(function() {});
               }
             }
-
             availableEvents[eventType] = true;
-            thisRenderer.addEvents(eventType);
+            addEvents(eventType);
           }
           if (typeof thisElement.events[eventType] === "undefined") {
             thisElement.events[eventType] = [];
@@ -323,37 +353,70 @@ if (!window['$']) {
       };
 
       this.moveToTop = function() {
-        thisLayer.rePosition(0);
+        thisLayer.setPosition(numLayers - 1);
       };
 
-      this.rePosition = function(position) {
-        thisLayer.canvas.insertAfter(stage.children().eq(position-1));
+      this.setPosition = function(position) {
+        position = Math.min(numLayers - 1, (Math.max(0, position)));
+        var canvasToInsert = thisLayer.canvas;
+        var canvasNeighbor = stage.children().eq(position);
+        if (canvasToInsert.index() > position) {
+          canvasNeighbor.before(canvasToInsert);
+        } else {
+          canvasNeighbor.after(canvasToInsert);
+        }
       };
 
-      this.rePositionElement = function(index, newPos) {
+      this.setElementPosition = function(index, newPos) {
         var elements = thisLayer.elements;
-        elements[index].attrs.x = newPos.x;
-        elements[index].attrs.y = newPos.y;
+        elements[index].attrs.worldX = newPos.x;
+        elements[index].attrs.worldY = newPos.y;
       };
 
       // Draw all elements in a layer
-      this.draw = function() {
-        var ctx = thisLayer.ctx;
-        ctx.clearRect(0, 0, thisLayer.width, thisLayer.height);
-        var numElements = thisLayer.elements.length;
+      this.draw = function(currentView) {
+        var context = thisLayer.ctx;
+        // Default alpha for a canvas is 1
+        if (thisLayer.alphaLevel < 1)
+          context.globalAlpha = thisLayer.alphaLevel;
+
+        // Clear transformation from last update by setting to identity matrix.
+        //context.clearRect(0, 0, thisLayer.width, thisLayer.height);
+        context.setTransform(1, 0, 0, 1, 0, 0);
+        context.clearRect(0, 0, thisLayer.width, thisLayer.height);
+
+        // Scale and translate for current view.
+        if (!currentView)
+          currentView = timelapse.getView();
+        context.translate(thisLayer.width * 0.5, thisLayer.height * 0.5);
+        context.scale(currentView.scale, currentView.scale);
+        context.translate(-currentView.x, -currentView.y);
+
         var elements = thisLayer.elements;
+        var numElements = elements.length;
+
+        //var bb = timelapse.getBoundingBoxForCurrentView();
+
         for (var i = 0; i < numElements; i++) {
           var shape = elements[i].attrs.shape;
-          if (elements[i].attrs.visible && elements[i].attrs.x+shape.width >= 0 && elements[i].attrs.x <= thisLayer.width && elements[i].attrs.y+shape.height >= 0 && elements[i].attrs.y <= thisLayer.height) {
-            ctx.drawImage(shapeCanvas, shape.position, 0, shape.width, shape.height, elements[i].attrs.x, elements[i].attrs.y, shape.width, shape.height);
+          //if (elements[i].attrs.visible && elements[i].attrs.worldX + shape.width > bb.xmin && elements[i].attrs.worldX + shape.width < bb.xmax && elements[i].attrs.worldY + shape.height > bb.ymin && elements[i].attrs.worldY + shape.height < bb.ymax) {
+          if (elements[i].attrs.visible) {
+            context.drawImage(shapeCanvas, shape.position, 0, shape.width, shape.height, elements[i].attrs.worldX, elements[i].attrs.worldY, shape.width / currentView.scale, shape.height / currentView.scale);
           }
         }
       };
 
-      this.addElement = function(data) {
-        data.visible = (typeof data.visible !== 'undefined') ? data.visible : true;
-        thisLayer.elements.push(data);
-        return thisLayer.elements.length-1;
+      this.addElement = function(element) {
+        element.attrs.visible = (typeof element.attrs.visible !== 'undefined') ? element.attrs.visible : true;
+        thisLayer.elements.push(element);
+        return thisLayer.elements.length - 1;
+      };
+
+      this.hideAllGroups = function() {
+        var groups = thisLayer.groups;
+        for (var i = 0; i < groups.length; i++) {
+          groups[i].hide();
+        }
       };
 
       this.Group = function(properties) {
@@ -384,9 +447,9 @@ if (!window['$']) {
           console.log("Group.draw() - Unimplemented");
         };
 
-        this.addElement = function(data) {
-          data.visible = thisGroup.visible;
-          thisGroup.elementIndicies.push(thisLayer.addElement(data));
+        this.addElement = function(element) {
+          element.attrs.visible = thisGroup.visible;
+          thisGroup.elementIndicies.push(thisLayer.addElement(element));
         };
 
         ////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -400,37 +463,52 @@ if (!window['$']) {
       //
       // Layer constructor code
       //
-      if (typeof position === 'undefined')
-        position = layers.length;
 
       this.name = layerName;
       this.elements = [];
       this.groups = [];
-      this.width = baseLayer.width();
-      this.height = baseLayer.height();
-
-      var newCanvas = $('<canvas/>',{'id':layerName}).css({'background-color': "transparent", 'position': "absolute"}).prop({width: thisLayer.width, height: thisLayer.height});
-      this.ctx = newCanvas.get(0).getContext("2d");
+      this.width = stage.width();
+      this.height = stage.height();
+      this.position = (typeof attributes.position === 'undefined' || attributes.position === null) ? numLayers : attributes.position;
+      this.position = Math.min(numLayers, (Math.max(0, this.position)));
+      this.alphaLevel = attributes.alphaLevel || 1;
+      var newCanvas = $('<canvas/>',{'id' : layerName}).css({'background-color': "transparent", 'position': "absolute"}).prop({width: thisLayer.width, height: thisLayer.height});
+      this.ctx = newCanvas[0].getContext("2d");
       this.canvas = newCanvas;
-      layers.splice(position, 0, this);
-      if (position === 0) {
+      layers[this.name] = this;
+      if (this.position === 0) {
         $(newCanvas).prependTo(stage);
       } else {
-        $(newCanvas).insertAfter(stage.children().eq(position-1));
+        $(newCanvas).insertAfter(stage.children().eq(this.position - 1));
       }
+      numLayers++;
     };
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////
     //
     // Renderer constructor code
     //
-    if (typeof stageName === "undefined" || typeof baseLayerId === "undefined") return null;
-    stage = $('<div/>',{'id' : stageName}).css({width: "100%", height: "100%", position: "absolute", top: "0px", display: "inline-block", "pointer-events": "auto", "z-index": 1});
-    $("#" + baseLayerId).prepend(stage);
+    timelapse = options.timelapse;
+    if (typeof timelapse === "undefined") return null;
+    stage = $("#" + timelapse.getDataPanesContainerId());
+    // Handle draw while timelapse is playing
+    if (typeof(options.updateHandler) === "function")
+      timelapse.addVideoDrawListener(options.updateHandler);
+    // Handle draw while timelapse is paused and not panning/zooming but time slider is manually being scrubbed
+    timelapse.addTargetViewChangeListener(function() { timelapseViewNotChanging = false; });
+    timelapse.addViewEndChangeListener(function() { timelapseViewNotChanging = true; });
+    timelapse.addZoomChangeListener(function() { currentScale = timelapse.getView().scale; });
+    currentScale = timelapse.getView().scale;
+    var idleAnimation = function() {
+      if (timelapse && timelapse.isPaused() && timelapseViewNotChanging) {
+        options.updateHandler();
+      }
+      window.requestAnimFrame(idleAnimation);
+    };
+    window.requestAnimFrame(idleAnimation);
     // Resize all the layers when the browser window changes size
     $(window).resize(function() {
       thisRenderer.resizeLayers();
     });
-
   };
 })();

@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8"/>
+
+    <link href="../css/snaplapse.css" rel="stylesheet" type="text/css"/>
+    <link href="../css/jquery-ui/smoothness/jquery-ui.custom.css" rel="stylesheet" type="text/css"/>
+    <link href="../css/defaultUI.css" rel="stylesheet" type="text/css"/>
+    <link href="../css/smallGoogleMap.css" rel="stylesheet" type="text/css"/>
+    <link href="../css/scaleBar.css" rel="stylesheet" type="text/css"/>
+    <link href="../css/customUI.css" rel="stylesheet" type="text/css"/>
+
+    <script src="../js/jquery/jquery.min.js" type="text/javascript"></script>
+    <script src="../js/jquery/jquery-ui.custom.min.js" type="text/javascript"></script>
+    <script src="../js/jquery/plugins/mouse/jquery.mousewheel.min.js" type="text/javascript"></script>
+    <script src="../js/org/gigapan/util.js" type="text/javascript"></script>
+    <script src="../js/org/gigapan/timelapse/videoset.js" type="text/javascript"></script>
+    <script src="../js/org/gigapan/timelapse/parabolicMotion.js" type="text/javascript"></script>
+    <script src="../js/org/gigapan/timelapse/timelapse.js" type="text/javascript"></script>
+    <script src="../js/Math.uuid.js" type="text/javascript"></script>
+    <script src="../js/org/gigapan/timelapse/snaplapse.js" type="text/javascript"></script>
+    <script src="../js/org/gigapan/timelapse/snaplapseViewer.js" type="text/javascript"></script>
+    <script src="../js/org/gigapan/timelapse/mercator.js" type="text/javascript"></script>
+    <script src="../js/org/gigapan/timelapse/scaleBar.js" type="text/javascript"></script>
+    <script src="../js/org/gigapan/timelapse/smallGoogleMap.js" type="text/javascript"></script>
+    <script src="../js/org/gigapan/timelapse/customUI.js" type="text/javascript"></script>
+    <script src="../js/org/gigapan/timelapse/defaultUI.js" type="text/javascript"></script>
+    <script src="../js/org/gigapan/timelapse/urlEncoder.js" type="text/javascript"></script>
+
+    <script src="../js/org/gigapan/postmessage.js" type="text/javascript"></script>
+    <script src="../js/org/gigapan/timelapse/crossdomain_api.js" type="text/javascript"></script>
+
+    <script src="../template_includes.js" type="text/javascript"></script>
+    <script src="http://earthengine.google.org/timelapse/data/20130507/ajax_includes.js" type="text/javascript"></script>
+    <script src="https://maps.google.com/maps/api/js?sensor=false&libraries=places" type="text/javascript" ></script>
+
+    <script src="../js/org/gigapan/timelapse/canvasLayerRenderer.js" type="text/javascript"></script>
+
+    <style>
+      #timeMachine {
+        position: absolute;
+        width: 100%;
+        height: 100%;
+      }
+    </style>
+
+    <script type="text/javascript">
+      jQuery.support.cors = true;
+      var timelapse;
+      // Landsat ("https" will casue the thumbnail loading from the server to fail)
+      var url = "http://earthengine.google.org/timelapse/data/20130507/";
+      var canvasLayerRenderer;
+      var frackingLayer;
+      var earthquakeLayer;
+      function init() {
+        var myHomeView = {
+          x: 677982.255550633,
+          y: 521801.7016044302,
+          scale: 0.0005840897249061237
+        };
+        var settings = {
+          url: url,
+          enablePresentationSlider: false,
+          datasetType: "landsat",
+          playOnLoad: true,
+          onTimeMachinePlayerReady: function(viewerDivId) {
+            var projection = new org.gigapan.timelapse.MercatorProjection(-180, 85.05112877980659, 180, -85.05112877980659, 1335834, 1335834);
+
+            canvasLayerRenderer = new org.gigapan.timelapse.CanvasLayerRenderer({
+              timelapse: timelapse,
+              updateHandler: function() {
+                if (!frackingLayer || !frackingLayer.groups || !earthquakeLayer || !earthquakeLayer.groups) return;
+                var frackingGroups = frackingLayer.groups;
+                var earthquakeGroups = earthquakeLayer.groups;
+                for (var i = 0; i < timelapse.getNumFrames(); i++) {
+                  if (timelapse.getTimelapseCurrentCaptureTimeIndex() >= i) {
+                    frackingGroups[i].show();
+                    earthquakeGroups[i].show();
+                  } else {
+                    frackingGroups[i].hide();
+                    earthquakeGroups[i].hide();
+                  }
+                }
+                frackingLayer.draw();
+                earthquakeLayer.draw();
+              }
+            });
+
+            $.getJSON('http://timemachine1.gc.cs.cmu.edu/timemachines/data/ark-fracking.json', function(data) {
+              var previousYear = 1983;
+
+              frackingLayer = new canvasLayerRenderer.Layer(
+                "fracking", /* id for the canvas; required */
+                {
+                  position: null, /* position of this canvas relative to the other overlays. Defaults to the next available index starting at 0 */
+                  alphaLevel: 0.5 /* defaults to 1 */
+                }
+              );
+
+              var shape = new canvasLayerRenderer.Shape({
+                type: "circle",
+                width: 5,
+                height: 5,
+                color: "red"
+              });
+
+              var group, view, elem;
+
+              for (var key in data) {
+                view = projection.latlngToPoint({
+                  lat: data[key].Lat,
+                  lng: data[key].Lon
+                });
+
+                elem = new frackingLayer.Element({
+                  worldX: view.x,
+                  worldY: view.y,
+                  shape: shape
+                });
+
+                if (previousYear < parseInt(data[key].Date)) {
+                  while (previousYear < parseInt(data[key].Date) - 1) {
+                    previousYear++;
+                    group = new frackingLayer.Group({name: data[key].Date, visible: false});
+                  }
+                  previousYear = parseInt(data[key].Date);
+                  group = new frackingLayer.Group({name: data[key].Date, visible: false});
+                }
+                group.addElement(elem);
+              }
+
+              $.getJSON('http://timemachine1.gc.cs.cmu.edu/timemachines/data/ark-earthquakes.json', function(data) {
+                previousYear = 1983;
+                earthquakeLayer = new canvasLayerRenderer.Layer(
+                  "earthquakes", /* id for the canvas; required */
+                  {
+                    position: null, /* position of this canvas relative to the other overlays. Defaults to the next available index starting at 0 */
+                    alphaLevel: 0.5 /* defaults to 1 */
+                  }
+                );
+
+                shape = new canvasLayerRenderer.Shape({
+                  type: "circle",
+                  width: 5,
+                  height: 5,
+                  color: "yellow"
+                });
+
+                for (var key in data) {
+                  view = projection.latlngToPoint({
+                    lat: data[key].latitude,
+                    lng: data[key].longitude
+                  });
+
+                  elem = new frackingLayer.Element({
+                    worldX: view.x,
+                    worldY: view.y,
+                    shape: shape
+                  });
+
+                  /*elem.on('click', function() {
+                    console.log("click");
+                  });
+
+                  elem.on("mouseover", function() {
+                    console.log("mouseover");
+                    $("#timeMachine_timelapse").removeClass("openHand closedHand").css("cursor", "pointer");
+                  });
+
+                  elem.on("mousemove", function() {
+                    console.log("mousemove");
+                  });
+
+                  elem.on("mouseout", function() {
+                    console.log("mouseout");
+                    $("#timeMachine_timelapse").css("cursor","").addClass("openHand");
+                  });*/
+
+                  if (previousYear < parseInt(data[key].time)) {
+                    while (previousYear < parseInt(data[key].time) - 1) {
+                      previousYear++;
+                      group = new earthquakeLayer.Group({name: data[key].time, visible: false});
+                    }
+                    previousYear = parseInt(data[key].time);
+                    group = new earthquakeLayer.Group({name: data[key].time, visible: false});
+                  }
+                  group.addElement(elem);
+                }
+              });
+            });
+          },
+          loopDwell: {
+            startDwell: 1,
+            endDwell: 1
+          },
+          scaleBarOptions: {
+            scaleBarDiv: "scaleBar1"
+          },
+          smallGoogleMapOptions: {
+            smallGoogleMapDiv: "smallGoogleMap1"
+          },
+          newHomeView: myHomeView,
+          showHomeBtn: true
+        };
+        timelapse = new org.gigapan.timelapse.Timelapse("timeMachine", settings);
+      }
+      $(init);
+    </script>
+  </head>
+  <body>
+    <div id="timeMachine"></div>
+  </body>
+</html>

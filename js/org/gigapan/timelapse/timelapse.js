@@ -507,9 +507,13 @@ if (!window['$']) {
       return annotator;
     };
 
-    this.getDataPanesId = function() {
+    this.getDataPanesContainerId = function() {
       return dataPanesId;
     };
+
+    this.getDataPanes = function() {
+      return $(dataPanesId).children();
+    }
 
     this.getLoopPlayback = function() {
       return loopPlayback;
@@ -1033,6 +1037,16 @@ if (!window['$']) {
       playbackRateChangeListeners.push(listener);
     };
     this.addPlaybackRateChangeListener = _addPlaybackRateChangeListener;
+
+    var _addVideoDrawListener = function(listener) {
+      videoset.addEventListener('videoset-draw', listener);
+    };
+    this.addVideoDrawListener = _addVideoDrawListener;
+
+    var _removeVideoDrawListener = function(listener) {
+      videoset.removeEventListener('videoset-draw', listener);
+    };
+    this.removeVideoDrawListener = _removeVideoDrawListener;
 
     var _getProjection = function(desiredProjectionType) {
       projectionType = typeof (desiredProjectionType) != 'undefined' ? desiredProjectionType : "mercator";
@@ -1645,7 +1659,7 @@ if (!window['$']) {
 
     var setInitialView = function() {
       if (initialView) {
-        view = initialView;
+        view = _normalizeView(initialView);
       } else if (loadSharedViewFromUnsafeURL(UTIL.getUnsafeHashString())) {
         // loadSharedViewFromUnsafeURL() sets our view (if valid) and returns a boolean
       } else if (!loadTimelapseWithPreviousViewAndTime) {
@@ -1875,8 +1889,6 @@ if (!window['$']) {
       }
       targetView.scale = newScale;
       setTargetView(targetView);
-      for (var i = 0; i < zoomChangeListeners.length; i++)
-        zoomChangeListeners[i](targetView);
     };
     this.zoomAbout = zoomAbout;
 
@@ -1932,6 +1944,11 @@ if (!window['$']) {
       }
 
       refresh();
+
+      if (newView.scale != view.scale) {
+        for (var i = 0; i < zoomChangeListeners.length; i++)
+          zoomChangeListeners[i](targetView);
+      }
 
       for (var i = 0; i < targetViewChangeListeners.length; i++)
         targetViewChangeListeners[i](targetView);
@@ -2797,14 +2814,20 @@ if (!window['$']) {
           }
 
           if (didFirstTimeOnLoad) {
-            timelapseCurrentCaptureTimeIndex = Math.min(frames - 1, Math.floor(timelapseCurrentTimeInSeconds * _getFps()));
-            // Recreate timeline slider.
-            // There seems to be an issue with the jQuery UI slider widget, since just changing the max value and refreshing
-            // the slider does not proplerly update the available range. So we have to manually recreate it...
-            var $timeSlider = $("#" + viewerDivId + " .timelineSlider");
-            $timeSlider.slider("destroy");
-            defaultUI.createTimelineSlider();
-            $timeSlider.slider("option", "value", timelapseCurrentCaptureTimeIndex);
+            if (customUI) {
+              $("#" + viewerDivId + " .customTimeline").remove();
+              $("#" + viewerDivId + " .timeText").remove();
+              customUI.createCustomTimeline();
+            } else {
+              timelapseCurrentCaptureTimeIndex = Math.min(frames - 1, Math.floor(timelapseCurrentTimeInSeconds * _getFps()));
+              // Recreate timeline slider.
+              // There seems to be an issue with the jQuery UI slider widget, since just changing the max value and refreshing
+              // the slider does not proplerly update the available range. So we have to manually recreate it...
+              var $timeSlider = $("#" + viewerDivId + " .timelineSlider");
+              $timeSlider.slider("destroy");
+              defaultUI.createTimelineSlider();
+              $timeSlider.slider("option", "value", timelapseCurrentCaptureTimeIndex);
+            }
           } else {
             loadSharedDataFromUnsafeURL(UTIL.getUnsafeHashString());
             didFirstTimeOnLoad = true;
@@ -2919,14 +2942,6 @@ if (!window['$']) {
 
       loadTimelapseWithPreviousViewAndTime = !!preserveCurrentViewAndTime;
 
-      // We are loading a new timelapse and in order for code that should only be run when the
-      // first video of a timelapse is displayed, we need to reset the firstVideoId to the next
-      // id that the videoset class will use. See _makeVideoVisibleListener() where we check for
-      // first time videos.
-      if (didFirstTimeOnLoad) {
-        firstVideoId = videoDivId + "_" + (videoset.getCurrentVideoId() + 1);
-      }
-
       UTIL.ajax("json", settings["url"], "tm.json" + getMetadataCacheBreaker(), loadTimelapseCallback);
     };
     this.loadTimelapse = loadTimelapse;
@@ -3001,6 +3016,12 @@ if (!window['$']) {
     var loadVideoSetCallback = function(data) {
       datasetJSON = data;
 
+      // We are loading a new timelapse and in order for code that should only be run when the
+      // first video of a timelapse is displayed, we need to reset the firstVideoId to the next
+      // id that the videoset class will use. See _makeVideoVisibleListener() where we check for
+      // first time videos.
+      firstVideoId = videoDivId + "_" + (videoset.getCurrentVideoId() + 1);
+
       // Reset currentIdx so that we'll load in the new tile with the different resolution.  We don't null the
       // currentVideo here because 1) it will be assigned in the refresh() method when it compares the bestIdx
       // and the currentIdx; and 2) we want currentVideo to be non-null so that the VideosetStats can keep
@@ -3010,15 +3031,18 @@ if (!window['$']) {
 
       // We've already loaded the UI, so just do new dataset specific setup.
       if (didFirstTimeOnLoad) {
+        // Reset home view
+        computeHomeView();
+
         setInitialView();
         // Discard the custom home view setting if the user is not preserving the previous current view for the new dataset
         if (!loadTimelapseWithPreviousViewAndTime)
           settings["newHomeView"] = undefined;
-        // Reset home view
-        computeHomeView();
+
         if (!view)
           view = $.extend({}, homeView);
         _warpTo(view);
+        timelapseCurrentCaptureTimeIndex = Math.min(frames - 1, Math.floor(videoset.getCurrentTime() * _getFps()));
       } else {
         initializeUI();
         setupTimelapse();
@@ -3057,9 +3081,9 @@ if (!window['$']) {
         'user-select': 'none'
       });
 
-      // TODO: Check that this hasn't bitrotted.
+      // Setup data pane container for overlays
       dataPanesId = tmp.id + "_dataPanes";
-      $("#" + videoDivId).append("<div id=" + dataPanesId + "></div>");
+      $("#" + videoDivId).append("<div id=" + dataPanesId + " class='dataPanesContainer'></div>");
 
       if (viewerType == "video") {
         videoset = new org.gigapan.timelapse.Videoset(viewerDivId, videoDivId, thisObj);

@@ -107,7 +107,7 @@ if (!window['$']) {
     var videoDivId = timelapse.getVideoDivId();
     var videoDiv = document.getElementById(videoDivId);
     var viewerDivId = timelapse.getViewerDivId();
-    var dataPanesId = timelapse.getDataPanesId();
+    var dataPanesId = timelapse.getDataPanesContainerId();
     var annotationCounter = 0;
     var annotationStage;
     var annotationLayer;
