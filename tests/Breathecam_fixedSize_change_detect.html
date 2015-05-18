@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8"/>
+
+    <link href="../css/snaplapse.css" rel="stylesheet" type="text/css"/>
+    <link href="../css/jquery-ui/smoothness/jquery-ui.custom.css" rel="stylesheet" type="text/css"/>
+    <link href="../css/defaultUI.css" rel="stylesheet" type="text/css"/>
+    <link href="../css/visualizer.css" rel="stylesheet" type="text/css"/>
+    <link href="../css/annotator.css" rel="stylesheet" type="text/css"/>
+    <link href="../libs/change-detect/css/change.css" media="screen" rel="stylesheet" type="text/css" />
+
+    <script src="../js/jquery/jquery.min.js" type="text/javascript"></script>
+    <script src="../js/jquery/jquery-ui.custom.min.js" type="text/javascript"></script>
+    <script src="../js/jquery/plugins/mouse/jquery.mousewheel.min.js" type="text/javascript"></script>
+    <script src="../js/kinetic/kinetic.min.js" type="text/javascript"></script>
+    <script src="../js/org/gigapan/util.js" type="text/javascript"></script>
+    <script src="../js/org/gigapan/timelapse/videoset.js" type="text/javascript"></script>
+    <script src="../js/org/gigapan/timelapse/parabolicMotion.js" type="text/javascript"></script>
+    <script src="../js/org/gigapan/timelapse/timelapse.js" type="text/javascript"></script>
+    <script src="../js/Math.uuid.js" type="text/javascript"></script>
+    <script src="../js/org/gigapan/timelapse/snaplapse.js" type="text/javascript"></script>
+    <script src="../js/org/gigapan/timelapse/snaplapseViewer.js" type="text/javascript"></script>
+    <script src="../js/org/gigapan/timelapse/mercator.js" type="text/javascript"></script>
+    <script src="../js/org/gigapan/timelapse/visualizer.js" type="text/javascript"></script>
+    <script src="../js/org/gigapan/timelapse/annotator.js" type="text/javascript"></script>
+    <script src="../js/org/gigapan/timelapse/defaultUI.js" type="text/javascript"></script>
+    <script src="../js/org/gigapan/timelapse/urlEncoder.js" type="text/javascript"></script>
+
+    <script src="../js/org/gigapan/postmessage.js" type="text/javascript"></script>
+    <script src="../js/org/gigapan/timelapse/crossdomain_api.js" type="text/javascript"></script>
+
+    <script src="https://www.google.com/jsapi" type="text/javascript"></script>
+    <script src="../libs/change-detect/js/ThumbnailServiceAPI.js" type="text/javascript"></script>
+    <script src="../libs/change-detect/js/TimeMachineCanvasLayer.js" type="text/javascript"></script>
+    <script src="../libs/change-detect/js/ThumbnailTool.js" type="text/javascript"></script>
+
+    <script src="../template_includes.js" type="text/javascript"></script>
+
+    <style>
+      #timeMachine {
+        position: relative;
+        margin-top: 10px;
+        margin-left: 10px;
+        width: 843px;
+        height: 702px;
+      }
+    </style>
+
+    <script type="text/javascript">
+      jQuery.support.cors = true;
+
+      var url = "http://timemachine1.gc.cs.cmu.edu/timemachines/breathecam/timemachines/heinz/2014-05-26.timemachine";
+
+      var timelapse;
+      var thumbnailTool;
+      var chart;
+      var url;
+      var hashVars = {};
+
+      function update() {
+        thumbnailTool.update();
+      }
+
+      function resize() {
+        thumbnailTool.resize();
+        filter();
+      }
+
+      function filter() {
+        thumbnailTool.filter(function(r) {
+          var o = JSON.parse(r);
+          drawResults(o.values)
+        });
+      }
+      function resetFilter() {
+        var view = thumbnailTool.timelapse_.getView();
+        var scaleOffsetX = 40/view.scale;
+        var scaleOffsetY = 40/view.scale;
+        var bounds = {
+          xmin: view.x - scaleOffsetX,
+          xmax: view.x + scaleOffsetX,
+          ymin: view.y - scaleOffsetY,
+          ymax: view.y + scaleOffsetY
+        };
+        thumbnailTool.setBounds(bounds);
+        thumbnailTool.draw();
+        filter();
+      }
+
+      function init() {
+        var viewerOptions = {
+          url: url,
+          showFullScreenBtn : false,
+          enableEditor : true,
+          enablePresentationSlider : true,
+          enableAnnotator : true,
+          mediaType : ".mp4",
+          disableTourLooping: true,
+          showLogoOnDefaultUI: false,
+          datasetType: "breathecam",
+          fps: 11.9,
+          onTimeMachinePlayerReady: function(viewerDivId) {
+            setupPostMessageHandlers();
+            if (Object.keys(hashVars).length == 0) {
+              var numFrames = timelapse.getNumFrames();
+              var fiveSecondsFromEnd = numFrames - 60;
+              timelapse.seekToFrame(fiveSecondsFromEnd);
+            }
+            var thumbnailToolOptions = {};
+            var bounds;
+            if (typeof hashVars.ttLTRB != "undefined") {
+              bounds = hashVars.ttLTRB;
+            } else {
+              var view = timelapse.getView();
+              var scaleOffsetX = 40/view.scale;
+              var scaleOffsetY = 40/view.scale;
+              bounds = (view.x - scaleOffsetX) + "," + (view.y - scaleOffsetY) + "," + (view.x + scaleOffsetX) + "," + (view.y + scaleOffsetY);
+            }
+            thumbnailToolOptions['ltrb'] = bounds;
+            if (typeof hashVars['nochart'] != "undefined") {
+              thumbnailToolOptions['doFilter'] = false;
+            }
+            thumbnailTool = new ThumbnailTool(timelapse, thumbnailToolOptions);
+          }
+        };
+
+        timelapse = new org.gigapan.timelapse.Timelapse("timeMachine", viewerOptions);
+        var oGetShareView = timelapse.getShareView;
+        timelapse.getShareView = function() {
+          var shareStr = oGetShareView();
+          shareStr += "&url=" + url;
+          if (thumbnailTool.display) {
+            shareStr += '&ttLTRB=' + thumbnailTool.bounds_.xmin + ',' + thumbnailTool.bounds_.ymin + ',' + thumbnailTool.bounds_.xmax + ',' + thumbnailTool.bounds_.ymax;
+          }
+          return shareStr;
+        }
+
+        //var el = document.getElementById('show-current-thumbnail');
+        //el.addEventListener("click", function(event) {
+        //  event.target.href = thumbnailTool.getCurrentThumbnail();
+        //  return false;
+        //})
+
+        //var el = document.getElementById('show-current-gif');
+        //el.addEventListener("click", function(event) {
+        //  event.target.href = thumbnailTool.getCurrentGif();
+        //  return false;
+        //})
+      }
+
+      function unpackVars(str) {
+        var queryString = {};
+        var re = new RegExp("([^?=&]+)(=([^&]*))?", "g");
+        str.replace(re, function($0, $1, $2, $3) {
+          queryString[$1] = $3 || true;
+        });
+        return queryString;
+      }
+
+      var currentThumbnail = new ThumbnailServiceAPI({
+        host: "http://staging.timemachine-api.cmucreatelab.org/thumbnail"}, {
+          format: "png"
+      });
+
+      function getCurrentThumbnail() {
+        var bb = timelapse.getBoundingBoxForCurrentView();
+        currentThumbnail.root = timelapse.getSettings().url,
+        currentThumbnail.tileFormat = timelapase.getSettings().mediaType.slice(1),
+        currentThumbnail.boundsLTRB =  bb.xmin + "," + bb.ymin + "," + bb.xmax + "," + bb.ymax;
+        currentThumbnail.width = bb.xmax - bb.xmin;
+        currentThumbnail.height = bb.ymax - bb.ymin;
+        currentThumbnail.frameTime = timelapse.getCurrentFrame()/timelapse.getFps();
+      }
+
+      function main() {
+        var hash = window.location.hash.slice(1);
+        hashVars = unpackVars(hash);
+
+        if (hashVars && hashVars.d) {
+          startingDate = hashVars.d;
+        }
+
+        if (hashVars && hashVars.url) {
+          url = hashVars.url;
+        }
+        if (url) {
+         init(url);
+       } else {
+         alert('ERROR: URL missing from hash. Please add #url={TIMEMACHINE_ROOT}')
+       }
+      }
+
+      document.addEventListener('DOMContentLoaded', main, false);
+      google.load("visualization", "1", {packages:["corechart"]});
+      document.addEventListener('keydown', function(event) {
+        var currentFrame = timelapse.getCurrentFrameNumber();
+        if (event.keyCode == 37) {
+          --currentFrame;
+          if (currentFrame <= 0) {
+            currentFrame = timelapse.getNumFrames() - 1;
+          }
+          event.stopPropagation();
+          timelapse.seekToFrame(currentFrame);
+        }
+        if (event.keyCode == 39) {
+          ++currentFrame;
+          if (currentFrame >= timelapse.getNumFrames()) {
+            currentFrame = 0;
+          }
+          event.stopPropagation();
+          timelapse.seekToFrame(currentFrame);
+        }
+        if (event.keyCode == 32 ) {
+          $(".playbackButton").trigger("click");
+        }
+      }, true);
+
+      // FIXME: position: sticky
+      function sticky(id, height) {
+        var el = document.getElementById(id);
+        if (window.innerHeight < height) {
+          el.style['-webkit-transform'] = "translateY(" + (window.innerHeight - height) + "px)";
+          el.style['transform'] = "translateY(" + (window.innerHeight - height) + "px)";
+        } else {
+          el.style['-webkit-transform'] = "";
+          el.style['transform'] = "";
+        }
+      }
+
+      document.addEventListener('DOMContentLoaded', function() {
+        sticky("chart", 550);
+      }, false);
+
+      window.addEventListener('resize', function() {
+        sticky("chart", 550);
+      }, false);
+    </script>
+  </head>
+  <body>
+    <div id="timeMachine"></div>
+    <div id="chart"></div>
+    <div id="thumbnail-tool">
+      Thumbnail Tool
+    </div>
+  </body>
+</html>
