@@ -183,7 +183,11 @@ if (!window['$']) {
     var videoStretchRatio = 1;
     var scaleRatio = 1;
     var browserSupportsFullScreen = UTIL.fullScreenAPISupported();
-    var preFullScreenProperties = {width: null, height: null, zIndex: null};
+    var preFullScreenProperties = {
+      width: null,
+      height: null,
+      zIndex: null
+    };
 
     // Flags
     var isSplitVideo = false;
@@ -659,7 +663,8 @@ if (!window['$']) {
           break;
         // Left arrow
         case 37:
-          if (sliderActive) return;
+          if (sliderActive)
+            return;
           if (event.shiftKey) {
             moveFn = function() {
               targetView.x -= (translationSpeedConstant * videoStretchRatio * 0.4) / view.scale;
@@ -678,7 +683,8 @@ if (!window['$']) {
           break;
         // Right arrow
         case 39:
-          if (sliderActive) return;
+          if (sliderActive)
+            return;
           if (event.shiftKey) {
             moveFn = function() {
               targetView.x += (translationSpeedConstant * videoStretchRatio * 0.4) / view.scale;
@@ -697,7 +703,8 @@ if (!window['$']) {
           break;
         // Up arrow
         case 38:
-          if (sliderActive) return;
+          if (sliderActive)
+            return;
           if (event.shiftKey) {
             moveFn = function() {
               if (event.shiftKey) {
@@ -711,7 +718,8 @@ if (!window['$']) {
           break;
         // Down arrow
         case 40:
-          if (sliderActive) return;
+          if (sliderActive)
+            return;
           if (event.shiftKey) {
             moveFn = function() {
               if (event.shiftKey) {
@@ -827,8 +835,10 @@ if (!window['$']) {
             // Translate
           } else if (thisTouchCount == 2) {
             var dist = Math.abs(Math.sqrt((e.touches[0].pageX - e.touches[1].pageX) * (e.touches[0].pageX - e.touches[1].pageX) + (e.touches[0].pageY - e.touches[1].pageY) * (e.touches[0].pageY - e.touches[1].pageY)));
-            thisLocation = {pageX: (e.touches[0].pageX + e.touches[1].pageX) / 2,
-                            pageY: (e.touches[0].pageY + e.touches[1].pageY) / 2};
+            thisLocation = {
+              pageX: (e.touches[0].pageX + e.touches[1].pageX) / 2,
+              pageY: (e.touches[0].pageY + e.touches[1].pageY) / 2
+            };
             if (lastDist) {
               // Zoom
               var zoom = dist / lastDist;
@@ -846,7 +856,8 @@ if (!window['$']) {
             return;
           }
           break;
-        default: return;
+        default:
+          return;
       }
       theMouse = document.createEvent("MouseEvent");
       theMouse.initMouseEvent(mouseEvent, true, true, window, 1, theTouch.screenX, theTouch.screenY, theTouch.clientX, theTouch.clientY, false, false, false, false, 0, null);
@@ -856,15 +867,15 @@ if (!window['$']) {
     // Add horizontal scroll touch support to an HTML element.
     var touchHorizontalScroll = function(elem) {
       var scrollStartPos = 0;
-      $(elem).on("touchstart", function(e){
-        scrollStartPos=this.scrollLeft + e.originalEvent.touches[0].pageX;
+      $(elem).on("touchstart", function(e) {
+        scrollStartPos = this.scrollLeft + e.originalEvent.touches[0].pageX;
         e.preventDefault();
-      }).on("touchmove", function(e){
+      }).on("touchmove", function(e) {
         var newPos = scrollStartPos - e.originalEvent.touches[0].pageX;
         draggingSlider = true;
         this.scrollLeft = newPos;
         e.preventDefault();
-      }).on("touchend touchcancel",function(e){
+      }).on("touchend touchcancel", function(e) {
         draggingSlider = false;
       });
     };
@@ -1127,7 +1138,8 @@ if (!window['$']) {
     this.setNewView = _setNewView;
 
     var _normalizeView = function(newView) {
-      if (!newView) return null;
+      if (!newView)
+        return null;
 
       if (newView.center) {// Center view
         var newCenterView = newView.center;
@@ -1207,7 +1219,7 @@ if (!window['$']) {
 
       // If we still have a share URL (e.g. #v=44.96185,59.06233,4.5,latLng&t=0.10)
       // that has not been unpacked into an array of strings, do so now.
-      if (typeof(unsafe_viewParam) === "string") {
+      if ( typeof (unsafe_viewParam) === "string") {
         unsafe_viewParam = unsafe_viewParam.split(",");
       }
 
@@ -1633,7 +1645,7 @@ if (!window['$']) {
       window.onresize = onresize;
     };
 
-    var onresize  = function() {
+    var onresize = function() {
       var $viewerDiv = $("#" + viewerDivId);
       if (viewportWidth == $viewerDiv.width() && viewportHeight == $viewerDiv.height())
         return;
@@ -2902,6 +2914,7 @@ if (!window['$']) {
       $(videoDiv).focus();
     }
 
+
     this.switchLayer = function(layerNum) {
       var newIndex = layerNum * tmJSON["sizes"].length;
       datasetLayer = layerNum;
@@ -2968,7 +2981,8 @@ if (!window['$']) {
     // Wed Apr 08 2015, 16:30:25.000
     var findExactOrClosestCaptureTime = function(timeToFind, direction) {
       var low = 0, high = captureTimes.length - 1, i, newCompare;
-      if (!timeToFind) return null;
+      if (!timeToFind)
+        return null;
       // Requested date may not have seconds
       var subStrLength = captureTimes[0].match(/\d\d:\d\d:\d\d/) ? 8 : 5;
       // FireFox/IE cannot parse a Date in the form of "Thu Apr 09 2015, 08:52:35.000" (milliseconds must be removed)
@@ -2998,8 +3012,10 @@ if (!window['$']) {
         // Exact match
         return i;
       }
-      if (low >= captureTimes.length) return (captureTimes.length - 1);
-      if (high < 0) return 0;
+      if (low >= captureTimes.length)
+        return (captureTimes.length - 1);
+      if (high < 0)
+        return 0;
       // No exact match. Now find the closest and alter direction if requested by user
       var lowCompare = Date.parse(new Date(captureTimes[low].replace(/-/g, "/")));
       var highCompare = Date.parse(new Date(captureTimes[high].replace(/-/g, "/")));
@@ -3007,7 +3023,7 @@ if (!window['$']) {
       if (Math.abs(lowCompare - timeToFindCompare) > Math.abs(highCompare - timeToFindCompare)) {
         i = (direction === "up") ? low : high;
       } else {
-        i = (direction === "down") ? high: low;
+        i = (direction === "down") ? high : low;
       }
       return i;
     };
@@ -3110,9 +3126,10 @@ if (!window['$']) {
         document.addEventListener("touchmove", touch2Mouse, true);
         document.addEventListener("touchend", touch2Mouse, true);
         document.addEventListener("touchcancel", touch2Mouse, true);
-        $("#" + timeMachineDivId).on("touchstart", function(e){
+        $("#" + timeMachineDivId).on("touchstart", function(e) {
           if (tapped && e.originalEvent.touches.length == 2) {
-            clearTimeout(tapped); //stop single tap callback
+            //stop single tap callback
+            clearTimeout(tapped);
             tapped = null;
             e.preventDefault();
             return;
@@ -3120,10 +3137,12 @@ if (!window['$']) {
 
           var theTouch = e.originalEvent.changedTouches[0];
 
-          if (!tapped){ //if tap is not set, set up single tap
-            tapped = setTimeout(function(){
+          if (!tapped) {//if tap is not set, set up single tap
+            // wait 300ms then run single click code
+            tapped = setTimeout(function() {
               if (draggingSlider) {
-                clearTimeout(tapped); //stop single tap callback
+                //stop single tap callback
+                clearTimeout(tapped);
                 tapped = null;
                 return;
               }
@@ -3131,9 +3150,10 @@ if (!window['$']) {
               var mouseEvent = document.createEvent("MouseEvent");
               mouseEvent.initMouseEvent('click', true, true, window, 1, theTouch.screenX, theTouch.screenY, theTouch.clientX, theTouch.clientY, false, false, false, false, 0, null);
               theTouch.target.dispatchEvent(mouseEvent);
-            },350);   // wait 300ms then run single click code
-          } else {    // we consider a double tap to be tap within 300ms of last tap.
-            clearTimeout(tapped); // stop single tap callback
+            }, 350);
+          } else {// we consider a double tap to be tap within 300ms of last tap.
+            // stop single tap callback
+            clearTimeout(tapped);
             tapped = null;
             var mouseEvent = document.createEvent("MouseEvent");
             mouseEvent.initMouseEvent('dblclick', true, true, window, 1, theTouch.screenX, theTouch.screenY, theTouch.clientX, theTouch.clientY, false, false, false, false, 0, null);
