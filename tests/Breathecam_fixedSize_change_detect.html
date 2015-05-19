@@ -58,10 +58,6 @@
       var url;
       var hashVars = {};
 
-      function update() {
-        thumbnailTool.update();
-      }
-
       function resize() {
         thumbnailTool.resize();
         filter();
@@ -73,6 +69,7 @@
           drawResults(o.values)
         });
       }
+
       function resetFilter() {
         var view = thumbnailTool.timelapse_.getView();
         var scaleOffsetX = 40/view.scale;
@@ -88,20 +85,19 @@
         filter();
       }
 
-      function init() {
+      function init(url) {
         var viewerOptions = {
           url: url,
-          showFullScreenBtn : false,
+          disableTourLooping: true,
           enableEditor : true,
           enablePresentationSlider : true,
           enableAnnotator : true,
-          mediaType : ".mp4",
-          disableTourLooping: true,
+          showFullScreenBtn: false,
           showLogoOnDefaultUI: false,
+          mediaType: ".mp4",
           datasetType: "breathecam",
           fps: 11.9,
           onTimeMachinePlayerReady: function(viewerDivId) {
-            setupPostMessageHandlers();
             if (Object.keys(hashVars).length == 0) {
               var numFrames = timelapse.getNumFrames();
               var fiveSecondsFromEnd = numFrames - 60;
@@ -135,18 +131,6 @@
           }
           return shareStr;
         }
-
-        //var el = document.getElementById('show-current-thumbnail');
-        //el.addEventListener("click", function(event) {
-        //  event.target.href = thumbnailTool.getCurrentThumbnail();
-        //  return false;
-        //})
-
-        //var el = document.getElementById('show-current-gif');
-        //el.addEventListener("click", function(event) {
-        //  event.target.href = thumbnailTool.getCurrentGif();
-        //  return false;
-        //})
       }
 
       function unpackVars(str) {
@@ -239,9 +223,9 @@
   </head>
   <body>
     <div id="timeMachine"></div>
-    <div id="chart"></div>
     <div id="thumbnail-tool">
       Thumbnail Tool
     </div>
+    <div id="chart" class='ajax-loader'></div>
   </body>
 </html>
