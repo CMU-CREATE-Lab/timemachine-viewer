@@ -100,6 +100,7 @@ if (!org.gigapan.timelapse.Timelapse) {
     var visualizer = timelapse.getVisualizer();
     var annotator = timelapse.getAnnotator();
     var videoset = timelapse.getVideoset();
+    var thumbnailTool = timelapse.getThumbnailTool();
     var tmJSON = timelapse.getTmJSON();
     var panInterval;
 
@@ -313,12 +314,25 @@ if (!org.gigapan.timelapse.Timelapse) {
         autoOpen: false,
         appendTo: "#" + viewerDivId,
         width: 632,
-        height: 95,
+        height: 130,
         create: function() {
           $(this).parents("#" + viewerDivId + " .ui-dialog").css({
             'border': '1px solid #000'
           });
         }
+      });
+      // Add events
+      $("#" + viewerDivId + " .get-current-thumbnail").click(function(event) {
+        event.target.href = thumbnailTool.getCurrentThumbnail();
+      });
+      $("#" + viewerDivId + " .get-current-gif").click(function(event) {
+        event.target.href = thumbnailTool.getCurrentGif();
+      });
+      $("#" + viewerDivId + " .toggle-thumbnail-tool").click(function(event) {
+        thumbnailTool.toggle();
+      });
+      $("#" + viewerDivId + " .reset-filter").click(function(event) {
+        thumbnailTool.resetFilter();
       });
     };
 

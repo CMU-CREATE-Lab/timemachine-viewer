@@ -142,6 +142,7 @@ if (!window['$']) {
     var useCustomUI = (settings["datasetType"] == "landsat" || settings["datasetType"] == "modis");
     var useTouchFriendlyUI = ( typeof (settings["useTouchFriendlyUI"]) == "undefined") ? false : settings["useTouchFriendlyUI"];
     var thumbnailServerRootTileUrl = ( typeof (settings["thumbnailServerRootTileUrl"]) == "undefined") ? settings["url"] : settings["thumbnailServerRootTileUrl"];
+    var useThumbnailServer = ( typeof (settings["useThumbnailServer"]) == "undefined") ? true : settings["useThumbnailServer"];
     var visualizerGeometry = {
       width: 250,
       height: 142
@@ -170,6 +171,7 @@ if (!window['$']) {
     var customUI;
     var defaultUI;
     var visualizer;
+    var thumbnailTool;
 
     // DOM elements
     var dataPanesId;
@@ -509,6 +511,10 @@ if (!window['$']) {
 
     this.getAnnotator = function() {
       return annotator;
+    };
+
+    this.getThumbnailTool = function() {
+      return thumbnailTool;
     };
 
     this.getDataPanesContainerId = function() {
@@ -2879,6 +2885,16 @@ if (!window['$']) {
         snaplapseForPresentationSlider = new org.gigapan.timelapse.Snaplapse(thisObj, settings, "presentation");
       if (annotatorEnabled)
         annotator = new org.gigapan.timelapse.Annotator(thisObj);
+      if (useThumbnailServer) {
+        var view = thisObj.getView();
+        var scaleOffset = 40 / view.scale;
+        var thumbnailToolOptions = {
+          ltrb: (view.x - scaleOffset) + "," + (view.y - scaleOffset) + "," + (view.x + scaleOffset) + "," + (view.y + scaleOffset),
+          chartDivId: "chart",
+          doFilter: true
+        };
+        thumbnailTool = new ThumbnailTool(timelapse, thumbnailToolOptions);
+      }
 
       defaultUI = new org.gigapan.timelapse.DefaultUI(thisObj, settings);
       if (useCustomUI)

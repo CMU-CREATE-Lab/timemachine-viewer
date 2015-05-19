@@ -535,8 +535,10 @@ body, html {
 }
 
 .shareurl {
+  margin-top: 10px;
+  margin-bottom: 10px;
   width: 600px;
-  height: 32px;
+  height: 30px;
   resize: none;
 }
 
