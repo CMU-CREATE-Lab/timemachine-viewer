@@ -45,39 +45,44 @@
         width: 843px;
         height: 702px;
       }
+      #chart {
+        margin-left: 11px;
+        width: 839px;
+        height: 170px;
+      }
+      #poi {
+        margin-left: 10px;
+        width: 843px;
+      }
     </style>
 
     <script type="text/javascript">
       jQuery.support.cors = true;
 
       var url = "http://timemachine1.gc.cs.cmu.edu/timemachines/breathecam/timemachines/heinz/2014-05-26.timemachine";
-
       var timelapse;
       var thumbnailTool;
       var chart;
-      var url;
-      var hashVars = {};
+      var currentThumbnail = new ThumbnailServiceAPI({
+        host: "http://staging.timemachine-api.cmucreatelab.org/thumbnail"
+      }, {
+        format: "png"
+      });
 
-      function resetFilter() {
-        var view = thumbnailTool.timelapse_.getView();
-        var scaleOffsetX = 40 / view.scale;
-        var scaleOffsetY = 40 / view.scale;
-        var bounds = {
-          xmin: view.x - scaleOffsetX,
-          xmax: view.x + scaleOffsetX,
-          ymin: view.y - scaleOffsetY,
-          ymax: view.y + scaleOffsetY
-        };
-        thumbnailTool.setBounds(bounds);
-        thumbnailTool.draw();
-        var filterCallBack = function(r) {
-          var o = JSON.parse(r);
-          drawResults(o.values);
-        };
-        thumbnailTool.filter(filterCallBack);
-      }
+      google.load("visualization", "1", {
+        packages: ["corechart"]
+      });
 
-      function init(url) {
+      document.addEventListener('DOMContentLoaded', function() {
+        init();
+        sticky("chart", 550);
+      }, false);
+
+      window.addEventListener('resize', function() {
+        sticky("chart", 550);
+      }, false);
+
+      function init() {
         var viewerOptions = {
           url: url,
           disableTourLooping: true,
@@ -90,25 +95,13 @@
           datasetType: "breathecam",
           fps: 11.9,
           onTimeMachinePlayerReady: function(viewerDivId) {
-            if (Object.keys(hashVars).length == 0) {
-              var numFrames = timelapse.getNumFrames();
-              var fiveSecondsFromEnd = numFrames - 60;
-              timelapse.seekToFrame(fiveSecondsFromEnd);
-            }
-            var thumbnailToolOptions = {};
-            var bounds;
-            if ( typeof hashVars.ttLTRB != "undefined") {
-              bounds = hashVars.ttLTRB;
-            } else {
-              var view = timelapse.getView();
-              var scaleOffsetX = 40 / view.scale;
-              var scaleOffsetY = 40 / view.scale;
-              bounds = (view.x - scaleOffsetX) + "," + (view.y - scaleOffsetY) + "," + (view.x + scaleOffsetX) + "," + (view.y + scaleOffsetY);
-            }
-            thumbnailToolOptions['ltrb'] = bounds;
-            if ( typeof hashVars['nochart'] != "undefined") {
-              thumbnailToolOptions['doFilter'] = false;
-            }
+            timelapse.seekToFrame(timelapse.getNumFrames() - 60);
+            var view = timelapse.getView();
+            var scaleOffset = 40 / view.scale;
+            var thumbnailToolOptions = {
+              ltrb: (view.x - scaleOffset) + "," + (view.y - scaleOffset) + "," + (view.x + scaleOffset) + "," + (view.y + scaleOffset),
+              doFilter: true
+            };
             thumbnailTool = new ThumbnailTool(timelapse, thumbnailToolOptions);
           }
         };
@@ -134,20 +127,24 @@
         })
       }
 
-      function unpackVars(str) {
-        var queryString = {};
-        var re = new RegExp("([^?=&]+)(=([^&]*))?", "g");
-        str.replace(re, function($0, $1, $2, $3) {
-          queryString[$1] = $3 || true;
-        });
-        return queryString;
+      function resetFilter() {
+        var view = thumbnailTool.timelapse_.getView();
+        var scaleOffsetX = 40 / view.scale;
+        var scaleOffsetY = 40 / view.scale;
+        var bounds = {
+          xmin: view.x - scaleOffsetX,
+          xmax: view.x + scaleOffsetX,
+          ymin: view.y - scaleOffsetY,
+          ymax: view.y + scaleOffsetY
+        };
+        thumbnailTool.setBounds(bounds);
+        thumbnailTool.draw();
+        var filterCallBack = function(r) {
+          var o = JSON.parse(r);
+          drawResults(o.values);
+        };
+        thumbnailTool.filter(filterCallBack);
       }
-
-      var currentThumbnail = new ThumbnailServiceAPI({
-        host: "http://staging.timemachine-api.cmucreatelab.org/thumbnail"
-      }, {
-        format: "png"
-      });
 
       function getCurrentThumbnail() {
         var bb = timelapse.getBoundingBoxForCurrentView();
@@ -156,51 +153,6 @@
         currentThumbnail.height = bb.ymax - bb.ymin;
         currentThumbnail.frameTime = timelapse.getCurrentFrame() / timelapse.getFps();
       }
-
-      function main() {
-        var hash = window.location.hash.slice(1);
-        hashVars = unpackVars(hash);
-
-        if (hashVars && hashVars.d) {
-          startingDate = hashVars.d;
-        }
-
-        if (hashVars && hashVars.url) {
-          url = hashVars.url;
-        }
-        if (url) {
-          init(url);
-        } else {
-          alert('ERROR: URL missing from hash. Please add #url={TIMEMACHINE_ROOT}')
-        }
-      }
-
-      document.addEventListener('DOMContentLoaded', main, false);
-
-      google.load("visualization", "1", {
-        packages: ["corechart"]
-      });
-
-      document.addEventListener('keydown', function(event) {
-        var currentFrame = timelapse.getCurrentFrameNumber();
-        if (event.keyCode == 37) {--currentFrame;
-          if (currentFrame <= 0) {
-            currentFrame = timelapse.getNumFrames() - 1;
-          }
-          event.stopPropagation();
-          timelapse.seekToFrame(currentFrame);
-        }
-        if (event.keyCode == 39) {++currentFrame;
-          if (currentFrame >= timelapse.getNumFrames()) {
-            currentFrame = 0;
-          }
-          event.stopPropagation();
-          timelapse.seekToFrame(currentFrame);
-        }
-        if (event.keyCode == 32) {
-          $(".playbackButton").trigger("click");
-        }
-      }, true);
 
       // FIXME: position: sticky
       function sticky(id, height) {
@@ -213,14 +165,6 @@
           el.style['transform'] = "";
         }
       }
-
-      document.addEventListener('DOMContentLoaded', function() {
-        sticky("chart", 550);
-      }, false);
-
-      window.addEventListener('resize', function() {
-        sticky("chart", 550);
-      }, false);
     </script>
   </head>
   <body>
