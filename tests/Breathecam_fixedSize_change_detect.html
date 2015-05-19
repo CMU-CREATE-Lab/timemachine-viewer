@@ -46,9 +46,12 @@
         height: 702px;
       }
       #chart {
+        position: absolute;
+        top: 500px;
         margin-left: 11px;
         width: 839px;
-        height: 170px;
+        height: 210px;
+        z-index: 1;
       }
       #poi {
         margin-left: 10px;
@@ -78,13 +81,12 @@
           showLogoOnDefaultUI: false,
           mediaType: ".mp4",
           datasetType: "breathecam",
-          fps: 11.9,
           onTimeMachinePlayerReady: function(viewerDivId) {
-            timelapse.seekToFrame(timelapse.getNumFrames() - 60);
             var view = timelapse.getView();
             var scaleOffset = 40 / view.scale;
             var thumbnailToolOptions = {
               ltrb: (view.x - scaleOffset) + "," + (view.y - scaleOffset) + "," + (view.x + scaleOffset) + "," + (view.y + scaleOffset),
+              chartDivId: "chart",
               doFilter: true
             };
             thumbnailTool = new ThumbnailTool(timelapse, thumbnailToolOptions);
@@ -92,16 +94,6 @@
         };
 
         timelapse = new org.gigapan.timelapse.Timelapse("timeMachine", viewerOptions);
-
-        var oGetShareView = timelapse.getShareView;
-        timelapse.getShareView = function() {
-          var shareStr = oGetShareView();
-          shareStr += "&url=" + url;
-          if (thumbnailTool.display) {
-            shareStr += '&ttLTRB=' + thumbnailTool.bounds_.xmin + ',' + thumbnailTool.bounds_.ymin + ',' + thumbnailTool.bounds_.xmax + ',' + thumbnailTool.bounds_.ymax;
-          }
-          return shareStr;
-        }
 
         $("#get-current-thumbnail").click(function(event) {
           event.target.href = thumbnailTool.getCurrentThumbnail();
@@ -122,9 +114,9 @@
   </head>
   <body>
     <div id="timeMachine"></div>
+    <div id="chart" class='ajax-loader'></div>
     <div id="poi">
       <a href="javascript:void(0)" id="toggle-thumbnail-tool">Toggle thumbnail tool</a> &nbsp;|&nbsp; <a href="javascript:void(0)" id="reset-filter">Recenter rectangle</a> &nbsp;|&nbsp; <a href="#" target="_blank" id="get-current-thumbnail">Get thumbnail</a> &nbsp;|&nbsp; <a href="#" target="_blank" id="get-current-gif">Get animated gif</a>
     </div>
-    <div id="chart" class='ajax-loader'></div>
   </body>
 </html>
