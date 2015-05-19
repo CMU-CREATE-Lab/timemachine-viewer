@@ -62,25 +62,10 @@
       var url = "http://timemachine1.gc.cs.cmu.edu/timemachines/breathecam/timemachines/heinz/2014-05-26.timemachine";
       var timelapse;
       var thumbnailTool;
-      var chart;
-      var currentThumbnail = new ThumbnailServiceAPI({
-        host: "http://staging.timemachine-api.cmucreatelab.org/thumbnail"
-      }, {
-        format: "png"
-      });
 
       google.load("visualization", "1", {
         packages: ["corechart"]
       });
-
-      document.addEventListener('DOMContentLoaded', function() {
-        init();
-        sticky("chart", 550);
-      }, false);
-
-      window.addEventListener('resize', function() {
-        sticky("chart", 550);
-      }, false);
 
       function init() {
         var viewerOptions = {
@@ -105,7 +90,9 @@
             thumbnailTool = new ThumbnailTool(timelapse, thumbnailToolOptions);
           }
         };
+
         timelapse = new org.gigapan.timelapse.Timelapse("timeMachine", viewerOptions);
+
         var oGetShareView = timelapse.getShareView;
         timelapse.getShareView = function() {
           var shareStr = oGetShareView();
@@ -115,65 +102,28 @@
           }
           return shareStr;
         }
-        var el = document.getElementById('show-current-thumbnail');
-        el.addEventListener("click", function(event) {
+
+        $("#get-current-thumbnail").click(function(event) {
           event.target.href = thumbnailTool.getCurrentThumbnail();
-          return false;
-        })
-        var el = document.getElementById('show-current-gif');
-        el.addEventListener("click", function(event) {
+        });
+        $("#get-current-gif").click(function(event) {
           event.target.href = thumbnailTool.getCurrentGif();
-          return false;
-        })
+        });
+        $("#toggle-thumbnail-tool").click(function(event) {
+          thumbnailTool.toggle();
+        });
+        $("#reset-filter").click(function(event) {
+          thumbnailTool.resetFilter();
+        });
       }
 
-      function resetFilter() {
-        var view = thumbnailTool.timelapse_.getView();
-        var scaleOffsetX = 40 / view.scale;
-        var scaleOffsetY = 40 / view.scale;
-        var bounds = {
-          xmin: view.x - scaleOffsetX,
-          xmax: view.x + scaleOffsetX,
-          ymin: view.y - scaleOffsetY,
-          ymax: view.y + scaleOffsetY
-        };
-        thumbnailTool.setBounds(bounds);
-        thumbnailTool.draw();
-        var filterCallBack = function(r) {
-          var o = JSON.parse(r);
-          drawResults(o.values);
-        };
-        thumbnailTool.filter(filterCallBack);
-      }
-
-      function getCurrentThumbnail() {
-        var bb = timelapse.getBoundingBoxForCurrentView();
-        currentThumbnail.root = timelapse.getSettings().url, currentThumbnail.tileFormat = timelapase.getSettings().mediaType.slice(1), currentThumbnail.boundsLTRB = bb.xmin + "," + bb.ymin + "," + bb.xmax + "," + bb.ymax;
-        currentThumbnail.width = bb.xmax - bb.xmin;
-        currentThumbnail.height = bb.ymax - bb.ymin;
-        currentThumbnail.frameTime = timelapse.getCurrentFrame() / timelapse.getFps();
-      }
-
-      // FIXME: position: sticky
-      function sticky(id, height) {
-        var el = document.getElementById(id);
-        if (window.innerHeight < height) {
-          el.style['-webkit-transform'] = "translateY(" + (window.innerHeight - height) + "px)";
-          el.style['transform'] = "translateY(" + (window.innerHeight - height) + "px)";
-        } else {
-          el.style['-webkit-transform'] = "";
-          el.style['transform'] = "";
-        }
-      }
+      $(init);
     </script>
   </head>
   <body>
     <div id="timeMachine"></div>
-    <div id="thumbnail-tool">
-      Thumbnail Tool
-    </div>
     <div id="poi">
-      <a href="javascript:void(0)" onclick="resetFilter()">Click here</a> to recenter rectangle on screen. &nbsp;|&nbsp; <a href="#" target="_blank" id="show-current-thumbnail">Click here</a> for thumbnail of rectangle. &nbsp;|&nbsp; <a href="#" target="_blank" id="show-current-gif">Click here</a> for animated gif of rectangle.
+      <a href="javascript:void(0)" id="toggle-thumbnail-tool">Toggle thumbnail tool</a> &nbsp;|&nbsp; <a href="javascript:void(0)" id="reset-filter">Recenter rectangle</a> &nbsp;|&nbsp; <a href="#" target="_blank" id="get-current-thumbnail">Get thumbnail</a> &nbsp;|&nbsp; <a href="#" target="_blank" id="get-current-gif">Get animated gif</a>
     </div>
     <div id="chart" class='ajax-loader'></div>
   </body>
