@@ -58,22 +58,10 @@
       var url;
       var hashVars = {};
 
-      function resize() {
-        thumbnailTool.resize();
-        filter();
-      }
-
-      function filter() {
-        thumbnailTool.filter(function(r) {
-          var o = JSON.parse(r);
-          drawResults(o.values)
-        });
-      }
-
       function resetFilter() {
         var view = thumbnailTool.timelapse_.getView();
-        var scaleOffsetX = 40/view.scale;
-        var scaleOffsetY = 40/view.scale;
+        var scaleOffsetX = 40 / view.scale;
+        var scaleOffsetY = 40 / view.scale;
         var bounds = {
           xmin: view.x - scaleOffsetX,
           xmax: view.x + scaleOffsetX,
@@ -82,16 +70,20 @@
         };
         thumbnailTool.setBounds(bounds);
         thumbnailTool.draw();
-        filter();
+        var filterCallBack = function(r) {
+          var o = JSON.parse(r);
+          drawResults(o.values);
+        };
+        thumbnailTool.filter(filterCallBack);
       }
 
       function init(url) {
         var viewerOptions = {
           url: url,
           disableTourLooping: true,
-          enableEditor : true,
-          enablePresentationSlider : true,
-          enableAnnotator : true,
+          enableEditor: true,
+          enablePresentationSlider: true,
+          enableAnnotator: true,
           showFullScreenBtn: false,
           showLogoOnDefaultUI: false,
           mediaType: ".mp4",
@@ -105,22 +97,21 @@
             }
             var thumbnailToolOptions = {};
             var bounds;
-            if (typeof hashVars.ttLTRB != "undefined") {
+            if ( typeof hashVars.ttLTRB != "undefined") {
               bounds = hashVars.ttLTRB;
             } else {
               var view = timelapse.getView();
-              var scaleOffsetX = 40/view.scale;
-              var scaleOffsetY = 40/view.scale;
+              var scaleOffsetX = 40 / view.scale;
+              var scaleOffsetY = 40 / view.scale;
               bounds = (view.x - scaleOffsetX) + "," + (view.y - scaleOffsetY) + "," + (view.x + scaleOffsetX) + "," + (view.y + scaleOffsetY);
             }
             thumbnailToolOptions['ltrb'] = bounds;
-            if (typeof hashVars['nochart'] != "undefined") {
+            if ( typeof hashVars['nochart'] != "undefined") {
               thumbnailToolOptions['doFilter'] = false;
             }
             thumbnailTool = new ThumbnailTool(timelapse, thumbnailToolOptions);
           }
         };
-
         timelapse = new org.gigapan.timelapse.Timelapse("timeMachine", viewerOptions);
         var oGetShareView = timelapse.getShareView;
         timelapse.getShareView = function() {
@@ -131,6 +122,16 @@
           }
           return shareStr;
         }
+        var el = document.getElementById('show-current-thumbnail');
+        el.addEventListener("click", function(event) {
+          event.target.href = thumbnailTool.getCurrentThumbnail();
+          return false;
+        })
+        var el = document.getElementById('show-current-gif');
+        el.addEventListener("click", function(event) {
+          event.target.href = thumbnailTool.getCurrentGif();
+          return false;
+        })
       }
 
       function unpackVars(str) {
@@ -143,18 +144,17 @@
       }
 
       var currentThumbnail = new ThumbnailServiceAPI({
-        host: "http://staging.timemachine-api.cmucreatelab.org/thumbnail"}, {
-          format: "png"
+        host: "http://staging.timemachine-api.cmucreatelab.org/thumbnail"
+      }, {
+        format: "png"
       });
 
       function getCurrentThumbnail() {
         var bb = timelapse.getBoundingBoxForCurrentView();
-        currentThumbnail.root = timelapse.getSettings().url,
-        currentThumbnail.tileFormat = timelapase.getSettings().mediaType.slice(1),
-        currentThumbnail.boundsLTRB =  bb.xmin + "," + bb.ymin + "," + bb.xmax + "," + bb.ymax;
+        currentThumbnail.root = timelapse.getSettings().url, currentThumbnail.tileFormat = timelapase.getSettings().mediaType.slice(1), currentThumbnail.boundsLTRB = bb.xmin + "," + bb.ymin + "," + bb.xmax + "," + bb.ymax;
         currentThumbnail.width = bb.xmax - bb.xmin;
         currentThumbnail.height = bb.ymax - bb.ymin;
-        currentThumbnail.frameTime = timelapse.getCurrentFrame()/timelapse.getFps();
+        currentThumbnail.frameTime = timelapse.getCurrentFrame() / timelapse.getFps();
       }
 
       function main() {
@@ -169,33 +169,35 @@
           url = hashVars.url;
         }
         if (url) {
-         init(url);
-       } else {
-         alert('ERROR: URL missing from hash. Please add #url={TIMEMACHINE_ROOT}')
-       }
+          init(url);
+        } else {
+          alert('ERROR: URL missing from hash. Please add #url={TIMEMACHINE_ROOT}')
+        }
       }
 
       document.addEventListener('DOMContentLoaded', main, false);
-      google.load("visualization", "1", {packages:["corechart"]});
+
+      google.load("visualization", "1", {
+        packages: ["corechart"]
+      });
+
       document.addEventListener('keydown', function(event) {
         var currentFrame = timelapse.getCurrentFrameNumber();
-        if (event.keyCode == 37) {
-          --currentFrame;
+        if (event.keyCode == 37) {--currentFrame;
           if (currentFrame <= 0) {
             currentFrame = timelapse.getNumFrames() - 1;
           }
           event.stopPropagation();
           timelapse.seekToFrame(currentFrame);
         }
-        if (event.keyCode == 39) {
-          ++currentFrame;
+        if (event.keyCode == 39) {++currentFrame;
           if (currentFrame >= timelapse.getNumFrames()) {
             currentFrame = 0;
           }
           event.stopPropagation();
           timelapse.seekToFrame(currentFrame);
         }
-        if (event.keyCode == 32 ) {
+        if (event.keyCode == 32) {
           $(".playbackButton").trigger("click");
         }
       }, true);
@@ -225,6 +227,9 @@
     <div id="timeMachine"></div>
     <div id="thumbnail-tool">
       Thumbnail Tool
+    </div>
+    <div id="poi">
+      <a href="javascript:void(0)" onclick="resetFilter()">Click here</a> to recenter rectangle on screen. &nbsp;|&nbsp; <a href="#" target="_blank" id="show-current-thumbnail">Click here</a> for thumbnail of rectangle. &nbsp;|&nbsp; <a href="#" target="_blank" id="show-current-gif">Click here</a> for animated gif of rectangle.
     </div>
     <div id="chart" class='ajax-loader'></div>
   </body>
