@@ -171,7 +171,7 @@ body, html {
   right: 20px;
   background: white;
   border: 1px solid #656565;
-  border-radius: 3px !important;
+  border-radius: 2px !important;
   box-shadow: 2px 2px 3px rgba(0,0,0,0.3);
   z-index: 30;
   outline: none;
@@ -222,7 +222,7 @@ body, html {
   right: 20px;
   background: white;
   border: 1px solid #656565;
-  border-radius: 3px !important;
+  border-radius: 2px !important;
   box-shadow: 2px 2px 3px rgba(0,0,0,0.3);
   z-index: 30;
   outline: none;
@@ -242,7 +242,7 @@ body, html {
   right: 20px;
   background: white;
   border: 1px solid #656565;
-  border-radius: 3px !important;
+  border-radius: 2px !important;
   box-shadow: 2px 2px 3px rgba(0,0,0,0.3);
   z-index: 30;
   outline: none;
@@ -267,7 +267,7 @@ body, html {
   right: 20px;
   background: white;
   border: 1px solid #656565;
-  border-radius: 3px !important;
+  border-radius: 2px !important;
   box-shadow: 2px 2px 3px rgba(0,0,0,0.3);
   z-index: 30;
   outline: none;
@@ -326,7 +326,7 @@ body, html {
   top: 150px;
   left: 67px;
   overflow: visible;
-  border-radius: 3px;
+  border-radius: 2px;
 }
 
 .instructions span.zoomallhelp {
@@ -335,7 +335,7 @@ body, html {
   top: 250px;
   left: 67px;
   overflow: visible;
-  border-radius: 3px;
+  border-radius: 2px;
 }
 
 .instructions span.zoomhelp p, .instructions span.zoomallhelp p {
@@ -353,7 +353,7 @@ body, html {
   overflow: visible;
   bottom: 50px;
   left: 88px;
-  border-radius: 3px;
+  border-radius: 2px;
 }
 
 .instructions span.speedhelp p {
@@ -535,11 +535,58 @@ body, html {
 }
 
 .shareurl {
-  margin-top: 10px;
-  margin-bottom: 10px;
-  width: 600px;
-  height: 30px;
+  margin-top: 2px;
+  margin-bottom: 5px;
+  margin-left: 0px;
+  width: 520px;
+  height: 50px;
   resize: none;
+}
+
+.shareViewDialog .accordion {
+  margin-left: 10px;
+  margin-right: 10px;
+  margin-bottom: 15px;
+  margin-top: -2px;
+}
+
+.shareViewDialog .accordion .ui-accordion-header {
+  border: 0px;
+  border-radius: 2px;
+  background-image: none;
+}
+
+.shareViewDialog .accordion .ui-accordion-content {
+  border: 0px;
+  border-radius: 2px;
+}
+
+.shareViewDialog .accordion .ui-accordion-header:focus {
+  outline: none;
+}
+
+.shareViewDialog .ui-dialog-titlebar {
+  background-color: transparent;
+}
+
+.shareViewDialog .ui-dialog-title {
+  margin-top: 14px;
+  margin-left: 12px;
+  color: black;
+  font-weight: bold;
+  font-size: 18px;
+}
+
+.shareViewDialog .ui-dialog-titlebar-close {
+  margin-top: -5px;
+  margin-right: 20px;
+  background-image: none;
+  border: 0px;
+  border-radius: 2px;
+}
+
+.shareViewDialog .ui-dialog-titlebar-close:focus {
+  outline: none;
 }
 
 .spinnerOverlay {
@@ -610,7 +657,7 @@ body, html {
   left: 89px;
   background: white;
   border: 1px solid #656565;
-  border-radius: 3px !important;
+  border-radius: 2px !important;
   box-shadow: 2px 2px 3px rgba(0,0,0,0.3);
   z-index: 10;
   font-family: Arial, Helvetica, sans-serif;

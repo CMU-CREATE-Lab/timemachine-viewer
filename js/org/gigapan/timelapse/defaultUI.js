@@ -308,13 +308,23 @@ if (!org.gigapan.timelapse.Timelapse) {
           UTIL.addGoogleAnalyticEvent('button', 'click', 'viewer-show-share-dialog');
         }
       });
-      // Share view modal
+      // Share view accordion
+      $("#" + viewerDivId + " .shareView .accordion").accordion({
+        heightStyle: "content",
+        animate: false,
+        beforeActivate: function(event, ui) {
+          if(ui.newPanel.hasClass("share-thumbnail") || ui.oldPanel.hasClass("share-thumbnail")) {
+            thumbnailTool.toggle();
+          }
+        }
+      });
+      // Share view dialog
       $("#" + viewerDivId + " .shareView").dialog({
         resizable: false,
         autoOpen: false,
+        dialogClass: "shareViewDialog",
         appendTo: "#" + viewerDivId,
         width: 632,
-        height: 130,
         create: function() {
           $(this).parents("#" + viewerDivId + " .ui-dialog").css({
             'border': '1px solid #000'
@@ -328,11 +338,11 @@ if (!org.gigapan.timelapse.Timelapse) {
       $("#" + viewerDivId + " .get-current-gif").click(function(event) {
         event.target.href = thumbnailTool.getCurrentGif();
       });
-      $("#" + viewerDivId + " .toggle-thumbnail-tool").click(function(event) {
-        thumbnailTool.toggle();
-      });
       $("#" + viewerDivId + " .reset-filter").click(function(event) {
         thumbnailTool.resetFilter();
+      });
+      timelapse.addViewEndChangeListener(function() {
+        shareView(true);
       });
     };
 
@@ -656,7 +666,7 @@ if (!org.gigapan.timelapse.Timelapse) {
     };
     this.setMode = setMode;
 
-    var shareView = function() {
+    var shareView = function(skipDialogOpen) {
       var $shareUrl = $("#" + viewerDivId + " .shareurl");
       var parentUrl = "";
       if (window.top === window.self) {
@@ -673,7 +683,9 @@ if (!org.gigapan.timelapse.Timelapse) {
       }).mouseup(function(e) {
         e.preventDefault();
       });
-      $("#" + viewerDivId + " .shareView").dialog("open");
+      if(!skipDialogOpen) {
+        $("#" + viewerDivId + " .shareView").dialog("open");
+      }
     };
 
     var doHelpOverlay = function() {
