@@ -493,6 +493,10 @@ if (!window['$']) {
       return videoDivId;
     };
 
+    this.getMediaType = function() {
+      return mediaType;
+    };
+
     this.getSnaplapse = function() {
       return snaplapse;
     };
@@ -2893,7 +2897,7 @@ if (!window['$']) {
           chartDivId: "chart",
           doFilter: true
         };
-        thumbnailTool = new ThumbnailTool(timelapse, thumbnailToolOptions);
+        thumbnailTool = new ThumbnailTool(thisObj, thumbnailToolOptions);
       }
 
       defaultUI = new org.gigapan.timelapse.DefaultUI(thisObj, settings);

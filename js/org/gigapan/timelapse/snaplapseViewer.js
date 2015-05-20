@@ -1073,8 +1073,10 @@ if (!org.gigapan.timelapse.snaplapse) {
                     var keyframeId = $desiredSlide.parent().attr("id").split("_")[3];
                     var frames = snaplapse.getKeyframeById(keyframeId);
                     if (presentationSliderLoadAnimation == "zoom") {
+                      // TODO: this logic breaks the slideshow with no projections, need to be fixed
                       timelapse.setNewView(timelapse.pixelBoundingBoxToLatLngCenterView(frames['bounds']), false, presentationSliderPlayAfterAnimation);
                     } else if (presentationSliderLoadAnimation == "warp") {
+                      // TODO: this logic breaks the slideshow with no projections, need to be fixed
                       timelapse.setNewView(timelapse.pixelBoundingBoxToLatLngCenterView(frames['bounds']), true, presentationSliderPlayAfterAnimation);
                     }
                     selectAndGo($("#" + timeMachineDivId + "_snaplapse_keyframe_" + keyframeId), keyframeId, true, true, true);
@@ -1690,6 +1692,7 @@ if (!org.gigapan.timelapse.snaplapse) {
           setKeyframeTitleUI(keyframe);
         }
         if (skipGo != true) {
+          // TODO: this logic breaks the slideshow with no projections, need to be fixed
           var newView = timelapse.pixelBoundingBoxToLatLngCenterView(keyframe['bounds']);
           // TODO: Hack for hyperwall
           newView.zoom += 0.8;
