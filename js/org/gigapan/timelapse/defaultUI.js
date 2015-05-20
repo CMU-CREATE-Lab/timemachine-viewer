@@ -40,7 +40,8 @@
  VERIFY NAMESPACE
 
  Create the global symbol "org" if it doesn't exist.  Throw an error if it does exist but is not an object.
- */"use strict";
+ */
+"use strict";
 
 // Create the global symbol "org" if it doesn't exist.  Throw an error if it does exist but is not an object.
 var org;
@@ -117,7 +118,7 @@ if (!org.gigapan.timelapse.Timelapse) {
 
     // Settings
     var useCustomUI = timelapse.useCustomUI();
-    var showShareBtn = ( typeof (settings["showShareBtn"]) == "undefined") ? (useCustomUI ? false : true) : settings["showShareBtn"];
+    var showShareBtn = ( typeof (settings["showShareBtn"]) == "undefined") ? ( useCustomUI ? false : true) : settings["showShareBtn"];
     var showHomeBtn = ( typeof (settings["showHomeBtn"]) == "undefined") ? true : settings["showHomeBtn"];
     var showFullScreenBtn = ( typeof (settings["showFullScreenBtn"]) == "undefined") ? true : settings["showFullScreenBtn"];
     var showMainControls = ( typeof (settings["showMainControls"]) == "undefined") ? true : settings["showMainControls"];
@@ -203,7 +204,7 @@ if (!org.gigapan.timelapse.Timelapse) {
             // full screen mode. So we do a hack and seek 10% further into the video to make the browser repaint the canvas.
             // Sadly, this needs to be done on a timer...
             if (document.webkitCancelFullScreen && !document.webkitExitFullscreen) {
-              setTimeout(function(){
+              setTimeout(function() {
                 timelapse.seek(timelapse.getCurrentTime() + ((1 / timelapse.getFps()) * 0.1));
               }, 500);
             }
@@ -221,7 +222,10 @@ if (!org.gigapan.timelapse.Timelapse) {
           }
         });
         var $fullScreenPlayer = $("<div class='fullScreen'></div>");
-        $fullScreenPlayer.attr({"id" : timeMachineDivId + "_fullScreen", "title" : "Toggle fullscreen mode"});
+        $fullScreenPlayer.attr({
+          "id": timeMachineDivId + "_fullScreen",
+          "title": "Toggle fullscreen mode"
+        });
         $fullScreenPlayer.button({
           icons: {
             primary: "ui-icon-custom-fullScreenOn"
@@ -313,7 +317,7 @@ if (!org.gigapan.timelapse.Timelapse) {
         heightStyle: "content",
         animate: false,
         beforeActivate: function(event, ui) {
-          if(ui.newPanel.hasClass("share-thumbnail") || ui.oldPanel.hasClass("share-thumbnail")) {
+          if (ui.newPanel.hasClass("share-thumbnail") || ui.oldPanel.hasClass("share-thumbnail")) {
             thumbnailTool.toggle();
           }
         }
@@ -683,7 +687,7 @@ if (!org.gigapan.timelapse.Timelapse) {
       }).mouseup(function(e) {
         e.preventDefault();
       });
-      if(!skipDialogOpen) {
+      if (!skipDialogOpen) {
         $("#" + viewerDivId + " .shareView").dialog("open");
       }
     };
@@ -707,12 +711,12 @@ if (!org.gigapan.timelapse.Timelapse) {
     };
 
     var zoomIn = function() {
-      var val = Math.min($("#" + viewerDivId + " .zoomSlider").slider("value") + (useTouchFriendlyUI ? 0.003 : 0.01), 1);
+      var val = Math.min($("#" + viewerDivId + " .zoomSlider").slider("value") + ( useTouchFriendlyUI ? 0.003 : 0.01), 1);
       timelapse.setScaleFromSlider(val);
     };
 
     var zoomOut = function() {
-      var val = Math.max($("#" + viewerDivId + " .zoomSlider").slider("value") - (useTouchFriendlyUI ? 0.003 : 0.01), 0);
+      var val = Math.max($("#" + viewerDivId + " .zoomSlider").slider("value") - ( useTouchFriendlyUI ? 0.003 : 0.01), 0);
       timelapse.setScaleFromSlider(val);
     };
 
@@ -816,7 +820,7 @@ if (!org.gigapan.timelapse.Timelapse) {
       createMainUI();
       if (timelapse.getPlayOnLoad())
         timelapse.play();
-    } else { // custom UI is being used, alter main UI accordingly
+    } else {// custom UI is being used, alter main UI accordingly
       // Create share button
       if (showShareBtn) {
         createShareButton();
