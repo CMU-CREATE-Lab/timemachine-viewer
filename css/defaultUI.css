@@ -348,7 +348,7 @@ body, html {
 .captureTime {
   position: absolute;
   left: 90px;
-  bottom: 42px;
+  bottom: 43px;
   font-size: 18px;
   text-shadow: -1px 0 #000, 0 1px #000, 1px 0 #000, 0 -1px #000, 2px 2px 3px rgba(0,0,0,0.3);
   font-family: Arial, Helvetica, sans-serif;
@@ -375,7 +375,7 @@ body, html {
 
 .timelineSliderFiller {
   position: absolute;
-  bottom: 26px;
+  bottom: 25px;
   left: 160px;
   right: 100px;
   width: auto;
@@ -411,11 +411,109 @@ body, html {
   z-index: 5;
   border: 1px solid #656565;
   border-radius: 2px !important;
+  cursor: pointer !important;
+  background-image: none !important;
+}
+
+.timelineSlider .ui-slider-handle:focus {
+  outline: none;
 }
 
 .timelineSlider .ui-slider-range {
   background: red;
   opacity: 0.4;
+}
+
+.timelineSelectorFiller {
+  position: absolute;
+  bottom: 25px;
+  left: 160px;
+  right: 100px;
+  width: auto;
+  box-shadow: 2px 2px 3px rgba(0,0,0,0.3);
+  border: 1px solid #656565;
+  background: transparent;
+  display: none;
+}
+
+.timelineSelector {
+  background: rgba(255,255,255,0.3);
+  cursor: pointer;
+  border: 2px solid rgba(255,255,255,0.8);
+  position: absolute;
+  height: 7px;
+  width: inherit;
+  position: relative;
+  top: 0px;
+  left: 0px;
+  margin: 0;
+  padding: 0;
+  z-index: 25;
+}
+
+.timelineSelector .ui-slider-handle:first-of-type {
+  width: 0;
+  height: 0;
+  border-top: 10px solid rgb(0,255,0);
+  border-left: 6px solid transparent;
+  border-right: 6px solid transparent;
+  border-bottom: 0px solid transparent;
+  margin-left: -6px !important;
+  overflow: hidden;
+  top: -11px;
+  margin: 0px;
+  z-index: 5;
+  background: transparent;
+  cursor: pointer !important;
+}
+
+.timelineSelector .ui-slider-handle:first-of-type:active {
+  border-top: 10px solid white;
+}
+
+.timelineSelector .ui-slider-handle:first-of-type:focus {
+  border-top: 10px solid white;
+}
+
+.timelineSelector .ui-slider-handle:first-of-type:hover {
+  border-top: 10px solid white;
+}
+
+.timelineSelector .ui-slider-handle:nth-of-type(2) {
+  width: 0;
+  height: 0;
+  border-top: 0px solid transparent;
+  border-left: 6px solid transparent;
+  border-right: 6px solid transparent;
+  border-bottom: 10px solid rgb(0,255,0);
+  margin-left: -6px !important;
+  overflow: hidden;
+  top: 9px;
+  margin: 0px;
+  z-index: 5;
+  background: transparent;
+  cursor: pointer !important;
+}
+
+.timelineSelector .ui-slider-handle:nth-of-type(2):active {
+  border-bottom: 10px solid white;
+}
+
+.timelineSelector .ui-slider-handle:nth-of-type(2):focus {
+  border-bottom: 10px solid white;
+}
+
+.timelineSelector .ui-slider-handle:nth-of-type(2):hover {
+  border-bottom: 10px solid white;
+}
+
+.timelineSelector .ui-slider-handle:focus {
+  outline: none;
+}
+
+.timelineSelector .ui-slider-range {
+  background: rgb(0,255,0);
+  opacity: 1;
 }
 
 .zoomall {
@@ -616,7 +714,7 @@ body, html {
   position: absolute;
   width: 55px;
   height: 17px;
-  top: 19px;
+  top: 20px;
   left: 89px;
   background: white;
   border: 1px solid #656565;
