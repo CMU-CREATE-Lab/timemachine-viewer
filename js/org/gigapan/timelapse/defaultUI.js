@@ -102,6 +102,7 @@ if (!org.gigapan.timelapse.Timelapse) {
     var annotator = timelapse.getAnnotator();
     var videoset = timelapse.getVideoset();
     var thumbnailTool = timelapse.getThumbnailTool();
+    var changeDetectionTool = timelapse.getChangeDetectionTool();
     var tmJSON = timelapse.getTmJSON();
     var panInterval;
 
@@ -113,8 +114,6 @@ if (!org.gigapan.timelapse.Timelapse) {
     var $fastSpeed = $("#fastSpeed");
     var $mediumSpeed = $("#mediumSpeed");
     var $slowSpeed = $("#slowSpeed");
-    var $editorToggleCheckbox;
-    var $annotatorToggleCheckbox;
 
     // Settings
     var useCustomUI = timelapse.useCustomUI();
@@ -129,6 +128,7 @@ if (!org.gigapan.timelapse.Timelapse) {
     var editorEnabled = timelapse.isEditorEnabled();
     var presentationSliderEnabled = timelapse.isPresentationSliderEnabled();
     var annotatorEnabled = timelapse.isAnnotatorEnabled();
+    var changeDetectionEnabled = timelapse.isChangeDetectionEnabled();
 
     // Flags
     var isSafari = org.gigapan.Util.isSafari();
@@ -163,15 +163,6 @@ if (!org.gigapan.timelapse.Timelapse) {
         else
           UTIL.addGoogleAnalyticEvent('button', 'click', 'viewer-pause');
       });
-      // Create share button
-      var $shareToggle = $("#" + viewerDivId + " .share");
-      var $shareViewModal = $("#" + viewerDivId + " .shareView");
-      if (showShareBtn) {
-        createShareButton();
-      } else {
-        $shareToggle.remove();
-        $shareViewModal.remove();
-      }
       // Create help button
       var helpPlayerCheckbox = $("#" + viewerDivId + " .helpPlayerCheckbox");
       helpPlayerCheckbox.attr("id", timeMachineDivId + "_helpPlayerCheckbox");
@@ -236,65 +227,120 @@ if (!org.gigapan.timelapse.Timelapse) {
         });
         $fullScreenPlayer.appendTo($("#" + viewerDivId + " .controls"));
       }
-      // Create editor mode switch button
-      var $editorToggle = $("#" + viewerDivId + " .editorToggle");
-      $editorToggleCheckbox = $("#" + viewerDivId + " .editorToggleCheckbox");
-      if (editorEnabled) {
-        $editorToggleCheckbox.attr("id", timeMachineDivId + "_editorToggleCheckbox");
-        $editorToggle.attr("for", timeMachineDivId + "_editorToggleCheckbox");
-        $editorToggleCheckbox.button({
-          icons: {
-            primary: "ui-icon-note"
-          },
-          text: true
-        }).click(function() {
-          if ($editorToggleCheckbox.is(":checked")) {
-            setMode("editor");
-            UTIL.addGoogleAnalyticEvent('button', 'click', 'viewer-set-to-editor-mode');
-          } else {
-            setMode("player");
-            UTIL.addGoogleAnalyticEvent('button', 'click', 'viewer-set-to-player-mode');
-          }
-        });
+      // Create share button
+      if (showShareBtn) {
+        createShareButton();
       } else {
-        $editorToggle.remove();
-        $editorToggleCheckbox.remove();
+        $("#" + viewerDivId + " .share").remove();
+        $("#" + viewerDivId + " .shareView").remove();
       }
-      // Create annotator mode switch button debug
-      var $annotatorToggle = $("#" + viewerDivId + " .annotatorToggle");
-      $annotatorToggleCheckbox = $("#" + viewerDivId + " .annotatorToggleCheckbox");
-      if (annotatorEnabled) {
-        $annotatorToggleCheckbox.attr("id", timeMachineDivId + "_annotatorToggleCheckbox");
-        $annotatorToggle.attr("for", timeMachineDivId + "_annotatorToggleCheckbox");
-        $annotatorToggleCheckbox.button({
-          icons: {
-            primary: "ui-icon-tag"
-          },
-          text: true
-        }).click(function() {
-          if ($annotatorToggleCheckbox.is(":checked")) {
-            setMode("annotator");
-          } else {
-            setMode("player");
-          }
-        });
-      } else {
-        $annotatorToggle.remove();
-        $annotatorToggleCheckbox.remove();
+      // Create tool button
+      if (editorEnabled || annotatorEnabled || changeDetectionEnabled) {
+        createToolButton();
       }
-
+      // Create other UI components
       createTimelineSlider();
       createSpeedControl();
-
       // Settings
-      if (showEditorOnLoad && editorEnabled && !useCustomUI)
-        $editorToggleCheckbox.click();
       if (!showMainControls || useCustomUI) {
         $("#" + viewerDivId + " .controls").hide();
         $("#" + viewerDivId + " .timelineSliderFiller").hide();
       }
       if (!showLogoOnDefaultUI)
         $("#" + viewerDivId + " .logo").hide();
+    };
+
+    var createToolButton = function() {
+      $("#" + viewerDivId + " .tool").button({
+        icons: {
+          primary: "ui-icon-wrench"
+        },
+        text: true
+      }).click(function() {
+        var $toolDialog = $("#" + viewerDivId + " .toolDialog");
+        if ($toolDialog.dialog("isOpen")) {
+          $toolDialog.dialog("close");
+        } else {
+          $toolDialog.dialog("open");
+        }
+      });
+      if (!editorEnabled) {
+        removeAccordionPanel("accordion-editor");
+      }
+      if (!annotatorEnabled) {
+        removeAccordionPanel("accordion-annotator");
+      }
+      if (!changeDetectionEnabled) {
+        removeAccordionPanel("accordion-change-detection");
+      }
+      var activeState = false;
+      if (showEditorOnLoad) {
+        activeState = 0;
+      }
+      // Tool accordion
+      var $accordion = $("#" + viewerDivId + " .toolDialog .accordion");
+      $accordion.accordion({
+        heightStyle: "content",
+        animate: false,
+        collapsible: true,
+        active: activeState,
+        beforeActivate: function(event, ui) {
+          if (ui.newPanel.length > 0) {
+            if (ui.newPanel.hasClass("accordion-editor")) {
+              setMode("editor");
+              if ( typeof changeDetectionTool != "undefined") {
+                changeDetectionTool.disable();
+              }
+              UTIL.addGoogleAnalyticEvent('button', 'click', 'viewer-set-to-editor-mode');
+            } else if (ui.newPanel.hasClass("accordion-annotator")) {
+              setMode("annotator");
+              if ( typeof changeDetectionTool != "undefined") {
+                changeDetectionTool.disable();
+              }
+            } else if (ui.newPanel.hasClass("accordion-change-detection")) {
+              setMode("player");
+              if ( typeof changeDetectionTool != "undefined") {
+                changeDetectionTool.enable();
+              }
+              UTIL.addGoogleAnalyticEvent('button', 'click', 'viewer-set-to-player-mode');
+            }
+          } else {
+            if (ui.oldPanel.hasClass("accordion-editor") || ui.oldPanel.hasClass("accordion-annotator")) {
+              setMode("player");
+              UTIL.addGoogleAnalyticEvent('button', 'click', 'viewer-set-to-player-mode');
+            } else if (ui.oldPanel.hasClass("accordion-change-detection")) {
+              if ( typeof changeDetectionTool != "undefined") {
+                changeDetectionTool.disable();
+              }
+            }
+          }
+        }
+      });
+      // Tool dialog
+      $("#" + viewerDivId + " .toolDialog").dialog({
+        resizable: false,
+        autoOpen: false,
+        dialogClass: "customDialog",
+        appendTo: "#" + viewerDivId,
+        width: 632,
+        minHeight: 50
+      });
+      // Add events
+      $("#" + viewerDivId + " .reset-large-change-detect").click(function(event) {
+        changeDetectionTool.centerAndDrawFilterBound("large");
+      });
+      $("#" + viewerDivId + " .reset-medium-change-detect").click(function(event) {
+        changeDetectionTool.centerAndDrawFilterBound("medium");
+      });
+      $("#" + viewerDivId + " .reset-small-change-detect").click(function(event) {
+        changeDetectionTool.centerAndDrawFilterBound("small");
+      });
+    };
+
+    var removeAccordionPanel = function(panelClass) {
+      var $el = $("#" + viewerDivId + " ." + panelClass);
+      $el.prev().remove();
+      $el.remove();
     };
 
     var createShareButton = function() {
@@ -304,21 +350,23 @@ if (!org.gigapan.timelapse.Timelapse) {
         },
         text: true
       }).click(function() {
-        var shareViewDialog = $("#" + viewerDivId + " .shareView");
-        if (shareViewDialog.dialog("isOpen"))
-          shareViewDialog.dialog("close");
-        else {
+        var $shareViewDialog = $("#" + viewerDivId + " .shareView");
+        if ($shareViewDialog.dialog("isOpen")) {
+          $shareViewDialog.dialog("close");
+        } else {
+          $shareViewDialog.dialog("open");
           shareView();
           UTIL.addGoogleAnalyticEvent('button', 'click', 'viewer-show-share-dialog');
         }
       });
       // Share view accordion
-      $("#" + viewerDivId + " .shareView .accordion").accordion({
+      var $accordion = $("#" + viewerDivId + " .shareView .accordion")
+      $accordion.accordion({
         heightStyle: "content",
         animate: false,
         beforeActivate: function(event, ui) {
           if (ui.newPanel.hasClass("share-thumbnail") || ui.oldPanel.hasClass("share-thumbnail")) {
-            thumbnailTool.toggle();
+            thumbnailTool.toggleCropBox();
           }
         }
       });
@@ -326,27 +374,60 @@ if (!org.gigapan.timelapse.Timelapse) {
       $("#" + viewerDivId + " .shareView").dialog({
         resizable: false,
         autoOpen: false,
-        dialogClass: "shareViewDialog",
+        dialogClass: "customDialog",
         appendTo: "#" + viewerDivId,
         width: 632,
-        create: function() {
-          $(this).parents("#" + viewerDivId + " .ui-dialog").css({
-            'border': '1px solid #000'
-          });
+        minHeight: 50,
+        beforeClose: function(event, ui) {
+          var activeIdx = $accordion.accordion("option", "active");
+          var $activePanel = $($accordion.accordion("instance").panels[activeIdx]);
+          if ($activePanel.hasClass("share-thumbnail")) {
+            thumbnailTool.hideCropBox();
+          }
+        },
+        open: function(event, ui) {
+          var activeIdx = $accordion.accordion("option", "active");
+          var $activePanel = $($accordion.accordion("instance").panels[activeIdx]);
+          if ($activePanel.hasClass("share-thumbnail")) {
+            thumbnailTool.showCropBox();
+          }
         }
       });
       // Add events
       $("#" + viewerDivId + " .get-current-thumbnail").click(function(event) {
-        event.target.href = thumbnailTool.getCurrentThumbnail();
+        var urlSettings = {
+          format: "png"
+        };
+        event.target.href = thumbnailTool.getURL(urlSettings);
       });
       $("#" + viewerDivId + " .get-current-gif").click(function(event) {
-        event.target.href = thumbnailTool.getCurrentGif();
+        var urlSettings = {
+          nframes: 10,
+          format: "gif"
+        };
+        event.target.href = thumbnailTool.getURL(urlSettings);
       });
-      $("#" + viewerDivId + " .reset-filter").click(function(event) {
-        thumbnailTool.resetFilter();
+      $("#" + viewerDivId + " .get-current-video").click(function(event) {
+        var urlSettings = {
+          nframes: 50,
+          format: "mp4"
+        };
+        event.target.href = thumbnailTool.getURL(urlSettings);
+      });
+      $("#" + viewerDivId + " .reset-large").click(function(event) {
+        thumbnailTool.centerAndDrawCropBox("large");
+      });
+      $("#" + viewerDivId + " .reset-medium").click(function(event) {
+        thumbnailTool.centerAndDrawCropBox("medium");
+      });
+      $("#" + viewerDivId + " .reset-small").click(function(event) {
+        thumbnailTool.centerAndDrawCropBox("small");
       });
       timelapse.addViewEndChangeListener(function() {
-        shareView(true);
+        shareView();
+      });
+      timelapse.addTimeChangeListener(function() {
+        shareView();
       });
     };
 
@@ -651,26 +732,24 @@ if (!org.gigapan.timelapse.Timelapse) {
         if (annotator)
           annotator.resetToolbar();
       } else if (newMode == "editor") {
-        if ($annotatorToggleCheckbox.is(":checked"))
-          $annotatorToggleCheckbox.click();
         mode = "editor";
         $("#" + timeMachineDivId + " .composer").show();
+        $("#" + timeMachineDivId + " .annotator").hide();
         timelapse.seek_panoVideo(videoset.getCurrentTime());
         if (!videoset.isPaused() && panoVideo)
           panoVideo.play();
         timelapse.updateLocationContextUI();
       } else if (newMode == "annotator") {
-        if ($editorToggleCheckbox.is(":checked"))
-          $editorToggleCheckbox.click();
         mode = "annotator";
         $("#" + timeMachineDivId + " .annotator").show();
+        $("#" + timeMachineDivId + " .composer").hide();
       }
       if (visualizer)
         visualizer.setMode(mode, false);
     };
     this.setMode = setMode;
 
-    var shareView = function(skipDialogOpen) {
+    var shareView = function() {
       var $shareUrl = $("#" + viewerDivId + " .shareurl");
       var parentUrl = "";
       if (window.top === window.self) {
@@ -687,9 +766,6 @@ if (!org.gigapan.timelapse.Timelapse) {
       }).mouseup(function(e) {
         e.preventDefault();
       });
-      if (!skipDialogOpen) {
-        $("#" + viewerDivId + " .shareView").dialog("open");
-      }
     };
 
     var doHelpOverlay = function() {

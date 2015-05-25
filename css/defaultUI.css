@@ -146,54 +146,6 @@ body, html {
   outline: 0;
 }
 
-.annotatorToggle {
-  bottom: 118px;
-}
-
-.annotatorToggle .ui-button-text {
-  margin-top: -1px;
-  margin-left: -3px;
-}
-
-.editorToggle {
-  bottom: 86px;
-}
-
-.editorToggle .ui-button-text {
-  margin-top: -1px;
-  margin-left: 0px;
-}
-
-.toggleBtn {
-  position: absolute;
-  width: 58px;
-  height: 18px;
-  right: 20px;
-  background: white;
-  border: 1px solid #656565;
-  border-radius: 2px !important;
-  box-shadow: 2px 2px 3px rgba(0,0,0,0.3);
-  z-index: 30;
-  outline: none;
-  overflow: hidden;
-  font-family: Arial, Helvetica, sans-serif;
-  font-size: 11px;
-}
-
-.toggleBtn .ui-icon {
-  margin-left: -2px;
-}
-
-.toggleBtn.ui-state-active {
-  border: 1px solid #ffffff;
-  background: rgba(0,0,0,0.6);
-  color: white;
-}
-
-.toggleBtn.ui-state-active .ui-icon {
-  background-image: url(../images/ui-icons_custom_256x240.png);
-}
-
 .fullScreen .ui-icon.ui-icon-custom-fullScreenOn {
   background-image: url(../images/fullScreenOn.png);
   width: 34px;
@@ -234,29 +186,45 @@ body, html {
   opacity: 0.8;
 }
 
-.share {
-  position: absolute;
+.customButton {
   width: 60px;
   height: 20px;
-  bottom: 54px;
-  right: 20px;
   background: white;
   border: 1px solid #656565;
   border-radius: 2px !important;
   box-shadow: 2px 2px 3px rgba(0,0,0,0.3);
-  z-index: 30;
   outline: none;
   font-family: Arial, Helvetica, sans-serif;
   font-size: 11px;
+  z-index: 30;
 }
 
-.share .ui-icon {
+.customButton .ui-icon {
   margin-left: -2px;
+}
+
+.customButton .ui-button-text {
+  margin-top: -1px;
+}
+
+.share {
+  position: absolute;
+  bottom: 54px;
+  right: 20px;
 }
 
 .share .ui-button-text {
   margin-left: -1px;
-  margin-top: -1px;
+}
+
+.tool {
+  position: absolute;
+  bottom: 86px;
+  right: 20px;
+}
+
+.tool .ui-button-text {
+  margin-left: 1px;
 }
 
 .helpPlayerLabel.ui-button {
@@ -287,10 +255,10 @@ body, html {
 .instructions {
   background-color: rgba(0, 0, 0, 0.5);
   position: absolute;
-  top: 0px;
-  left: 0px;
-  bottom: 0px;
-  right: 0px;
+  top: 1px;
+  left: 1px;
+  bottom: 1px;
+  right: 1px;
   width: auto;
   height: auto;
   z-index: 999;
@@ -387,6 +355,7 @@ body, html {
   text-align: center;
   color: white;
   font-weight: normal;
+  z-index: 10;
 }
 
 .playbackButton.ui-button {
@@ -534,7 +503,11 @@ body, html {
   overflow: visible;
 }
 
-.shareurl {
+.customDialog a {
+  color: #a40e0e;
+}
+
+.customDialog .shareurl {
   margin-top: 2px;
   margin-bottom: 5px;
   margin-left: 0px;
@@ -543,49 +516,39 @@ body, html {
   resize: none;
 }
 
-.shareViewDialog .accordion {
+.customDialog .accordion {
   margin-left: 10px;
   margin-right: 10px;
   margin-bottom: 15px;
-  margin-top: -2px;
+  margin-top: 12px;
 }
 
-.shareViewDialog .accordion .ui-accordion-header {
+.customDialog .accordion .ui-accordion-header {
   border: 0px;
   border-radius: 2px;
   background-image: none;
 }
 
-.shareViewDialog .accordion .ui-accordion-content {
+.customDialog .accordion .ui-accordion-header-active {
+  font-weight: bold;
+}
+
+.customDialog .accordion .ui-accordion-content {
   border: 0px;
   border-radius: 2px;
 }
 
-.shareViewDialog .accordion .ui-accordion-header:focus {
+.customDialog .accordion .ui-accordion-header:focus {
   outline: none;
 }
 
-.shareViewDialog .ui-dialog-titlebar {
-  background-color: transparent;
-}
-
-.shareViewDialog .ui-dialog-title {
-  margin-top: 14px;
-  margin-left: 12px;
-  color: black;
-  font-weight: bold;
-  font-size: 18px;
-}
-
-.shareViewDialog .ui-dialog-titlebar-close {
-  margin-top: -5px;
-  margin-right: 20px;
-  background-image: none;
+.customDialog .ui-dialog-titlebar-close {
   border: 0px;
   border-radius: 2px;
+  background-image: none;
 }
 
-.shareViewDialog .ui-dialog-titlebar-close:focus {
+.customDialog .ui-dialog-titlebar-close:focus {
   outline: none;
 }
 

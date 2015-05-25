@@ -646,7 +646,7 @@ if (!org.gigapan.timelapse.snaplapse) {
       if (mode == "tour")
         return "Tour Editor";
       else if (mode == "presentation")
-        return "Presentation Editor";
+        return "Slideshow Editor";
     };
 
     var setAddressLookupUI = function() {

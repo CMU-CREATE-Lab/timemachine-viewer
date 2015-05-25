@@ -195,3 +195,12 @@
 .moveAnnotationLabel .ui-button-text {
   margin-top: 5px;
 }
+
+.annotator-title {
+  position: absolute;
+  height: 20px;
+  bottom: 5px;
+  left: 20px;
+  z-index: 30;
+  font-size: 14px;
+}

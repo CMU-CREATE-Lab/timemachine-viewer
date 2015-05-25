@@ -42,14 +42,38 @@
     <a href="http://timemachine.cmucreatelab.org" target="_blank"><div class="logo timeMachineLogo"></div></a>
     <input type="checkbox" class="helpPlayerCheckbox"/>
     <label class="helpPlayerLabel" title="Show instructions">Help</label>
-    <button class="toggleSpeed" id="fastSpeed" title="Toggle playback speed">Fast</button>
-    <button class="toggleSpeed" id="mediumSpeed" title="Toggle playback speed">Medium</button>
-    <button class="toggleSpeed" id="slowSpeed" title="Toggle playback speed">Slow</button>
-    <button class="share" title="Share current view">Share</button>
-    <input type="checkbox" class="editorToggleCheckbox"/>
-    <label class="editorToggle toggleBtn" title="Toggle editor">Editor</label>
-    <input type="checkbox" class="annotatorToggleCheckbox"/>
-    <label class="annotatorToggle toggleBtn" title="Toggle annotator">Tag</label>
+    <button class="toggleSpeed" id="fastSpeed" title="Toggle playback speed">
+      Fast
+    </button>
+    <button class="toggleSpeed" id="mediumSpeed" title="Toggle playback speed">
+      Medium
+    </button>
+    <button class="toggleSpeed" id="slowSpeed" title="Toggle playback speed">
+      Slow
+    </button>
+    <button class="share customButton" title="Share current view">
+      Share
+    </button>
+    <button class="tool customButton" title="Tools">
+      Tools
+    </button>
+  </div>
+
+  <div class="toolDialog" title="Tools">
+    <div class="accordion">
+      <h3>Enable tour and slideshow editor</h3>
+      <div class="accordion-editor">
+        The tour and slideshow editor enables telling and sharing interesting stories by creating custom guided tours and interactive slideshows, travelling through space and time. For more information, refer to the <a href="http://wiki.gigapan.org/creating-time-machines/embedding-time-machine" target="_blank">tutorial</a>.
+      </div>
+      <h3>Enable annotator</h3>
+      <div class="accordion-annotator">
+        The annotator enables creating customized annotations on the viewer.
+      </div>
+      <h3>Enable change detection tool</h3>
+      <div class="accordion-change-detection">
+        Center the box to a <a href="javascript:void(0)" class="reset-large-change-detect">large</a>,&nbsp;<a href="javascript:void(0)" class="reset-medium-change-detect">medium</a>, or&nbsp;<a href="javascript:void(0)" class="reset-small-change-detect">small</a> size
+      </div>
+    </div>
   </div>
 
   <div class="shareView" title="Share Current View">
@@ -60,7 +84,7 @@
       </div>
       <h3>Share thumbnail, animated image, or video for current view</h3>
       <div class="share-thumbnail">
-        <a href="javascript:void(0)" class="reset-filter">Recenter rectangle</a> &nbsp;|&nbsp; <a href="#" target="_blank" class="get-current-thumbnail">Get thumbnail</a> &nbsp;|&nbsp; <a href="#" target="_blank" class="get-current-gif">Get animated gif</a>
+        Get <a href="#" target="_blank" class="get-current-thumbnail">thumbnail</a>,&nbsp;<a href="#" target="_blank" class="get-current-gif">animated gif</a>, or&nbsp;<a href="#" target="_blank" class="get-current-video">video</a> &nbsp;|&nbsp; Center the box to a <a href="javascript:void(0)" class="reset-large">large</a>,&nbsp;<a href="javascript:void(0)" class="reset-medium">medium</a>, or&nbsp;<a href="javascript:void(0)" class="reset-small">small</a> size
       </div>
     </div>
   </div>

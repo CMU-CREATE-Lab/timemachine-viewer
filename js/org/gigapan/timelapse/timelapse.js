@@ -159,6 +159,7 @@ if (!window['$']) {
     var editorEnabled = ( typeof (settings["enableEditor"]) == "undefined") ? false : settings["enableEditor"];
     var presentationSliderEnabled = ( typeof (settings["enablePresentationSlider"]) == "undefined") ? false : settings["enablePresentationSlider"];
     var annotatorEnabled = ( typeof (settings["enableAnnotator"]) == "undefined") ? false : settings["enableAnnotator"];
+    var changeDetectionEnabled = ( typeof (settings["enableChangeDetection"]) == "undefined") ? false : settings["enableChangeDetection"];
 
     // Objects
     var videoset;
@@ -172,6 +173,7 @@ if (!window['$']) {
     var defaultUI;
     var visualizer;
     var thumbnailTool;
+    var changeDetectionTool;
 
     // DOM elements
     var dataPanesId;
@@ -399,6 +401,10 @@ if (!window['$']) {
       return presentationSliderEnabled;
     };
 
+    this.isChangeDetectionEnabled = function() {
+      return changeDetectionEnabled;
+    };
+
     this.isAnnotatorEnabled = function() {
       return annotatorEnabled;
     };
@@ -493,6 +499,10 @@ if (!window['$']) {
       return videoDivId;
     };
 
+    this.getVideoDiv = function() {
+      return $('#' + videoDivId)[0];
+    };
+
     this.getMediaType = function() {
       return mediaType;
     };
@@ -519,6 +529,10 @@ if (!window['$']) {
 
     this.getThumbnailTool = function() {
       return thumbnailTool;
+    };
+
+    this.getChangeDetectionTool = function() {
+      return changeDetectionTool;
     };
 
     this.getDataPanesContainerId = function() {
@@ -1675,6 +1689,9 @@ if (!window['$']) {
       // TODO implement a resize listener and put this in the annotator class
       if (annotator)
         annotator.resizeUI();
+      // TODO implement a resize listener and put this in the changeDetectionTool class
+      if (changeDetectionTool)
+        changeDetectionTool.resizeUI();
       updateLocationContextUI();
     };
     this.onresize = onresize;
@@ -2893,11 +2910,13 @@ if (!window['$']) {
         var view = thisObj.getView();
         var scaleOffset = 40 / view.scale;
         var thumbnailToolOptions = {
-          ltrb: (view.x - scaleOffset) + "," + (view.y - scaleOffset) + "," + (view.x + scaleOffset) + "," + (view.y + scaleOffset),
-          chartDivId: "chart",
-          doFilter: true
         };
         thumbnailTool = new ThumbnailTool(thisObj, thumbnailToolOptions);
+      }
+      if (changeDetectionEnabled) {
+        var changeDetectionOptions = {
+        };
+        changeDetectionTool = new ChangeDetectionTool(thisObj, thumbnailTool, changeDetectionOptions);
       }
 
       defaultUI = new org.gigapan.timelapse.DefaultUI(thisObj, settings);
