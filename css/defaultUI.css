@@ -609,7 +609,7 @@ body, html {
   margin-top: 2px;
   margin-bottom: 5px;
   margin-left: 0px;
-  width: 520px;
+  width: 333px;
   height: 50px;
   resize: none;
 }
@@ -818,4 +818,22 @@ body, html {
   display: inline-block;
   /*pointer-events: auto;*/
   z-index: 1;
+}
+
+.thumbnail-preview-copy-text {
+  margin-top: 12px;
+  margin-bottom: 12px;
+  margin-left: 0px;
+  width: 289px;
+  resize: none;
+}
+
+.thumbnail-preview-container {
+  position: relative;
+  max-width: 345px;
+  max-height: 350px;
+  border: 1px solid #656565;
+  overflow-x: hidden;
+  overflow-y: hidden;
+  background: url('../images/loading.gif') #fff center no-repeat;
 }

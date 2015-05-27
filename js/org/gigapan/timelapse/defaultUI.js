@@ -118,6 +118,11 @@ if (!org.gigapan.timelapse.Timelapse) {
     var $timelineSelector = $("#" + viewerDivId + " .timelineSelector");
     var $timelineSliderFiller = $("#" + viewerDivId + " .timelineSliderFiller");
     var $timelineSelectorFiller = $("#" + viewerDivId + " .timelineSelectorFiller");
+    var $thumbnailPreview = $("#" + viewerDivId + " .thumbnail-preview");
+    var $thumbnailPreviewCopyTextContainer = $("#" + viewerDivId + " .thumbnail-preview-copy-text-container");
+    var $thumbnailPreviewContainer = $("#" + viewerDivId + " .thumbnail-preview-container");
+    var $thumbnailPreviewCopyText = $("#" + viewerDivId + " .thumbnail-preview-copy-text");
+    var $thumbnailPreviewLink = $("#" + viewerDivId + " .thumbnail-preview-link");
 
     // Settings
     var useCustomUI = timelapse.useCustomUI();
@@ -135,7 +140,7 @@ if (!org.gigapan.timelapse.Timelapse) {
     var changeDetectionEnabled = timelapse.isChangeDetectionEnabled();
 
     // Flags
-    var isSafari = org.gigapan.Util.isSafari();
+    var isSafari = UTIL.isSafari();
     var originalIsPaused;
     var useTouchFriendlyUI = timelapse.useTouchFriendlyUI();
 
@@ -144,6 +149,8 @@ if (!org.gigapan.timelapse.Timelapse) {
     var minViewportWidth = timelapse.getMinViewportWidth();
     var mode = "player";
     var translationSpeedConstant = 20;
+    var scrollBarWidth = UTIL.getScrollBarWidth();
+    var timelineSelectorDefaultRangeOffset = 50;
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////
     //
@@ -327,7 +334,7 @@ if (!org.gigapan.timelapse.Timelapse) {
         autoOpen: false,
         dialogClass: "customDialog",
         appendTo: "#" + viewerDivId,
-        width: 632,
+        width: 444,
         minHeight: 50
       });
       // Add events
@@ -353,7 +360,7 @@ if (!org.gigapan.timelapse.Timelapse) {
       $timelineSelectorFiller.show();
       var currentPos = timeToSliderValue(timelapse.getTimelapseCurrentTimeInSeconds());
       $timelineSelector.slider("values", 0, currentPos);
-      $timelineSelector.slider("values", 1, currentPos + 100);
+      $timelineSelector.slider("values", 1, currentPos + timelineSelectorDefaultRangeOffset);
       $timelineSliderFiller.hide();
       $playbackButton.button("option", "disabled", true);
       $("#" + viewerDivId + " .toggleSpeed").button("option", "disabled", true);
@@ -416,7 +423,7 @@ if (!org.gigapan.timelapse.Timelapse) {
         autoOpen: false,
         dialogClass: "customDialog",
         appendTo: "#" + viewerDivId,
-        width: 632,
+        width: 444,
         minHeight: 50,
         beforeClose: function(event, ui) {
           var activeIdx = $accordion.accordion("option", "active");
@@ -433,12 +440,14 @@ if (!org.gigapan.timelapse.Timelapse) {
           }
         }
       });
+      $thumbnailPreviewContainer.hide();
+      $thumbnailPreviewCopyTextContainer.hide();
       // Add events
       $("#" + viewerDivId + " .get-current-thumbnail").click(function(event) {
         var urlSettings = {
           format: "png"
         };
-        event.target.href = thumbnailTool.getURL(urlSettings);
+        setThumbnailPreviewArea(thumbnailTool.getURL(urlSettings));
       });
       $("#" + viewerDivId + " .get-current-gif").click(function(event) {
         var urlSettings = {
@@ -446,7 +455,7 @@ if (!org.gigapan.timelapse.Timelapse) {
           endTime: sliderValueToTime($timelineSelector.slider("values", 1)),
           format: "gif"
         };
-        event.target.href = thumbnailTool.getURL(urlSettings);
+        setThumbnailPreviewArea(thumbnailTool.getURL(urlSettings));
       });
       $("#" + viewerDivId + " .get-current-video").click(function(event) {
         var urlSettings = {
@@ -454,7 +463,7 @@ if (!org.gigapan.timelapse.Timelapse) {
           endTime: sliderValueToTime($timelineSelector.slider("values", 1)),
           format: "mp4"
         };
-        event.target.href = thumbnailTool.getURL(urlSettings);
+        setThumbnailPreviewArea(thumbnailTool.getURL(urlSettings));
       });
       $("#" + viewerDivId + " .reset-large").click(function(event) {
         thumbnailTool.centerAndDrawCropBox("large");
@@ -465,12 +474,57 @@ if (!org.gigapan.timelapse.Timelapse) {
       $("#" + viewerDivId + " .reset-small").click(function(event) {
         thumbnailTool.centerAndDrawCropBox("small");
       });
+      $("#" + viewerDivId + " .thumbnail-preview-copy-text-button").click(function(event) {
+        $thumbnailPreviewCopyText.select();
+        document.execCommand('copy');
+      });
+      $thumbnailPreviewCopyText.on("focus", function() {
+        $(this).select();
+      }).click(function() {
+        $(this).select();
+      }).mouseup(function(e) {
+        e.preventDefault();
+      });
       timelapse.addViewEndChangeListener(function() {
         shareView();
       });
       timelapse.addTimeChangeListener(function() {
         shareView();
       });
+    };
+
+    var setThumbnailPreviewArea = function(response) {
+      $thumbnailPreviewContainer.show();
+      $thumbnailPreviewCopyTextContainer.show();
+
+      // This code block is used to solve a problem related to scrollbar overflowing
+      var maxContainerWidth = parseInt($thumbnailPreviewContainer.css("max-width"));
+      var maxContainerHeight = parseInt($thumbnailPreviewContainer.css("max-height"));
+      var width = response.args.width;
+      var height = response.args.height;
+      if (width > maxContainerWidth) {
+        $thumbnailPreviewContainer.css("overflow-x", "auto");
+        height += scrollBarWidth;
+      } else {
+        $thumbnailPreviewContainer.css("overflow-x", "hidden");
+      }
+      if (height > maxContainerHeight) {
+        $thumbnailPreviewContainer.css("overflow-y", "auto");
+        width += scrollBarWidth;
+      } else {
+        $thumbnailPreviewContainer.css("overflow-y", "hidden");
+      }
+      $thumbnailPreviewContainer.width(width);
+      $thumbnailPreviewContainer.height(height);
+
+      // Hide the preview and show it when the thumbnail is loaded
+      $thumbnailPreview.hide();
+      $thumbnailPreviewCopyText.val(response.url);
+      $thumbnailPreview.one("load", function() {
+        $thumbnailPreview.show();
+      });
+      $thumbnailPreview.attr("src", response.url);
+      $thumbnailPreviewLink.attr("href", UTIL.getParentURL() + timelapse.getShareView());
     };
 
     var createSideToolBar = function() {
@@ -793,14 +847,7 @@ if (!org.gigapan.timelapse.Timelapse) {
 
     var shareView = function() {
       var $shareUrl = $("#" + viewerDivId + " .shareurl");
-      var parentUrl = "";
-      if (window.top === window.self) {
-        // no iframe
-        parentUrl = window.location.href.split("#")[0];
-      } else {
-        // inside iframe
-        parentUrl = document.referrer.split("#")[0];
-      }
+      var parentUrl = UTIL.getParentURL();
       $shareUrl.val(parentUrl + timelapse.getShareView()).focus(function() {
         $(this).select();
       }).click(function() {
@@ -880,7 +927,7 @@ if (!org.gigapan.timelapse.Timelapse) {
         min: 0,
         max: numFrames - 1, // this way the time scrubber goes exactly to the end of timeline
         step: 1,
-        values: [0, 100],
+        values: [0, timelineSelectorDefaultRangeOffset],
         slide: function(e, ui) {
           // $(this).slider('value')  --> previous value
           // ui.value                 --> current value
@@ -902,9 +949,9 @@ if (!org.gigapan.timelapse.Timelapse) {
       var numFrames = timelapse.getNumFrames();
       var captureTimes = timelapse.getCaptureTimes();
 
-      $("#" + viewerDivId + " .currentTime").html(org.gigapan.Util.formatTime(timelapse.getTimelapseCurrentTimeInSeconds(), true));
-      $("#" + viewerDivId + " .totalTime").html(org.gigapan.Util.formatTime(timelapse.getDuration(), true));
-      $("#" + viewerDivId + " .currentCaptureTime").html(org.gigapan.Util.htmlForTextWithEmbeddedNewlines(captureTimes[timelapse.getTimelapseCurrentCaptureTimeIndex()]));
+      $("#" + viewerDivId + " .currentTime").html(UTIL.formatTime(timelapse.getTimelapseCurrentTimeInSeconds(), true));
+      $("#" + viewerDivId + " .totalTime").html(UTIL.formatTime(timelapse.getDuration(), true));
+      $("#" + viewerDivId + " .currentCaptureTime").html(UTIL.htmlForTextWithEmbeddedNewlines(captureTimes[timelapse.getTimelapseCurrentCaptureTimeIndex()]));
 
       // Remove all previously added events
       $timelineSlider.unbind("mousedown");

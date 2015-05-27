@@ -112,6 +112,25 @@ if (!org.gigapan) {
     }
   };
 
+  org.gigapan.Util.getScrollBarWidth = function() {
+    var $outer = $('<div>').css({visibility: 'hidden', width: 100, overflow: 'scroll'}).appendTo('body');
+    var widthWithScroll = $('<div>').css({width: '100%'}).appendTo($outer).outerWidth();
+    $outer.remove();
+    return 100 - widthWithScroll;
+  };
+
+  org.gigapan.Util.getParentURL = function() {
+    var parentUrl = "";
+    if (window.top === window.self) {
+      // no iframe
+      parentUrl = window.location.href.split("#")[0];
+    } else {
+      // inside iframe
+      parentUrl = document.referrer.split("#")[0];
+    }
+    return parentUrl;
+  };
+
   org.gigapan.Util.browserSupported = function(forcedMediaType) {
     var v = document.createElement('video');
     // We do not support mobile devices (Android, iOS, etc) due to their OS limitations
