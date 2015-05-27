@@ -358,6 +358,20 @@ body, html {
   z-index: 10;
 }
 
+.currentCaptureTimeRangeContainer {
+  position: absolute;
+  left: 90px;
+  bottom: 43px;
+  font-size: 18px;
+  text-shadow: -1px 0 #000, 0 1px #000, 1px 0 #000, 0 -1px #000, 2px 2px 3px rgba(0,0,0,0.3);
+  font-family: Arial, Helvetica, sans-serif;
+  text-align: center;
+  color: white;
+  font-weight: normal;
+  z-index: 10;
+  display: none;
+}
+
 .playbackButton.ui-button {
   display: block;
   position: absolute;
@@ -455,10 +469,10 @@ body, html {
   width: 0;
   height: 0;
   border-top: 10px solid rgb(0,255,0);
-  border-left: 6px solid transparent;
-  border-right: 6px solid transparent;
+  border-left: 8px solid transparent;
+  border-right: 8px solid transparent;
   border-bottom: 0px solid transparent;
-  margin-left: -6px !important;
+  margin-left: -8px !important;
   overflow: hidden;
   top: -11px;
   margin: 0px;
@@ -468,25 +482,25 @@ body, html {
 }
 
 .timelineSelector .ui-slider-handle:first-of-type:active {
-  border-top: 10px solid white;
+  border-top-color: white;
 }
 
 .timelineSelector .ui-slider-handle:first-of-type:focus {
-  border-top: 10px solid white;
+  border-top-color: white;
 }
 
 .timelineSelector .ui-slider-handle:first-of-type:hover {
-  border-top: 10px solid white;
+  border-top-color: white;
 }
 
 .timelineSelector .ui-slider-handle:nth-of-type(2) {
   width: 0;
   height: 0;
   border-top: 0px solid transparent;
-  border-left: 6px solid transparent;
-  border-right: 6px solid transparent;
+  border-left: 8px solid transparent;
+  border-right: 8px solid transparent;
   border-bottom: 10px solid rgb(0,255,0);
-  margin-left: -6px !important;
+  margin-left: -8px !important;
   overflow: hidden;
   top: 9px;
   margin: 0px;
@@ -496,15 +510,15 @@ body, html {
 }
 
 .timelineSelector .ui-slider-handle:nth-of-type(2):active {
-  border-bottom: 10px solid white;
+  border-bottom-color: white;
 }
 
 .timelineSelector .ui-slider-handle:nth-of-type(2):focus {
-  border-bottom: 10px solid white;
+  border-bottom-color: white;
 }
 
 .timelineSelector .ui-slider-handle:nth-of-type(2):hover {
-  border-bottom: 10px solid white;
+  border-bottom-color: white;
 }
 
 .timelineSelector .ui-slider-handle:focus {
@@ -514,6 +528,11 @@ body, html {
 .timelineSelector .ui-slider-range {
   background: rgb(0,255,0);
   opacity: 1;
+}
+
+.whiteHandle {
+  border-bottom-color: white !important;
+  border-top-color: white !important;
 }
 
 .zoomall {
@@ -605,6 +624,29 @@ body, html {
   color: #a40e0e;
 }
 
+.customDialog .customDialogButton {
+  margin-right: 5px;
+  height: 22px;
+  border-radius: 1px;
+  background-image: none;
+}
+
+.customDialog .customDialogButton .ui-button-text {
+  padding-left: 9px;
+  padding-right: 9px;
+  margin-top: -2px;
+}
+
+.customDialog .customHighlightDialogButton {
+  color: white;
+  background-color: #71AF71;
+  border-color: #529952;
+}
+
+.customDialog .customHighlightDialogButton:hover {
+  background-color: #529952;
+}
+
 .customDialog .shareurl {
   margin-top: 2px;
   margin-bottom: 5px;
@@ -650,6 +692,22 @@ body, html {
   outline: none;
 }
 
+.ui-spinner {
+  border-radius: 1px;
+}
+
+.startingTimeSpinner {
+  width: 150px;
+}
+
+.endingTimeSpinner {
+  width: 150px;
+}
+
+.thumbnail-speed {
+  border-radius: 1px;
+}
+
 .spinnerOverlay {
   background-image: url(../images/loading.gif);
   width: 32px;
@@ -661,6 +719,14 @@ body, html {
   position: absolute;
   display: none;
   z-index: 10;
+}
+
+.share-thumbnail-tool {
+  width: 350px;
+}
+
+.share-thumbnail-tool td {
+  height: 25px;
 }
 
 #browser_not_supported {
@@ -820,11 +886,23 @@ body, html {
   z-index: 1;
 }
 
+.thumbnail-preview-copy-text-container {
+  margin-top: 16px;
+  margin-bottom: 8px;
+  width: 350px;
+}
+
+.thumbnail-preview-copy-text-button {
+  margin-right: 0px;
+  margin-bottom: 3px;
+}
+
 .thumbnail-preview-copy-text {
-  margin-top: 12px;
-  margin-bottom: 12px;
   margin-left: 0px;
-  width: 289px;
+  margin-right: 4px;
+  margin-bottom: 3px;
+  width: 280px;
+  height: 18px;
   resize: none;
 }
 

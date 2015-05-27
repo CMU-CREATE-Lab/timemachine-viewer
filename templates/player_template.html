@@ -31,6 +31,10 @@
     <div class="currentCaptureTime"></div>
   </div>
 
+  <div class="currentCaptureTimeRangeContainer" title="Capture time range">
+    <div class="currentCaptureTimeRange"></div>
+  </div>
+
   <div class="controls">
     <div class="timelineSliderFiller">
       <div id="Tslider1" class="timelineSlider"></div>
@@ -87,16 +91,44 @@
       </div>
       <h3>Share thumbnail or animated image</h3>
       <div class="share-thumbnail">
-        <div class="share-thumbnail-tool">
-          Get <a href="javascript:void(0)" class="get-current-thumbnail">thumbnail</a> or&nbsp;<a href="javascript:void(0)" class="get-current-gif">animated gif</a><a href="javascript:void(0)" class="get-current-video"></a>
-          <br>Center the box to a <a href="javascript:void(0)" class="reset-large">large</a>,&nbsp;<a href="javascript:void(0)" class="reset-medium">medium</a>, or&nbsp;<a href="javascript:void(0)" class="reset-small">small</a> size
-        </div>
-        <div class="thumbnail-preview-copy-text-container">
-          <input type="text" class="thumbnail-preview-copy-text">&nbsp;&nbsp;<a href="javascript:void(0)" class="thumbnail-preview-copy-text-button">Copy</a>
-        </div>
-        <div class="thumbnail-preview-container">
-          <img class="thumbnail-preview" src="">
-        </div>
+        <table class="share-thumbnail-tool">
+          <tr>
+            <td>Image type:</td>
+            <td><div class="get-current-thumbnail customDialogButton customHighlightDialogButton">Get thumbnail</div><div class="get-current-gif customDialogButton customHighlightDialogButton">Get animated gif</div></td>
+          </tr>
+          <tr>
+            <td>Set box size:</td>
+            <td><div class="reset-large customDialogButton">large</div><div class="reset-medium customDialogButton">medium</div><div class="reset-small customDialogButton">small</div></td>
+          </tr>
+          <tr>
+            <td>Starting Time:</td>
+            <td><input class="startingTimeSpinner" name="spinner" value=""></td>
+          </tr>
+          <tr>
+            <td>Ending Time:</td>
+            <td><input class="endingTimeSpinner" name="spinner" value=""></td>
+          </tr>
+          <tr>
+            <td>Select speed:</td>
+            <td>
+            <select class="thumbnail-speed" name="speed">
+              <option>0.25X</option>
+              <option>0.5X</option>
+              <option selected="selected">1X</option>
+              <option>2X</option>
+              <option>4X</option>
+            </select></td>
+          </tr>
+        </table>
+        <table class="thumbnail-preview-copy-text-container">
+          <tr>
+            <td><input type="text" class="thumbnail-preview-copy-text"></td>
+            <td><div title="Copy to clipboard" class="thumbnail-preview-copy-text-button customDialogButton">Copy</div></td>
+          </tr>
+          <tr>
+            <td colspan="2"><div class="thumbnail-preview-container"><img class="thumbnail-preview" src=""></div></td>
+          </tr>
+        </table>
       </div>
     </div>
   </div>
