@@ -52,10 +52,6 @@ body, html {
   font-size: 13px;
 }
 
-.ui-dialog .ui-button {
-  border-radius: 2px;
-}
-
 .loadingOverlay {
   background-color: rgba(0, 0, 0, 0);
   bottom: 0;
@@ -710,10 +706,6 @@ body, html {
   width: 150px;
 }
 
-.thumbnail-speed {
-  border-radius: 1px;
-}
-
 .spinnerOverlay {
   background-image: url(../images/loading.gif);
   width: 32px;
@@ -971,4 +963,37 @@ body, html {
   margin-left: 0px;
   width: 15px;
   height: 15px;
+}
+
+.customDropdownButton {
+  width: 70px;
+  height: 20px;
+  border-radius: 1px !important;
+  z-index: 30;
+  outline: none;
+  background-color: white !important;
+  background-image: none !important;
+}
+
+.customDropdownButton .ui-button-text {
+  text-align: left;
+  padding-left: 9px;
+  padding-right: 9px;
+  margin-top: -3px;
+  margin-left: -2px;
+}
+
+.customDropdownButton .ui-icon {
+  margin-right: -4px;
+}
+
+.customDropdownMenu {
+  display: none;
+  width: 70px;
+  position: absolute;
+  z-index: 115;
+}
+
+.customDropdownMenu .ui-menu-item {
+  background-image: none !important;
 }

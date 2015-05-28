@@ -129,6 +129,7 @@ if (!org.gigapan.timelapse.Timelapse) {
     var $startingTimeSpinner = $("#" + viewerDivId + " .startingTimeSpinner");
     var $endingTimeSpinner = $("#" + viewerDivId + " .endingTimeSpinner");
     var $thumbnailSpeed = $("#" + viewerDivId + " .thumbnail-speed");
+    var $thumbnailSpeedMenu = $("#" + viewerDivId + " .thumbnail-speed-menu");
     var $thumbnailPreviewCopyTextButtonTooltip = $("#" + viewerDivId + " .thumbnail-preview-copy-text-button-tooltip");
     var $thumbnailPreviewCopyTextButtonTooltipContent = $("#" + viewerDivId + " .thumbnail-preview-copy-text-button-tooltip").find("p");
     var $thumbnailPreviewCopyTextButton = $("#" + viewerDivId + " .thumbnail-preview-copy-text-button");
@@ -549,6 +550,33 @@ if (!org.gigapan.timelapse.Timelapse) {
       }).blur(function(event) {
         $timelineSelectorEndHandle.removeClass("whiteHandle");
       });
+      // Create dropdown menu
+      $thumbnailSpeed.button({
+        icons: {
+          secondary: "ui-icon-triangle-1-s"
+        },
+        text: true
+      }).click(function() {
+        if ($thumbnailSpeedMenu.is(":visible")) {
+          $thumbnailSpeedMenu.hide();
+        } else {
+          $thumbnailSpeedMenu.show().position({
+            my: "center top",
+            at: "center bottom",
+            of: $(this)
+          });
+          $(document).one("mouseup", function(e) {
+            var targetGroup = $(e.target).parents().addBack();
+            if (!targetGroup.is(".thumbnail-speed"))
+              $thumbnailSpeedMenu.hide();
+          });
+        }
+      });
+      $thumbnailSpeedMenu.menu();
+      $thumbnailSpeedMenu.find("li").click(function() {
+        $thumbnailSpeed.find("span").text($(this).text());
+        $thumbnailSpeed.data("speed", $(this).data("speed"));
+      });
       // Hide preview areas
       $thumbnailPreviewContainer.hide();
       $thumbnailPreviewCopyTextContainer.hide();
@@ -564,7 +592,7 @@ if (!org.gigapan.timelapse.Timelapse) {
         var urlSettings = {
           startTime: sliderValueToTime($timelineSelector.slider("values", 0)),
           endTime: sliderValueToTime($timelineSelector.slider("values", 1)),
-          fps: timelapse.getFps() / parseFloat($thumbnailSpeed.val()),
+          fps: timelapse.getFps() * $thumbnailSpeed.data("speed"),
           embedTime: $("#" + viewerDivId + " .embed-capture-time").prop('checked'),
           format: "gif"
         };
