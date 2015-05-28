@@ -133,6 +133,8 @@ if (!org.gigapan.timelapse.Timelapse) {
     var $thumbnailPreviewCopyTextButtonTooltipContent = $("#" + viewerDivId + " .thumbnail-preview-copy-text-button-tooltip").find("p");
     var $thumbnailPreviewCopyTextButton = $("#" + viewerDivId + " .thumbnail-preview-copy-text-button");
     var $shareViewDialog = $("#" + viewerDivId + " .shareView");
+    var $shareUrl = $("#" + viewerDivId + " .shareurl");
+    var $shareUrlCopyTextButton = $("#" + viewerDivId + " .shareurl-copy-text-button");
     var $timelineSelectorStartHandle;
     var $timelineSelectorEndHandle;
 
@@ -421,9 +423,25 @@ if (!org.gigapan.timelapse.Timelapse) {
           $shareViewDialog.dialog("close");
         } else {
           $shareViewDialog.dialog("open");
-          shareView();
+          updateShareViewTextbox();
           UTIL.addGoogleAnalyticEvent('button', 'click', 'viewer-show-share-dialog');
         }
+      });
+      $shareUrl.focus(function() {
+        $(this).select();
+      }).click(function() {
+        $(this).select();
+      }).mouseup(function(e) {
+        e.preventDefault();
+      });
+      $shareUrlCopyTextButton.button().click(function(event) {
+        $shareUrl.select();
+        document.execCommand('copy');
+        setCopyButtonTooltip("copied", $shareUrlCopyTextButton);
+      }).hover(function() {
+        setCopyButtonTooltip("show", $shareUrlCopyTextButton);
+      }, function() {
+        setCopyButtonTooltip("hide", $shareUrlCopyTextButton);
       });
       // Share view accordion
       var $accordion = $("#" + viewerDivId + " .shareView .accordion")
@@ -546,7 +564,7 @@ if (!org.gigapan.timelapse.Timelapse) {
         var urlSettings = {
           startTime: sliderValueToTime($timelineSelector.slider("values", 0)),
           endTime: sliderValueToTime($timelineSelector.slider("values", 1)),
-          delay: timelapse.getFps() / parseFloat($thumbnailSpeed.val()),
+          fps: timelapse.getFps() / parseFloat($thumbnailSpeed.val()),
           embedTime: $("#" + viewerDivId + " .embed-capture-time").prop('checked'),
           format: "gif"
         };
@@ -575,11 +593,11 @@ if (!org.gigapan.timelapse.Timelapse) {
       $thumbnailPreviewCopyTextButton.button().click(function(event) {
         $thumbnailPreviewCopyText.select();
         document.execCommand('copy');
-        setCopyButtonTooltip("copied");
+        setCopyButtonTooltip("copied", $thumbnailPreviewCopyTextButton);
       }).hover(function() {
-        setCopyButtonTooltip("show");
+        setCopyButtonTooltip("show", $thumbnailPreviewCopyTextButton);
       }, function() {
-        setCopyButtonTooltip("hide");
+        setCopyButtonTooltip("hide", $thumbnailPreviewCopyTextButton);
       });
       $thumbnailPreviewCopyText.on("focus", function() {
         $(this).select();
@@ -589,17 +607,17 @@ if (!org.gigapan.timelapse.Timelapse) {
         e.preventDefault();
       });
       timelapse.addViewEndChangeListener(function() {
-        shareView();
+        updateShareViewTextbox();
       });
       timelapse.addTimeChangeListener(function() {
-        shareView();
+        updateShareViewTextbox();
       });
     };
 
-    var setCopyButtonTooltip = function(state) {
+    var setCopyButtonTooltip = function(state, $target) {
       if (state == "show") {
         $thumbnailPreviewCopyTextButtonTooltipContent.text("Copy to clipboard").removeClass("width-short").addClass("width-long");
-        var offset = $thumbnailPreviewCopyTextButton.offset();
+        var offset = $target.offset();
         $thumbnailPreviewCopyTextButtonTooltip.css({
           left: offset.left - 47 + "px",
           top: offset.top - 55 + "px"
@@ -609,7 +627,7 @@ if (!org.gigapan.timelapse.Timelapse) {
         $thumbnailPreviewCopyTextButtonTooltip.hide();
       } else if (state == "copied") {
         $thumbnailPreviewCopyTextButtonTooltipContent.text("Copied").removeClass("width-long").addClass("width-short");
-        var offset = $thumbnailPreviewCopyTextButton.offset();
+        var offset = $target.offset();
         $thumbnailPreviewCopyTextButtonTooltip.css({
           left: offset.left - 19 + "px",
           top: offset.top - 55 + "px"
@@ -973,17 +991,11 @@ if (!org.gigapan.timelapse.Timelapse) {
     };
     this.setMode = setMode;
 
-    var shareView = function() {
-      var $shareUrl = $("#" + viewerDivId + " .shareurl");
+    var updateShareViewTextbox = function() {
       var parentUrl = UTIL.getParentURL();
-      $shareUrl.val(parentUrl + timelapse.getShareView()).focus(function() {
-        $(this).select();
-      }).click(function() {
-        $(this).select();
-      }).mouseup(function(e) {
-        e.preventDefault();
-      });
+      $shareUrl.val(parentUrl + timelapse.getShareView());
     };
+    this.updateShareViewTextbox = updateShareViewTextbox;
 
     var doHelpOverlay = function() {
       $("#" + viewerDivId + " .instructions").fadeIn(200);

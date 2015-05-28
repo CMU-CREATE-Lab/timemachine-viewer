@@ -369,6 +369,10 @@ if (!window['$']) {
       return playOnLoad;
     };
 
+    this.updateShareViewTextbox = function() {
+			defaultUI.updateShareViewTextbox();
+    };
+
     this.setMinZoomSpeedPerSecond = function(value) {
       minZoomSpeedPerSecond = value;
     };
@@ -2942,7 +2946,7 @@ if (!window['$']) {
       thisObj.setPlaybackRate(playbackSpeed);
 
       setupUIHandlers();
-      setupSliderHandlers(viewerDivId);
+      //setupSliderHandlers(viewerDivId);
 
       // The UI is now ready and we can display it
       $("#" + viewerDivId).css("visibility", "visible");
