@@ -615,22 +615,22 @@ if (!org.gigapan.timelapse.Timelapse) {
     };
 
     var setCopyButtonTooltip = function(state, $target) {
+      var targetOffset = $target.offset();
+      var containerOffset = $("#" + viewerDivId).offset();
       if (state == "show") {
         $thumbnailPreviewCopyTextButtonTooltipContent.text("Copy to clipboard").removeClass("width-short").addClass("width-long");
-        var offset = $target.offset();
         $thumbnailPreviewCopyTextButtonTooltip.css({
-          left: offset.left - 47 + "px",
-          top: offset.top - 55 + "px"
+          left: targetOffset.left - containerOffset.left - 37 + "px",
+          top: targetOffset.top - containerOffset.top - 45 + "px"
         })
         $thumbnailPreviewCopyTextButtonTooltip.show();
       } else if (state == "hide") {
         $thumbnailPreviewCopyTextButtonTooltip.hide();
       } else if (state == "copied") {
         $thumbnailPreviewCopyTextButtonTooltipContent.text("Copied").removeClass("width-long").addClass("width-short");
-        var offset = $target.offset();
         $thumbnailPreviewCopyTextButtonTooltip.css({
-          left: offset.left - 19 + "px",
-          top: offset.top - 55 + "px"
+          left: targetOffset.left - containerOffset.left - 9 + "px",
+          top: targetOffset.top - containerOffset.top - 45 + "px"
         })
       }
     };
