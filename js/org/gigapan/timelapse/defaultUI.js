@@ -129,6 +129,10 @@ if (!org.gigapan.timelapse.Timelapse) {
     var $startingTimeSpinner = $("#" + viewerDivId + " .startingTimeSpinner");
     var $endingTimeSpinner = $("#" + viewerDivId + " .endingTimeSpinner");
     var $thumbnailSpeed = $("#" + viewerDivId + " .thumbnail-speed");
+    var $thumbnailPreviewCopyTextButtonTooltip = $("#" + viewerDivId + " .thumbnail-preview-copy-text-button-tooltip");
+    var $thumbnailPreviewCopyTextButtonTooltipContent = $("#" + viewerDivId + " .thumbnail-preview-copy-text-button-tooltip").find("p");
+    var $thumbnailPreviewCopyTextButton = $("#" + viewerDivId + " .thumbnail-preview-copy-text-button");
+    var $shareViewDialog = $("#" + viewerDivId + " .shareView");
     var $timelineSelectorStartHandle;
     var $timelineSelectorEndHandle;
 
@@ -411,7 +415,6 @@ if (!org.gigapan.timelapse.Timelapse) {
         },
         text: true
       }).click(function() {
-        var $shareViewDialog = $("#" + viewerDivId + " .shareView");
         if ($shareViewDialog.dialog("isOpen")) {
           $shareViewDialog.dialog("close");
         } else {
@@ -565,9 +568,14 @@ if (!org.gigapan.timelapse.Timelapse) {
       $("#" + viewerDivId + " .reset-small").button().click(function(event) {
         thumbnailTool.centerAndDrawCropBox("small");
       });
-      $("#" + viewerDivId + " .thumbnail-preview-copy-text-button").button().click(function(event) {
+      $thumbnailPreviewCopyTextButton.button().click(function(event) {
         $thumbnailPreviewCopyText.select();
         document.execCommand('copy');
+        setCopyButtonTooltip("copied");
+      }).hover(function() {
+        setCopyButtonTooltip("show");
+      }, function() {
+        setCopyButtonTooltip("hide");
       });
       $thumbnailPreviewCopyText.on("focus", function() {
         $(this).select();
@@ -582,6 +590,27 @@ if (!org.gigapan.timelapse.Timelapse) {
       timelapse.addTimeChangeListener(function() {
         shareView();
       });
+    };
+
+    var setCopyButtonTooltip = function(state) {
+      if (state == "show") {
+        $thumbnailPreviewCopyTextButtonTooltipContent.text("Copy to clipboard").removeClass("width-short").addClass("width-long");
+        var offset = $thumbnailPreviewCopyTextButton.offset();
+        $thumbnailPreviewCopyTextButtonTooltip.css({
+          left: offset.left - 47 + "px",
+          top: offset.top - 55 + "px"
+        })
+        $thumbnailPreviewCopyTextButtonTooltip.show();
+      } else if (state == "hide") {
+        $thumbnailPreviewCopyTextButtonTooltip.hide();
+      } else if (state == "copied") {
+        $thumbnailPreviewCopyTextButtonTooltipContent.text("Copied").removeClass("width-long").addClass("width-short");
+        var offset = $thumbnailPreviewCopyTextButton.offset();
+        $thumbnailPreviewCopyTextButtonTooltip.css({
+          left: offset.left - 19 + "px",
+          top: offset.top - 55 + "px"
+        })
+      }
     };
 
     var updateCaptureTimeRange = function(startIdx, endIdx) {
