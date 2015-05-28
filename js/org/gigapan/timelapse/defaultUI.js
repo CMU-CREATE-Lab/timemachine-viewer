@@ -261,6 +261,8 @@ if (!org.gigapan.timelapse.Timelapse) {
       // Create tool button
       if (editorEnabled || annotatorEnabled || changeDetectionEnabled) {
         createToolButton();
+      } else {
+        $("#" + viewerDivId + " .tool").remove();
       }
       // Create other UI components
       createTimelineSlider();
