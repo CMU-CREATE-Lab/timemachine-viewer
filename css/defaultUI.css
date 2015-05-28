@@ -960,3 +960,7 @@ body, html {
 .thumbnail-preview-copy-text-button-tooltip .width-short {
   width: 40px;
 }
+
+.embed-capture-time {
+  margin: 0px;
+}

@@ -537,6 +537,7 @@ if (!org.gigapan.timelapse.Timelapse) {
       // Add events
       $("#" + viewerDivId + " .get-current-thumbnail").button().click(function(event) {
         var urlSettings = {
+          embedTime: $("#" + viewerDivId + " .embed-capture-time").prop('checked'),
           format: "png"
         };
         setThumbnailPreviewArea(thumbnailTool.getURL(urlSettings));
@@ -546,6 +547,7 @@ if (!org.gigapan.timelapse.Timelapse) {
           startTime: sliderValueToTime($timelineSelector.slider("values", 0)),
           endTime: sliderValueToTime($timelineSelector.slider("values", 1)),
           delay: timelapse.getFps() / parseFloat($thumbnailSpeed.val()),
+          embedTime: $("#" + viewerDivId + " .embed-capture-time").prop('checked'),
           format: "gif"
         };
         setThumbnailPreviewArea(thumbnailTool.getURL(urlSettings));
@@ -616,7 +618,7 @@ if (!org.gigapan.timelapse.Timelapse) {
     };
 
     var updateCaptureTimeRange = function(startIdx, endIdx) {
-      $currentCaptureTimeRange.html(UTIL.htmlForTextWithEmbeddedNewlines(captureTimes[startIdx] + " -> " + captureTimes[endIdx]));
+      $currentCaptureTimeRange.html(UTIL.htmlForTextWithEmbeddedNewlines(captureTimes[startIdx] + " &rarr; " + captureTimes[endIdx]));
     };
 
     var setThumbnailPreviewArea = function(response) {
