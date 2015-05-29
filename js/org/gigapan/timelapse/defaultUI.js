@@ -385,6 +385,8 @@ if (!org.gigapan.timelapse.Timelapse) {
       $timelineSelector.slider("values", 1, rangePos);
       $startingTimeSpinner.captureTimeSpinner("value", currentPos);
       $endingTimeSpinner.captureTimeSpinner("value", rangePos);
+      $startingTimeSpinner.captureTimeSpinner("option", "max", rangePos);
+      $endingTimeSpinner.captureTimeSpinner("option", "min", currentPos);
       updateCaptureTimeRange($timelineSelector.slider("values", 0), $timelineSelector.slider("values", 1));
       $playbackButton.button("option", "disabled", true);
       $("#" + viewerDivId + " .toggleSpeed").button("option", "disabled", true);
@@ -519,6 +521,7 @@ if (!org.gigapan.timelapse.Timelapse) {
           $timelineSelector.slider("values", 0, ui.value);
           updateCaptureTimeRange($timelineSelector.slider("values", 0), $timelineSelector.slider("values", 1));
           seekFromTimeLineSlider($(this).captureTimeSpinner("value"), ui.value);
+          $endingTimeSpinner.captureTimeSpinner("option", "min", ui.value);
         },
         change: function(event) {
           var value = $(this).captureTimeSpinner("value");
@@ -537,6 +540,7 @@ if (!org.gigapan.timelapse.Timelapse) {
           $timelineSelector.slider("values", 1, ui.value);
           updateCaptureTimeRange($timelineSelector.slider("values", 0), $timelineSelector.slider("values", 1));
           seekFromTimeLineSlider($(this).captureTimeSpinner("value"), ui.value);
+          $startingTimeSpinner.captureTimeSpinner("option", "max", ui.value);
         },
         change: function(event) {
           var value = $(this).captureTimeSpinner("value");
@@ -1111,6 +1115,8 @@ if (!org.gigapan.timelapse.Timelapse) {
           // Manually seek to position 0 when this happens.
           $startingTimeSpinner.captureTimeSpinner("value", ui.values[0]);
           $endingTimeSpinner.captureTimeSpinner("value", ui.values[1]);
+          $startingTimeSpinner.captureTimeSpinner("option", "max", ui.values[1]);
+          $endingTimeSpinner.captureTimeSpinner("option", "min", ui.values[0]);
           updateCaptureTimeRange(ui.values[0], ui.values[1]);
           seekFromTimeLineSlider($(this).slider("value"), ui.value);
         }
