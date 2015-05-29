@@ -913,7 +913,7 @@ body, html {
 .thumbnail-preview-container {
   position: relative;
   max-width: 345px;
-  max-height: 350px;
+  max-height: 375px;
   border: 1px solid #656565;
   overflow-x: hidden;
   overflow-y: hidden;
@@ -1002,4 +1002,13 @@ body, html {
 
 .customDropdownMenu .ui-menu-item {
   background-image: none !important;
+}
+
+.always-selectable {
+  -webkit-user-select: initial;
+  -khtml-user-select: initial;
+  -moz-user-select: initial;
+  -ms-user-select: initial;
+  -o-user-select: initial;
+  user-select: initial;
 }

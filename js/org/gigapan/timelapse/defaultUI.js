@@ -103,7 +103,6 @@ if (!org.gigapan.timelapse.Timelapse) {
     var videoset = timelapse.getVideoset();
     var thumbnailTool = timelapse.getThumbnailTool();
     var changeDetectionTool = timelapse.getChangeDetectionTool();
-    var tmJSON = timelapse.getTmJSON();
     var panInterval;
 
     // DOM elements
@@ -160,13 +159,10 @@ if (!org.gigapan.timelapse.Timelapse) {
     var useTouchFriendlyUI = timelapse.useTouchFriendlyUI();
 
     // Parameters
-    var minViewportHeight = timelapse.getMinViewportHeight();
-    var minViewportWidth = timelapse.getMinViewportWidth();
     var mode = "player";
     var translationSpeedConstant = 20;
     var scrollBarWidth = UTIL.getScrollBarWidth();
     var timelineSelectorDefaultRangeOffset = 50;
-    var captureTimes = timelapse.getCaptureTimes();
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////
     //
@@ -490,14 +486,14 @@ if (!org.gigapan.timelapse.Timelapse) {
           page: 5,
           min: 0,
           currentIndex: 0,
-          max: captureTimes.length - 1
+          max: timelapse.getCaptureTimes().length - 1
         },
         _parse: function(value) {
           if ( typeof value === "string") {
             var dateObj = new Date(value);
             var newIndex = -1;
             if (dateObj != "Invalid Date") {
-              newIndex = captureTimes.indexOf(value);
+              newIndex = timelapse.getCaptureTimes().indexOf(value);
               if (newIndex == -1) {
                 newIndex = timelapse.findExactOrClosestCaptureTime(value);
               }
@@ -512,7 +508,7 @@ if (!org.gigapan.timelapse.Timelapse) {
           return value;
         },
         _format: function(value) {
-          var format = captureTimes[value];
+          var format = timelapse.getCaptureTimes()[value];
           return format;
         },
       });
@@ -528,7 +524,7 @@ if (!org.gigapan.timelapse.Timelapse) {
           $timelineSelector.slider("values", 0, value);
           updateCaptureTimeRange($timelineSelector.slider("values", 0), $timelineSelector.slider("values", 1));
           sliderValueToTime(value);
-          event.target.value = captureTimes[value];
+          event.target.value = timelapse.getCaptureTimes()[value];
         }
       }).focus(function(event) {
         $timelineSelectorStartHandle.addClass("whiteHandle");
@@ -547,7 +543,7 @@ if (!org.gigapan.timelapse.Timelapse) {
           $timelineSelector.slider("values", 1, value);
           updateCaptureTimeRange($timelineSelector.slider("values", 0), $timelineSelector.slider("values", 1));
           sliderValueToTime(value);
-          event.target.value = captureTimes[value];
+          event.target.value = timelapse.getCaptureTimes()[value];
         }
       }).focus(function(event) {
         $timelineSelectorEndHandle.addClass("whiteHandle");
@@ -668,6 +664,7 @@ if (!org.gigapan.timelapse.Timelapse) {
     };
 
     var updateCaptureTimeRange = function(startIdx, endIdx) {
+      var captureTimes = timelapse.getCaptureTimes();
       $currentCaptureTimeRange.html(UTIL.htmlForTextWithEmbeddedNewlines(captureTimes[startIdx] + " &rarr; " + captureTimes[endIdx]));
     };
 
@@ -676,10 +673,11 @@ if (!org.gigapan.timelapse.Timelapse) {
       $thumbnailPreviewCopyTextContainer.show();
 
       // This code block is used to solve a problem related to scrollbar overflowing
+      var linkHeight = 25;
       var maxContainerWidth = parseInt($thumbnailPreviewContainer.css("max-width"));
       var maxContainerHeight = parseInt($thumbnailPreviewContainer.css("max-height"));
       var width = response.args.width;
-      var height = response.args.height;
+      var height = response.args.height + linkHeight;
       if (width > maxContainerWidth) {
         $thumbnailPreviewContainer.css("overflow-x", "auto");
         height += scrollBarWidth;
@@ -697,12 +695,21 @@ if (!org.gigapan.timelapse.Timelapse) {
 
       // Hide the preview and show it when the thumbnail is loaded
       $thumbnailPreview.hide();
+      $thumbnailPreviewLink.hide();
       $thumbnailPreviewCopyText.val(response.url);
       $thumbnailPreview.one("load", function() {
         $thumbnailPreview.show();
+        $thumbnailPreviewLink.show();
       });
       $thumbnailPreview.attr("src", response.url);
       $thumbnailPreviewLink.attr("href", UTIL.getParentURL() + timelapse.getShareView());
+      var tmJSON = timelapse.getTmJSON();
+      var timelapseTitle = ( typeof tmJSON.name == "undefined") ? $("#locationTitle").text() : tmJSON.name;
+      if (response.args.format == "gif") {
+        $thumbnailPreviewLink.text(timelapseTitle + $currentCaptureTimeRangeContainer.text());
+      } else {
+        $thumbnailPreviewLink.text(timelapseTitle + " " + timelapse.getCurrentCaptureTime());
+      }
     };
 
     var createSideToolBar = function() {
