@@ -884,6 +884,12 @@ body, html {
   z-index: 1;
 }
 
+.thumbnail-speed-msg {
+  margin-top: 3px;
+  position: absolute;
+  margin-left: 5px;
+}
+
 .thumbnail-preview-copy-text-container {
   margin-top: 16px;
   margin-bottom: 8px;
