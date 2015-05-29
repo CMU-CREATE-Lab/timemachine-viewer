@@ -240,6 +240,7 @@ if (!window['$']) {
     var playbackRateChangeListeners = [];
     var zoomChangeListeners = [];
     var fullScreenChangeListeners = [];
+    var datasetLoadedListeners = [];
     var thisObj = this;
     var tmJSON;
     var datasetJSON = null;
@@ -1086,6 +1087,21 @@ if (!window['$']) {
       videoset.removeEventListener('videoset-draw', listener);
     };
     this.removeVideoDrawListener = _removeVideoDrawListener;
+
+    var _addDatasetLoadedListener = function(listener) {
+      datasetLoadedListeners.push(listener);
+    };
+    this.addDatasetLoadedListener = _addDatasetLoadedListener;
+
+    var _removeDatasetLoadedListener = function(listener) {
+      for (var i = 0; i < datasetLoadedListeners.length; i++) {
+        if (datasetLoadedListeners[i] == listener[0]) {
+          datasetLoadedListeners.splice(i, 1);
+          break;
+        }
+      }
+    };
+    this.removeDatasetLoadedListener = _removeDatasetLoadedListener;
 
     var _getProjection = function(desiredProjectionType) {
       projectionType = typeof (desiredProjectionType) != 'undefined' ? desiredProjectionType : "mercator";
@@ -2854,6 +2870,7 @@ if (!window['$']) {
               timelapseCurrentTimeInSeconds = initialTime;
               _seek(initialTime);
             }
+
           }
 
           if (didFirstTimeOnLoad) {
@@ -2883,6 +2900,10 @@ if (!window['$']) {
           hideSpinner(viewerDivId);
           if ( typeof onNewTimelapseLoadCompleteCallBack === "function")
             onNewTimelapseLoadCompleteCallBack();
+
+          for (var i = 0; i < datasetLoadedListeners.length; i++)
+            datasetLoadedListeners[i]();
+
         }
       });
 
