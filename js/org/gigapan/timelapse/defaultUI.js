@@ -381,10 +381,10 @@ if (!org.gigapan.timelapse.Timelapse) {
       $timelineSliderFiller.hide();
       var currentPos = timeToSliderValue(timelapse.getTimelapseCurrentTimeInSeconds());
       var rangePos = currentPos + timelineSelectorDefaultRangeOffset;
-      $timelineSelector.slider("values", 0, currentPos);
       $timelineSelector.slider("values", 1, rangePos);
-      $startingTimeSpinner.captureTimeSpinner("value", currentPos);
+      $timelineSelector.slider("values", 0, currentPos);
       $endingTimeSpinner.captureTimeSpinner("value", rangePos);
+      $startingTimeSpinner.captureTimeSpinner("value", currentPos);
       $startingTimeSpinner.captureTimeSpinner("option", "max", rangePos);
       $endingTimeSpinner.captureTimeSpinner("option", "min", currentPos);
       updateCaptureTimeRange($timelineSelector.slider("values", 0), $timelineSelector.slider("values", 1));
