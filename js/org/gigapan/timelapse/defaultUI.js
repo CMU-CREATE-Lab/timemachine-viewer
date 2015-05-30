@@ -396,8 +396,10 @@ if (!org.gigapan.timelapse.Timelapse) {
       }
       $timelineSelector.slider("values", 0, currentStartingIdx);
       $timelineSelector.slider("values", 1, currentEndingIdx);
+      $startingTimeSpinner.captureTimeSpinner("option", "min", 0);
       $startingTimeSpinner.captureTimeSpinner("option", "max", currentEndingIdx);
       $endingTimeSpinner.captureTimeSpinner("option", "min", currentStartingIdx);
+      $endingTimeSpinner.captureTimeSpinner("option", "max", timelapse.getCaptureTimes().length - 1);
       $startingTimeSpinner.captureTimeSpinner("value", currentStartingIdx);
       $endingTimeSpinner.captureTimeSpinner("value", currentEndingIdx);
       updateCaptureTimeRange(currentStartingIdx, currentEndingIdx);
