@@ -371,7 +371,7 @@ if (!window['$']) {
     };
 
     this.updateShareViewTextbox = function() {
-			defaultUI.updateShareViewTextbox();
+      defaultUI.updateShareViewTextbox();
     };
 
     this.setMinZoomSpeedPerSecond = function(value) {
@@ -2889,6 +2889,11 @@ if (!window['$']) {
               $timeSlider.slider("destroy");
               defaultUI.createTimelineSlider();
               $timeSlider.slider("option", "value", timelapseCurrentCaptureTimeIndex);
+              // Recreate timeline range selector for the thumbnail tool.
+              var $timelineSelector = $("#" + viewerDivId + " .timelineSelector");
+              $timelineSelector.slider("destroy");
+              defaultUI.createTimelineSelector();
+              defaultUI.resetShareThumbnailUI();
             }
           } else {
             loadSharedDataFromUnsafeURL(UTIL.getUnsafeHashString());

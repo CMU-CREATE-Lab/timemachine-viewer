@@ -137,6 +137,8 @@ if (!org.gigapan.timelapse.Timelapse) {
     var $shareUrlCopyTextButton = $("#" + viewerDivId + " .shareurl-copy-text-button");
     var $timelineSelectorStartHandle;
     var $timelineSelectorEndHandle;
+    var isStartingTimeSpinnerBlurAdded = false;
+    var isEndingTimeSpinnerBlurAdded = false;
 
     // Settings
     var useCustomUI = timelapse.useCustomUI();
@@ -163,6 +165,8 @@ if (!org.gigapan.timelapse.Timelapse) {
     var translationSpeedConstant = 20;
     var scrollBarWidth = UTIL.getScrollBarWidth();
     var timelineSelectorDefaultRangeOffset = 50;
+    var currentStartingIdx;
+    var currentEndingIdx;
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////
     //
@@ -375,21 +379,30 @@ if (!org.gigapan.timelapse.Timelapse) {
       $currentCaptureTimeRangeContainer.show();
       $captureTime.hide();
       $timelineSliderFiller.hide();
-      var currentPos = parseInt(timeToSliderValue(timelapse.getCurrentTime()));
-      var rangePos = currentPos + timelineSelectorDefaultRangeOffset;
-      $timelineSelector.slider("values", 0, currentPos);
-      $timelineSelector.slider("values", 1, rangePos);
-      $startingTimeSpinner.captureTimeSpinner("option", "max", $timelineSelector.slider("values", 1));
-      $endingTimeSpinner.captureTimeSpinner("option", "min", $timelineSelector.slider("values", 0));
-      $startingTimeSpinner.captureTimeSpinner("value", $timelineSelector.slider("values", 0));
-      $endingTimeSpinner.captureTimeSpinner("value", $timelineSelector.slider("values", 1));
-      updateCaptureTimeRange($timelineSelector.slider("values", 0), $timelineSelector.slider("values", 1));
       $playbackButton.button("option", "disabled", true);
       $("#" + viewerDivId + " .toggleSpeed").button("option", "disabled", true);
       originalIsPaused = timelapse.isPaused();
-      if (!originalIsPaused)
+      if (!originalIsPaused) {
         timelapse.handlePlayPause();
+      }
+      resetShareThumbnailUI();
     };
+
+    var resetShareThumbnailUI = function() {
+      currentStartingIdx = timelapse.getTimelapseCurrentCaptureTimeIndex();
+      currentEndingIdx = currentStartingIdx + timelineSelectorDefaultRangeOffset;
+      if (currentEndingIdx > timelapse.getNumFrames() - 1) {
+        currentEndingIdx = timelapse.getNumFrames() - 1;
+      }
+      $timelineSelector.slider("values", 0, currentStartingIdx);
+      $timelineSelector.slider("values", 1, currentEndingIdx);
+      $startingTimeSpinner.captureTimeSpinner("option", "max", currentEndingIdx);
+      $endingTimeSpinner.captureTimeSpinner("option", "min", currentStartingIdx);
+      $startingTimeSpinner.captureTimeSpinner("value", currentStartingIdx);
+      $endingTimeSpinner.captureTimeSpinner("value", currentEndingIdx);
+      updateCaptureTimeRange(currentStartingIdx, currentEndingIdx);
+    };
+    this.resetShareThumbnailUI = resetShareThumbnailUI;
 
     var disableShareThumbnail = function() {
       thumbnailTool.hideCropBox();
@@ -399,8 +412,9 @@ if (!org.gigapan.timelapse.Timelapse) {
       $timelineSliderFiller.show();
       $playbackButton.button("option", "disabled", false);
       $("#" + viewerDivId + " .toggleSpeed").button("option", "disabled", false);
-      if (!originalIsPaused)
+      if (!originalIsPaused) {
         timelapse.handlePlayPause();
+      }
     };
 
     var sliderValueToTime = function(value) {
@@ -496,6 +510,11 @@ if (!org.gigapan.timelapse.Timelapse) {
               newIndex = timelapse.getCaptureTimes().indexOf(value);
               if (newIndex == -1) {
                 newIndex = timelapse.findExactOrClosestCaptureTime(value);
+                if (newIndex < this.options.min) {
+                  newIndex = this.options.min;
+                } else if (newIndex > this.options.max) {
+                  newIndex = this.options.max;
+                }
               }
             }
             if (newIndex != -1) {
@@ -514,41 +533,53 @@ if (!org.gigapan.timelapse.Timelapse) {
       });
       $startingTimeSpinner.captureTimeSpinner({
         spin: function(event, ui) {
-          $timelineSelector.slider("values", 0, ui.value);
-          updateCaptureTimeRange($timelineSelector.slider("values", 0), $timelineSelector.slider("values", 1));
-          seekFromTimeLineSlider($(this).captureTimeSpinner("value"), ui.value);
-          $endingTimeSpinner.captureTimeSpinner("option", "min", ui.value);
-        },
-        change: function(event) {
-          var value = $(this).captureTimeSpinner("value");
-          $timelineSelector.slider("values", 0, value);
-          updateCaptureTimeRange($timelineSelector.slider("values", 0), $timelineSelector.slider("values", 1));
-          sliderValueToTime(value);
-          event.target.value = timelapse.getCaptureTimes()[value];
+          currentStartingIdx = ui.value;
+          $timelineSelector.slider("values", 0, currentStartingIdx);
+          updateCaptureTimeRange(currentStartingIdx, currentEndingIdx);
+          seekFromTimeLineSlider(currentStartingIdx, currentStartingIdx);
+          $endingTimeSpinner.captureTimeSpinner("option", "min", currentStartingIdx);
         }
-      }).focus(function(event) {
+      }).on("focus", function(event) {
         $timelineSelectorStartHandle.addClass("whiteHandle");
-      }).blur(function(event) {
+      }).on("blur", function(event) {
         $timelineSelectorStartHandle.removeClass("whiteHandle");
+      }).on("mousedown", function(event) {
+        // Update the text field after an user input event
+        if (isStartingTimeSpinnerBlurAdded == false) {
+          isStartingTimeSpinnerBlurAdded = true;
+          $startingTimeSpinner.one("blur", function() {
+            isStartingTimeSpinnerBlurAdded = false;
+            currentStartingIdx = $(this).captureTimeSpinner("value");
+            $timelineSelector.slider("values", 0, currentStartingIdx);
+            updateCaptureTimeRange(currentStartingIdx, currentEndingIdx);
+            event.target.value = timelapse.getCaptureTimes()[currentStartingIdx];
+          });
+        }
       });
       $endingTimeSpinner.captureTimeSpinner({
         spin: function(event, ui) {
-          $timelineSelector.slider("values", 1, ui.value);
-          updateCaptureTimeRange($timelineSelector.slider("values", 0), $timelineSelector.slider("values", 1));
-          seekFromTimeLineSlider($(this).captureTimeSpinner("value"), ui.value);
-          $startingTimeSpinner.captureTimeSpinner("option", "max", ui.value);
-        },
-        change: function(event) {
-          var value = $(this).captureTimeSpinner("value");
-          $timelineSelector.slider("values", 1, value);
-          updateCaptureTimeRange($timelineSelector.slider("values", 0), $timelineSelector.slider("values", 1));
-          sliderValueToTime(value);
-          event.target.value = timelapse.getCaptureTimes()[value];
+          currentEndingIdx = ui.value;
+          $timelineSelector.slider("values", 1, currentEndingIdx);
+          updateCaptureTimeRange(currentStartingIdx, currentEndingIdx);
+          seekFromTimeLineSlider(currentEndingIdx, currentEndingIdx);
+          $startingTimeSpinner.captureTimeSpinner("option", "max", currentEndingIdx);
         }
-      }).focus(function(event) {
+      }).on("focus", function(event) {
         $timelineSelectorEndHandle.addClass("whiteHandle");
-      }).blur(function(event) {
+      }).on("blur", function(event) {
         $timelineSelectorEndHandle.removeClass("whiteHandle");
+      }).on("mousedown", function(event) {
+        // Update the text field after an user input event
+        if (isEndingTimeSpinnerBlurAdded == false) {
+          isEndingTimeSpinnerBlurAdded = true;
+          $endingTimeSpinner.one("blur", function() {
+            isEndingTimeSpinnerBlurAdded = false;
+            currentEndingIdx = $(this).captureTimeSpinner("value");
+            $timelineSelector.slider("values", 1, currentEndingIdx);
+            updateCaptureTimeRange(currentStartingIdx, currentEndingIdx);
+            event.target.value = timelapse.getCaptureTimes()[currentEndingIdx];
+          });
+        }
       });
       // Create dropdown menu
       $thumbnailSpeed.button({
@@ -1120,11 +1151,13 @@ if (!org.gigapan.timelapse.Timelapse) {
           // If we are manually using the slider and we are pulling it back to the start
           // we wont actually get to time 0 because of how we are snapping.
           // Manually seek to position 0 when this happens.
-          $startingTimeSpinner.captureTimeSpinner("value", ui.values[0]);
-          $endingTimeSpinner.captureTimeSpinner("value", ui.values[1]);
-          $startingTimeSpinner.captureTimeSpinner("option", "max", ui.values[1]);
-          $endingTimeSpinner.captureTimeSpinner("option", "min", ui.values[0]);
-          updateCaptureTimeRange(ui.values[0], ui.values[1]);
+          currentStartingIdx = ui.values[0];
+          currentEndingIdx = ui.values[1];
+          $startingTimeSpinner.captureTimeSpinner("value", currentStartingIdx);
+          $endingTimeSpinner.captureTimeSpinner("value", currentEndingIdx);
+          $startingTimeSpinner.captureTimeSpinner("option", "max", currentEndingIdx);
+          $endingTimeSpinner.captureTimeSpinner("option", "min", currentStartingIdx);
+          updateCaptureTimeRange(currentStartingIdx, currentEndingIdx);
           seekFromTimeLineSlider($(this).slider("value"), ui.value);
         }
       }).removeClass("ui-corner-all").children().removeClass("ui-corner-all");
@@ -1134,6 +1167,7 @@ if (!org.gigapan.timelapse.Timelapse) {
       $timelineSelectorStartHandle.attr("title", "Drag to set the starting time");
       $timelineSelectorEndHandle.attr("title", "Drag to set the ending time");
     };
+    this.createTimelineSelector = createTimelineSelector;
 
     var createTimelineSlider = function() {
       var numFrames = timelapse.getNumFrames();
