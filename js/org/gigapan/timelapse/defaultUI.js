@@ -394,14 +394,14 @@ if (!org.gigapan.timelapse.Timelapse) {
       if (currentEndingIdx > timelapse.getNumFrames() - 1) {
         currentEndingIdx = timelapse.getNumFrames() - 1;
       }
-      $timelineSelector.slider("values", 0, currentStartingIdx);
       $timelineSelector.slider("values", 1, currentEndingIdx);
-      $startingTimeSpinner.captureTimeSpinner("option", "min", 0);
+      $timelineSelector.slider("values", 0, currentStartingIdx);
       $startingTimeSpinner.captureTimeSpinner("option", "max", currentEndingIdx);
-      $endingTimeSpinner.captureTimeSpinner("option", "min", currentStartingIdx);
+      $startingTimeSpinner.captureTimeSpinner("option", "min", 0);
       $endingTimeSpinner.captureTimeSpinner("option", "max", timelapse.getCaptureTimes().length - 1);
-      $startingTimeSpinner.captureTimeSpinner("value", currentStartingIdx);
+      $endingTimeSpinner.captureTimeSpinner("option", "min", currentStartingIdx);
       $endingTimeSpinner.captureTimeSpinner("value", currentEndingIdx);
+      $startingTimeSpinner.captureTimeSpinner("value", currentStartingIdx);
       updateCaptureTimeRange(currentStartingIdx, currentEndingIdx);
     };
     this.resetShareThumbnailUI = resetShareThumbnailUI;
