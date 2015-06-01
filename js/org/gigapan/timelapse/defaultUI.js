@@ -412,8 +412,6 @@ if (!org.gigapan.timelapse.Timelapse) {
       $currentCaptureTimeRangeContainer.hide();
       $captureTime.show();
       $timelineSliderFiller.show();
-      $thumbnailPreviewContainer.hide();
-      $thumbnailPreviewCopyTextContainer.hide();
       $playbackButton.button("option", "disabled", false);
       $("#" + viewerDivId + " .toggleSpeed").button("option", "disabled", false);
       if (!originalIsPaused) {
@@ -487,6 +485,8 @@ if (!org.gigapan.timelapse.Timelapse) {
           var $activePanel = $($accordion.accordion("instance").panels[activeIdx]);
           if ($activePanel.hasClass("share-thumbnail")) {
             disableShareThumbnail();
+            $thumbnailPreviewContainer.hide();
+            $thumbnailPreviewCopyTextContainer.hide();
           }
         },
         open: function(event, ui) {
