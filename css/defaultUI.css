@@ -8,7 +8,7 @@ body, html {
 }
 
 .ui-dialog {
-  box-shadow: 2px 2px 3px rgba(0,0,0,0.3);
+  box-shadow: 2px 2px 3px rgba(0, 0, 0, 0.3);
 }
 
 .createLabLogo {
@@ -171,7 +171,7 @@ body, html {
   background: white;
   border: 1px solid #656565;
   border-radius: 2px !important;
-  box-shadow: 2px 2px 3px rgba(0,0,0,0.3);
+  box-shadow: 2px 2px 3px rgba(0, 0, 0, 0.3);
   z-index: 30;
   outline: none;
   font-family: Arial, Helvetica, sans-serif;
@@ -188,7 +188,7 @@ body, html {
   background: white;
   border: 1px solid #656565;
   border-radius: 2px !important;
-  box-shadow: 2px 2px 3px rgba(0,0,0,0.3);
+  box-shadow: 2px 2px 3px rgba(0, 0, 0, 0.3);
   outline: none;
   font-family: Arial, Helvetica, sans-serif;
   font-size: 11px;
@@ -232,7 +232,7 @@ body, html {
   background: white;
   border: 1px solid #656565;
   border-radius: 2px !important;
-  box-shadow: 2px 2px 3px rgba(0,0,0,0.3);
+  box-shadow: 2px 2px 3px rgba(0, 0, 0, 0.3);
   z-index: 30;
   outline: none;
   font-family: Arial, Helvetica, sans-serif;
@@ -346,7 +346,7 @@ body, html {
   left: 90px;
   bottom: 43px;
   font-size: 18px;
-  text-shadow: -1px 0 #000, 0 1px #000, 1px 0 #000, 0 -1px #000, 2px 2px 3px rgba(0,0,0,0.3);
+  text-shadow: -1px 0 #000, 0 1px #000, 1px 0 #000, 0 -1px #000, 2px 2px 3px rgba(0, 0, 0, 0.3);
   font-family: Arial, Helvetica, sans-serif;
   text-align: center;
   color: white;
@@ -359,7 +359,7 @@ body, html {
   left: 90px;
   bottom: 43px;
   font-size: 18px;
-  text-shadow: -1px 0 #000, 0 1px #000, 1px 0 #000, 0 -1px #000, 2px 2px 3px rgba(0,0,0,0.3);
+  text-shadow: -1px 0 #000, 0 1px #000, 1px 0 #000, 0 -1px #000, 2px 2px 3px rgba(0, 0, 0, 0.3);
   font-family: Arial, Helvetica, sans-serif;
   text-align: center;
   color: white;
@@ -378,7 +378,7 @@ body, html {
   background: white;
   border: 1px solid #656565;
   border-radius: 35px !important;
-  box-shadow: 2px 2px 3px rgba(0,0,0,0.3);
+  box-shadow: 2px 2px 3px rgba(0, 0, 0, 0.3);
   z-index: 10;
   outline: none;
 }
@@ -389,15 +389,15 @@ body, html {
   left: 160px;
   right: 100px;
   width: auto;
-  box-shadow: 2px 2px 3px rgba(0,0,0,0.3);
+  box-shadow: 2px 2px 3px rgba(0, 0, 0, 0.3);
   border: 1px solid #656565;
   background: transparent;
 }
 
 .timelineSlider {
-  background: rgba(255,255,255,0.3);
+  background: rgba(255, 255, 255, 0.3);
   cursor: pointer;
-  border: 2px solid rgba(255,255,255,0.8);
+  border: 2px solid rgba(255, 255, 255, 0.8);
   position: absolute;
   height: 7px;
   width: inherit;
@@ -440,16 +440,16 @@ body, html {
   left: 160px;
   right: 100px;
   width: auto;
-  box-shadow: 2px 2px 3px rgba(0,0,0,0.3);
+  box-shadow: 2px 2px 3px rgba(0, 0, 0, 0.3);
   border: 1px solid #656565;
   background: transparent;
   display: none;
 }
 
 .timelineSelector {
-  background: rgba(255,255,255,0.3);
+  background: rgba(255, 255, 255, 0.3);
   cursor: pointer;
-  border: 2px solid rgba(255,255,255,0.8);
+  border: 2px solid rgba(255, 255, 255, 0.8);
   position: absolute;
   height: 7px;
   width: inherit;
@@ -464,7 +464,7 @@ body, html {
 .timelineSelector .ui-slider-handle:first-of-type {
   width: 0;
   height: 0;
-  border-top: 10px solid rgb(0,255,0);
+  border-top: 10px solid rgb(0, 255, 0);
   border-left: 8px solid transparent;
   border-right: 8px solid transparent;
   border-bottom: 0px solid transparent;
@@ -495,7 +495,7 @@ body, html {
   border-top: 0px solid transparent;
   border-left: 8px solid transparent;
   border-right: 8px solid transparent;
-  border-bottom: 10px solid rgb(0,255,0);
+  border-bottom: 10px solid rgb(0, 255, 0);
   margin-left: -8px !important;
   overflow: hidden;
   top: 9px;
@@ -522,7 +522,7 @@ body, html {
 }
 
 .timelineSelector .ui-slider-range {
-  background: rgb(0,255,0);
+  background: rgb(0, 255, 0);
   opacity: 1;
 }
 
@@ -541,7 +541,7 @@ body, html {
   background: #ffffff;
   border: 1px solid #656565;
   margin: 0 auto;
-  box-shadow: 2px 2px 3px rgba(0,0,0,0.3);
+  box-shadow: 2px 2px 3px rgba(0, 0, 0, 0.3);
   cursor: pointer;
 }
 
@@ -553,7 +553,7 @@ body, html {
   z-index: 15;
   border: 1px solid #656565;
   border-radius: 2px !important;
-  box-shadow: 2px 2px 3px rgba(0,0,0,0.3);
+  box-shadow: 2px 2px 3px rgba(0, 0, 0, 0.3);
   background-color: white;
   cursor: pointer;
 }
@@ -566,7 +566,7 @@ body, html {
   background: white;
   border: 1px solid #656565;
   border-radius: 25px !important;
-  box-shadow: 2px 2px 3px rgba(0,0,0,0.3);
+  box-shadow: 2px 2px 3px rgba(0, 0, 0, 0.3);
 }
 
 .pan .ui-button {
@@ -593,7 +593,7 @@ body, html {
   background: white;
   border: 1px solid #656565;
   border-radius: 2px !important;
-  box-shadow: 2px 2px 3px rgba(0,0,0,0.3);
+  box-shadow: 2px 2px 3px rgba(0, 0, 0, 0.3);
 }
 
 .zoom-touchFriendly .ui-button {
@@ -617,8 +617,52 @@ body, html {
   overflow: visible;
 }
 
+.customDialog {
+  height: auto !important;
+}
+
 .customDialog a {
   color: #a40e0e;
+}
+
+.customDialog .ui-spinner-up {
+  right: -22px;
+  margin-top: -1px;
+}
+
+.customDialog .ui-spinner-down {
+  right: -43px;
+  margin-bottom: -1px;
+}
+
+.customDialog .ui-spinner a.ui-spinner-button {
+  width: 20px;
+  height: 100%;
+  border-top: 1px solid #999;
+  border-bottom: 1px solid #999;
+  border-left: 1px solid #999;
+  border-right: 1px solid #999;
+  border-radius: 1px;
+  background-image: none;
+}
+
+.customDialog .ui-spinner a.ui-spinner-up .ui-icon {
+  margin-left: 2px;
+}
+
+.customDialog .ui-spinner a.ui-spinner-down .ui-icon {
+  margin-left: 3px;
+}
+
+.customDialog .ui-spinner {
+  overflow: visible;
+  border-radius: 1px;
+  width: 155px;
+  height: 20px;
+}
+
+.customDialog .ui-spinner-input {
+  width: 144px;
 }
 
 .customDialog .customDialogButton {
@@ -692,18 +736,6 @@ body, html {
 
 .customDialog .ui-dialog-titlebar-close:focus {
   outline: none;
-}
-
-.ui-spinner {
-  border-radius: 1px;
-}
-
-.startingTimeSpinner {
-  width: 150px;
-}
-
-.endingTimeSpinner {
-  width: 150px;
 }
 
 .spinnerOverlay {
@@ -783,7 +815,7 @@ body, html {
   background: white;
   border: 1px solid #656565;
   border-radius: 2px !important;
-  box-shadow: 2px 2px 3px rgba(0,0,0,0.3);
+  box-shadow: 2px 2px 3px rgba(0, 0, 0, 0.3);
   z-index: 10;
   font-family: Arial, Helvetica, sans-serif;
   font-size: 8pt;
@@ -929,9 +961,9 @@ body, html {
   opacity: 0.7;
   border-radius: 2px;
   overflow: visible;
-  -moz-box-shadow: 2px 2px 3px rgba(0,0,0,0.3);
-  -webkit-box-shadow: 2px 2px 3px rgba(0,0,0,0.3);
-  box-shadow: 2px 2px 3px rgba(0,0,0,0.3);
+  -moz-box-shadow: 2px 2px 3px rgba(0, 0, 0, 0.3);
+  -webkit-box-shadow: 2px 2px 3px rgba(0, 0, 0, 0.3);
+  box-shadow: 2px 2px 3px rgba(0, 0, 0, 0.3);
   -webkit-user-select: none;
   -khtml-user-select: none;
   -moz-user-select: none;

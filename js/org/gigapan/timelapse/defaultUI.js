@@ -507,11 +507,15 @@ if (!org.gigapan.timelapse.Timelapse) {
           max: timelapse.getCaptureTimes().length - 1
         },
         _parse: function(value) {
+          var captureTimes = timelapse.getCaptureTimes();
           if (typeof value === "string") {
             var dateObj = new Date(value.replace(/-/g, "/"));
             var newIndex = -1;
-            if (dateObj != "Invalid Date") {
-              newIndex = timelapse.getCaptureTimes().indexOf(value);
+            var minTime = new Date(captureTimes[0].replace(/-/g, "/")).getTime();
+            var maxTime = new Date(captureTimes[captureTimes.length - 1].replace(/-/g, "/")).getTime();
+            var dateObjTime = dateObj.getTime();
+            if (dateObj != "Invalid Date" && dateObjTime >= minTime && dateObjTime <= maxTime) {
+              newIndex = captureTimes.indexOf(value);
               if (newIndex == -1) {
                 newIndex = timelapse.findExactOrClosestCaptureTime(value);
                 if (newIndex < this.options.min) {
@@ -559,6 +563,10 @@ if (!org.gigapan.timelapse.Timelapse) {
             event.target.value = timelapse.getCaptureTimes()[currentStartingIdx];
           });
         }
+      }).on("keyup", function(event) {
+        if (event.which == 13) {
+          $startingTimeSpinner.blur();
+        }
       });
       $endingTimeSpinner.captureTimeSpinner({
         spin: function(event, ui) {
@@ -583,6 +591,10 @@ if (!org.gigapan.timelapse.Timelapse) {
             updateCaptureTimeRange(currentStartingIdx, currentEndingIdx);
             event.target.value = timelapse.getCaptureTimes()[currentEndingIdx];
           });
+        }
+      }).on("keyup", function(event) {
+        if (event.which == 13) {
+          $endingTimeSpinner.blur();
         }
       });
       // Create dropdown menu
