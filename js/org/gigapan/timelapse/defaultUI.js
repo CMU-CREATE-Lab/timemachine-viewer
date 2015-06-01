@@ -48,7 +48,7 @@ var org;
 if (!org) {
   org = {};
 } else {
-  if ( typeof org != "object") {
+  if (typeof org != "object") {
     var orgExistsMessage = "Error: failed to create org namespace: org already exists and is not an object";
     alert(orgExistsMessage);
     throw new Error(orgExistsMessage);
@@ -59,7 +59,7 @@ if (!org) {
 if (!org.gigapan) {
   org.gigapan = {};
 } else {
-  if ( typeof org.gigapan != "object") {
+  if (typeof org.gigapan != "object") {
     var orgGigapanExistsMessage = "Error: failed to create org.gigapan namespace: org.gigapan already exists and is not an object";
     alert(orgGigapanExistsMessage);
     throw new Error(orgGigapanExistsMessage);
@@ -70,7 +70,7 @@ if (!org.gigapan) {
 if (!org.gigapan.timelapse) {
   org.gigapan.timelapse = {};
 } else {
-  if ( typeof org.gigapan.timelapse != "object") {
+  if (typeof org.gigapan.timelapse != "object") {
     var orgGigapanTimelapseExistsMessage = "Error: failed to create org.gigapan.timelapse namespace: org.gigapan.timelapse already exists and is not an object";
     alert(orgGigapanTimelapseExistsMessage);
     throw new Error(orgGigapanTimelapseExistsMessage);
@@ -318,18 +318,18 @@ if (!org.gigapan.timelapse.Timelapse) {
           if (ui.newPanel.length > 0) {
             if (ui.newPanel.hasClass("accordion-editor")) {
               setMode("editor");
-              if ( typeof changeDetectionTool != "undefined") {
+              if (typeof changeDetectionTool != "undefined") {
                 changeDetectionTool.disable();
               }
               UTIL.addGoogleAnalyticEvent('button', 'click', 'viewer-set-to-editor-mode');
             } else if (ui.newPanel.hasClass("accordion-annotator")) {
               setMode("annotator");
-              if ( typeof changeDetectionTool != "undefined") {
+              if (typeof changeDetectionTool != "undefined") {
                 changeDetectionTool.disable();
               }
             } else if (ui.newPanel.hasClass("accordion-change-detection")) {
               setMode("player");
-              if ( typeof changeDetectionTool != "undefined") {
+              if (typeof changeDetectionTool != "undefined") {
                 changeDetectionTool.enable();
               }
               UTIL.addGoogleAnalyticEvent('button', 'click', 'viewer-set-to-player-mode');
@@ -339,7 +339,7 @@ if (!org.gigapan.timelapse.Timelapse) {
               setMode("player");
               UTIL.addGoogleAnalyticEvent('button', 'click', 'viewer-set-to-player-mode');
             } else if (ui.oldPanel.hasClass("accordion-change-detection")) {
-              if ( typeof changeDetectionTool != "undefined") {
+              if (typeof changeDetectionTool != "undefined") {
                 changeDetectionTool.disable();
               }
             }
@@ -412,6 +412,8 @@ if (!org.gigapan.timelapse.Timelapse) {
       $currentCaptureTimeRangeContainer.hide();
       $captureTime.show();
       $timelineSliderFiller.show();
+      $thumbnailPreviewContainer.hide();
+      $thumbnailPreviewCopyTextContainer.hide();
       $playbackButton.button("option", "disabled", false);
       $("#" + viewerDivId + " .toggleSpeed").button("option", "disabled", false);
       if (!originalIsPaused) {
@@ -505,8 +507,8 @@ if (!org.gigapan.timelapse.Timelapse) {
           max: timelapse.getCaptureTimes().length - 1
         },
         _parse: function(value) {
-          if ( typeof value === "string") {
-            var dateObj = new Date(value);
+          if (typeof value === "string") {
+            var dateObj = new Date(value.replace(/-/g, "/"));
             var newIndex = -1;
             if (dateObj != "Invalid Date") {
               newIndex = timelapse.getCaptureTimes().indexOf(value);
