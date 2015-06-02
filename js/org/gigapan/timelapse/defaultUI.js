@@ -122,8 +122,6 @@ if (!org.gigapan.timelapse.Timelapse) {
     var $thumbnailPreviewContainer = $("#" + viewerDivId + " .thumbnail-preview-container");
     var $thumbnailPreviewCopyText = $("#" + viewerDivId + " .thumbnail-preview-copy-text");
     var $thumbnailPreviewLink = $("#" + viewerDivId + " .thumbnail-preview-link");
-    var $currentCaptureTimeRange = $("#" + viewerDivId + " .currentCaptureTimeRange");
-    var $currentCaptureTimeRangeContainer = $("#" + viewerDivId + " .currentCaptureTimeRangeContainer");
     var $captureTime = $("#" + viewerDivId + " .captureTime");
     var $startingTimeSpinner = $("#" + viewerDivId + " .startingTimeSpinner");
     var $endingTimeSpinner = $("#" + viewerDivId + " .endingTimeSpinner");
@@ -164,7 +162,7 @@ if (!org.gigapan.timelapse.Timelapse) {
     var mode = "player";
     var translationSpeedConstant = 20;
     var scrollBarWidth = UTIL.getScrollBarWidth();
-    var timelineSelectorDefaultRangeOffset = 50;
+    var timelineSelectorDefaultRangeOffset = 100;
     var currentStartingIdx;
     var currentEndingIdx;
 
@@ -376,16 +374,31 @@ if (!org.gigapan.timelapse.Timelapse) {
     var enableShareThumbnail = function() {
       thumbnailTool.showCropBox();
       $timelineSelectorFiller.show();
-      $currentCaptureTimeRangeContainer.show();
-      $captureTime.hide();
-      $timelineSliderFiller.hide();
-      $playbackButton.button("option", "disabled", true);
-      $("#" + viewerDivId + " .toggleSpeed").button("option", "disabled", true);
-      originalIsPaused = timelapse.isPaused();
-      if (!originalIsPaused) {
-        timelapse.handlePlayPause();
+      if (!$timelineSlider.hasClass("thumbnail-mode")) {
+        $timelineSlider.addClass("thumbnail-mode");
       }
       resetShareThumbnailUI();
+    };
+
+    var setShareThumbnailUI = function(starting, ending) {
+      if (typeof starting != "undefined") {
+        currentStartingIdx = starting;
+        if (currentStartingIdx > currentEndingIdx) {
+          currentEndingIdx = currentStartingIdx + timelineSelectorDefaultRangeOffset;
+        }
+      }
+      if (typeof ending != "undefined") {
+        currentEndingIdx = ending;
+        if (currentEndingIdx < currentStartingIdx) {
+          currentStartingIdx = currentEndingIdx - timelineSelectorDefaultRangeOffset;
+        }
+      }
+      $timelineSelector.slider("values", 0, currentStartingIdx);
+      $startingTimeSpinner.captureTimeSpinner("value", currentStartingIdx);
+      $endingTimeSpinner.captureTimeSpinner("option", "min", currentStartingIdx);
+      $timelineSelector.slider("values", 1, currentEndingIdx);
+      $endingTimeSpinner.captureTimeSpinner("value", currentEndingIdx);
+      $startingTimeSpinner.captureTimeSpinner("option", "max", currentEndingIdx);
     };
 
     var resetShareThumbnailUI = function() {
@@ -394,28 +407,22 @@ if (!org.gigapan.timelapse.Timelapse) {
       if (currentEndingIdx > timelapse.getNumFrames() - 1) {
         currentEndingIdx = timelapse.getNumFrames() - 1;
       }
-      $timelineSelector.slider("values", 1, currentEndingIdx);
       $timelineSelector.slider("values", 0, currentStartingIdx);
+      $timelineSelector.slider("values", 1, currentEndingIdx);
       $startingTimeSpinner.captureTimeSpinner("option", "max", currentEndingIdx);
       $startingTimeSpinner.captureTimeSpinner("option", "min", 0);
       $endingTimeSpinner.captureTimeSpinner("option", "max", timelapse.getCaptureTimes().length - 1);
       $endingTimeSpinner.captureTimeSpinner("option", "min", currentStartingIdx);
       $endingTimeSpinner.captureTimeSpinner("value", currentEndingIdx);
       $startingTimeSpinner.captureTimeSpinner("value", currentStartingIdx);
-      updateCaptureTimeRange(currentStartingIdx, currentEndingIdx);
     };
     this.resetShareThumbnailUI = resetShareThumbnailUI;
 
     var disableShareThumbnail = function() {
       thumbnailTool.hideCropBox();
       $timelineSelectorFiller.hide();
-      $currentCaptureTimeRangeContainer.hide();
-      $captureTime.show();
-      $timelineSliderFiller.show();
-      $playbackButton.button("option", "disabled", false);
-      $("#" + viewerDivId + " .toggleSpeed").button("option", "disabled", false);
-      if (!originalIsPaused) {
-        timelapse.handlePlayPause();
+      if ($timelineSlider.hasClass("thumbnail-mode")) {
+        $timelineSlider.removeClass("thumbnail-mode");
       }
     };
 
@@ -543,7 +550,6 @@ if (!org.gigapan.timelapse.Timelapse) {
         spin: function(event, ui) {
           currentStartingIdx = ui.value;
           $timelineSelector.slider("values", 0, currentStartingIdx);
-          updateCaptureTimeRange(currentStartingIdx, currentEndingIdx);
           seekFromTimeLineSlider(currentStartingIdx, currentStartingIdx);
           $endingTimeSpinner.captureTimeSpinner("option", "min", currentStartingIdx);
         }
@@ -559,7 +565,6 @@ if (!org.gigapan.timelapse.Timelapse) {
             isStartingTimeSpinnerBlurAdded = false;
             currentStartingIdx = $(this).captureTimeSpinner("value");
             $timelineSelector.slider("values", 0, currentStartingIdx);
-            updateCaptureTimeRange(currentStartingIdx, currentEndingIdx);
             event.target.value = timelapse.getCaptureTimes()[currentStartingIdx];
           });
         }
@@ -572,7 +577,6 @@ if (!org.gigapan.timelapse.Timelapse) {
         spin: function(event, ui) {
           currentEndingIdx = ui.value;
           $timelineSelector.slider("values", 1, currentEndingIdx);
-          updateCaptureTimeRange(currentStartingIdx, currentEndingIdx);
           seekFromTimeLineSlider(currentEndingIdx, currentEndingIdx);
           $startingTimeSpinner.captureTimeSpinner("option", "max", currentEndingIdx);
         }
@@ -588,7 +592,6 @@ if (!org.gigapan.timelapse.Timelapse) {
             isEndingTimeSpinnerBlurAdded = false;
             currentEndingIdx = $(this).captureTimeSpinner("value");
             $timelineSelector.slider("values", 1, currentEndingIdx);
-            updateCaptureTimeRange(currentStartingIdx, currentEndingIdx);
             event.target.value = timelapse.getCaptureTimes()[currentEndingIdx];
           });
         }
@@ -681,6 +684,12 @@ if (!org.gigapan.timelapse.Timelapse) {
       }).mouseup(function(e) {
         e.preventDefault();
       });
+      $("#" + viewerDivId + " .set-thumbnail-starting-time").button().click(function(event) {
+        setShareThumbnailUI(timelapse.getTimelapseCurrentCaptureTimeIndex(), undefined);
+      });
+      $("#" + viewerDivId + " .set-thumbnail-ending-time").button().click(function(event) {
+        setShareThumbnailUI(undefined, timelapse.getTimelapseCurrentCaptureTimeIndex());
+      });
       timelapse.addViewEndChangeListener(function() {
         updateShareViewTextbox();
       });
@@ -708,11 +717,6 @@ if (!org.gigapan.timelapse.Timelapse) {
           top: targetOffset.top - containerOffset.top - 45 + "px"
         })
       }
-    };
-
-    var updateCaptureTimeRange = function(startIdx, endIdx) {
-      var captureTimes = timelapse.getCaptureTimes();
-      $currentCaptureTimeRange.html(UTIL.htmlForTextWithEmbeddedNewlines(captureTimes[startIdx] + " &rarr; " + captureTimes[endIdx]));
     };
 
     var setThumbnailPreviewArea = function(response) {
@@ -753,7 +757,7 @@ if (!org.gigapan.timelapse.Timelapse) {
       var tmJSON = timelapse.getTmJSON();
       var timelapseTitle = ( typeof tmJSON.name == "undefined") ? $("#locationTitle").text() : tmJSON.name;
       if (response.args.format == "gif") {
-        $thumbnailPreviewLink.text(timelapseTitle + $currentCaptureTimeRangeContainer.text());
+        $thumbnailPreviewLink.text(timelapseTitle + $startingTimeSpinner.val() + " to " + $endingTimeSpinner.val());
       } else {
         $thumbnailPreviewLink.text(timelapseTitle + " " + timelapse.getCurrentCaptureTime());
       }
@@ -1156,27 +1160,13 @@ if (!org.gigapan.timelapse.Timelapse) {
       $timelineSelector.unbind("mousedown");
 
       $timelineSelector.slider({
+        disabled: true,
         range: true,
         min: 0,
         max: numFrames - 1, // this way the time scrubber goes exactly to the end of timeline
         step: 1,
-        values: [0, timelineSelectorDefaultRangeOffset],
-        slide: function(e, ui) {
-          // $(this).slider('value')  --> previous value
-          // ui.value                 --> current value
-          // If we are manually using the slider and we are pulling it back to the start
-          // we wont actually get to time 0 because of how we are snapping.
-          // Manually seek to position 0 when this happens.
-          currentStartingIdx = ui.values[0];
-          currentEndingIdx = ui.values[1];
-          $startingTimeSpinner.captureTimeSpinner("value", currentStartingIdx);
-          $endingTimeSpinner.captureTimeSpinner("value", currentEndingIdx);
-          $startingTimeSpinner.captureTimeSpinner("option", "max", currentEndingIdx);
-          $endingTimeSpinner.captureTimeSpinner("option", "min", currentStartingIdx);
-          updateCaptureTimeRange(currentStartingIdx, currentEndingIdx);
-          seekFromTimeLineSlider($(this).slider("value"), ui.value);
-        }
-      }).removeClass("ui-corner-all").children().removeClass("ui-corner-all");
+        values: [0, timelineSelectorDefaultRangeOffset]
+      }).removeClass("ui-corner-all ui-state-disabled ui-slider-disabled").children().removeClass("ui-corner-all");
       var $sliderHandles = $("#" + viewerDivId + " .timelineSelector .ui-slider-handle");
       $timelineSelectorStartHandle = $($sliderHandles.get(0));
       $timelineSelectorEndHandle = $($sliderHandles.get(1));

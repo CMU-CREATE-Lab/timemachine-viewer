@@ -354,20 +354,6 @@ body, html {
   z-index: 10;
 }
 
-.currentCaptureTimeRangeContainer {
-  position: absolute;
-  left: 90px;
-  bottom: 43px;
-  font-size: 18px;
-  text-shadow: -1px 0 #000, 0 1px #000, 1px 0 #000, 0 -1px #000, 2px 2px 3px rgba(0, 0, 0, 0.3);
-  font-family: Arial, Helvetica, sans-serif;
-  text-align: center;
-  color: white;
-  font-weight: normal;
-  z-index: 10;
-  display: none;
-}
-
 .playbackButton.ui-button {
   display: block;
   position: absolute;
@@ -434,6 +420,38 @@ body, html {
   opacity: 0.4;
 }
 
+.timelineSlider.thumbnail-mode {
+  background: transparent;
+}
+
+.timelineSlider.thumbnail-mode .ui-slider-range {
+  background: transparent;
+}
+
+.timelineSlider.thumbnail-mode .ui-slider-handle {
+  width: 0;
+  height: 0;
+  border-top: 0px solid transparent;
+  border-left: 13px solid transparent;
+  border-right: 13px solid transparent;
+  border-bottom: 17px solid rgb(0, 255, 0);
+  margin-left: -13px !important;
+  overflow: hidden;
+  top: 9px;
+  margin: 0px;
+  z-index: 5;
+  background: transparent;
+  cursor: pointer;
+}
+
+.timelineSlider.thumbnail-mode .ui-slider-handle:active {
+  border-bottom-color: white;
+}
+
+.timelineSlider.thumbnail-mode .ui-slider-handle:hover {
+  border-bottom-color: white;
+}
+
 .timelineSelectorFiller {
   position: absolute;
   bottom: 25px;
@@ -458,7 +476,7 @@ body, html {
   left: 0px;
   margin: 0;
   padding: 0;
-  z-index: 25;
+  z-index: 24;
 }
 
 .timelineSelector .ui-slider-handle:first-of-type {
@@ -475,13 +493,10 @@ body, html {
   z-index: 5;
   background: transparent;
   cursor: pointer;
+  display: none;
 }
 
 .timelineSelector .ui-slider-handle:first-of-type:active {
-  border-top-color: white;
-}
-
-.timelineSelector .ui-slider-handle:first-of-type:focus {
   border-top-color: white;
 }
 
@@ -503,13 +518,10 @@ body, html {
   z-index: 5;
   background: transparent;
   cursor: pointer;
+  display: none;
 }
 
 .timelineSelector .ui-slider-handle:nth-of-type(2):active {
-  border-bottom-color: white;
-}
-
-.timelineSelector .ui-slider-handle:nth-of-type(2):focus {
   border-bottom-color: white;
 }
 
@@ -644,6 +656,7 @@ body, html {
   border-right: 1px solid #999;
   border-radius: 1px;
   background-image: none;
+  cursor: pointer;
 }
 
 .customDialog .ui-spinner a.ui-spinner-up .ui-icon {
@@ -665,9 +678,26 @@ body, html {
   width: 144px;
 }
 
+.customDialog .get-current-thumbnail {
+  width: 146px;
+}
+
+.customDialog .get-current-gif {
+  width: 182px;
+}
+
+.customDialog .set-thumbnail-starting-time, .customDialog .set-thumbnail-ending-time {
+  margin-left: 0px;
+  width: 131px;
+}
+
+.customDialog .reset-large, .customDialog .reset-medium, .customDialog .reset-small {
+  width: 79px;
+}
+
 .customDialog .customDialogButton {
   margin-right: 5px;
-  height: 22px;
+  height: 20px;
   border-radius: 1px;
   background-image: none;
 }
@@ -675,7 +705,7 @@ body, html {
 .customDialog .customDialogButton .ui-button-text {
   padding-left: 9px;
   padding-right: 9px;
-  margin-top: -2px;
+  margin-top: -3px;
 }
 
 .customDialog .customHighlightDialogButton {
@@ -923,8 +953,8 @@ body, html {
 }
 
 .thumbnail-preview-copy-text-container {
-  margin-top: 16px;
-  margin-bottom: 8px;
+  margin-top: 30px;
+  margin-bottom: 0px;
   width: 350px;
 }
 
@@ -935,17 +965,17 @@ body, html {
 
 .thumbnail-preview-copy-text {
   margin-left: 0px;
-  margin-right: 4px;
+  margin-right: 0px;
   margin-bottom: 3px;
-  width: 280px;
-  height: 18px;
+  width: 272px;
+  height: 16px;
   resize: none;
 }
 
 .thumbnail-preview-container {
   position: relative;
-  max-width: 345px;
-  max-height: 375px;
+  max-width: 335px;
+  max-height: 200px;
   border: 1px solid #656565;
   overflow-x: hidden;
   overflow-y: hidden;

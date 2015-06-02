@@ -31,10 +31,6 @@
     <div class="currentCaptureTime"></div>
   </div>
 
-  <div class="currentCaptureTimeRangeContainer" title="Capture time range">
-    <div class="currentCaptureTimeRange"></div>
-  </div>
-
   <div class="controls">
     <div class="timelineSliderFiller">
       <div id="Tslider1" class="timelineSlider"></div>
@@ -107,33 +103,29 @@
           </tr>
         </table>
       </div>
-      <h3>Share thumbnail or animated image</h3>
+      <h3>Share a static or animated image</h3>
       <div class="share-thumbnail">
         <table class="share-thumbnail-tool">
           <tr>
-            <td>Image type:</td>
-            <td><div class="get-current-thumbnail customDialogButton customHighlightDialogButton">Get thumbnail</div><div class="get-current-gif customDialogButton customHighlightDialogButton">Get animated gif</div></td>
+            <td colspan="2"><div class="set-thumbnail-starting-time customDialogButton customHighlightDialogButton">Set starting time</div><input class="startingTimeSpinner" name="spinner" value=""></td>
+          </tr>
+          <tr>
+            <td colspan="2"><div class="set-thumbnail-ending-time customDialogButton customHighlightDialogButton">Set ending time</div><input class="endingTimeSpinner" name="spinner" value=""></td>
+          </tr>
+          <tr>
+            <td>Select speed:</td>
+            <td><div class="thumbnail-speed customDropdownButton" data-speed="0.25">0.25X</div><span class="thumbnail-speed-msg">(for animated gif only)</span>
+          </tr>
+          <tr>
+            <td>Embed time?</td>
+            <td><input type="checkbox" class="embed-capture-time" checked></td>
           </tr>
           <tr>
             <td>Set box size:</td>
             <td><div class="reset-large customDialogButton">Large</div><div class="reset-medium customDialogButton">Medium</div><div class="reset-small customDialogButton">Small</div></td>
           </tr>
           <tr>
-            <td>Starting Time:</td>
-            <td><input class="startingTimeSpinner" name="spinner" value=""></td>
-          </tr>
-          <tr>
-            <td>Ending Time:</td>
-            <td><input class="endingTimeSpinner" name="spinner" value=""></td>
-          </tr>
-          <tr>
-            <td>Select speed:</td>
-            <td>
-            <div class="thumbnail-speed customDropdownButton" data-speed="0.25">0.25X</div><span class="thumbnail-speed-msg">(for animated gif only)</span>
-          </tr>
-          <tr>
-            <td>Embed time?</td>
-            <td><input type="checkbox" class="embed-capture-time" checked></td>
+            <td colspan="2"><div class="get-current-thumbnail customDialogButton customHighlightDialogButton">Get a static image</div><div class="get-current-gif customDialogButton customHighlightDialogButton">Get an animated image</div></td>
           </tr>
         </table>
         <table class="thumbnail-preview-copy-text-container">
