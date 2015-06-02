@@ -757,7 +757,7 @@ if (!org.gigapan.timelapse.Timelapse) {
       var tmJSON = timelapse.getTmJSON();
       var timelapseTitle = ( typeof tmJSON.name == "undefined") ? $("#locationTitle").text() : tmJSON.name;
       if (response.args.format == "gif") {
-        $thumbnailPreviewLink.text(timelapseTitle + $startingTimeSpinner.val() + " to " + $endingTimeSpinner.val());
+        $thumbnailPreviewLink.text(timelapseTitle  + " " + $startingTimeSpinner.val() + " to " + $endingTimeSpinner.val());
       } else {
         $thumbnailPreviewLink.text(timelapseTitle + " " + timelapse.getCurrentCaptureTime());
       }
