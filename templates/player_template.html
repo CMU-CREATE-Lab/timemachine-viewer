@@ -107,25 +107,31 @@
       <div class="share-thumbnail">
         <table class="share-thumbnail-tool">
           <tr>
-            <td colspan="2"><div class="set-thumbnail-starting-time customDialogButton customHighlightDialogButton">Set starting time</div><input class="startingTimeSpinner" name="spinner" value=""></td>
+            <td>Set box size:</td>
+            <td><div class="reset-large customDialogButton">Large</div><div class="reset-medium customDialogButton">Medium</div><div class="reset-small customDialogButton">Small</div></td>
           </tr>
           <tr>
-            <td colspan="2"><div class="set-thumbnail-ending-time customDialogButton customHighlightDialogButton">Set ending time</div><input class="endingTimeSpinner" name="spinner" value=""></td>
+            <td>Starting time:</td>
+            <td><input class="startingTimeSpinner" name="spinner" value=""></td>
           </tr>
           <tr>
-            <td>Select speed:</td>
-            <td><div class="thumbnail-speed customDropdownButton" data-speed="0.25">0.25X</div><span class="thumbnail-speed-msg">(for animated gif only)</span>
+            <td>Duration:</td>
+            <td><div class="thumbnail-duration-slider customSlider"></div></td>
+          </tr>
+          <tr>
+            <td>Ending time:</td>
+            <td><div class="endingTime"></div></td>
+          </tr>
+          <tr>
+            <td>Playback rate:</td>
+            <td><div class="thumbnail-speed customDropdownButton" data-speed="0.25">0.25X</div></td>
           </tr>
           <tr>
             <td>Embed time?</td>
             <td><input type="checkbox" class="embed-capture-time" checked></td>
           </tr>
           <tr>
-            <td>Set box size:</td>
-            <td><div class="reset-large customDialogButton">Large</div><div class="reset-medium customDialogButton">Medium</div><div class="reset-small customDialogButton">Small</div></td>
-          </tr>
-          <tr>
-            <td colspan="2"><div class="get-current-gif customDialogButton customHighlightDialogButton">Get an animated image</div><div class="get-current-thumbnail customDialogButton customHighlightDialogButton">Get a static image</div></td>
+            <td colspan="2"><div class="get-current-gif customDialogButton customHighlightDialogButton">Generate image</div></td>
           </tr>
         </table>
         <table class="thumbnail-preview-copy-text-container">

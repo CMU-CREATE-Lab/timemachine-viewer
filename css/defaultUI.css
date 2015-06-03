@@ -670,29 +670,53 @@ body, html {
 .customDialog .ui-spinner {
   overflow: visible;
   border-radius: 1px;
-  width: 155px;
+  width: 205px;
   height: 20px;
 }
 
 .customDialog .ui-spinner-input {
-  width: 144px;
+  width: 194px;
 }
 
-.customDialog .get-current-thumbnail {
-  width: 146px;
+.customDialog .endingTime {
+  font-family: Verdana,Arial,sans-serif;
+  font-size: 1em;
 }
 
-.customDialog .get-current-gif {
-  width: 182px;
+.customDialog .customDialogButton.get-current-gif {
+  width: 335px;
+  height: 30px;
+  margin-top: 0px;
 }
 
-.customDialog .set-thumbnail-starting-time, .customDialog .set-thumbnail-ending-time {
-  margin-left: 0px;
-  width: 131px;
+.customDialog .customDialogButton.get-current-gif .ui-button-text {
+  margin-top: 2px;
 }
 
-.customDialog .reset-large, .customDialog .reset-medium, .customDialog .reset-small {
-  width: 79px;
+.customDialog .reset-large, .customDialog .reset-small {
+  width: 74px;
+}
+
+.customDialog .reset-medium {
+  width: 85px;
+}
+
+.customDialog .customSlider {
+  height: 5px;
+  width: 247px;
+  cursor: pointer;
+}
+
+.customDialog .customSlider .ui-slider-handle {
+  width: 10px;
+  border-color: #999;
+  background-image: none;
+  margin-top: -2px;
+  cursor: pointer;
+}
+
+.customDialog .customSlider .ui-slider-handle:focus {
+  outline: none;
 }
 
 .customDialog .customDialogButton {
@@ -787,6 +811,7 @@ body, html {
 
 .share-thumbnail-tool td {
   height: 25px;
+  white-space: nowrap;
 }
 
 #browser_not_supported {
@@ -946,12 +971,6 @@ body, html {
   z-index: 1;
 }
 
-.thumbnail-speed-msg {
-  margin-top: 3px;
-  position: absolute;
-  margin-left: 5px;
-}
-
 .thumbnail-preview-copy-text-container {
   margin-top: 30px;
   margin-bottom: 0px;
@@ -1031,6 +1050,7 @@ body, html {
   margin-left: 0px;
   width: 15px;
   height: 15px;
+  cursor: pointer;
 }
 
 .customDropdownButton {
