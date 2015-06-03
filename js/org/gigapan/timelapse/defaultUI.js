@@ -717,7 +717,7 @@ if (!org.gigapan.timelapse.Timelapse) {
       $thumbnailPreviewCopyTextContainer.show();
 
       // This code block is used to solve a problem related to scrollbar overflowing
-      var linkHeight = 25;
+      var linkHeight = 40;
       var maxContainerWidth = parseInt($thumbnailPreviewContainer.css("max-width"));
       var maxContainerHeight = parseInt($thumbnailPreviewContainer.css("max-height"));
       var width = response.args.width;
