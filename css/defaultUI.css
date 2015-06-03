@@ -1094,3 +1094,8 @@ body, html {
   -o-user-select: auto;
   user-select: element;
 }
+
+input::-ms-clear {
+  width : 0;
+  height: 0;
+}
