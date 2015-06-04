@@ -538,7 +538,7 @@ if (!org.gigapan.timelapse.Timelapse) {
         _format: function(value) {
           var format = timelapse.getCaptureTimes()[value];
           return format;
-        },
+        }
       });
       $startingTimeSpinner.captureTimeSpinner({
         spin: function(event, ui) {
