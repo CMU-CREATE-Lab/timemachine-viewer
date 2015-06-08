@@ -355,8 +355,7 @@
   transition: all 0.2s linear;
 }
 
-.snaplapse_keyframe_list_item_thumbnail_overlay_presentation:not(.snaplapse_keyframe_list_item_thumbnail_overlay_presentation-touchFriendly)
-:hover {
+.snaplapse_keyframe_list_item_thumbnail_overlay_presentation:not(.snaplapse_keyframe_list_item_thumbnail_overlay_presentation-touchFriendly):hover {
   border: 3px solid #fff !important;
   -moz-box-shadow: inset 0 0 40px #000 !important;
   -webkit-box-shadow: inset 0 0 40px #000 !important;

@@ -1074,12 +1074,16 @@ if (!org.gigapan.timelapse.snaplapse) {
                     }
                     var keyframeId = $desiredSlide.parent().attr("id").split("_")[3];
                     var frames = snaplapse.getKeyframeById(keyframeId);
+                    var newView;
+                    if (typeof (timelapse.getTmJSON()['projection-bounds']) != "undefined") {
+                      newView = timelapse.pixelBoundingBoxToLatLngCenterView(frames['bounds']);
+                    } else {
+                      newView = timelapse.pixelBoundingBoxToPixelCenterView(frames['bounds']);
+                    }
                     if (presentationSliderLoadAnimation == "zoom") {
-                      // TODO: this logic breaks the slideshow with no projections, need to be fixed
-                      timelapse.setNewView(timelapse.pixelBoundingBoxToLatLngCenterView(frames['bounds']), false, presentationSliderPlayAfterAnimation);
+                      timelapse.setNewView(newView, false, presentationSliderPlayAfterAnimation);
                     } else if (presentationSliderLoadAnimation == "warp") {
-                      // TODO: this logic breaks the slideshow with no projections, need to be fixed
-                      timelapse.setNewView(timelapse.pixelBoundingBoxToLatLngCenterView(frames['bounds']), true, presentationSliderPlayAfterAnimation);
+                      timelapse.setNewView(newView, true, presentationSliderPlayAfterAnimation);
                     }
                     selectAndGo($("#" + timeMachineDivId + "_snaplapse_keyframe_" + keyframeId), keyframeId, true, true, true);
                   } else {
@@ -1416,7 +1420,7 @@ if (!org.gigapan.timelapse.snaplapse) {
 
       var $keyframeTable = $("#" + keyframeTableId);
 
-      $keyframeTable.mousedown(function(event) {
+      $keyframeTable.click(function(event) {
         selectAndGo($("#" + keyframeListItem.id));
         displaySnaplapseFrameAnnotation(null);
         UTIL.addGoogleAnalyticEvent('button', 'click', 'editor-select-keyframe');
@@ -1439,12 +1443,13 @@ if (!org.gigapan.timelapse.snaplapse) {
       $thumbnailButton.click(function(event) {
         clearAutoModeTimeout();
         wayPointClickedByAutoMode = (event.pageX == 0 && event.pageY == 0) ? true : false;
-        //event.stopPropagation();
         var keyframeId = $(this).parent().attr("id").split("_")[3];
-        selectAndGo($("#" + keyframeListItem.id), keyframeId);
+        if(usePresentationSlider) {
+          selectAndGo($("#" + keyframeListItem.id), keyframeId);
+        } else {
+          selectAndGo($("#" + keyframeListItem.id), keyframeId, null, null, null, false);
+        }
         UTIL.addGoogleAnalyticEvent('button', 'click', 'editor-go-to-keyframe');
-      }).mousedown(function() {
-        //event.stopPropagation();
       });
 
       if (usePresentationSlider) {
@@ -1660,13 +1665,12 @@ if (!org.gigapan.timelapse.snaplapse) {
       }
 
       // Select the element
-      UTIL.selectSortableElements($sortable, $("#" + keyframeListItem.id), false);
+      UTIL.selectSortableElements($sortable, $("#" + keyframeListItem.id), "noAnimation");
       setKeyframeTitleUI(keyframe);
     };
 
-    var selectAndGo = function($select, keyframeId, skipAnnotation, skipGo, doNotFireListener) {
+    var selectAndGo = function($select, keyframeId, skipAnnotation, skipGo, doNotFireListener, autoScroll) {
       var setViewCallback = null;
-
       if (doAutoMode) {
         setViewCallback = function() {
           if (wayPointClickedByAutoMode) {
@@ -1678,8 +1682,10 @@ if (!org.gigapan.timelapse.snaplapse) {
       } else if (usePresentationSlider) {
         setKeyframeCaptionUI(undefined, undefined, true);
       }
-
-      UTIL.selectSortableElements($sortable, $select, true, function() {
+      if(autoScroll != false) {
+        autoScroll = true;
+      }
+      UTIL.selectSortableElements($sortable, $select, autoScroll, function() {
         if (doAutoMode && showAnnotations) {
           setKeyframeCaptionUI(snaplapse.getKeyframeById(keyframeId), $("#timeMachine_snaplapse_keyframe_" + keyframeId));
         }
@@ -1695,10 +1701,16 @@ if (!org.gigapan.timelapse.snaplapse) {
           setKeyframeTitleUI(keyframe);
         }
         if (skipGo != true) {
-          // TODO: this logic breaks the slideshow with no projections, need to be fixed
-          var newView = timelapse.pixelBoundingBoxToLatLngCenterView(keyframe['bounds']);
-          // TODO: Hack for hyperwall
-          newView.zoom += 0.8;
+          var newView;
+          if (typeof (timelapse.getTmJSON()['projection-bounds']) != "undefined") {
+            newView = timelapse.pixelBoundingBoxToLatLngCenterView(keyframe['bounds']);
+            // TODO: Hack for hyperwall
+            if (UTIL.getViewerType() == "webgl") {
+              newView.zoom += 0.8;
+            }
+          } else {
+            newView = timelapse.pixelBoundingBoxToPixelCenterView(keyframe['bounds']);
+          }
           if (usePresentationSlider && useCustomUI) {
             timelapse.setNewView(newView, false, false, setViewCallback);
           } else {
