@@ -50,7 +50,7 @@ var org;
 if (!org) {
   org = {};
 } else {
-  if ( typeof org != "object") {
+  if (typeof org != "object") {
     var orgExistsMessage = "Error: failed to create org namespace: org already exists and is not an object";
     alert(orgExistsMessage);
     throw new Error(orgExistsMessage);
@@ -61,7 +61,7 @@ if (!org) {
 if (!org.gigapan) {
   org.gigapan = {};
 } else {
-  if ( typeof org.gigapan != "object") {
+  if (typeof org.gigapan != "object") {
     var orgGigapanExistsMessage = "Error: failed to create org.gigapan namespace: org.gigapan already exists and is not an object";
     alert(orgGigapanExistsMessage);
     throw new Error(orgGigapanExistsMessage);
@@ -72,7 +72,7 @@ if (!org.gigapan) {
 if (!org.gigapan.timelapse) {
   org.gigapan.timelapse = {};
 } else {
-  if ( typeof org.gigapan.timelapse != "object") {
+  if (typeof org.gigapan.timelapse != "object") {
     var orgGigapanTimelapseExistsMessage = "Error: failed to create org.gigapan.timelapse namespace: org.gigapan.timelapse already exists and is not an object";
     alert(orgGigapanTimelapseExistsMessage);
     throw new Error(orgGigapanTimelapseExistsMessage);
@@ -199,12 +199,12 @@ if (!Math.uuid) {
       var keyframeInterval, keyframeToBuild;
       if (buildPreviousFlag) {
         keyframeToBuild = keyframes[idx - 1];
-        if ( typeof (keyframeToBuild) != "undefined" && keyframeToBuild != null && typeof (keyframes[idx]) != "undefined" && keyframes[idx] != null) {
+        if (typeof (keyframeToBuild) != "undefined" && keyframeToBuild != null && typeof (keyframes[idx]) != "undefined" && keyframes[idx] != null) {
           keyframeInterval = new org.gigapan.timelapse.KeyframeInterval(keyframeToBuild, keyframes[idx], null, timelapse.getDuration(), timeMachineDivId, keyframeToBuild['buildConstraint'], defaultLoopTimes, timelapse, settings);
         }
       } else {
         keyframeToBuild = keyframes[idx];
-        if ( typeof (keyframeToBuild) != "undefined" && keyframeToBuild != null && typeof (keyframes[idx + 1]) != "undefined" && keyframes[idx + 1] != null) {
+        if (typeof (keyframeToBuild) != "undefined" && keyframeToBuild != null && typeof (keyframes[idx + 1]) != "undefined" && keyframes[idx + 1] != null) {
           keyframeInterval = new org.gigapan.timelapse.KeyframeInterval(keyframeToBuild, keyframes[idx + 1], null, timelapse.getDuration(), timeMachineDivId, keyframeToBuild['buildConstraint'], defaultLoopTimes, timelapse, settings);
         }
       }
@@ -255,7 +255,7 @@ if (!Math.uuid) {
     };
 
     var sanitizeDuration = function(rawDuration) {
-      if ( typeof rawDuration != 'undefined' && rawDuration != null) {
+      if (typeof rawDuration != 'undefined' && rawDuration != null) {
         var rawDurationStr = rawDuration + '';
         if (rawDurationStr.length > 0) {
           var num = parseFloat(rawDurationStr);
@@ -465,16 +465,16 @@ if (!Math.uuid) {
     };
 
     this.setKeyframeTitleState = function(state) {
-      if(state == "disable") {
+      if (state == "disable") {
         disableKeyframeTitle = true;
         TOUR_SHARING_VERSION = 3;
-        $("#" + composerDivId + " .keyframe_title_container").css("visibility","hidden");
-        $("#" + composerDivId + " .snaplapse_keyframe_list_item_title").css("visibility","hidden");
+        $("#" + composerDivId + " .keyframe_title_container").css("visibility", "hidden");
+        $("#" + composerDivId + " .snaplapse_keyframe_list_item_title").css("visibility", "hidden");
       } else {
         disableKeyframeTitle = false;
         TOUR_SHARING_VERSION = 4;
-        $("#" + composerDivId + " .keyframe_title_container").css("visibility","visible");
-        $("#" + composerDivId + " .snaplapse_keyframe_list_item_title").css("visibility","visible");
+        $("#" + composerDivId + " .keyframe_title_container").css("visibility", "visible");
+        $("#" + composerDivId + " .snaplapse_keyframe_list_item_title").css("visibility", "visible");
       }
     };
 
@@ -635,12 +635,12 @@ if (!Math.uuid) {
           loadJSON = JSON.parse(json);
           _clearSnaplapse();
         }
-        if ( typeof (loadJSON['snaplapse']) != 'undefined' && typeof (loadJSON['snaplapse']['keyframes']) != 'undefined') {
+        if (typeof (loadJSON['snaplapse']) != 'undefined' && typeof (loadJSON['snaplapse']['keyframes']) != 'undefined') {
           UTIL.log("Found [" + loadJSON['snaplapse']['keyframes'].length + "] keyframes in the json:\n\n" + json);
           var keyframe = loadJSON['snaplapse']['keyframes'][loadIndex];
           if (json != undefined)
             loadKeyframesLength = loadJSON['snaplapse']['keyframes'].length;
-          if ( typeof keyframe['time'] != 'undefined' && typeof keyframe['bounds'] != 'undefined' && typeof keyframe['bounds']['xmin'] != 'undefined' && typeof keyframe['bounds']['ymin'] != 'undefined' && typeof keyframe['bounds']['xmax'] != 'undefined' && typeof keyframe['bounds']['ymax'] != 'undefined') {
+          if (typeof keyframe['time'] != 'undefined' && typeof keyframe['bounds'] != 'undefined' && typeof keyframe['bounds']['xmin'] != 'undefined' && typeof keyframe['bounds']['ymin'] != 'undefined' && typeof keyframe['bounds']['xmax'] != 'undefined' && typeof keyframe['bounds']['ymax'] != 'undefined') {
             // NOTE: if is-description-visible is undefined, then we define it as *true* in order to maintain
             // backward compatibility with older time warps which don't have this property.
             this.recordKeyframe(null, keyframe['time'], keyframe['bounds'], keyframe['unsafe_string_description'], ( typeof keyframe['is-description-visible'] == 'undefined') ? true : keyframe['is-description-visible'], keyframe['duration'], true, keyframe['buildConstraint'], keyframe['speed'], keyframe['loopTimes'], loadKeyframesLength, keyframe['unsafe_string_frameTitle']);
@@ -668,7 +668,7 @@ if (!Math.uuid) {
     };
 
     this.recordKeyframe = function(idOfKeyframeToAppendAfter, time, bounds, description, isDescriptionVisible, duration, isFromLoad, buildConstraint, speed, loopTimes, loadKeyframesLength, frameTitle) {
-      if ( typeof bounds == 'undefined') {
+      if (typeof bounds == 'undefined') {
         bounds = timelapse.getBoundingBoxForCurrentView();
       }
       var isKeyframeFromLoad = ( typeof isFromLoad == 'undefined') ? false : isFromLoad;
@@ -695,7 +695,7 @@ if (!Math.uuid) {
 
       // Determine where the new keyframe will be inserted
       var insertionIndex = keyframes.length;
-      if ( typeof idOfKeyframeToAppendAfter != 'undefined' && idOfKeyframeToAppendAfter != null) {
+      if (typeof idOfKeyframeToAppendAfter != 'undefined' && idOfKeyframeToAppendAfter != null) {
         for (var j = 0; j < keyframes.length; j++) {
           if (idOfKeyframeToAppendAfter == keyframes[j]['id']) {
             insertionIndex = j + 1;
@@ -767,7 +767,7 @@ if (!Math.uuid) {
     this.moveOneKeyframe = moveOneKeyframe;
 
     var resetKeyframe = function(keyframe) {
-      if ( typeof (keyframe) == "undefined") {
+      if (typeof (keyframe) == "undefined") {
         // Reset the last keyframe if keyframe is undefined
         keyframe = keyframes[keyframes.length - 1];
         keyframe['speed'] = null;
@@ -875,7 +875,7 @@ if (!Math.uuid) {
         // Clear the time counter interval
         stopTimeCounterInterval();
 
-        if ( typeof willJumpToLastKeyframe != 'undefined' && willJumpToLastKeyframe) {
+        if (typeof willJumpToLastKeyframe != 'undefined' && willJumpToLastKeyframe) {
           timelapse.warpToBoundingBox(keyframes[keyframes.length - 1]['bounds']);
           timelapse.seek(keyframes[keyframes.length - 1]['time']);
         }
@@ -982,7 +982,7 @@ if (!Math.uuid) {
       if (listeners) {
         for (var i = 0; i < listeners.length; i++) {
           try {
-            listeners[i](cloneFrame( currentKeyframeInterval ? currentKeyframeInterval.getStartingFrame() : keyframes[keyframes.length - 1]));
+            listeners[i](cloneFrame(currentKeyframeInterval ? currentKeyframeInterval.getStartingFrame() : keyframes[keyframes.length - 1]));
           } catch(e) {
             UTIL.error(e.name + " while calling snaplapse 'keyframe-interval-change' event listener: " + e.message, e);
           }
