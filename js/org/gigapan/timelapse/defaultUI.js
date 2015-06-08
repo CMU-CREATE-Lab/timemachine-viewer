@@ -691,6 +691,12 @@ if (!org.gigapan.timelapse.Timelapse) {
       });
     };
 
+    var resetcaptureTimeSpinnerRange = function() {
+      $startingTimeSpinner.captureTimeSpinner("option", "min", 0);
+      $startingTimeSpinner.captureTimeSpinner("option", "max", timelapse.getCaptureTimes().length - 1);
+    };
+    this.resetcaptureTimeSpinnerRange = resetcaptureTimeSpinnerRange;
+
     var setCopyButtonTooltip = function(state, $target) {
       var targetOffset = $target.offset();
       var containerOffset = $("#" + viewerDivId).offset();

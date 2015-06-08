@@ -2893,6 +2893,7 @@ if (!window['$']) {
               var $timelineSelector = $("#" + viewerDivId + " .timelineSelector");
               $timelineSelector.slider("destroy");
               defaultUI.createTimelineSelector();
+              defaultUI.resetcaptureTimeSpinnerRange();
               defaultUI.resetShareThumbnailUI();
             }
           } else {
