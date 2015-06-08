@@ -4,28 +4,28 @@
 }
 
 .snaplapse_keyframe_container::-webkit-scrollbar-track {
-  background-color: rgb(240,240,240);
+  background-color: rgb(240, 240, 240);
 }
 
 .snaplapse_keyframe_container::-webkit-scrollbar-thumb {
   border-radius: 1px;
-  border: 2px solid rgb(240,240,240);
-  background-color: rgb(179,179,179);
-  -webkit-box-shadow: inset 0 0 1px rgb(51,51,51);
+  border: 2px solid rgb(240, 240, 240);
+  background-color: rgb(179, 179, 179);
+  -webkit-box-shadow: inset 0 0 1px rgb(51, 51, 51);
 }
 
 .snaplapse_keyframe_container::-webkit-scrollbar-thumb:hover {
-  background-color: rgb(153,153,153);
+  background-color: rgb(153, 153, 153);
 }
 
 .snaplapse_keyframe_container::-webkit-scrollbar-button {
   background-repeat: no-repeat;
-  background-color: rgb(240,240,240);
+  background-color: rgb(240, 240, 240);
   width: 20px;
 }
 
 .snaplapse_keyframe_container::-webkit-scrollbar-button:hover {
-  background-color: rgb(179,179,179);
+  background-color: rgb(179, 179, 179);
 }
 
 .snaplapse_keyframe_container::-webkit-scrollbar-button:decrement {
@@ -35,7 +35,7 @@
 
 .snaplapse_keyframe_container::-webkit-scrollbar-button:decrement:active {
   background-image: url("../images/buttons/scrollbar-left-white.png");
-  background-color: rgb(102,102,102);
+  background-color: rgb(102, 102, 102);
 }
 
 .snaplapse_keyframe_container::-webkit-scrollbar-button:increment {
@@ -45,7 +45,7 @@
 
 .snaplapse_keyframe_container::-webkit-scrollbar-button:increment:active {
   background-image: url("../images/buttons/scrollbar-right-white.png");
-  background-color: rgb(102,102,102);
+  background-color: rgb(102, 102, 102);
 }
 
 .timelineSlider.ui-slider-disabled {
@@ -53,35 +53,31 @@
 }
 
 #loadSnaplapseButton {
-  left: 9px;
-  top: 9px;
-  height: 35px;
+  height: 31px;
   width: 100px;
-  position: absolute;
+}
+
+#loadSnaplapseButton .ui-button-text {
+  margin-top: 2px;
+}
+
+.loadTimewarpWindowTable {
+  margin-top: 5px;
 }
 
 .loadTimewarpWindow_txt {
-  position: absolute;
-  top: 11px;
-  left: 120px;
-  right: 5px;
+  width: 220px;
 }
 
 .loadTimewarpWindow_JSON {
-  position: absolute;
-  left: 5px;
-  top: 50px;
-  width: 383px;
-  height: 100px;
+  margin-top: 7px;
+  width: 322px;
+  height: 56px;
   resize: none;
 }
 
-.saveTimewarpWindow_tourTitle {
-  position: absolute;
-  top: 18px;
-  left: 10px;
-  width: 400px;
-  font-weight: bold;
+.saveTimewarpWindowTable {
+  margin-top: 8px;
 }
 
 .saveTimewarpWindow_tourTitleInput {
@@ -89,58 +85,34 @@
 }
 
 .saveTimewarpWindow_title_share {
-  position: absolute;
-  width: 383px;
-  top: 37px;
-  left: 10px;
-  right: 5px;
+  margin-top: 8px;
+  margin-bottom: 0px;
 }
 
 .saveTimewarpWindow_txt {
-  position: absolute;
-  width: 383px;
-  top: 77px;
-  left: 10px;
-  right: 5px;
+  width: 347px;
 }
 
 .saveTimewarpWindow_JSON {
-  position: absolute;
-  left: 10px;
-  top: 112px;
-  width: 383px;
-  height: 100px;
+  width: 347px;
+  height: 80px;
   resize: none;
 }
 
 .saveTimewarpWindow_title_embed {
-  position: absolute;
-  width: 383px;
-  top: 214px;
-  left: 10px;
-  right: 5px;
+  margin-top: 5px;
+  margin-bottom: 0px;
 }
 
 .saveTimewarpWindow_txt2 {
-  position: absolute;
-  width: 383px;
-  top: 254px;
-  left: 10px;
+  width: 347px;
 }
 
 .saveTimewarpWindow_JSON2 {
   resize: none;
-  position: absolute;
-  top: 289px;
-  left: 10px;
-  height: 100px;
-  width: 383px;
-}
-
-.saveTimewarpWindow_JSON2_sizesContainer {
-  position: absolute;
-  top: 407px;
-  left: 10px;
+  height: 80px;
+  width: 347px;
+  margin-bottom: 8px;
 }
 
 .transition_table_mask {
@@ -236,6 +208,7 @@
   width: 32px;
   border-radius: 0px;
 }
+
 .keyframe-button-container .ui-icon {
   margin-top: -9px;
   margin-left: 1px;
@@ -449,10 +422,10 @@
   text-align: center;
   width: 100%;
   overflow: hidden;
-  color: rgba(255,255,255,0.8);
+  color: rgba(255, 255, 255, 0.8);
   z-index: 3;
   display: none;
-  background-color: rgba(0,0,0,0.6);
+  background-color: rgba(0, 0, 0, 0.6);
   text-shadow: -1px 0 1px black, 0 1px 1px black, 1px 0 1px black, 0 -1px 1px black;
 }
 
@@ -577,7 +550,7 @@
   bottom: 15px;
   left: 0px;
   color: #ffffff;
-  background-color: rgba(0,0,0,0);
+  background-color: rgba(0, 0, 0, 0);
   z-index: 10;
   word-wrap: break-word;
   text-align: center;
@@ -679,9 +652,9 @@
   border: 1px solid #656565;
   border-radius: 2px;
   overflow: visible;
-  -moz-box-shadow: 2px 2px 3px rgba(0,0,0,0.3);
-  -webkit-box-shadow: 2px 2px 3px rgba(0,0,0,0.3);
-  box-shadow: 2px 2px 3px rgba(0,0,0,0.3);
+  -moz-box-shadow: 2px 2px 3px rgba(0, 0, 0, 0.3);
+  -webkit-box-shadow: 2px 2px 3px rgba(0, 0, 0, 0.3);
+  box-shadow: 2px 2px 3px rgba(0, 0, 0, 0.3);
   -webkit-user-select: none;
   -khtml-user-select: none;
   -moz-user-select: none;
@@ -713,7 +686,7 @@
   right: -1px;
   width: auto;
   height: 36px;
-  background-color: rgb(220,220,220);
+  background-color: rgb(220, 220, 220);
   border: 1px solid #656565;
   font-size: 12px;
   margin: 0;
@@ -810,8 +783,8 @@
   border-top: 0px solid white;
   border-bottom: 0px solid white;
   height: 100%;
-  border-left: 1px solid rgb(220,220,220);
-  border-right: 1px solid rgb(220,220,220);
+  border-left: 1px solid rgb(220, 220, 220);
+  border-right: 1px solid rgb(220, 220, 220);
 }
 
 .editorModeToolbar .ui-button.ui-state-hover {
@@ -857,17 +830,17 @@
 }
 
 .editorModeToolbar .playStopTimewarp.isPlaying.ui-state-default {
-  background-color: rgba(255,0,0,0.4);
+  background-color: rgba(255, 0, 0, 0.4);
 }
 
 .editorModeToolbar .playStopTimewarp.isPlaying.ui-state-default:hover:not(
 [disabled]) {
-  background-color: rgba(255,0,0,0.52);
+  background-color: rgba(255, 0, 0, 0.52);
 }
 
 .editorModeOptions {
   border-radius: 2px;
-  box-shadow: 2px 2px 3px rgba(0,0,0,0.3);
+  box-shadow: 2px 2px 3px rgba(0, 0, 0, 0.3);
 }
 
 .editorModeOptions .ui-menu-item {

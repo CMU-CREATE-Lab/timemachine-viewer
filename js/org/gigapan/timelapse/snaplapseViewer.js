@@ -410,9 +410,10 @@ if (!org.gigapan.timelapse.snaplapse) {
       $("#" + composerDivId + " .loadTimewarpWindow").dialog({
         resizable: false,
         autoOpen: false,
+        dialogClass: "customDialog",
         appendTo: "#" + composerDivId,
-        width: 400,
-        height: 200
+        width: 361,
+        height: 170
       });
 
       // Load button in load dialog
@@ -435,8 +436,8 @@ if (!org.gigapan.timelapse.snaplapse) {
         resizable: false,
         autoOpen: false,
         appendTo: "#" + composerDivId,
-        width: 410,
-        height: 484
+        width: 387,
+        height: 432
       });
 
       // Create the subtitle dialog
@@ -504,7 +505,7 @@ if (!org.gigapan.timelapse.snaplapse) {
         UTIL.addGoogleAnalyticEvent('button', 'click', 'editor-add-keyframe');
       });
       // Create save button
-      $editorModeToolbar.append('<button class="saveTimewarp" title="Share a tour">Share</button>');
+      $editorModeToolbar.append('<button class="saveTimewarp" title="Share a tour or slideshow">Share</button>');
       $("#" + composerDivId + " .toolbar .saveTimewarp").button({
         icons: {
           primary: "ui-icon-person"
@@ -516,7 +517,7 @@ if (!org.gigapan.timelapse.snaplapse) {
         UTIL.addGoogleAnalyticEvent('button', 'click', 'editor-show-share-dialog');
       });
       // Create load button
-      $editorModeToolbar.append('<button class="loadTimewarp" title="Load a tour">Load</button>');
+      $editorModeToolbar.append('<button class="loadTimewarp" title="Load a tour or slideshow">Load</button>');
       $("#" + composerDivId + " .toolbar .loadTimewarp").button({
         icons: {
           primary: "ui-icon-folder-open"
