@@ -108,7 +108,6 @@ if (!org.gigapan.timelapse.snaplapse) {
     var showFullScreenBtn = ( typeof (settings["showFullScreenBtn"]) == "undefined") ? true : settings["showFullScreenBtn"];
     var showEditorModeButton = ( typeof (settings["showEditorModeButton"]) == "undefined") ? true : settings["showEditorModeButton"];
     var showAddressLookup = ( typeof (settings["showAddressLookup"]) == "undefined") ? false : settings["showAddressLookup"];
-    var disableKeyframeTitle = ( typeof (settings["disableKeyframeTitle"]) == "undefined") ? false : settings["disableKeyframeTitle"];
     var screenIdleTime = ( settings["presentationSliderSettings"] && typeof (settings["presentationSliderSettings"]["screenIdleTime"]) != "undefined") ? settings["presentationSliderSettings"]["screenIdleTime"] : 20000;
     var waypointDelayTime = ( settings["presentationSliderSettings"] && typeof (settings["presentationSliderSettings"]["waypointDelayTime"]) != "undefined") ? settings["presentationSliderSettings"]["waypointDelayTime"] : 10000;
     var doAutoMode = ( settings["presentationSliderSettings"] && typeof (settings["presentationSliderSettings"]["doAutoMode"]) != "undefined") ? settings["presentationSliderSettings"]["doAutoMode"] : false;
@@ -412,8 +411,7 @@ if (!org.gigapan.timelapse.snaplapse) {
         autoOpen: false,
         dialogClass: "customDialog",
         appendTo: "#" + composerDivId,
-        width: 361,
-        height: 170
+        width: 361
       });
 
       // Load button in load dialog
@@ -435,22 +433,16 @@ if (!org.gigapan.timelapse.snaplapse) {
       $("#" + composerDivId + " .saveTimewarpWindow").dialog({
         resizable: false,
         autoOpen: false,
+        dialogClass: "customDialog",
         appendTo: "#" + composerDivId,
-        width: 387,
-        height: 432
+        width: 387
       });
 
       // Create the subtitle dialog
-      var dialogHeight = disableKeyframeTitle ? 210 : 250;
-      if (disableKeyframeTitle) {
-        $(".keyframe_title_container").hide();
-        $(".createSubtitle_dialog_txt").css("top", "11px");
-        $(".subtitle_textarea").css("top", "31px");
-      }
       $createSubtitle_dialog.dialog({
         autoOpen: false,
-        height: dialogHeight,
-        width: 310,
+        width: 313,
+        dialogClass: "customDialog",
         modal: true,
         resizable: false,
         appendTo: "#" + composerDivId,
@@ -804,7 +796,8 @@ if (!org.gigapan.timelapse.snaplapse) {
             pointerLeft = maxPointerLeft - 5;
           var pointerLeftPercent = ((pointerLeft - captionLeft) / captionWidth) * 100;
           $keyframeSubtitleBox.css({
-            "left": captionLeft + "px"
+            "left": captionLeft + "px",
+            "bottom": ($keyframeContainer.height() + 10) + "px"
           });
           $keyframeSubtitle.css({
             "background-position": pointerLeftPercent + "% 100%"
@@ -1342,12 +1335,12 @@ if (!org.gigapan.timelapse.snaplapse) {
         content += '      <div id="' + timestampId + '" class="snaplapse_keyframe_list_item_timestamp">' + keyframe['captureTime'] + '</div>';
         content += '			<div id="' + thumbnailButtonId + '" class="snaplapse_keyframe_list_item_thumbnail_container" title="Go to this keyframe">';
         content += '				<div class="snaplapse_keyframe_list_item_thumbnail_overlay"></div>';
-        if (useThumbnailServer)
+        if (useThumbnailServer) {
           content += '      	<img id="' + thumbnailId + '" width="' + KEYFRAME_THUMBNAIL_WIDTH + '" height="' + KEYFRAME_THUMBNAIL_HEIGHT + '" class="snaplapse_keyframe_list_item_thumbnail"></img>';
-        else
+        } else {
           content += '      	<canvas id="' + thumbnailId + '" width="' + KEYFRAME_THUMBNAIL_WIDTH + '" height="' + KEYFRAME_THUMBNAIL_HEIGHT + '" class="snaplapse_keyframe_list_item_thumbnail"></canvas>';
-        if (!disableKeyframeTitle)
-          content += '				<div id="' + titleId + '" class="snaplapse_keyframe_list_item_title"></div>';
+        }
+        content += '				<div id="' + titleId + '" class="snaplapse_keyframe_list_item_title"></div>';
         content += '			</div>';
         content += '      <div id="' + buttonContainerId + '" class="keyframe-button-container">';
         content += '        <button id="' + updateButtonId + '" title="Update this keyframe to current view">&nbsp</button>';
@@ -1444,7 +1437,7 @@ if (!org.gigapan.timelapse.snaplapse) {
         clearAutoModeTimeout();
         wayPointClickedByAutoMode = (event.pageX == 0 && event.pageY == 0) ? true : false;
         var keyframeId = $(this).parent().attr("id").split("_")[3];
-        if(usePresentationSlider) {
+        if (usePresentationSlider) {
           selectAndGo($("#" + keyframeListItem.id), keyframeId);
         } else {
           selectAndGo($("#" + keyframeListItem.id), keyframeId, null, null, null, false);
@@ -1512,10 +1505,12 @@ if (!org.gigapan.timelapse.snaplapse) {
         if (this.checked) {
           snaplapse.setTextAnnotationForKeyframe(thisKeyframeId, undefined, true);
           snaplapse.setTitleForKeyframe(thisKeyframeId, undefined, true);
-          if (thisKeyframe["unsafe_string_description"] != undefined)
+          if (thisKeyframe["unsafe_string_description"] != undefined) {
             $(".subtitle_textarea").val(thisKeyframe["unsafe_string_description"]);
-          if (thisKeyframe["unsafe_string_frameTitle"] != undefined)
+          }
+          if (thisKeyframe["unsafe_string_frameTitle"] != undefined) {
             $(".keyframe_title_input").val(thisKeyframe["unsafe_string_frameTitle"]);
+          }
           displaySnaplapseFrameAnnotation(thisKeyframe);
           $createSubtitle_dialog.dialog("option", {
             "keyframeId": thisKeyframeId,
@@ -1682,7 +1677,7 @@ if (!org.gigapan.timelapse.snaplapse) {
       } else if (usePresentationSlider) {
         setKeyframeCaptionUI(undefined, undefined, true);
       }
-      if(autoScroll != false) {
+      if (autoScroll != false) {
         autoScroll = true;
       }
       UTIL.selectSortableElements($sortable, $select, autoScroll, function() {

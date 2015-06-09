@@ -792,6 +792,14 @@ body, html {
   outline: none;
 }
 
+.customDialog .ui-dialog-buttonset .ui-button {
+  border-radius: 1px;
+  background-image: none;
+  margin-top: 12px;
+  margin-right: 3px;
+  margin-bottom: 8px;
+}
+
 .spinnerOverlay {
   background-image: url(../images/loading.gif);
   width: 32px;

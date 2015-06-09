@@ -61,8 +61,13 @@
   margin-top: 2px;
 }
 
+.loadTimewarpWindow {
+  height: auto;
+}
+
 .loadTimewarpWindowTable {
-  margin-top: 5px;
+  margin-top: 8px;
+  margin-bottom: 6px;
 }
 
 .loadTimewarpWindow_txt {
@@ -76,8 +81,13 @@
   resize: none;
 }
 
+.saveTimewarpWindow {
+  height: auto;
+}
+
 .saveTimewarpWindowTable {
   margin-top: 8px;
+  margin-bottom: 6px;
 }
 
 .saveTimewarpWindow_tourTitleInput {
@@ -122,30 +132,28 @@
   font-family: Arial, Helvetica, sans-serif;
 }
 
-.keyframe_title_container {
-  position: absolute;
-  top: 10px;
-  left: 15px;
-  width: inherit;
-  font-weight: bold;
-}
-
 .keyframe_title_input {
   width: 180px;
 }
 
+.createSubtitle_dialog {
+  height: auto;
+}
+
+.keyframe_title_container {
+  margin-bottom: 12px;
+}
+
 .createSubtitle_dialog_txt {
-  position: absolute;
-  top: 45px;
-  left: 15px;
-  right: 10px;
+  margin-bottom: 2px;
+}
+
+.createSubtitle_dialog_table {
+  margin-top: 8px;
 }
 
 .subtitle_textarea {
-  position: absolute;
-  top: 65px;
   height: 70px;
-  left: 15px;
   width: 275px;
   resize: none;
 }
@@ -642,7 +650,6 @@
 
 .keyframeSubtitleBoxForHovering {
   z-index: 1100;
-  bottom: 103px;
   font-size: 12px;
   color: black;
   position: absolute;

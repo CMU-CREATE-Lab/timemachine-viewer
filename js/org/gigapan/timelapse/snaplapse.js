@@ -120,7 +120,7 @@ if (!Math.uuid) {
     // Settings
     var useCustomUI = timelapse.useCustomUI();
     var usePresentationSlider = (mode == "presentation") ? true : false;
-    var disableKeyframeTitle = ( typeof (settings["disableKeyframeTitle"]) == "undefined") ? false : settings["disableKeyframeTitle"];
+    var disableKeyframeTitle = false;
     var uiEnabled = (mode == "noUI") ? false : true;
 
     // Flags
@@ -468,13 +468,13 @@ if (!Math.uuid) {
       if (state == "disable") {
         disableKeyframeTitle = true;
         TOUR_SHARING_VERSION = 3;
-        $("#" + composerDivId + " .keyframe_title_container").css("visibility", "hidden");
-        $("#" + composerDivId + " .snaplapse_keyframe_list_item_title").css("visibility", "hidden");
+        $("#" + composerDivId + " .keyframe_title_container").hide();
+        $("#" + composerDivId + " .snaplapse_keyframe_list_item_title").hide();
       } else {
         disableKeyframeTitle = false;
         TOUR_SHARING_VERSION = 4;
-        $("#" + composerDivId + " .keyframe_title_container").css("visibility", "visible");
-        $("#" + composerDivId + " .snaplapse_keyframe_list_item_title").css("visibility", "visible");
+        $("#" + composerDivId + " .keyframe_title_container").show();
+        $("#" + composerDivId + " .snaplapse_keyframe_list_item_title").show();
       }
     };
 
