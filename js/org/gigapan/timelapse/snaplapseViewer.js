@@ -114,7 +114,7 @@ if (!org.gigapan.timelapse.snaplapse) {
     var showAnnotations = ( settings["presentationSliderSettings"] && typeof (settings["presentationSliderSettings"]["showAnnotations"]) != "undefined") ? settings["presentationSliderSettings"]["showAnnotations"] : true;
     var initialWaypointIndex = ( settings["presentationSliderSettings"] && typeof (settings["presentationSliderSettings"]["initialWaypointIndex"]) != "undefined") ? settings["presentationSliderSettings"]["initialWaypointIndex"] : 0;
     var presentationSliderLoadAnimation = ( settings["presentationSliderSettings"] && typeof (settings["presentationSliderSettings"]["onLoadAnimation"]) != "undefined") ? settings["presentationSliderSettings"]["onLoadAnimation"] : "zoom";
-    var presentationSliderPlayAfterAnimation = ( settings["presentationSliderSettings"] && typeof (settings["presentationSliderSettings"]["playAfterAnimation"]) != "undefined") ? settings["presentationSliderSettings"]["playAfterAnimation"] : "true";
+    var presentationSliderPlayAfterAnimation = ( settings["presentationSliderSettings"] && typeof (settings["presentationSliderSettings"]["playAfterAnimation"]) != "undefined") ? settings["presentationSliderSettings"]["playAfterAnimation"] : true;
     // Flags
     var didOnce = false;
     var presentationSliderEnabled = timelapse.isPresentationSliderEnabled();
@@ -1962,6 +1962,10 @@ if (!org.gigapan.timelapse.snaplapse) {
     //
     // Constructor code
     //
+    if(!useCustomUI) {
+      presentationSliderLoadAnimation = ( settings["presentationSliderSettings"] && typeof (settings["presentationSliderSettings"]["onLoadAnimation"]) != "undefined") ? settings["presentationSliderSettings"]["onLoadAnimation"] : "warp";
+      presentationSliderPlayAfterAnimation = ( settings["presentationSliderSettings"] && typeof (settings["presentationSliderSettings"]["playAfterAnimation"]) != "undefined") ? settings["presentationSliderSettings"]["playAfterAnimation"] : false;
+    }
     resizeUI();
     initializeSnaplapseUI();
     loadNewSnaplapse(null);

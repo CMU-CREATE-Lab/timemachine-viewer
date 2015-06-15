@@ -1147,7 +1147,7 @@ if (!window['$']) {
         _removeViewEndChangeListener(this);
         parabolicMotionController = null;
         if (doPlay)
-          thisObj.handlePlayPause();
+          _play();
         if ( typeof (callBack) === "function")
           callBack();
       };
