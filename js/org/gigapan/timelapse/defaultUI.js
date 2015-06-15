@@ -366,6 +366,9 @@ if (!org.gigapan.timelapse.Timelapse) {
       $("#" + viewerDivId + " .reset-small-change-detect").click(function(event) {
         changeDetectionTool.centerAndDrawFilterBound("small");
       });
+      $("#" + viewerDivId + " .apply-change-detect").click(function(event) {
+        changeDetectionTool.filter();
+      });
     };
 
     var removeAccordionPanel = function(panelClass) {
