@@ -946,8 +946,9 @@ if (!org.gigapan.timelapse.snaplapse) {
             $("#" + timeMachineDivId + " .presentationSlider").hide();
             if (useCustomUI)
               $("#" + timeMachineDivId + " .composer").hide();
-            else
-              setDefaultUIToPlayerMode();
+            else {
+              $("#" + viewerDivId + " .toolDialog .accordion").accordion("option", "active", false);
+            }
           }
           ;
 
@@ -1178,8 +1179,12 @@ if (!org.gigapan.timelapse.snaplapse) {
           var unsafeHashObj = UTIL.getUnsafeHashVars();
           if (typeof unsafeHashObj.tour == "undefined")
             $("#" + composerDivId).show();
-          if (useCustomUI && uiEnabled)
+          if (uiEnabled) {
             $("#" + timeMachineDivId + " .composer").hide();
+            if (!useCustomUI) {
+              $("#" + timeMachineDivId + " .tool").hide();
+            }
+          }
         }
         if (!uiEnabled && !usePresentationSlider) {
           timelapse.pause();
@@ -1197,7 +1202,7 @@ if (!org.gigapan.timelapse.snaplapse) {
             $("#" + viewerDivId + " .controls").hide();
             $("#" + viewerDivId + " .sideToolBar").hide();
             setCaptureTimePosition("down");
-            setDefaultUIToPlayerMode();
+            $("#" + viewerDivId + " .toolDialog .accordion").accordion("option", "active", false);
           }
         }
         return snaplapse.loadFromJSON(json, 0);
@@ -1234,15 +1239,6 @@ if (!org.gigapan.timelapse.snaplapse) {
         "left": positionLeft + "px",
         "font-size": fontSize + "px"
       });
-    };
-
-    var setDefaultUIToPlayerMode = function() {
-      var $editorToggleCheckbox = $("#" + viewerDivId + " .editorToggleCheckbox");
-      var $annotatorToggleCheckbox = $("#" + viewerDivId + " .annotatorToggleCheckbox");
-      if ($editorToggleCheckbox.is(":checked"))
-        $editorToggleCheckbox.click();
-      if ($annotatorToggleCheckbox.is(":checked"))
-        $annotatorToggleCheckbox.click();
     };
 
     var setKeyframeThumbail = function(keyframe) {

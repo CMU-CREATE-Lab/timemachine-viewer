@@ -68,7 +68,7 @@
       var url = "http://tiles.cmucreatelab.org/ecam/timemachines/shenango1/2015-05-02.timemachine";
       //var url = "http://timemachine1.gc.cs.cmu.edu/timemachines/breathecam/timemachines/heinz/2014-05-26.timemachine";
       //var url = "http://earthengine.google.org/timelapse/data/20130507/";
-      //var url = "http://g7.gigapan.org/timemachines/pittsburgh-v12";
+      //var url = "http://timemachine1.gc.cs.cmu.edu/timemachines/pittsburgh-v12";
       var timelapse;
 
       google.load("visualization", "1", {
@@ -83,6 +83,7 @@
           enablePresentationSlider: true,
           enableAnnotator: true,
           showEditorOnLoad: true,
+          startEditorFromPresentationMode: true,
           mediaType: ".mp4",
           onTimeMachinePlayerReady: function(viewerDivId) {
             setupPostMessageHandlers();
