@@ -424,11 +424,11 @@ if (!org.gigapan.timelapse.Timelapse) {
     };
 
     var sliderValueToTime = function(value) {
-      return (value + 0.3) / timelapse.getFps();
+      return (value + timelapse.getTimePadding()) / timelapse.getFps();
     };
 
     var timeToSliderValue = function(time) {
-      return time * timelapse.getFps() - 0.3;
+      return time * timelapse.getFps() - timelapse.getTimePadding();
     };
 
     var createShareButton = function() {

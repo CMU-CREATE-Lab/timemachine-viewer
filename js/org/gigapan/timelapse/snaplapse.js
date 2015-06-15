@@ -541,7 +541,7 @@ if (!Math.uuid) {
           frame["waitEnd"] = timelapse.getEndDwell();
           // Decode frame number
           var frameNumber = encoder.read_uint();
-          frame["time"] = frameNumber / fps;
+          frame["time"] = (frameNumber + timelapse.getTimePadding()) / fps;
           frame["captureTime"] = captureTimes[frameNumber];
           // Decode center
           var pointCenter;

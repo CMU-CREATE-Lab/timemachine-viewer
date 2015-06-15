@@ -55,7 +55,7 @@ var timelapseMetadata;
 if (!org) {
   org = {};
 } else {
-  if ( typeof org != "object") {
+  if (typeof org != "object") {
     var orgExistsMessage = "Error: failed to create org namespace: org already exists and is not an object";
     alert(orgExistsMessage);
     throw new Error(orgExistsMessage);
@@ -66,7 +66,7 @@ if (!org) {
 if (!org.gigapan) {
   org.gigapan = {};
 } else {
-  if ( typeof org.gigapan != "object") {
+  if (typeof org.gigapan != "object") {
     var orgGigapanExistsMessage = "Error: failed to create org.gigapan namespace: org.gigapan already exists and is not an object";
     alert(orgGigapanExistsMessage);
     throw new Error(orgGigapanExistsMessage);
@@ -77,7 +77,7 @@ if (!org.gigapan) {
 if (!org.gigapan.timelapse) {
   org.gigapan.timelapse = {};
 } else {
-  if ( typeof org.gigapan.timelapse != "object") {
+  if (typeof org.gigapan.timelapse != "object") {
     var orgGigapanTimelapseExistsMessage = "Error: failed to create org.gigapan.timelapse namespace: org.gigapan.timelapse already exists and is not an object";
     alert(orgGigapanTimelapseExistsMessage);
     throw new Error(orgGigapanTimelapseExistsMessage);
@@ -150,6 +150,7 @@ if (!window['$']) {
     var minViewportHeight = 370;
     var minViewportWidth = 540;
     var defaultLoopDwellTime = 0.5;
+    var timePadding = isFirefox ? 0 : 0.3;
 
     // If the user requested a tour editor AND has a div in the DOM for the editor,
     // then do all related edtior stuff (pull thumbnails for keyframes, etc.)
@@ -334,6 +335,10 @@ if (!window['$']) {
     //
     // Public methods
     //
+    this.getTimePadding = function() {
+      return timePadding;
+    };
+
     this.isMovingToWaypoint = function() {
       return isMovingToWaypoint;
     };
@@ -1128,7 +1133,7 @@ if (!window['$']) {
 
     var _getViewStr = function() {
       // TODO: let the user choose lat/lng or points for a dataset with projection info
-      if ( typeof (tmJSON['projection-bounds']) != 'undefined') {
+      if (typeof (tmJSON['projection-bounds']) != 'undefined') {
         return getViewStrAsProjection();
       } else {
         return getViewStrAsPoints();
@@ -1137,7 +1142,7 @@ if (!window['$']) {
     this.getViewStr = _getViewStr;
 
     var _setNewView = function(newView, doWarp, doPlay, callBack) {
-      if ( typeof (newView) === 'undefined' || newView == null)
+      if (typeof (newView) === 'undefined' || newView == null)
         return;
 
       newView = _normalizeView(newView);
@@ -1148,7 +1153,7 @@ if (!window['$']) {
         parabolicMotionController = null;
         if (doPlay)
           _play();
-        if ( typeof (callBack) === "function")
+        if (typeof (callBack) === "function")
           callBack();
       };
 
@@ -1251,7 +1256,7 @@ if (!window['$']) {
             if (key == "ne" || key == "sw") {
               isLatLng = true;
               for (var innerKey in bboxView[key])
-              tmpViewParam.push(bboxView[key][innerKey]);
+                tmpViewParam.push(bboxView[key][innerKey]);
             } else {
               tmpViewParam.push(bboxView[key]);
             }
@@ -1263,7 +1268,7 @@ if (!window['$']) {
 
       // If we still have a share URL (e.g. #v=44.96185,59.06233,4.5,latLng&t=0.10)
       // that has not been unpacked into an array of strings, do so now.
-      if ( typeof (unsafe_viewParam) === "string") {
+      if (typeof (unsafe_viewParam) === "string") {
         unsafe_viewParam = unsafe_viewParam.split(",");
       }
 
@@ -1371,7 +1376,6 @@ if (!window['$']) {
     var seekToFrame = function(frameIdx) {
       if (frameIdx < 0 || frameIdx > frames - 1)
         return;
-      var timePadding = isFirefox ? 0 : 0.3;
       var seekTime = (frameIdx + timePadding) / _getFps();
       _seek(seekTime);
       seek_panoVideo(seekTime);
@@ -1714,7 +1718,11 @@ if (!window['$']) {
         changeDetectionTool.resizeUI();
       updateLocationContextUI();
       // Auto-center any viewer jQuery dialogs so they do not go off screen.
-      $("#" + viewerDivId + " .ui-dialog-content").dialog("option", "position", {my: "center", at: "center", of: window});
+      $("#" + viewerDivId + " .ui-dialog-content").dialog("option", "position", {
+        my: "center",
+        at: "center",
+        of: window
+      });
     };
     this.onresize = onresize;
 
@@ -2178,7 +2186,7 @@ if (!window['$']) {
         return null;
 
       // If input happens to be of the form {bbox:{xmin, xmax, ymin, ymax}}
-      if ( typeof (bbox.bbox) !== 'undefined')
+      if (typeof (bbox.bbox) !== 'undefined')
         bbox = bbox.bbox;
 
       var scale = Math.min(viewportWidth / (bbox.xmax - bbox.xmin), viewportHeight / (bbox.ymax - bbox.ymin));
@@ -2197,7 +2205,7 @@ if (!window['$']) {
         return null;
 
       // If input happens to be of the form {bbox:{...}}
-      if ( typeof (bbox.bbox) !== 'undefined')
+      if (typeof (bbox.bbox) !== 'undefined')
         bbox = bbox.bbox;
 
       var projection = _getProjection();
@@ -2759,7 +2767,7 @@ if (!window['$']) {
         }
         $("#" + viewerDivId + " .currentTime").html(UTIL.formatTime(timelapseCurrentTimeInSeconds, true));
         $("#" + viewerDivId + " .currentCaptureTime").html(UTIL.htmlForTextWithEmbeddedNewlines(captureTimes[timelapseCurrentCaptureTimeIndex]));
-        $("#" + viewerDivId + " .timelineSlider").slider("value", (timelapseCurrentTimeInSeconds * _getFps() - 0.3));
+        $("#" + viewerDivId + " .timelineSlider").slider("value", (timelapseCurrentTimeInSeconds * _getFps() - timePadding));
       });
 
       _addTargetViewChangeListener(function(view) {
@@ -2900,13 +2908,13 @@ if (!window['$']) {
             loadSharedDataFromUnsafeURL(UTIL.getUnsafeHashString());
             didFirstTimeOnLoad = true;
             // Fire onTimeMachinePlayerReady the first time the page is loaded.
-            if ( typeof (settings["onTimeMachinePlayerReady"]) === "function") {
+            if (typeof (settings["onTimeMachinePlayerReady"]) === "function") {
               settings["onTimeMachinePlayerReady"](timeMachineDivId);
             }
           }
           loadTimelapseWithPreviousViewAndTime = false;
           hideSpinner(viewerDivId);
-          if ( typeof onNewTimelapseLoadCompleteCallBack === "function")
+          if (typeof onNewTimelapseLoadCompleteCallBack === "function")
             onNewTimelapseLoadCompleteCallBack();
 
           for (var i = 0; i < datasetLoadedListeners.length; i++)
@@ -2942,13 +2950,11 @@ if (!window['$']) {
       if (useThumbnailServer) {
         var view = thisObj.getView();
         var scaleOffset = 40 / view.scale;
-        var thumbnailToolOptions = {
-        };
+        var thumbnailToolOptions = {};
         thumbnailTool = new ThumbnailTool(thisObj, thumbnailToolOptions);
       }
       if (changeDetectionEnabled) {
-        var changeDetectionOptions = {
-        };
+        var changeDetectionOptions = {};
         changeDetectionTool = new ChangeDetectionTool(thisObj, thumbnailTool, changeDetectionOptions);
       }
 
