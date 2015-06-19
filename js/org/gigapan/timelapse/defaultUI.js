@@ -163,7 +163,7 @@ if (!org.gigapan.timelapse.Timelapse) {
     var translationSpeedConstant = 20;
     var scrollBarWidth = UTIL.getScrollBarWidth();
     var thumbnailDurationInFramesDefault = 0;
-    var thumbnailDurationInFramesMax = 200;
+    var thumbnailDurationInFramesMax = Math.min(200, timelapse.getNumFrames());
     var currentStartingIdx;
     var thumbnailDurationInFrames = thumbnailDurationInFramesDefault;
     var seekFromDurationSlider = false;
@@ -580,11 +580,6 @@ if (!org.gigapan.timelapse.Timelapse) {
           seekFromDurationSlider = false;
         },
         slide: function(e, ui) {
-          // $(this).slider('value')  --> previous value
-          // ui.value                 --> current value
-          // If we are manually using the slider and we are pulling it back to the start
-          // we wont actually get to time 0 because of how we are snapping.
-          // Manually seek to position 0 when this happens.
           if (thumbnailDurationInFramesMaxLock != null) {
             if (ui.value > thumbnailDurationInFramesMaxLock) {
               return false;

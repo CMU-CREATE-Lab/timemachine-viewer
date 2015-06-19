@@ -6,8 +6,11 @@
     <link href="../css/snaplapse.css" rel="stylesheet" type="text/css"/>
     <link href="../css/jquery-ui/smoothness/jquery-ui.custom.css" rel="stylesheet" type="text/css"/>
     <link href="../css/defaultUI.css" rel="stylesheet" type="text/css"/>
+    <link href="../css/smallGoogleMap.css" rel="stylesheet" type="text/css"/>
+    <link href="../css/scaleBar.css" rel="stylesheet" type="text/css"/>
     <link href="../css/visualizer.css" rel="stylesheet" type="text/css"/>
     <link href="../css/annotator.css" rel="stylesheet" type="text/css"/>
+    <link href="../css/customUI.css" rel="stylesheet" type="text/css"/>
     <link href="../libs/change-detect/css/change.css" media="screen" rel="stylesheet" type="text/css"/>
 
     <script src="../js/jquery/jquery.min.js" type="text/javascript"></script>
@@ -22,8 +25,11 @@
     <script src="../js/org/gigapan/timelapse/snaplapse.js" type="text/javascript"></script>
     <script src="../js/org/gigapan/timelapse/snaplapseViewer.js" type="text/javascript"></script>
     <script src="../js/org/gigapan/timelapse/mercator.js" type="text/javascript"></script>
+    <script src="../js/org/gigapan/timelapse/scaleBar.js" type="text/javascript"></script>
+    <script src="../js/org/gigapan/timelapse/smallGoogleMap.js" type="text/javascript"></script>
     <script src="../js/org/gigapan/timelapse/visualizer.js" type="text/javascript"></script>
     <script src="../js/org/gigapan/timelapse/annotator.js" type="text/javascript"></script>
+    <script src="../js/org/gigapan/timelapse/customUI.js" type="text/javascript"></script>
     <script src="../js/org/gigapan/timelapse/defaultUI.js" type="text/javascript"></script>
     <script src="../js/org/gigapan/timelapse/urlEncoder.js" type="text/javascript"></script>
 
@@ -36,64 +42,55 @@
     <script src="../libs/change-detect/js/ThumbnailTool.js" type="text/javascript"></script>
     <script src="../libs/change-detect/js/BoxEventHandler.js" type="text/javascript"></script>
     <script src="../libs/change-detect/js/ChangeDetectionTool.js" type="text/javascript"></script>
-    <script src="../libs/change-detect/js/canvasjs.min.js" type="text/javascript"></script>
 
     <script src="../template_includes.js" type="text/javascript"></script>
+    <script src="http://earthengine.google.org/timelapse/data/20130507/ajax_includes.js" type="text/javascript"></script>
+    <script src="https://maps.google.com/maps/api/js?sensor=false&libraries=places" type="text/javascript" ></script>
 
-    <style>/*
+    <style>
       #timeMachine {
         position: relative;
         margin-top: 10px;
         margin-left: 10px;
-        width: 900px;
-        height: 700px;
-      }*/
-      #timeMachine {
-        width: 100%;
-        height: 100%;
-      }
-      #chart {
-        position: absolute;
-        top: 500px;
-        margin-left: 11px;
-        width: 839px;
-        height: 210px;
-        z-index: 1;
+        width: 1100px;
+        height: 840px;
       }
     </style>
 
     <script type="text/javascript">
       jQuery.support.cors = true;
 
-      var url = "http://tiles.cmucreatelab.org/ecam/timemachines/shenango1/2015-05-02.timemachine";
-      //var url = "http://timemachine1.gc.cs.cmu.edu/timemachines/breathecam/timemachines/heinz/2014-05-26.timemachine";
-      //var url = "http://earthengine.google.org/timelapse/data/20130507/";
-      //var url = "http://timemachine1.gc.cs.cmu.edu/timemachines/pittsburgh-v12";
-      var timelapse;
-
-      google.load("visualization", "1", {
-        packages: ["corechart"]
-      });
+      // Landsat ("https" will casue the thumbnail loading from the server to fail)
+      var url = "http://earthengine.google.org/timelapse/data/20130507/"
 
       function init() {
-        var viewerOptions = {
+        myHomeView = {
+          x: 677982.255550633,
+          y: 521801.7016044302,
+          scale: 0.0005840897249061237
+        };
+        var settings = {
           url: url,
-          showFullScreenBtn: false,
           enableEditor: true,
+          showFullScreenBtn: false,
           enablePresentationSlider: true,
-          enableAnnotator: true,
+          datasetType: "landsat",
           showEditorOnLoad: true,
-          startEditorFromPresentationMode: true,
-          mediaType: ".mp4",
+          showLogoOnDefaultUI: false,
+          useCustomUI: false,
           onTimeMachinePlayerReady: function(viewerDivId) {
             setupPostMessageHandlers();
           },
-          disableTourLooping: true,
-          showLogoOnDefaultUI: false,
-          datasetType: "breathecam",
-          enableChangeDetection: true
+          scaleBarOptions: {
+            scaleBarDiv: "scaleBar1"
+          },
+          smallGoogleMapOptions: {
+            smallGoogleMapDiv: "smallGoogleMap1"
+          },
+          showAddressLookup: true,
+          newHomeView: myHomeView
         };
-        timelapse = new org.gigapan.timelapse.Timelapse("timeMachine", viewerOptions);
+        timelapse = new org.gigapan.timelapse.Timelapse("timeMachine", settings);
       }
 
       $(init);
