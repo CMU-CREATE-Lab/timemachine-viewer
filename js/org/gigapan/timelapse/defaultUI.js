@@ -148,7 +148,7 @@ if (!org.gigapan.timelapse.Timelapse) {
     var showPanControls = ( typeof (settings["showPanControls"]) == "undefined") ? true : settings["showPanControls"];
     var showLogoOnDefaultUI = ( typeof (settings["showLogoOnDefaultUI"]) == "undefined") ? true : settings["showLogoOnDefaultUI"];
     var showEditorOnLoad = ( typeof (settings["showEditorOnLoad"]) == "undefined") ? false : settings["showEditorOnLoad"];
-    var showThumbnailTool = ( typeof (settings["showThumbnailTool"]) == "undefined") ? true : settings["showThumbnailTool"];
+    var showThumbnailTool = ( typeof (settings["showThumbnailTool"]) == "undefined") ? false : settings["showThumbnailTool"];
     var editorEnabled = timelapse.isEditorEnabled();
     var presentationSliderEnabled = timelapse.isPresentationSliderEnabled();
     var annotatorEnabled = timelapse.isAnnotatorEnabled();
