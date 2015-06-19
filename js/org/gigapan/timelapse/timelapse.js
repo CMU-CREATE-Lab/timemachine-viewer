@@ -2872,10 +2872,14 @@ if (!window['$']) {
               // time is zero (the video seeked event is never fired, so videoset never gets the cue that the video
               // should be displayed).  The fix is to simply seek half a frame in.  Yeah, the video won't be starting at
               // *zero*, but the displayed frame will still be the right one, so...good enough.  :-)
-              if (videoset.getLeader() <= 0 && (isSafari || isIE)) {
-                var halfOfAFrame = 1 / _getFps() / 2;
-                _seek(halfOfAFrame);
-              }
+
+              // 201506 - Chrome now seems to suffer from a similar problem in that we need to seek a bit further into the
+              // frame so as to not show the leader. Since so many quirks exist for the 0 frame case, we just always seek
+              // half a frame in when we are trying to load from the start of the video.
+              //if (videoset.getLeader() <= 0 && (isSafari || isIE)) {
+              var halfOfAFrame = 1 / _getFps() / 2;
+              _seek(halfOfAFrame);
+              //}
             } else {
               timelapseCurrentTimeInSeconds = initialTime;
               _seek(initialTime);

@@ -158,6 +158,7 @@ if (!org.gigapan.timelapse.Timelapse) {
     var isSafari = UTIL.isSafari();
     var originalIsPaused;
     var useTouchFriendlyUI = timelapse.useTouchFriendlyUI();
+    var timePadding = timelapse.getTimePadding();
 
     // Parameters
     var mode = "player";
@@ -425,11 +426,11 @@ if (!org.gigapan.timelapse.Timelapse) {
     };
 
     var sliderValueToTime = function(value) {
-      return (value + timelapse.getTimePadding()) / timelapse.getFps();
+      return (value + timePadding) / timelapse.getFps();
     };
 
     var timeToSliderValue = function(time) {
-      return time * timelapse.getFps() - timelapse.getTimePadding();
+      return time * timelapse.getFps() - timePadding;
     };
 
     var createShareButton = function() {
@@ -1198,7 +1199,7 @@ if (!org.gigapan.timelapse.Timelapse) {
           // If we are manually using the slider and we are pulling it back to the start
           // we wont actually get to time 0 because of how we are snapping.
           // Manually seek to position 0 when this happens.
-          seekFromTimeLineSlider($(this).slider("value"), ui.value);
+          seekFromTimeLineSlider($(this).slider("value"), ui.value + timePadding);
         }
       }).removeClass("ui-corner-all").children().removeClass("ui-corner-all");
       $("#" + viewerDivId + " .timelineSlider .ui-slider-handle").attr("title", "Drag to go to a different point in time");
