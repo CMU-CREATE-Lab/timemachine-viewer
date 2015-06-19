@@ -148,6 +148,7 @@ if (!org.gigapan.timelapse.Timelapse) {
     var showPanControls = ( typeof (settings["showPanControls"]) == "undefined") ? true : settings["showPanControls"];
     var showLogoOnDefaultUI = ( typeof (settings["showLogoOnDefaultUI"]) == "undefined") ? true : settings["showLogoOnDefaultUI"];
     var showEditorOnLoad = ( typeof (settings["showEditorOnLoad"]) == "undefined") ? false : settings["showEditorOnLoad"];
+    var showThumbnailTool = ( typeof (settings["showThumbnailTool"]) == "undefined") ? true : settings["showThumbnailTool"];
     var editorEnabled = timelapse.isEditorEnabled();
     var presentationSliderEnabled = timelapse.isPresentationSliderEnabled();
     var annotatorEnabled = timelapse.isAnnotatorEnabled();
@@ -463,6 +464,9 @@ if (!org.gigapan.timelapse.Timelapse) {
         setCopyButtonTooltip("hide", $shareUrlCopyTextButton);
       });
       // Share view accordion
+      if (!showThumbnailTool) {
+        removeAccordionPanel("share-thumbnail");
+      }
       var $accordion = $("#" + viewerDivId + " .shareView .accordion")
       $accordion.accordion({
         heightStyle: "content",
