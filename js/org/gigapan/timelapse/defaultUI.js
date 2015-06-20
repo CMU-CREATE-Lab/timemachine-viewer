@@ -356,7 +356,12 @@ if (!org.gigapan.timelapse.Timelapse) {
         dialogClass: "customDialog",
         appendTo: "#" + viewerDivId,
         width: 444,
-        minHeight: 50
+        minHeight: 50,
+        buttons: {
+          "OK": function() {
+            $(this).dialog("close");
+          }
+        }
       });
       // Add events
       $("#" + viewerDivId + " .reset-large-change-detect").click(function(event) {
