@@ -1111,3 +1111,7 @@ input::-ms-clear {
   width : 0;
   height: 0;
 }
+
+.shareView {
+  display: none;
+}
