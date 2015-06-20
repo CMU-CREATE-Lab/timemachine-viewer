@@ -237,6 +237,7 @@ if (!window['$']) {
     var keyIntervals = [];
     var targetViewChangeListeners = [];
     var viewChangeListeners = [];
+    var resizeListeners = [];
     var viewEndChangeListeners = [];
     var playbackRateChangeListeners = [];
     var zoomChangeListeners = [];
@@ -1018,6 +1019,21 @@ if (!window['$']) {
     };
     this.removeViewChangeListener = _removeViewChangeListener;
 
+    var addResizeListener = function(listener) {
+      resizeListeners.push(listener);
+    };
+    this.addResizeListener = addResizeListener;
+
+    var removeResizeListener = function(listener) {
+      for (var i = 0; i < resizeListeners.length; i++) {
+        if (resizeListeners[i] == listener[0]) {
+          resizeListeners.splice(i, 1);
+          break;
+        }
+      }
+    };
+    this.removeResizeListener = removeResizeListener;
+
     var _addViewEndChangeListener = function(listener) {
       viewEndChangeListeners.push(listener);
     };
@@ -1723,6 +1739,9 @@ if (!window['$']) {
         at: "center",
         of: window
       });
+      // Run listeners
+      for (var i = 0; i < resizeListeners.length; i++)
+        resizeListeners[i](viewportWidth, viewportHeight);
     };
     this.onresize = onresize;
 
