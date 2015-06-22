@@ -76,6 +76,7 @@ function setupPostMessageHandlers() {
       // Before we change the view, cancel any tours that may be playing.
       var snaplapseTour = timelapse.getSnaplapseForSharedTour();
       if (snaplapseTour) {
+        var viewerDivId = timelapse.getViewerDivId();
         snaplapseTour.clearSnaplapse();
         timelapse.stopParabolicMotion();
         $("#" + viewerDivId + " .snaplapseTourPlayBack").remove();
@@ -105,6 +106,7 @@ function setupPostMessageHandlers() {
       // Before we change the view, cancel any tours that may be playing.
       var snaplapseTour = timelapse.getSnaplapseForSharedTour();
       if (snaplapseTour) {
+        var viewerDivId = timelapse.getViewerDivId();
         snaplapseTour.clearSnaplapse();
         timelapse.stopParabolicMotion();
         $("#" + viewerDivId + " .snaplapseTourPlayBack").remove();
