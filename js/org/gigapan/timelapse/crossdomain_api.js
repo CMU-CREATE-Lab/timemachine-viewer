@@ -77,6 +77,7 @@ function setupPostMessageHandlers() {
       var snaplapseTour = timelapse.getSnaplapseForSharedTour();
       if (snaplapseTour) {
         snaplapseTour.clearSnaplapse();
+        timelapse.stopParabolicMotion();
         $("#" + viewerDivId + " .snaplapseTourPlayBack").remove();
         $("#" + viewerDivId + " .tourLoadOverlay").remove();
       }
@@ -103,8 +104,12 @@ function setupPostMessageHandlers() {
 
       // Before we change the view, cancel any tours that may be playing.
       var snaplapseTour = timelapse.getSnaplapseForSharedTour();
-      if (snaplapseTour)
+      if (snaplapseTour) {
         snaplapseTour.clearSnaplapse();
+        timelapse.stopParabolicMotion();
+        $("#" + viewerDivId + " .snaplapseTourPlayBack").remove();
+        $("#" + viewerDivId + " .tourLoadOverlay").remove();
+      }
 
       if (unsafe_data.v) {
         var newView = timelapse.unsafeViewToView(unsafe_data.v.split(","));
