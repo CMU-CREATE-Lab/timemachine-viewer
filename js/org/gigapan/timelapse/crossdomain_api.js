@@ -75,8 +75,11 @@ function setupPostMessageHandlers() {
     if (unsafe_data && typeof (unsafe_data) !== 'undefined' && timelapse) {
       // Before we change the view, cancel any tours that may be playing.
       var snaplapseTour = timelapse.getSnaplapseForSharedTour();
-      if (snaplapseTour)
+      if (snaplapseTour) {
         snaplapseTour.clearSnaplapse();
+        $("#" + viewerDivId + " .snaplapseTourPlayBack").remove();
+        $("#" + viewerDivId + " .tourLoadOverlay").remove();
+      }
 
       // Sanitize data
       var view = timelapse.unsafeViewToView(unsafe_data.view);
@@ -92,7 +95,7 @@ function setupPostMessageHandlers() {
       // If a share URL (e.g. #v=44.96185,59.06233,4.5,latLng&t=0.10) is passed in
       // as a string, then unpack it based on the hash vars.
       // Otherwise we are dealing with an object of unpacked hash vars, so move on.
-      if ( typeof (unsafe_data) === "string") {
+      if (typeof (unsafe_data) === "string") {
         if (unsafe_data.substr(0, 1) == "#")
           unsafe_data = unsafe_data.slice(1);
         unsafe_data = org.gigapan.Util.unpackVars(unsafe_data);
