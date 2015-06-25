@@ -72,6 +72,9 @@
           datasetType: "landsat",
           onTimeMachinePlayerReady: function(viewerDivId) {
             setupPostMessageHandlers();
+            timelapse.getSnaplapseForPresentationSlider().getSnaplapseViewer().addEventListener("slide-changed", function(slideTitle) {
+              post("from-timemachine-slide-changed", slideTitle);
+            });
           },
           scaleBarOptions: {
             enableVideoQualitySelector: true,
