@@ -413,6 +413,22 @@ if (!org.gigapan) {
     }
   };
 
+  org.gigapan.Util.getSharedDataType = function() {
+    var unsafe_matchURL = org.gigapan.Util.getUnsafeHashString().match(/#(.+)/);
+    if (unsafe_matchURL) {
+      var unsafe_sharedVars = org.gigapan.Util.unpackVars(unsafe_matchURL[1]);
+      if (unsafe_sharedVars.tour) {
+        return "tour";
+      } else if (unsafe_sharedVars.presentation) {
+        return "presentation";
+      } else {
+        return null;
+      }
+    } else {
+      return null;
+    }
+  };
+
   // Select an element in jQuery sortable
   org.gigapan.Util.selectSortableElements = function($sortableContainer, $elementsToSelect, autoScroll, scrollStartCallback) {
     if ($sortableContainer.length == 0)

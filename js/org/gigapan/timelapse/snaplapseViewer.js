@@ -363,10 +363,15 @@ if (!org.gigapan.timelapse.snaplapse) {
 
       // Handle editor hiding
       if (!usePresentationSlider) {
-        if (!showEditorOnLoad && !useCustomUI)
+        if (!showEditorOnLoad && !useCustomUI) {
           $("#" + composerDivId).hide();
-      } else
+        }
+        if (UTIL.getSharedDataType() == "presentation") {
+          $("#" + composerDivId).hide();
+        }
+      } else {
         $("#" + composerDivId).hide();
+      }
 
       // Handle description box
       if (uiEnabled && !usePresentationSlider)
