@@ -1257,6 +1257,7 @@ if (!org.gigapan.timelapse.Timelapse) {
         $("#" + viewerDivId + " .shareView").remove();
       }
       $("#" + viewerDivId + " .captureTime").remove();
+      $("#" + viewerDivId + " .toolDialog").remove();
     }
   };
   //end of org.gigapan.timelapse.DefaultUI
