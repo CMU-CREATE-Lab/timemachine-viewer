@@ -1672,7 +1672,7 @@ if (!window['$']) {
       var originalVideoHeight = datasetJSON["video_height"] - datasetJSON["tile_height"];
 
       var viewerBottomPx = 0;
-      if (editorEnabled)
+      if (editorEnabled && UTIL.getSharedDataType() != "presentation")
         viewerBottomPx = 210;
       else {
         if (presentationSliderEnabled)
