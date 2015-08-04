@@ -1760,6 +1760,8 @@ if (!window['$']) {
       viewportWidth = $viewerDiv.width();
       viewportHeight = $viewerDiv.height();
 
+      if ($( "#" + viewerDivId + ":visible").length == 0) return;
+
       var originalVideoStretchRatio = videoStretchRatio;
       var originalVideoWidth = datasetJSON["video_width"] - datasetJSON["tile_width"];
       var originalVideoHeight = datasetJSON["video_height"] - datasetJSON["tile_height"];
