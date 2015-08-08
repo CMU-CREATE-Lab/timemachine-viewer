@@ -1231,8 +1231,9 @@ if (!window['$']) {
     };
     this.normalizeView = _normalizeView;
 
-    var getShareView = function() {
-      var shareStr = '#v=' + _getViewStr() + '&t=' + thisObj.getCurrentTime().toFixed(2);
+    var getShareView = function(sharedTimestamp) {
+      sharedTimestamp = sharedTimestamp || thisObj.getCurrentTime().toFixed(2);
+      var shareStr = '#v=' + _getViewStr() + '&t=' + sharedTimestamp;
       if (datasetType == "modis" && customUI.getLocker() != "none")
         shareStr += '&l=' + customUI.getLocker();
       if (datasetType == "breathecam")
