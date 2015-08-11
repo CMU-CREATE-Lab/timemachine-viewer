@@ -153,7 +153,7 @@ if (!org.gigapan.timelapse.Timelapse) {
     var presentationSliderEnabled = timelapse.isPresentationSliderEnabled();
     var annotatorEnabled = timelapse.isAnnotatorEnabled();
     var changeDetectionEnabled = timelapse.isChangeDetectionEnabled();
-    var showThumbnailToolOnLoad = ( typeof (settings["showThumbnailToolOnLoad"]) == "undefined") ? false : settings["showThumbnailToolOnLoad"];
+    var showChangeDetectionOnLoad = ( typeof (settings["showChangeDetectionOnLoad"]) == "undefined") ? false : settings["showChangeDetectionOnLoad"];
 
     // Flags
     var isSafari = UTIL.isSafari();
@@ -309,9 +309,9 @@ if (!org.gigapan.timelapse.Timelapse) {
       }
       var activeState = false;
       if (showEditorOnLoad) {
-        showThumbnailToolOnLoad = false;
+        showChangeDetectionOnLoad = false;
         activeState = 0;
-      } else if (showThumbnailToolOnLoad) {
+      } else if (showChangeDetectionOnLoad) {
         activeState = $("#" + viewerDivId + " .toolDialog .accordion h3").length - 1;
         if (typeof changeDetectionTool != "undefined") {
           changeDetectionTool.enable();

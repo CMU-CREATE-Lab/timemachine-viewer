@@ -80,9 +80,10 @@
           startEditorFromPresentationMode: true,
           mediaType: ".mp4",
           showThumbnailTool: true,
-          showThumbnailToolOnLoad: true,
+          showChangeDetectionOnLoad: true,
           onTimeMachinePlayerReady: function(viewerDivId) {
             setupPostMessageHandlers();
+            timelapse.getChangeDetectionTool().drawResults(smoke_detection.values);
           },
           disableTourLooping: true,
           showLogoOnDefaultUI: false,
