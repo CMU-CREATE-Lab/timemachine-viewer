@@ -153,6 +153,7 @@ if (!org.gigapan.timelapse.Timelapse) {
     var presentationSliderEnabled = timelapse.isPresentationSliderEnabled();
     var annotatorEnabled = timelapse.isAnnotatorEnabled();
     var changeDetectionEnabled = timelapse.isChangeDetectionEnabled();
+    var showThumbnailToolOnLoad = ( typeof (settings["showThumbnailToolOnLoad"]) == "undefined") ? false : settings["showThumbnailToolOnLoad"];
 
     // Flags
     var isSafari = UTIL.isSafari();
@@ -308,7 +309,13 @@ if (!org.gigapan.timelapse.Timelapse) {
       }
       var activeState = false;
       if (showEditorOnLoad) {
+        showThumbnailToolOnLoad = false;
         activeState = 0;
+      } else if (showThumbnailToolOnLoad) {
+        activeState = $("#" + viewerDivId + " .toolDialog .accordion h3").length - 1;
+        if (typeof changeDetectionTool != "undefined") {
+          changeDetectionTool.enable();
+        }
       }
       // Tool accordion
       var $accordion = $("#" + viewerDivId + " .toolDialog .accordion");
