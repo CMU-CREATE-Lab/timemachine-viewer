@@ -111,6 +111,7 @@
       var $timelineSliderFiller;
 
       var initFastforward = function() {
+        timelapse.setNewView({x: 2585.5560361492453, y: 1406.6228732376014, scale: 0.5818041565461248}, true);
         timelapse.getChangeDetectionTool().hideFilterBound();
         timelapse.getChangeDetectionTool().drawResults(smoke_detection.values);
         $("#" + timelapse.getViewerDivId() + " .tool").hide();
