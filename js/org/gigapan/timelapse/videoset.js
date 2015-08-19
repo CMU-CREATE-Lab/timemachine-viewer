@@ -170,6 +170,7 @@ if (!window['$']) {
 
     var isIE = UTIL.isIE();
     var isIE9 = UTIL.isIE9();
+    var isIEEdge = UTIL.isIEEdge();
     var isOperaLegacy = UTIL.isOperaLegacy();
     var isChrome = UTIL.isChrome();
     var isSafari = UTIL.isSafari();
@@ -413,8 +414,8 @@ if (!window['$']) {
 
       _deleteUnneededVideos();
 
-      if (isOperaLegacy) {
-        // Videos in Opera <= 12 often seem to get stuck in a state of always seeking.
+      if (isIEEdge || isOperaLegacy) {
+        // Videos in Opera <= 12 and IE Edge often seem to get stuck in a state of always seeking.
         // This will ensure that if we are stuck, we reload the video.
         video.addEventListener('seeking', videoSeeking, false);
       }
@@ -459,6 +460,10 @@ if (!window['$']) {
 
       if (viewerType != "video") {
         video.addEventListener('playing', function() {
+          if (video.handleSeekStuck && !advancing) {
+            video.pause();
+            video.handleSeekStuck = null;
+          }
           if (video.drawIntervalId == null)
             video.drawIntervalId = setInterval(function() {
               drawToCanvas(video);
@@ -1041,8 +1046,10 @@ if (!window['$']) {
     var videoSeeking = function(event) {
       window.clearInterval(videoIsSeekingIntervalCheck);
       videoIsSeekingIntervalCheck = window.setInterval(function() {
-        UTIL.error("We're still seeking after 250ms, so let's reload the video. This is an Opera <= 12 only workaround.");
+        UTIL.error("We're still seeking after 250ms, so let's reload the video. This is an Opera <= 12 and IE Edge only workaround.");
         event.target.load();
+        event.target.handleSeekStuck = true;
+        event.target.play();
       }, 250);
     };
 
@@ -1415,7 +1422,7 @@ if (!window['$']) {
             }
           }
         }
-        if (isIE && video.fromSeek && video.readyState != 4) {
+        if ((isIE || isOperaLegacy) && video.fromSeek && video.readyState != 4) {
            if (!seekRedrawTimer) {
              seekRedrawTimer = setTimeout(function() {
                seekRedrawTimer = null;

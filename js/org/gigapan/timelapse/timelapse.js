@@ -1380,8 +1380,8 @@ if (!window['$']) {
     this.pause = _pause;
 
     var _seek = function(t) {
-      // In IE, seeking to <= 20% of the first frame causes flickering from that point forward
-      var minIESeekTime = (1 / _getFps()) * 0.2;
+      // In IE, seeking to <= 50% of the first frame causes flickering from that point forward
+      var minIESeekTime = (1 / _getFps()) * 0.5;
       var seekTime = Math.min(Math.max(0, t), timelapseDurationInSeconds);
       if (isIE && seekTime < minIESeekTime)
         seekTime = minIESeekTime;

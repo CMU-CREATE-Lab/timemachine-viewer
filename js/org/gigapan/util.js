@@ -70,12 +70,14 @@ if (!org.gigapan) {
 // CODE
 //
 (function() {
-  var isChromeUserAgent = navigator.userAgent.match(/Chrome/) != null;
-  // The Chrome user agent actually has the word "Safari" in it too!
-  var isSafariUserAgent = navigator.userAgent.match(/Safari/) != null && !isChromeUserAgent;
-  var isMSIEUserAgent = navigator.userAgent.match(/MSIE|Trident/) != null;
-  var matchIEVersion = navigator.userAgent.match(/MSIE\s([\d]+)/);
-  var isIE9UserAgent = (isMSIEUserAgent && matchIEVersion && matchIEVersion[1] == 9);
+  var isMSIEUserAgent = navigator.userAgent.match(/MSIE|Trident|Edge/) != null;
+  // The Edge (IE 12+) user agent actually has the word "Chrome" in it.
+  var isChromeUserAgent = navigator.userAgent.match(/Chrome/) != null && !isMSIEUserAgent;
+  // The Chrome and Edge (IE 12+) user agents actually have the word "Safari" in it.
+  var isSafariUserAgent = navigator.userAgent.match(/Safari/) != null && !isChromeUserAgent && !isMSIEUserAgent;
+  var matchIEPre11Version = navigator.userAgent.match(/MSIE\s([\d]+)/);
+  var isIEEdgeUserAgent = !!(isMSIEUserAgent && navigator.userAgent.match(/Edge\/([\d]+)/))
+  var isIE9UserAgent = !!(isMSIEUserAgent && matchIEPre11Version && matchIEPre11Version[1] == 9);
   var isFirefoxUserAgent = navigator.userAgent.match(/Firefox/) != null;
   var isOperaLegacyUserAgent = typeof (window.opera) !== "undefined";
   var isOperaUserAgent = navigator.userAgent.match(/OPR/) != null;
@@ -171,6 +173,10 @@ if (!org.gigapan) {
 
   org.gigapan.Util.isIE9 = function() {
     return isIE9UserAgent;
+  };
+
+  org.gigapan.Util.isIEEdge = function() {
+    return isIEEdgeUserAgent;
   };
 
   org.gigapan.Util.isOperaLegacy = function() {
