@@ -3224,6 +3224,9 @@ if (!window['$']) {
       videoDiv['ondblclick'] = handleDoubleClickEvent;
 
       $(videoDiv).mousewheel(thisObj.handleMousescrollEvent);
+      // Disable this feature, since in older browsers this can cause scrolling to be slower than native.
+      // In addition, scrolling breaks horribly for Opera <= 12 when this is enabled.
+      $.event.special.mousewheel.settings.adjustOldDeltas = false;
 
       if (hasTouchSupport) {
         document.addEventListener("touchstart", touch2Mouse, true);
