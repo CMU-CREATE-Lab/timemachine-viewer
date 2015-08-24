@@ -146,7 +146,6 @@ if (!org.gigapan.timelapse.Timelapse) {
     var showMainControls = ( typeof (settings["showMainControls"]) == "undefined") ? true : settings["showMainControls"];
     var showZoomControls = ( typeof (settings["showZoomControls"]) == "undefined") ? true : settings["showZoomControls"];
     var showPanControls = ( typeof (settings["showPanControls"]) == "undefined") ? true : settings["showPanControls"];
-    var showLogoOnDefaultUI = ( typeof (settings["showLogoOnDefaultUI"]) == "undefined") ? true : settings["showLogoOnDefaultUI"];
     var showEditorOnLoad = ( typeof (settings["showEditorOnLoad"]) == "undefined") ? false : settings["showEditorOnLoad"];
     var showThumbnailTool = ( typeof (settings["showThumbnailTool"]) == "undefined") ? false : settings["showThumbnailTool"];
     var editorEnabled = timelapse.isEditorEnabled();
@@ -280,8 +279,6 @@ if (!org.gigapan.timelapse.Timelapse) {
         $("#" + viewerDivId + " .controls").hide();
         $("#" + viewerDivId + " .timelineSliderFiller").hide();
       }
-      if (!showLogoOnDefaultUI)
-        $("#" + viewerDivId + " .logo").hide();
     };
 
     var createToolButton = function() {
@@ -311,6 +308,7 @@ if (!org.gigapan.timelapse.Timelapse) {
       if (showEditorOnLoad) {
         showChangeDetectionOnLoad = false;
         activeState = 0;
+        setMode("editor");
       } else if (showChangeDetectionOnLoad) {
         activeState = $("#" + viewerDivId + " .toolDialog .accordion h3").length - 1;
         if (typeof changeDetectionTool != "undefined") {

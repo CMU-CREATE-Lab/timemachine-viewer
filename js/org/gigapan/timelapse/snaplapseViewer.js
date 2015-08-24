@@ -1230,20 +1230,16 @@ if (!org.gigapan.timelapse.snaplapse) {
       var positionBottom;
       var positionLeft;
       var fontSize;
+      var $captureTime = $("#" + viewerDivId + " .captureTime");
       if (position == "up") {
-        positionLeft = 90;
-        positionBottom = 42;
-        fontSize = 18;
+        if($captureTime.hasClass("captureTimeSmall")) {
+          $captureTime.removeClass("captureTimeSmall");
+        }
       } else if (position == "down") {
-        positionLeft = 8;
-        positionBottom = 5;
-        fontSize = 15;
+        if(!$captureTime.hasClass("captureTimeSmall")) {
+          $captureTime.addClass("captureTimeSmall");
+        }
       }
-      $("#" + viewerDivId + " .captureTime").css({
-        "bottom": positionBottom + "px",
-        "left": positionLeft + "px",
-        "font-size": fontSize + "px"
-      });
     };
 
     var setKeyframeThumbail = function(keyframe) {
