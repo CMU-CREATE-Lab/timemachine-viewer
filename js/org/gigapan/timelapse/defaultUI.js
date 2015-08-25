@@ -1240,14 +1240,32 @@ if (!org.gigapan.timelapse.Timelapse) {
     };
     this.createTimelineSlider = createTimelineSlider;
 
+    var resetTimelineSlider = function() {
+      // Recreate timeline slider.
+      // There seems to be an issue with the jQuery UI slider widget, since just changing the max value and refreshing
+      // the slider does not proplerly update the available range. So we have to manually recreate it...
+      var $timeSlider = $("#" + viewerDivId + " .timelineSlider");
+      $timeSlider.slider("destroy");
+      createTimelineSlider();
+      $timeSlider.slider("option", "value", timelapse.getTimelapseCurrentCaptureTimeIndex());
+      // Recreate timeline range selector for the thumbnail tool.
+      if (settings["showThumbnailTool"]) {
+        var $timelineSelector = $("#" + viewerDivId + " .timelineSelector");
+        $timelineSelector.slider("destroy");
+        createTimelineSelector();
+        resetcaptureTimeSpinnerRange();
+        resetShareThumbnailUI();
+      }
+    };
+    this.resetTimelineSlider = resetTimelineSlider;
+
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////
     //
     // Constructor code
     //
     createSideToolBar();
-
+    createMainUI();
     if (!useCustomUI) {
-      createMainUI();
       if (timelapse.getPlayOnLoad())
         timelapse.play();
     } else {// custom UI is being used, alter main UI accordingly
@@ -1255,14 +1273,14 @@ if (!org.gigapan.timelapse.Timelapse) {
       if (showShareBtn) {
         createShareButton();
         var shareButton = $("#" + viewerDivId + " .share");
-        $("#" + viewerDivId + " .controls").children().not(shareButton).remove();
+        $("#" + viewerDivId + " .controls").children().not(shareButton).hide();
         shareButton.css("bottom", "110px");
       } else {
-        $("#" + viewerDivId + " .controls").remove();
-        $("#" + viewerDivId + " .shareView").remove();
+        $("#" + viewerDivId + " .controls").hide();
+        $("#" + viewerDivId + " .shareView").hide();
       }
-      $("#" + viewerDivId + " .captureTime").remove();
-      $("#" + viewerDivId + " .toolDialog").remove();
+      $("#" + viewerDivId + " .captureTime").hide();
+      $("#" + viewerDivId + " .toolDialog").hide();
     }
   };
   //end of org.gigapan.timelapse.DefaultUI

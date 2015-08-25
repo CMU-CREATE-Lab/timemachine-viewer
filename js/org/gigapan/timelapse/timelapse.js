@@ -178,6 +178,7 @@ if (!window['$']) {
 
     // DOM elements
     var dataPanesId;
+    var $previousCustomUIElements;
 
     // Canvas version
     var canvas;
@@ -270,6 +271,7 @@ if (!window['$']) {
     var mediaType = null;
     var desiredInitialDate;
     var onNewTimelapseLoadCompleteCallBack;
+    var currentTimelineStyle;
 
     // animateRate in milliseconds, 40 means 25 FPS
     var animateRate = 40;
@@ -2910,25 +2912,14 @@ if (!window['$']) {
           }
 
           if (didFirstTimeOnLoad) {
+            timelapseCurrentCaptureTimeIndex = Math.min(frames - 1, Math.floor(timelapseCurrentTimeInSeconds * _getFps()));
+            // Recreate timeline slider.
+            // There seems to be an issue with the jQuery UI slider widget, since just changing the max value and refreshing
+            // the slider does not proplerly update the available range. So we have to manually recreate it...
             if (customUI) {
-              $("#" + viewerDivId + " .customTimeline").remove();
-              $("#" + viewerDivId + " .timeText").remove();
-              customUI.createCustomTimeline();
+              customUI.resetCustomTimeline();
             } else {
-              timelapseCurrentCaptureTimeIndex = Math.min(frames - 1, Math.floor(timelapseCurrentTimeInSeconds * _getFps()));
-              // Recreate timeline slider.
-              // There seems to be an issue with the jQuery UI slider widget, since just changing the max value and refreshing
-              // the slider does not proplerly update the available range. So we have to manually recreate it...
-              var $timeSlider = $("#" + viewerDivId + " .timelineSlider");
-              $timeSlider.slider("destroy");
-              defaultUI.createTimelineSlider();
-              $timeSlider.slider("option", "value", timelapseCurrentCaptureTimeIndex);
-              // Recreate timeline range selector for the thumbnail tool.
-              var $timelineSelector = $("#" + viewerDivId + " .timelineSelector");
-              $timelineSelector.slider("destroy");
-              defaultUI.createTimelineSelector();
-              defaultUI.resetcaptureTimeSpinnerRange();
-              defaultUI.resetShareThumbnailUI();
+              defaultUI.resetTimelineSlider();
             }
           } else {
             loadSharedDataFromUnsafeURL(UTIL.getUnsafeHashString());
@@ -2973,7 +2964,7 @@ if (!window['$']) {
         snaplapseForPresentationSlider = new org.gigapan.timelapse.Snaplapse(thisObj, settings, "presentation");
       if (annotatorEnabled)
         annotator = new org.gigapan.timelapse.Annotator(thisObj);
-      if (useThumbnailServer) {
+      if (useThumbnailServer && settings["showThumbnailTool"]) {
         var view = thisObj.getView();
         var scaleOffset = 40 / view.scale;
         var thumbnailToolOptions = {};
@@ -3018,13 +3009,49 @@ if (!window['$']) {
       $(videoDiv).focus();
     }
 
-
     this.switchLayer = function(layerNum) {
       var newIndex = layerNum * tmJSON["sizes"].length;
       datasetLayer = layerNum;
       loadTimelapseWithPreviousViewAndTime = true;
       validateAndSetDatasetIndex(newIndex);
       loadTimelapseCallback(tmJSON);
+    };
+
+    var loadNewTimeline = function(url, newTimelineStyle) {
+      currentTimelineStyle = newTimelineStyle;
+      var rootUrl = url.substring(0, url.lastIndexOf("/") + 1);
+      var file = url.substring(url.lastIndexOf("/") + 1, url.length);
+      UTIL.ajax("json", rootUrl, file + getMetadataCacheBreaker(), loadNewTimelineCallback);
+    };
+    this.loadNewTimeline = loadNewTimeline;
+
+    var loadNewTimelineCallback = function(json) {
+      captureTimes = json["capture-times"];
+      frames = captureTimes.length;
+      timelapseDurationInSeconds = (frames - 0.7) / _getFps();
+      videoset.setDuration((1 / _getFps()) * frames);
+      timelapseCurrentCaptureTimeIndex = Math.min(frames - 1, Math.floor(timelapseCurrentTimeInSeconds * _getFps()));
+
+      if (currentTimelineStyle == "customUI") {
+        $("#" + viewerDivId + " .controls").hide();
+        $("#" + viewerDivId + " .customControl").show().css("z-index", "19");
+        $previousCustomUIElements.appendTo("#" + viewerDivId + " .customControl");
+        $("#" + viewerDivId + " .timelineSliderFiller").css("right", "21px").hide();
+        $("#" + viewerDivId + " .captureTime").hide();
+        $("#" + viewerDivId + " .customControl .customHelpLabel").css({"bottom" : "44px", "z-index" : "inherit"});
+
+        customUI.resetCustomTimeline();
+      } else {
+        $previousCustomUIElements = $("#" + viewerDivId + " .customControl").css("z-index", "inherit").children().not(".customHelpLabel, .customHelpCheckbox").detach();
+        $("#" + viewerDivId + " .controls").show();
+        $("#" + viewerDivId + " .helpPlayerLabel").hide();
+        $("#" + viewerDivId + " .customControl .customHelpLabel").css({"bottom" : "27px", "z-index" : "19"});
+        $("#" + viewerDivId + " .timelineSliderFiller").css("right", "85px").show();
+        $("#" + viewerDivId + " .captureTime").show();
+        $("#" + viewerDivId + " .help").hide();
+
+        defaultUI.resetTimelineSlider();
+      }
     };
 
     var loadTimelapse = function(url, desiredView, desiredTime, preserveCurrentViewAndTime, desiredDate, onLoadCompleteCallBack) {

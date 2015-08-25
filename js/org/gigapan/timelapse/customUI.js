@@ -895,6 +895,13 @@ if (!org.gigapan.timelapse.Timelapse) {
     };
     this.createCustomTimeline = createCustomTimeline;
 
+    var resetCustomTimeline = function() {
+      $("#" + viewerDivId + " .customTimeline").remove();
+      $("#" + viewerDivId + " .timeText").remove();
+      createCustomTimeline();
+    };
+    this.resetCustomTimeline = resetCustomTimeline;
+
     var handleEndTimeDotMousedown = function(event) {
       originalIsPaused = timelapse.isPaused();
       if (!originalIsPaused)
