@@ -161,6 +161,7 @@ if (!window['$']) {
     var presentationSliderEnabled = ( typeof (settings["enablePresentationSlider"]) == "undefined") ? false : settings["enablePresentationSlider"];
     var annotatorEnabled = ( typeof (settings["enableAnnotator"]) == "undefined") ? false : settings["enableAnnotator"];
     var changeDetectionEnabled = ( typeof (settings["enableChangeDetection"]) == "undefined") ? false : settings["enableChangeDetection"];
+    var timelineMetadataVisualizerEnabled = ( typeof (settings["enableTimelineMetadataVisualizer"]) == "undefined") ? false : settings["enableTimelineMetadataVisualizer"];
 
     // Objects
     var videoset;
@@ -175,6 +176,7 @@ if (!window['$']) {
     var visualizer;
     var thumbnailTool;
     var changeDetectionTool;
+    var timelineMetadataVisualizer;
 
     // DOM elements
     var dataPanesId;
@@ -428,6 +430,10 @@ if (!window['$']) {
 
     this.getCustomUI = function() {
       return customUI;
+    };
+
+    this.getTimelineMetadataVisualizer = function() {
+      return timelineMetadataVisualizer;
     };
 
     this.getMinViewportHeight = function() {
@@ -2978,6 +2984,10 @@ if (!window['$']) {
       defaultUI = new org.gigapan.timelapse.DefaultUI(thisObj, settings);
       if (useCustomUI)
         customUI = new org.gigapan.timelapse.CustomUI(thisObj, settings);
+
+      if(timelineMetadataVisualizerEnabled) {
+        timelineMetadataVisualizer = new org.gigapan.timelapse.TimelineMetadataVisualizer(thisObj);
+      }
 
       // TODO(pdille):
       // Bring back this feature for those with RealPlayer/DivX or other plugins that take-over the video tag element.
