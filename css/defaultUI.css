@@ -434,9 +434,9 @@ body, html {
 
 .timelineSelectorFiller {
   position: absolute;
-  bottom: 25px;
-  left: 160px;
-  right: 100px;
+  bottom: 48px;
+  left: 89px;
+  right: 21px;
   width: auto;
   box-shadow: 2px 2px 3px rgba(0, 0, 0, 0.3);
   border: 1px solid #656565;
