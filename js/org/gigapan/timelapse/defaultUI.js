@@ -1056,8 +1056,6 @@ if (!org.gigapan.timelapse.Timelapse) {
     // Change the UI according to different modes
     var setMode = function(newMode) {
       var snaplapse = timelapse.getSnaplapse();
-      var smallGoogleMap = timelapse.getSmallGoogleMap();
-      var enableSmallGoogleMap = timelapse.isSmallGoogleMapEnable();
       var annotator = timelapse.getAnnotator();
       var panoVideo, snaplapseViewer;
       if (visualizer)

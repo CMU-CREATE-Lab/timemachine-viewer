@@ -180,8 +180,8 @@ if (!org.gigapan.timelapse.snaplapse) {
         isHidingCustomUI = true;
         $("#" + viewerDivId + " .sideToolBar").hide();
         $("#" + viewerDivId + " .googleLogo").css("bottom", "-=45px");
-        $("#" + viewerDivId + " .toggleGoogleMapBtn").hide();
-        $("#" + viewerDivId + " .smallMapResizer").hide();
+        $("#" + viewerDivId + " .toggleContextMapBtn").hide();
+        $("#" + viewerDivId + " .contextMapResizer").hide();
         $("#" + viewerDivId + " .customTimeline").hide();
         $("#" + viewerDivId + " .customHelpLabel").hide();
         $("#" + viewerDivId + " .videoQualityContainer").hide();
@@ -205,8 +205,8 @@ if (!org.gigapan.timelapse.snaplapse) {
         isHidingCustomUI = false;
         $("#" + viewerDivId + " .sideToolBar").show();
         $("#" + viewerDivId + " .googleLogo").css("bottom", "+=45px");
-        $("#" + viewerDivId + " .toggleGoogleMapBtn").show();
-        $("#" + viewerDivId + " .smallMapResizer").show();
+        $("#" + viewerDivId + " .toggleContextMapBtn").show();
+        $("#" + viewerDivId + " .contextMapResizer").show();
         $("#" + viewerDivId + " .customTimeline").show();
         $("#" + viewerDivId + " .customHelpLabel").show();
         $("#" + viewerDivId + " .videoQualityContainer").show();

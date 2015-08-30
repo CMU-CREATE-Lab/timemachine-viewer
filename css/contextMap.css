@@ -1,10 +1,10 @@
 @charset "UTF-8";
 
-.toggleGoogleMapBtn.ui-state-default {
+.toggleContextMapBtn.ui-state-default {
   background: white;
 }
 
-.toggleGoogleMapBtn.ui-button {
+.toggleContextMapBtn.ui-button {
   width: 20px;
   height: 20px;
   margin-right: 0px;
@@ -12,18 +12,20 @@
   border-radius: 0px !important;
   vertical-align: middle;
   box-shadow: 2px 2px 3px rgba(0,0,0,0.3);
+  z-index: 999;
 }
 
-.toggleGoogleMapBtn.ui-custom-button {
+.toggleContextMapBtn.ui-custom-button {
   width: 32px !important;
   height: 32px !important;
 }
 
-.toggleGoogleMapBtn .ui-icon {
+.toggleContextMapBtn .ui-icon {
   margin-left: -8px;
 }
 
-.smallMapContainer {
+.contextMapContainer {
+  /* Border must be 0px */
   border-top: 0px solid #000000;
   border-left: 0px solid #000000;
   border-right: 0px solid #000000;
@@ -32,7 +34,7 @@
   z-index: 12;
 }
 
-.smallGoogleMap {
+.contextMap {
   border: 0px solid #000000;
   position: inherit;
   width: 100%;
@@ -41,7 +43,7 @@
   text-align: center;
 }
 
-.smallMapResizer {
+.contextMapResizer {
   position: absolute;
   bottom: 0px;
   left: 0px;
@@ -51,9 +53,10 @@
   width: 20px;
   height: 20px;
   cursor: sw-resize;
+  z-index: 999;
 }
 
-.smallMapResizer-touchFriendly {
+.contextMapResizer-touchFriendly {
   background-image: url(../images/touch/resize-sw.png) !important;
   width: 30px;
   height: 30px;

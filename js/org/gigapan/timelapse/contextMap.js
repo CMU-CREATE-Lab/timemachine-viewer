@@ -1,12 +1,12 @@
 // @license
 // Redistribution and use in source and binary forms ...
-
 /*
- Class for managing the small google map for the timelapse.
+ Class for managing the context map map for the timelapse.
 
  Dependencies:
  * org.gigapan.timelapse.Timelapse
  * jQuery (http://jquery.com/)
+ * Leaflet (http://leafletjs.com/)
 
  Copyright 2013 Carnegie Mellon University. All rights reserved.
 
@@ -35,6 +35,7 @@
  or implied, of Carnegie Mellon University.
 
  Authors:
+ Paul Dille (pdille@cmucreatelab.org)
  Yen-Chia Hsu (legenddolphin@gmail.com)
 
  VERIFY NAMESPACE
@@ -48,7 +49,7 @@ var org;
 if (!org) {
   org = {};
 } else {
-  if ( typeof org != "object") {
+  if (typeof org != "object") {
     var orgExistsMessage = "Error: failed to create org namespace: org already exists and is not an object";
     alert(orgExistsMessage);
     throw new Error(orgExistsMessage);
@@ -59,7 +60,7 @@ if (!org) {
 if (!org.gigapan) {
   org.gigapan = {};
 } else {
-  if ( typeof org.gigapan != "object") {
+  if (typeof org.gigapan != "object") {
     var orgGigapanExistsMessage = "Error: failed to create org.gigapan namespace: org.gigapan already exists and is not an object";
     alert(orgGigapanExistsMessage);
     throw new Error(orgGigapanExistsMessage);
@@ -70,7 +71,7 @@ if (!org.gigapan) {
 if (!org.gigapan.timelapse) {
   org.gigapan.timelapse = {};
 } else {
-  if ( typeof org.gigapan.timelapse != "object") {
+  if (typeof org.gigapan.timelapse != "object") {
     var orgGigapanTimelapseExistsMessage = "Error: failed to create org.gigapan.timelapse namespace: org.gigapan.timelapse already exists and is not an object";
     alert(orgGigapanTimelapseExistsMessage);
     throw new Error(orgGigapanTimelapseExistsMessage);
@@ -81,7 +82,7 @@ if (!org.gigapan.timelapse) {
 // DEPENDECIES
 //
 if (!org.gigapan.timelapse.Timelapse) {
-  var noTimelapseMsg = "The org.gigapan.timelapse.Timelapse library is required by org.gigapan.timelapse.SmallGoogleMap";
+  var noTimelapseMsg = "The org.gigapan.timelapse.Timelapse library is required by org.gigapan.timelapse.contextMap";
   alert(noTimelapseMsg);
   throw new Error(noTimelapseMsg);
 }
@@ -91,11 +92,12 @@ if (!org.gigapan.timelapse.Timelapse) {
 //
 (function() {
   var UTIL = org.gigapan.Util;
-  org.gigapan.timelapse.SmallGoogleMap = function(smallGoogleMapOptions, timelapse, settings) {
+  org.gigapan.timelapse.ContextMap = function(contextMapOptions, timelapse, settings) {
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////
     //
     // Class variables
     //
+    var availableTileSources = ["Bing", "Google", "OpenStreetMap"];
     var isHyperwall = settings["isHyperwall"];
     var useTouchFriendlyUI = timelapse.useTouchFriendlyUI();
     var minHeight = isHyperwall ? 450 : 120;
@@ -104,19 +106,20 @@ if (!org.gigapan.timelapse.Timelapse) {
     var maxWidth = isHyperwall ? 1024 : 504;
     var startWidth = useTouchFriendlyUI ? 300 : minWidth;
     var startHeight = useTouchFriendlyUI ? 235 : minHeight;
-    if ((typeof (smallGoogleMapOptions["geometry"]) != "undefined")) {
-      if ((typeof (smallGoogleMapOptions["geometry"]["width"]) != "undefined")) {
-        startWidth = smallGoogleMapOptions["geometry"]["width"];
-        maxWidth = smallGoogleMapOptions["geometry"]["width"] + 100;
+    if ((typeof(contextMapOptions["geometry"]) != "undefined")) {
+      if ((typeof(contextMapOptions["geometry"]["width"]) != "undefined")) {
+        startWidth = contextMapOptions["geometry"]["width"];
+        maxWidth = contextMapOptions["geometry"]["width"] + 100;
       }
-      if ((typeof(smallGoogleMapOptions["geometry"]["height"]) != "undefined")) {
-        startHeight = smallGoogleMapOptions["geometry"]["height"];
-        maxHeight = smallGoogleMapOptions["geometry"]["height"] + 100;
+      if ((typeof(contextMapOptions["geometry"]["height"]) != "undefined")) {
+        startHeight = contextMapOptions["geometry"]["height"];
+        maxHeight = contextMapOptions["geometry"]["height"] + 100;
       }
     }
-    var smallGoogleMapDivId = ( typeof (smallGoogleMapOptions["smallGoogleMapDiv"]) == "undefined") ? "smallGoogleMap2013" : smallGoogleMapOptions["smallGoogleMapDiv"];
-    var resizable = ( typeof (smallGoogleMapOptions["resizable"]) == "undefined") ? true : smallGoogleMapOptions["resizable"];
-    var showToggleBtn = ( typeof (smallGoogleMapOptions["showToggleBtn"]) == "undefined") ? true : smallGoogleMapOptions["showToggleBtn"];
+    var contextMapDivId = (typeof(contextMapOptions["contextMapDiv"]) == "undefined") ? "timelapse-contextmap" : contextMapOptions["contextMapDiv"];
+    var resizable = (typeof(contextMapOptions["resizable"]) == "undefined") ? true : contextMapOptions["resizable"];
+    var showToggleBtn = (typeof(contextMapOptions["showToggleBtn"]) == "undefined") ? true : contextMapOptions["showToggleBtn"];
+    var tileType = (availableTileSources.indexOf(contextMapOptions["tileType"]) < 0) ? "Google" : contextMapOptions["tileType"];
     var mapResizeStart = {
       "x": undefined,
       "y": undefined
@@ -128,8 +131,8 @@ if (!org.gigapan.timelapse.Timelapse) {
       "top": 21
     };
     var lastMapGeometry;
-    var googleMap;
-    var googleMapBox;
+    var contextMap;
+    var contextMapBox;
     var newestLocation = {
       "lat": undefined,
       "lng": undefined
@@ -143,11 +146,10 @@ if (!org.gigapan.timelapse.Timelapse) {
     var smallMapContainer_height;
     var smallMapResizer_width;
     var smallMapResizer_height;
-    var mapBoxStrokeOpacity = 0.8;
-    var mapBoxFillOpacity = 0.2;
     var isMapMinimized = false;
     var zoomOffset;
-    var oldGoogleMapZoom;
+    var oldMapZoom;
+    var tileLayer;
 
     // DOM elements
     var smallMapContainer;
@@ -162,13 +164,12 @@ if (!org.gigapan.timelapse.Timelapse) {
     // Private methods
     //
 
-    // Resize the small google map (top-right mode)
-    var resizeSmallMap = function(event) {
+    // Resize the context map (top-right mode)
+    var resizeContextMap = function(event) {
       var nowX = event.clientX;
       var nowY = event.clientY;
       var dx = parseInt(mapResizeStart.x - nowX);
       var dy = parseInt(nowY - mapResizeStart.y);
-      // !!!!!NEED to set the border to 0px!!!!!
       var newHeight = mapGeometry.height + dy;
       var newWidth = mapGeometry.width + dx;
       // Check max and min size
@@ -180,13 +181,13 @@ if (!org.gigapan.timelapse.Timelapse) {
         mapResizeStart.x = nowX;
         mapGeometry.width += dx;
       }
-      setSmallMapSize(mapGeometry.height, mapGeometry.width);
-      // Update google map
-      google.maps.event.trigger(googleMap, "resize");
+      setContextMapSize(mapGeometry.height, mapGeometry.width);
+      // Force map redraw because of container resize
+      contextMap.invalidateSize();
     };
 
-    // Set small google map size
-    var setSmallMapSize = function(newHeight, newWidth, animate, onComplete, callBackOnComplete) {
+    // Set context map size
+    var setContextMapSize = function(newHeight, newWidth, animate, onComplete, callBackOnComplete) {
       if (animate) {
         $smallMapContainer.stop(true, true).animate({
           "height": newHeight + "px",
@@ -207,78 +208,125 @@ if (!org.gigapan.timelapse.Timelapse) {
       }
     };
 
-    // Load Google Map
-    var loadSmallGoogleMap = function() {
-      // Load Google Map API
-      var style = [{
-        featureType: 'road',
-        elementType: 'geometry',
-        stylers: [{
-          hue: "#000000"
+    // Load context map
+    var loadContextMap = function() {
+      var style;
+
+      if (tileType === "Google") {
+        style = [{
+          featureType: 'road',
+          elementType: 'geometry',
+          stylers: [{
+            hue: "#000000"
+          }, {
+            saturation: -100
+          }]
         }, {
-          saturation: -100
-        }]
-      }, {
-        featureType: 'water',
-        elementType: 'geometry',
-        stylers: [{
-          hue: "#000000"
+          featureType: 'water',
+          elementType: 'geometry',
+          stylers: [{
+            hue: "#000000"
+          }, {
+            saturation: -100
+          }, {
+            lightness: 0
+          }]
         }, {
-          saturation: -100
+          featureType: 'water',
+          elementType: 'labels',
+          stylers: [{
+            hue: "#000000"
+          }, {
+            saturation: -100
+          }, {
+            lightness: 100
+          }]
         }, {
-          lightness: 0
-        }]
-      }, {
-        featureType: 'water',
-        elementType: 'labels',
-        stylers: [{
-          hue: "#000000"
-        }, {
-          saturation: -100
-        }, {
-          lightness: 100
-        }]
-      }, {
-        featureType: 'landscape',
-        elementType: 'geometry',
-        stylers: [{
-          hue: "#ffffff"
-        }, {
-          saturation: -100
-        }, {
-          lightness: 100
-        }]
-      }];
-      var latlng = new google.maps.LatLng(0, 0);
-      var myOptions = {
-        zoom: 0,
-        center: latlng,
-        disableDefaultUI: true,
-        scrollwheel: false,
-        draggable: true,
-        disableDoubleClickZoom: true,
-        keyboardShortcuts: false,
-        mapTypeId: google.maps.MapTypeId.ROADMAP
-      };
-      googleMap = new google.maps.Map(smallMap, myOptions);
-      googleMap.setOptions({
-        styles: style
-      });
-      // Draw the rectangle bounding box on the map
-      var defaultLatLng_leftTop = new google.maps.LatLng(0, 0, true);
-      var defaultLatLng_rightBot = new google.maps.LatLng(0, 0, true);
-      if (!isHyperwall) {
-        googleMapBox = new google.maps.Rectangle({
-          strokeColor: "rgb(219,48,48)",
-          strokeOpacity: mapBoxStrokeOpacity,
-          strokeWeight: 1,
-          fillColor: "rgb(219,48,48)",
-          fillOpacity: mapBoxFillOpacity,
-          map: googleMap,
-          bounds: new google.maps.LatLngBounds(defaultLatLng_leftTop, defaultLatLng_rightBot)
+          featureType: 'landscape',
+          elementType: 'geometry',
+          stylers: [{
+            hue: "#ffffff"
+          }, {
+            saturation: -100
+          }, {
+            lightness: 100
+          }]
+        }];
+
+        window.loadContextMapLeaflet = function() {
+          var googleAPIScript;
+          googleAPIScript = document.createElement('script');
+          googleAPIScript.setAttribute('src', UTIL.getRootAppURL() + '/js/leaflet/Google.js');
+          googleAPIScript.setAttribute('type', 'text/javascript');
+          document.getElementsByTagName('head')[0].appendChild(googleAPIScript);
+          googleAPIScript.onload = function() {
+            // Possible types: SATELLITE, ROADMAP, HYBRID, TERRAIN  
+            tileLayer = new L.Google('ROADMAP', {
+              mapOptions: {
+                styles: style
+              }
+            });
+            loadContextMapCallback();
+          }
+        }
+        var leafletScript = document.createElement('script');
+        leafletScript.setAttribute('src', 'https://maps.google.com/maps/api/js?sensor=false&libraries=places&callback=loadContextMapLeaflet');
+        leafletScript.setAttribute('type', 'text/javascript');
+        document.getElementsByTagName('head')[0].appendChild(leafletScript);
+      } else if (tileType == "OpenStreetMap") {
+        var osmUrl = contextMapOptions["tileUrl"] || 'http://{s}.tile.openstreetmap.org/';
+        osmUrl += '/{z}/{x}/{y}.png';
+        var osmAttrib = '<a href="http://openstreetmap.org">OpenStreetMap</a>';
+        tileLayer = new L.TileLayer(osmUrl, {
+          attribution: osmAttrib
         });
+        loadContextMapCallback();
+      } else if (tileType == "Bing") {
+        var bingAPIScript = document.createElement('script');
+        bingAPIScript.setAttribute('src', UTIL.getRootAppURL() + '/js/leaflet/Bing.js');
+        bingAPIScript.setAttribute('type', 'text/javascript');
+        document.getElementsByTagName('head')[0].appendChild(bingAPIScript);
+        bingAPIScript.onload = function() {
+          // Possible types: Aerial, AerialWithLabels, Birdseye, BirdseyeWithLabels, Road
+          tileLayer = new L.BingLayer("LfO3DMI9S6GnXD7d0WGs~bq2DRVkmIAzSOFdodzZLvw~Arx8dclDxmZA0Y38tHIJlJfnMbGq5GXeYmrGOUIbS2VLFzRKCK0Yv_bAl6oe-DOc", {
+            type: "Road"
+          });
+          loadContextMapCallback();
+        }
+      } else if (tileType == "Custom") {
+        var tileUrl = contextMapOptions["tileUrl"];
+        tileLayer = new L.TileLayer(tileUrl);
+        loadContextMapCallback();
       }
-      // Add event listeners for the small google map
+    };
+
+    var loadContextMapCallback = function() {
+      // Leaflet
+      contextMap = new L.Map(contextMapDivId + "_contextMap", {
+        center: [0, 0],
+        zoom: 0,
+        touchZoom: false,
+        scrollWheelZoom: true,
+        doubleClickZoom: false,
+        boxZoom: false,
+        keyboard: false,
+        zoomControl: false,
+        attributionControl: true
+      });
+      contextMap.attributionControl.setPrefix("");
+      contextMap.addLayer(tileLayer);
+
+      // Draw the rectangle bounding box on the map
+      contextMapBox = L.rectangle([
+        [0, 0],
+        [0, 0]
+      ], {
+        color: "rgb(219,48,48)",
+        weight: 1
+      });
+      contextMapBox.addTo(contextMap);
+
+      // Add event listeners for the context map
       $(smallMapContainer).mousewheel(function(event, delta) {
         if (event.shiftKey) {
           if (delta > 0) {
@@ -297,21 +345,21 @@ if (!org.gigapan.timelapse.Timelapse) {
         if (useTouchFriendlyUI) return;
         event.stopPropagation();
         var $target = $(event.target);
-        if ($target.hasClass("smallMapResizer") || $target.hasClass("toggleGoogleMapBtn"))
+        if ($target.hasClass("contextMapResizer") || $target.hasClass("togglecontextMapBtn"))
           return;
         timelapse.zoomAbout(2, undefined, undefined, true);
       });
       if (useTouchFriendlyUI) {
-        // Prevent the user from accidently tapping the Google logo/Terms of Use links on the context map.
+        // Prevent the user from accidently tapping the logo/Terms of Use links on the context map.
         $(smallMapContainer).click(function(event) {
           event.preventDefault();
           event.stopPropagation();
         });
       } else {
-        google.maps.event.addListener(googleMap, 'drag', updateLocation);
+        contextMap.on("drag", updateLocation);
       }
-      google.maps.event.addListener(googleMap, 'resize', function() {
-        google.maps.event.addListenerOnce(googleMap, 'bounds_changed', function() {
+      contextMap.on("resize", function() {
+        contextMap.once('moveend', function(e) {
           timelapse.updateLocationContextUI();
         });
       });
@@ -319,22 +367,22 @@ if (!org.gigapan.timelapse.Timelapse) {
       if (resizable && !isHyperwall) {
         smallMapResizer = document.createElement("div");
         $smallMapResizer = $(smallMapResizer);
-        $smallMapResizer.addClass("smallMapResizer");
+        $smallMapResizer.addClass("contextMapResizer");
         if (useTouchFriendlyUI)
-          $smallMapResizer.addClass("smallMapResizer-touchFriendly");
-        smallMapResizer.id = smallGoogleMapDivId + "_smallMapResizer";
+          $smallMapResizer.addClass("contextMapResizer-touchFriendly");
+        smallMapResizer.id = contextMapDivId + "_contextMapResizer";
         smallMapResizer.title = "Drag for resizing. Double click for resetting.";
         $smallMapContainer.append(smallMap, smallMapResizer);
         smallMapResizer_width = $smallMapResizer.width();
         smallMapResizer_height = $smallMapResizer.height();
-        smallMapResizer.addEventListener('dblclick', resetSmallMapSize, false);
+        smallMapResizer.addEventListener('dblclick', resetContextMapSize, false);
         smallMapResizer.addEventListener('mousedown', function(event) {
           event.stopPropagation();
           mapResizeStart.x = event.clientX;
           mapResizeStart.y = event.clientY;
-          document.addEventListener('mousemove', resizeSmallMap, false);
-          document.addEventListener('mouseup', addSmallMapMouseupEvents, false);
-          $("body").bind("mouseleave", addSmallMapMouseupEvents);
+          document.addEventListener('mousemove', resizeContextMap, false);
+          document.addEventListener('mouseup', addContextMapMouseupEvents, false);
+          $("body").bind("mouseleave", addContextMapMouseupEvents);
           UTIL.addGoogleAnalyticEvent('button', 'click', 'viewer-resize-context-map');
         }, false);
       }
@@ -342,18 +390,18 @@ if (!org.gigapan.timelapse.Timelapse) {
       if (showToggleBtn && !isHyperwall) {
         var toggleIconClose = useTouchFriendlyUI ? "ui-icon-custom-arrowthick-1-ne" : "ui-icon-arrowthick-1-ne";
         var toggleIconOpen = useTouchFriendlyUI ? "ui-icon-custom-arrowthick-1-sw" : "ui-icon-arrowthick-1-sw";
-        $smallMapContainer.append('<button class="toggleGoogleMapBtn" title="Toggle the map">Toggle</button>');
-        var $toggleGoogleMapBtn = $(".toggleGoogleMapBtn");
-        $toggleGoogleMapBtn.button({
+        $smallMapContainer.append('<button class="toggleContextMapBtn" title="Toggle the map">Toggle</button>');
+        var $toggleContextMapBtn = $(".toggleContextMapBtn");
+        $toggleContextMapBtn.button({
           icons: {
             primary: toggleIconClose
           },
           text: false
         }).click(function() {
-          toggleSmallMapSize();
+          toggleContextMapSize();
           var $icon = $(this).children(".ui-icon");
           if ($icon.hasClass(toggleIconOpen)) {
-            $toggleGoogleMapBtn.button({
+            $toggleContextMapBtn.button({
               icons: {
                 primary: toggleIconClose
               },
@@ -361,7 +409,7 @@ if (!org.gigapan.timelapse.Timelapse) {
             }).children(".ui-icon").css("margin-left", "-8px");
             UTIL.addGoogleAnalyticEvent('button', 'click', 'viewer-show-context-map');
           } else if ($icon.hasClass(toggleIconClose)) {
-            $toggleGoogleMapBtn.button({
+            $toggleContextMapBtn.button({
               icons: {
                 primary: toggleIconOpen
               },
@@ -376,43 +424,46 @@ if (!org.gigapan.timelapse.Timelapse) {
         });
 
         if (useTouchFriendlyUI)
-          $toggleGoogleMapBtn.addClass("ui-custom-button");
+          $toggleContextMapBtn.addClass("ui-custom-button");
       }
       // Compute the zoom offset
       var maxView = timelapse.getView();
       maxView.scale = timelapse.getMaxScale();
       var maxViewBound = timelapse.pixelCenterToLatLngBoundingBoxView(maxView).bbox;
-      var googleMapLatlngSW = new google.maps.LatLng(maxViewBound.sw.lat, maxViewBound.sw.lng);
-      var googleMapLatlngNE = new google.maps.LatLng(maxViewBound.ne.lat, maxViewBound.ne.lng);
-      var googleMapLatlngBound = new google.maps.LatLngBounds(googleMapLatlngNE, googleMapLatlngSW);
-      googleMap.fitBounds(googleMapLatlngBound);
-      google.maps.event.addListenerOnce(googleMap, 'bounds_changed', function() {
-        var googleMapZoom = googleMap.getZoom();
+      var bounds = [
+        [maxViewBound.sw.lat, maxViewBound.sw.lng],
+        [maxViewBound.ne.lat, maxViewBound.ne.lng]
+      ];
+      contextMap.once('moveend', function(e) {
+        if (typeof(oldMapZoom) !== "undefined") return;
+        var mapZoom = contextMap.getZoom();
         var maxViewerZoom = timelapse.scaleToZoom(timelapse.getMaxScale());
-        oldGoogleMapZoom = googleMapZoom;
+        oldMapZoom = mapZoom;
         // Google maps starts counting its zoom level at 1, so we need to add 1
-        zoomOffset = googleMapZoom - maxViewerZoom + 1;
+        // When using Leaflet, we need to use <= 0.4
+        zoomOffset = mapZoom - maxViewerZoom + 0.3;
         // Zoom back to the initial view
         timelapse.updateLocationContextUI();
       });
-    };
+      contextMap.fitBounds(bounds);
+    }
 
     // Add mouse events for resize
-    var addSmallMapMouseupEvents = function() {
+    var addContextMapMouseupEvents = function() {
       mapResizeStart.x = undefined;
       mapResizeStart.y = undefined;
-      document.removeEventListener('mousemove', resizeSmallMap);
-      document.removeEventListener('mouseup', addSmallMapMouseupEvents);
-      $("body").unbind("mouseleave", addSmallMapMouseupEvents);
+      document.removeEventListener('mousemove', resizeContextMap);
+      document.removeEventListener('mouseup', addContextMapMouseupEvents);
+      $("body").unbind("mouseleave", addContextMapMouseupEvents);
     };
 
-    // Google map API calls
+    // Update map view
     var updateLocation = function() {
-      var googleMapLatLng = googleMap.getCenter();
-      newestLocation.lat = googleMapLatLng.lat();
-      newestLocation.lng = googleMapLatLng.lng();
-      if (needLocationUpdate() == true) {
-        moveView_fromGoogleMap();
+      var mapLatLng = contextMap.getCenter();
+      newestLocation.lat = mapLatLng.lat;
+      newestLocation.lng = mapLatLng.lng;
+      if (needLocationUpdate() === true) {
+        moveView_fromContextMap();
       }
     };
 
@@ -430,7 +481,7 @@ if (!org.gigapan.timelapse.Timelapse) {
     };
 
     // Move the view
-    var moveView_fromGoogleMap = function() {
+    var moveView_fromContextMap = function() {
       var moveLatLng = $.extend({}, newestLocation);
       lastLocation = moveLatLng;
       // Need to get the projection dynamically when the viewer size changes
@@ -439,8 +490,8 @@ if (!org.gigapan.timelapse.Timelapse) {
       timelapse.warpTo(movePoint);
     };
 
-    // Create small google map DOM elements
-    var createSmallGoogleMapElements = function() {
+    // Create small context map DOM elements
+    var createContextMapElements = function() {
       // Create div elements
       smallMapContainer = document.createElement("div");
       smallMap = document.createElement("div");
@@ -448,11 +499,11 @@ if (!org.gigapan.timelapse.Timelapse) {
       $smallMapContainer = $(smallMapContainer);
       $smallMap = $(smallMap);
       // Add class for css
-      $smallMapContainer.addClass("smallMapContainer");
-      $smallMap.addClass("smallGoogleMap");
+      $smallMapContainer.addClass("contextMapContainer");
+      $smallMap.addClass("contextMap");
       // Set id
-      smallMapContainer.id = smallGoogleMapDivId + "_smallMapContainer";
-      smallMap.id = smallGoogleMapDivId + "_smallMap";
+      smallMapContainer.id = contextMapDivId + "_contextMapContainer";
+      smallMap.id = contextMapDivId + "_contextMap";
       // Append elements
       $smallMapContainer.append(smallMap);
       $("#" + videoDivID).append(smallMapContainer);
@@ -461,7 +512,7 @@ if (!org.gigapan.timelapse.Timelapse) {
         "width": mapGeometry.width + "px",
         "height": mapGeometry.height + "px"
       });
-      setSmallMapShadow(true);
+      setContextMapShadow(true);
       // Set position
       if (isHyperwall) {
         if (fields.mapPosition == "topRight") {
@@ -496,8 +547,8 @@ if (!org.gigapan.timelapse.Timelapse) {
       smallMapContainer_height = $smallMapContainer.height();
     };
 
-    var setSmallMapShadow = function(flag) {
-      if (flag == true) {
+    var setContextMapShadow = function(flag) {
+      if (flag === true) {
         $smallMapContainer.css({
           "box-shadow": "2px 2px 3px rgba(0,0,0,0.3)",
           "border": "1px solid #656565"
@@ -510,48 +561,49 @@ if (!org.gigapan.timelapse.Timelapse) {
       }
     };
 
-    var setSmallGoogleMap = function(latlngCenter) {
-      if (isMapMinimized == false) {
-        if (zoomOffset == undefined)
+    var setContextMap = function(latlngCenter) {
+      if (isMapMinimized === false) {
+        if (zoomOffset === undefined)
           return;
         var extendRatio = (mapGeometry.width + mapGeometry.height) / (startHeight + startWidth);
         if (extendRatio >= 1)
           extendRatio *= 0.6;
         else
           extendRatio *= -0.5;
-        var googleMapLatlngCenter = new google.maps.LatLng(latlngCenter.lat, latlngCenter.lng);
-        googleMap.setCenter(googleMapLatlngCenter);
         var newZoom = Math.floor((timelapse.getCurrentZoom() + zoomOffset) + extendRatio);
-        if (oldGoogleMapZoom != newZoom) {
-          oldGoogleMapZoom = newZoom;
-          googleMap.setZoom(newZoom);
+        if (oldMapZoom != newZoom) {
+          oldMapZoom = newZoom;
         }
+        contextMap.setView([latlngCenter.lat, latlngCenter.lng], newZoom);
       }
     };
 
-    var setSmallMapBoxLocation = function(latlngNE, latlngSW) {
-      var boxLatLngNE_googleMap = new google.maps.LatLng(latlngNE.lat, latlngNE.lng, true);
-      var boxLatLngSW_googleMap = new google.maps.LatLng(latlngSW.lat, latlngSW.lng, true);
-      if (!isHyperwall)
-        googleMapBox.setBounds(new google.maps.LatLngBounds(boxLatLngNE_googleMap, boxLatLngSW_googleMap));
+    var setContextMapLocation = function(latlngNE, latlngSW) {
+      if (!isHyperwall) {
+        var bounds = [
+          [latlngSW.lat, latlngSW.lng],
+          [latlngNE.lat, latlngNE.lng]
+        ];
+        contextMapBox.setBounds(bounds);
+      }
     };
 
-    var resetSmallMapSize = function() {
+    var resetContextMapSize = function() {
       if (mapGeometry.height != minHeight || mapGeometry.width != minWidth) {
         lastMapGeometry = $.extend({}, mapGeometry);
         mapGeometry.height = startHeight;
         mapGeometry.width = startWidth;
       } else {
-        if (lastMapGeometry != undefined)
+        if (lastMapGeometry !== undefined)
           mapGeometry = $.extend({}, lastMapGeometry);
       }
-      setSmallMapSize(mapGeometry.height, mapGeometry.width, true, function() {
-        // Update google map
-        google.maps.event.trigger(googleMap, "resize");
+      setContextMapSize(mapGeometry.height, mapGeometry.width, true, function() {
+        // Force map redraw because of container resize
+        contextMap.invalidateSize();
       });
     };
 
-    var toggleSmallMapSize = function() {
+    var toggleContextMapSize = function() {
       if (mapGeometry.height != 20 || mapGeometry.width != 20) {
         lastMapGeometry = $.extend({}, mapGeometry);
         mapGeometry.height = 20;
@@ -559,21 +611,21 @@ if (!org.gigapan.timelapse.Timelapse) {
         isMapMinimized = true;
       } else {
         $smallMap.show();
-        setSmallMapShadow(true);
+        setContextMapShadow(true);
         isMapMinimized = false;
-        if (lastMapGeometry != undefined) {
+        if (lastMapGeometry !== undefined) {
           mapGeometry = $.extend({}, lastMapGeometry);
         }
       }
       var callBackOnComplete = function() {
-        if (isMapMinimized == true) {
+        if (isMapMinimized === true) {
           $smallMap.hide();
-          setSmallMapShadow(false);
+          setContextMapShadow(false);
         }
       };
-      setSmallMapSize(mapGeometry.height, mapGeometry.width, true, function() {
-        // Update google map
-        google.maps.event.trigger(googleMap, "resize");
+      setContextMapSize(mapGeometry.height, mapGeometry.width, true, function() {
+        // Force map redraw because of container resize
+        contextMap.invalidateSize();
       }, callBackOnComplete);
     };
 
@@ -582,6 +634,7 @@ if (!org.gigapan.timelapse.Timelapse) {
     // Public methods
     //
     var setMap = function(bbox, latlngCenter) {
+      if (!tileLayer) return;
       var projection = timelapse.getProjection();
       var latlngNE = projection.pointToLatlng({
         "x": bbox.xmin,
@@ -591,8 +644,8 @@ if (!org.gigapan.timelapse.Timelapse) {
         "x": bbox.xmax,
         "y": bbox.ymax
       });
-      setSmallGoogleMap(latlngCenter);
-      setSmallMapBoxLocation(latlngNE, latlngSW);
+      setContextMap(latlngCenter);
+      setContextMapLocation(latlngNE, latlngSW);
     };
     this.setMap = setMap;
 
@@ -600,7 +653,7 @@ if (!org.gigapan.timelapse.Timelapse) {
     //
     // Constructor code
     //
-    createSmallGoogleMapElements();
-    loadSmallGoogleMap();
+    createContextMapElements();
+    loadContextMap();
   };
 })();

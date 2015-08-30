@@ -169,7 +169,7 @@ if (!window['$']) {
     var snaplapseForSharedTour;
     var snaplapseForPresentationSlider;
     var scaleBar;
-    var smallGoogleMap;
+    var contextMap;
     var annotator;
     var customUI;
     var defaultUI;
@@ -204,7 +204,7 @@ if (!window['$']) {
     var isIE9 = UTIL.isIE9();
     var doingLoopingDwell = false;
     var isFirefox = UTIL.isFirefox();
-    var enableSmallGoogleMap = true;
+    var enableContextMap = true;
     var enablePanoVideo = true;
     var isChrome = UTIL.isChrome();
     var loadTimelapseWithPreviousViewAndTime = false;
@@ -308,7 +308,7 @@ if (!window['$']) {
     var defaultLevelThreshold = 0.05;
     var levelThreshold = defaultLevelThreshold;
 
-    // Scale bar, small google map, visualizer
+    // Scale bar, context map, visualizer
     var panoVideo;
     var topLevelVideo = {};
     var leader;
@@ -474,8 +474,8 @@ if (!window['$']) {
       return doChromeCacheBreaker;
     };
 
-    this.getSmallGoogleMap = function() {
-      return smallGoogleMap;
+    this.getContextMap = function() {
+      return contextMap;
     };
 
     this.getScaleBar = function() {
@@ -494,12 +494,12 @@ if (!window['$']) {
       return visualizer;
     };
 
-    this.setSmallGoogleMapEnableStatus = function(status) {
-      enableSmallGoogleMap = status;
+    this.setContextMapEnableStatus = function(status) {
+      enableContextMap = status;
     };
 
-    this.isSmallGoogleMapEnable = function() {
-      return enableSmallGoogleMap;
+    this.isContextMapEnable = function() {
+      return enableContextMap;
     };
 
     this.getTimeMachineDivId = function() {
@@ -1978,11 +1978,11 @@ if (!window['$']) {
     };
     this.handleMousedownEvent = handleMousedownEvent;
 
-    var zoomAbout = function(zoom, x, y, isFromGoogleMap) {
+    var zoomAbout = function(zoom, x, y, isFromContextMap) {
       var newScale = limitScale(targetView.scale * zoom);
       var actualZoom = newScale / targetView.scale;
-      // We want to zoom to the center of the current view if we zoom from google map
-      if (isFromGoogleMap == undefined) {
+      // We want to zoom to the center of the current view if we zoom from the context map
+      if (isFromContextMap == undefined) {
         targetView.x += 1 * (1 - 1 / actualZoom) * (x - $(videoDiv).offset().left - viewportWidth * 0.5) / targetView.scale;
         targetView.y += 1 * (1 - 1 / actualZoom) * (y - $(videoDiv).offset().top - viewportHeight * 0.5) / targetView.scale;
       }
@@ -1991,7 +1991,7 @@ if (!window['$']) {
     };
     this.zoomAbout = zoomAbout;
 
-    var handleDoubleClickEvent = function(event, isFromGoogleMap) {
+    var handleDoubleClickEvent = function(event, isFromContextMap) {
       var eventCoords = {};
       if (!event.pageX && !event.pageY) {
         eventCoords.pageX = event.clientX;
@@ -2000,7 +2000,7 @@ if (!window['$']) {
         eventCoords.pageX = event.pageX;
         eventCoords.pageY = event.pageY;
       }
-      zoomAbout(2.0, eventCoords.pageX, eventCoords.pageY, isFromGoogleMap);
+      zoomAbout(2.0, eventCoords.pageX, eventCoords.pageY, isFromContextMap);
     };
 
     var limitScale = function(scale) {
@@ -2487,9 +2487,9 @@ if (!window['$']) {
     var updateLocationContextUI = function() {
       if (!defaultUI)
         return null;
-      if (scaleBar == undefined && smallGoogleMap == undefined && defaultUI.getMode() == "player")
+      if (scaleBar == undefined && contextMap == undefined && defaultUI.getMode() == "player")
         return null;
-      if (visualizer || smallGoogleMap || scaleBar) {
+      if (visualizer || contextMap || scaleBar) {
         // Need to get the projection dynamically when the viewer size changes
         var videoViewer_projection;
         if (tmJSON['projection-bounds'])
@@ -2509,16 +2509,16 @@ if (!window['$']) {
           scaleBar.setScaleBar(desiredView, latlngCenter);
         }
         // Update context maps
-        if (visualizer || smallGoogleMap) {
+        if (visualizer || contextMap) {
           var desiredBound = pixelCenterToPixelBoundingBoxView(desiredView).bbox;
-          if (videoViewer_projection && smallGoogleMap && enableSmallGoogleMap == true) {
-            smallGoogleMap.setMap(desiredBound, latlngCenter);
+          if (videoViewer_projection && contextMap && enableContextMap == true) {
+            contextMap.setMap(desiredBound, latlngCenter);
           }
           if (visualizer) {
             visualizer.setMap(desiredBound);
           }
-        }// End of if (visualizer || smallGoogleMap)
-      }// End of if (visualizer || smallGoogleMap || scaleBar)
+        }// End of if (visualizer || contextMap)
+      }// End of if (visualizer || contextMap || scaleBar)
     };
     this.updateLocationContextUI = updateLocationContextUI;
 
@@ -3000,9 +3000,9 @@ if (!window['$']) {
       if (isHyperwall)
         customUI.handleHyperwallChangeUI();
 
-      if (settings["smallGoogleMapOptions"] && tmJSON['projection-bounds'] && typeof google !== "undefined") {
+      if (settings["contextMapOptions"] && tmJSON['projection-bounds'] /*&& typeof google !== "undefined"*/) {
         if (!isHyperwall || fields.showMap)
-          smallGoogleMap = new org.gigapan.timelapse.SmallGoogleMap(settings["smallGoogleMapOptions"], thisObj, settings);
+          contextMap = new org.gigapan.timelapse.ContextMap(settings["contextMapOptions"], thisObj, settings);
       }
 
       thisObj.setPlaybackRate(playbackSpeed);
