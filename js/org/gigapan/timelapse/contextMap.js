@@ -97,7 +97,7 @@ if (!org.gigapan.timelapse.Timelapse) {
     //
     // Class variables
     //
-    var availableTileSources = ["Bing", "Google", "OpenStreetMap"];
+    var availableTileSources = ["Bing", "Google", "OpenStreetMap", "Custom"];
     var isHyperwall = settings["isHyperwall"];
     var useTouchFriendlyUI = timelapse.useTouchFriendlyUI();
     var minHeight = isHyperwall ? 450 : 120;
@@ -260,7 +260,7 @@ if (!org.gigapan.timelapse.Timelapse) {
           googleAPIScript.setAttribute('type', 'text/javascript');
           document.getElementsByTagName('head')[0].appendChild(googleAPIScript);
           googleAPIScript.onload = function() {
-            // Possible types: SATELLITE, ROADMAP, HYBRID, TERRAIN  
+            // Possible types: SATELLITE, ROADMAP, HYBRID, TERRAIN
             tileLayer = new L.Google('ROADMAP', {
               mapOptions: {
                 styles: style
