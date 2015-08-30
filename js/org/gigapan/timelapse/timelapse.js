@@ -2482,6 +2482,11 @@ if (!window['$']) {
     };
     this.getCurrentFrameNumber = getCurrentFrameNumber;
 
+    var frameNumberToTime = function(value) {
+      return (value + timePadding) / _getFps();
+    };
+    this.frameNumberToTime = frameNumberToTime;
+
     // Update the scale bar and the context map
     // Need to call this when changing the view
     var updateLocationContextUI = function() {

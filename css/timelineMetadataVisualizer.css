@@ -14,20 +14,6 @@
   z-index: 4;
 }
 
-#fast-forward-start {
-  position: absolute;
-  top: 36px;
-  left: 92px;
-  z-index: 9999;
-}
-
-#fast-forward-stop {
-  position: absolute;
-  top: 36px;
-  left: 245px;
-  z-index: 9999;
-}
-
 .fastforwardButton.ui-button {
   position: absolute;
   width: 40px;
@@ -40,6 +26,13 @@
   box-shadow: 2px 2px 3px rgba(0, 0, 0, 0.3);
   outline: none;
   z-index: 30;
+}
+
+.metadataImgsButton.ui-button {
+  position: absolute;
+  bottom: 20px;
+  left: 204px;
+  width: 62px;
 }
 
 .ui-button .ui-icon.ui-icon-custom-forward {
@@ -69,5 +62,23 @@
 }
 
 .captureTimeOverride {
-  left: 205px;
+  left: 278px;
+}
+
+.metadataImgsContainer {
+  margin-top: 5px;
+}
+
+.metadataImgBlock {
+  display: inline-block;
+  margin: 5px;
+  outline: none;
+}
+
+.metadataImg {
+  outline: none;
+}
+
+.metadataImgLink {
+  outline: none;
 }

@@ -116,6 +116,15 @@ if (!org.gigapan.timelapse.Timelapse) {
     var $fastforwardContainer;
     var isFastforwarding = false;
 
+    // variables for showing metadata images
+    var $metadataImgsButton;
+    var $metadataImgsDialog;
+    var $metadataImgsContainer;
+    var $thumbnailSpeed = $("#" + viewerDivId + " .thumbnail-speed");
+    var thumbnailTool = timelapse.getThumbnailTool();
+    var bbox = {xmin: 2319.434174421393, ymin: 884.3791826815946, xmax: 3752.18890138649, ymax: 1893.4524892574645};
+    var cropBox = {xmin: 297, ymin: 39, xmax: 740, ymax: 351};
+
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////
     //
     // Public methods
@@ -203,7 +212,7 @@ if (!org.gigapan.timelapse.Timelapse) {
       chart.render();
     };
 
-    var initFastforward = function() {
+    var init = function() {
       $playbackButton = $("#" + viewerDivId + " .playbackButton");
       $timelineSlider = $("#" + viewerDivId + " .timelineSlider");
       $timelineSliderFiller = $("#" + viewerDivId + " .timelineSliderFiller");
@@ -217,7 +226,7 @@ if (!org.gigapan.timelapse.Timelapse) {
         },
         text: false
       }).on("click", function() {
-        if(!isFastforwarding) {
+        if (!isFastforwarding) {
           isFastforwarding = true;
           idxSeg = getClosestSegIdx();
           timelapse.seekToFrame(frames_start[idxSeg]);
@@ -233,6 +242,37 @@ if (!org.gigapan.timelapse.Timelapse) {
       });
       $("#" + viewerDivId + " .controls").append($fastforwardButton);
 
+      // Create the button for showing metadata images
+      $metadataImgsButton = $("<button class='metadataImgsButton customButton'>Image</button>");
+      $metadataImgsButton.button({
+        icons: {
+          primary: "ui-icon-image"
+        },
+        text: true
+      }).on("click", function() {
+        showMetadataImages();
+      });
+      $("#" + viewerDivId + " .controls").append($metadataImgsButton);
+
+      // Create the dialog for showing metadata images
+      $metadataImgsDialog = $("<div class='metadataImgsDialog' title='Show Images'></div>");
+      $metadataImgsContainer = $("<div class='metadataImgsContainer always-selectable'></div>");
+      $metadataImgsDialog.append($metadataImgsContainer);
+      $metadataImgsDialog.dialog({
+        resizable: true,
+        autoOpen: false,
+        dialogClass: "customDialog",
+        appendTo: "#" + viewerDivId,
+        width: 740,
+        height: 700,
+        minHeight: 50,
+        buttons: {
+          "OK": function() {
+            $(this).dialog("close");
+          }
+        }
+      });
+
       // Override the default position of the capture time
       $("#" + viewerDivId + " .captureTime").addClass("captureTimeOverride");
 
@@ -243,6 +283,39 @@ if (!org.gigapan.timelapse.Timelapse) {
       timelapse.getSnaplapse().addEventListener('stop', function() {
         $chartContainerContent.show();
       });
+    };
+
+    var showMetadataImages = function() {
+      $metadataImgsContainer.children().remove();
+      for (var i = 0; i < frames_start.length; i++) {
+        var urlSettings = {
+          bound: bbox,
+          width: (cropBox.xmax - cropBox.xmin) * 0.75,
+          height: (cropBox.ymax - cropBox.ymin) * 0.75,
+          startTime: timelapse.frameNumberToTime(frames_start[i]),
+          endTime: timelapse.frameNumberToTime(frames_end[i]),
+          fps: timelapse.getFps() * 0.5,
+          embedTime: true,
+          format: "gif"
+        };
+        var response = thumbnailTool.getURL(urlSettings);
+        var $div = $("<div class='metadataImgBlock'></div>");
+        var $img = $("<img class='metadataImg' src='" + response.url + "'><br>");
+        var tmJSON = timelapse.getTmJSON();
+        var captureTimes = timelapse.getCaptureTimes();
+        var timelapseTitle = ( typeof tmJSON.name == "undefined") ? $("#locationTitle").text() : tmJSON.name;
+        var linkText = timelapseTitle + " " + captureTimes[frames_start[i]] + " to " + captureTimes[frames_end[i]];
+        var desiredTime = (response.args.frameTime + response.args.nframes / (2 * timelapse.getFps())).toFixed(2);
+        var linkHref = UTIL.getParentURL() + timelapse.getShareView(desiredTime);
+        var $link = $("<a class='metadataImgLink' href='" + linkHref + "'>" + linkText + "</a>")
+        $div.append($img).append($link);
+        $metadataImgsContainer.append($div);
+      }
+      if ($metadataImgsDialog.dialog("isOpen")) {
+        $metadataImgsDialog.dialog("close");
+      } else {
+        $metadataImgsDialog.dialog("open");
+      }
     };
 
     var getClosestSegIdx = function() {
@@ -315,7 +388,7 @@ if (!org.gigapan.timelapse.Timelapse) {
     $("#" + timelapse.getDataPanesContainerId()).append($chartContainer);
 
     // Initialize the fast-forwarding
-    initFastforward();
+    init();
   };
   //end of org.gigapan.timelapse.TimelineMetadataVisualizer
 })();

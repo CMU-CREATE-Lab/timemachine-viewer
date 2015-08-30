@@ -61,8 +61,6 @@
       var date = "2015-05-02";
       var url = "http://tiles.cmucreatelab.org/ecam/timemachines/shenango1/" + date + ".timemachine";
       var timelapse;
-      var bbox = {xmin: 2319.434174421393, ymin: 884.3791826815946, xmax: 3752.18890138649, ymax: 1893.4524892574645};
-      var cropbox = {xmin: 297, ymin: 39, xmax: 740, ymax: 351};
 
       function init() {
         var viewerOptions = {
@@ -76,7 +74,7 @@
           //showEditorOnLoad: true,
           onTimeMachinePlayerReady: function(viewerDivId) {
             setupPostMessageHandlers();
-            timelapse.setNewView({x: 2585.5560361492453, y: 1406.6228732376014, scale: 0.5818041565461248}, true);
+            timelapse.setNewView({x: 2909.2941398892576, y: 1435.9696481300127, scale: 0.37790449003881343}, true);
             loadjscssfile("smoke-" + date + ".js", "js", function() {
               timelapse.getTimelineMetadataVisualizer().drawMetadata(smoke_detection.values);
             });

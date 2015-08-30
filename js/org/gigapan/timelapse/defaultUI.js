@@ -765,7 +765,8 @@ if (!org.gigapan.timelapse.Timelapse) {
         $thumbnailPreviewLink.show();
       });
       $thumbnailPreview.attr("src", response.url);
-      $thumbnailPreviewLink.attr("href", UTIL.getParentURL() + timelapse.getShareView(response.args.frameTime.toFixed(2)));
+      var desiredTime = (response.args.frameTime + response.args.nframes / (2 * timelapse.getFps())).toFixed(2);
+      $thumbnailPreviewLink.attr("href", UTIL.getParentURL() + timelapse.getShareView(desiredTime));
       var tmJSON = timelapse.getTmJSON();
       var timelapseTitle = ( typeof tmJSON.name == "undefined") ? $("#locationTitle").text() : tmJSON.name;
       if (response.args.format == "gif") {
