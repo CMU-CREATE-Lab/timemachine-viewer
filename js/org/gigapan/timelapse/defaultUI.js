@@ -1255,6 +1255,16 @@ if (!org.gigapan.timelapse.Timelapse) {
         resetcaptureTimeSpinnerRange();
         resetShareThumbnailUI();
       }
+      if (!timelapse.isPaused()) {
+        $("#" + viewerDivId + " .playbackButton").button({
+          icons: {
+            primary: "ui-icon-custom-pause"
+          },
+          text: false
+        }).attr({
+          "title": "Pause"
+        });
+      }
     };
     this.resetTimelineSlider = resetTimelineSlider;
 

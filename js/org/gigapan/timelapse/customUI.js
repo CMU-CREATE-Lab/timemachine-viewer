@@ -899,6 +899,16 @@ if (!org.gigapan.timelapse.Timelapse) {
       $("#" + viewerDivId + " .customTimeline").remove();
       $("#" + viewerDivId + " .timeText").remove();
       createCustomTimeline();
+      if (!timelapse.isPaused()) {
+        $("#" + viewerDivId + " .customPlay").button({
+          icons: {
+            primary: "ui-icon-custom-pause"
+          },
+          text: false
+        }).attr({
+          "title": "Pause"
+        });
+      }
     };
     this.resetCustomTimeline = resetCustomTimeline;
 
