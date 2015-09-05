@@ -1170,6 +1170,9 @@ if (!window['$']) {
         return;
 
       newView = _normalizeView(newView);
+      if (newView.scale > _getMaxScale()) {
+        newView.scale = _getMaxScale();
+      }
 
       var defaultEndViewCallback = function() {
         isMovingToWaypoint = false;
@@ -1593,7 +1596,7 @@ if (!window['$']) {
 
     var _getMaxScale = function() {
       if (tmJSON['projection-bounds'])
-        return 1.05;
+        return 1.25;
       else
         return 2;
     };

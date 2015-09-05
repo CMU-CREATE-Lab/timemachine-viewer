@@ -1696,10 +1696,6 @@ if (!org.gigapan.timelapse.snaplapse) {
           var newView;
           if (typeof (timelapse.getTmJSON()['projection-bounds']) != "undefined") {
             newView = timelapse.pixelBoundingBoxToLatLngCenterView(keyframe['bounds']);
-            // TODO: Hack for hyperwall
-            if (UTIL.getViewerType() == "webgl") {
-              newView.zoom += 0.8;
-            }
           } else {
             newView = timelapse.pixelBoundingBoxToPixelCenterView(keyframe['bounds']);
           }
