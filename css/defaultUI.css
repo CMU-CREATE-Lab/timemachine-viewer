@@ -249,7 +249,7 @@ body, html {
 
 .instructions span.movehelp {
   top: 30px;
-  left: 110px;
+  left: 50%;
   width: 140px;
   color: white !important;
   padding: 68px 0px 0px 0px;
@@ -261,7 +261,7 @@ body, html {
 .instructions span.zoomhelp {
   background-color: white;
   border: 1px solid #656565;
-  top: 150px;
+  top: 185px;
   left: 67px;
   overflow: visible;
   border-radius: 2px;
@@ -270,7 +270,7 @@ body, html {
 .instructions span.zoomallhelp {
   background-color: white;
   border: 1px solid #656565;
-  top: 250px;
+  top: 185px;
   left: 67px;
   overflow: visible;
   border-radius: 2px;
