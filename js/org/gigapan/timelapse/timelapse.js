@@ -340,6 +340,10 @@ if (!window['$']) {
     //
     // Public methods
     //
+    this.setDoDwell = function(state) {
+      loopDwell = state;
+    }
+
     this.getTimePadding = function() {
       return timePadding;
     };
