@@ -3050,7 +3050,8 @@ if (!window['$']) {
       if (currentTimelineStyle == "customUI") {
         $("#" + viewerDivId + " .controls").hide();
         $("#" + viewerDivId + " .customControl").show().css("z-index", "19");
-        $previousCustomUIElements.appendTo("#" + viewerDivId + " .customControl");
+        if ($previousCustomUIElements)
+          $previousCustomUIElements.appendTo("#" + viewerDivId + " .customControl");
         $("#" + viewerDivId + " .timelineSliderFiller").css("right", "21px").hide();
         $("#" + viewerDivId + " .captureTime").hide();
         $("#" + viewerDivId + " .customControl .customHelpLabel").css({"bottom" : "44px", "z-index" : "inherit"});
