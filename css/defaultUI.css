@@ -1030,8 +1030,6 @@ body, html {
   color: white;
 }
 
-
-
 .embed-capture-time {
   margin-left: 0px;
   width: 15px;
@@ -1041,10 +1039,12 @@ body, html {
 
 .thumbnail-type-image {
   background: white !important;
+  margin-right: -5px !important;
 }
 
 .thumbnail-type-video {
   background: white !important;
+  margin-right: -5px !important;
 }
 
 .thumbnail-type-video.selected {
