@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8"/>
+
+    <link href="../css/snaplapse.css" rel="stylesheet" type="text/css"/>
+    <link href="../css/jquery-ui/smoothness/jquery-ui.custom.css" rel="stylesheet" type="text/css"/>
+    <link href="../css/defaultUI.css" rel="stylesheet" type="text/css"/>
+    <link href="../css/visualizer.css" rel="stylesheet" type="text/css"/>
+    <link href="../css/annotator.css" rel="stylesheet" type="text/css"/>
+    <link href="../css/timelineMetadataVisualizer.css" rel="stylesheet" type="text/css"/>
+    <link href="../libs/change-detect/css/change.css" media="screen" rel="stylesheet" type="text/css"/>
+
+    <script src="../js/jquery/jquery.min.js" type="text/javascript"></script>
+    <script src="../js/jquery/jquery-ui.custom.min.js" type="text/javascript"></script>
+    <script src="../js/jquery/plugins/mouse/jquery.mousewheel.min.js" type="text/javascript"></script>
+    <script src="../js/canvasjs/canvasjs.min.js" type="text/javascript"></script>
+    <script src="../js/kinetic/kinetic.min.js" type="text/javascript"></script>
+    <script src="../js/org/gigapan/util.js" type="text/javascript"></script>
+    <script src="../js/org/gigapan/timelapse/videoset.js" type="text/javascript"></script>
+    <script src="../js/org/gigapan/timelapse/parabolicMotion.js" type="text/javascript"></script>
+    <script src="../js/org/gigapan/timelapse/timelapse.js" type="text/javascript"></script>
+    <script src="../js/Math.uuid.js" type="text/javascript"></script>
+    <script src="../js/org/gigapan/timelapse/snaplapse.js" type="text/javascript"></script>
+    <script src="../js/org/gigapan/timelapse/snaplapseViewer.js" type="text/javascript"></script>
+    <script src="../js/org/gigapan/timelapse/mercator.js" type="text/javascript"></script>
+    <script src="../js/org/gigapan/timelapse/visualizer.js" type="text/javascript"></script>
+    <script src="../js/org/gigapan/timelapse/annotator.js" type="text/javascript"></script>
+    <script src="../js/org/gigapan/timelapse/defaultUI.js" type="text/javascript"></script>
+    <script src="../js/org/gigapan/timelapse/urlEncoder.js" type="text/javascript"></script>
+    <script src="../js/org/gigapan/timelapse/timelineMetadataVisualizer.js" type="text/javascript"></script>
+
+    <script src="../js/org/gigapan/postmessage.js" type="text/javascript"></script>
+    <script src="../js/org/gigapan/timelapse/crossdomain_api.js" type="text/javascript"></script>
+
+    <script src="../libs/change-detect/js/ThumbnailServiceAPI.js" type="text/javascript"></script>
+    <script src="../libs/change-detect/js/TimeMachineCanvasLayer.js" type="text/javascript"></script>
+    <script src="../libs/change-detect/js/ThumbnailTool.js" type="text/javascript"></script>
+    <script src="../libs/change-detect/js/BoxEventHandler.js" type="text/javascript"></script>
+    <script src="../libs/change-detect/js/ChangeDetectionTool.js" type="text/javascript"></script>
+
+    <script src="../template_includes.js" type="text/javascript"></script>
+
+    <style>
+      #timeMachine {
+        width: 100%;
+        height: 100%;
+      }
+    </style>
+
+    <script type="text/javascript">
+      jQuery.support.cors = true;
+
+      var date = "2015-05-02";
+      var url = "http://tiles.cmucreatelab.org/ecam/timemachines/shenango1/" + date + ".timemachine";
+      var timelapse;
+
+      function init() {
+        var viewerOptions = {
+          url: url,
+          showFullScreenBtn: false,
+          //enableEditor: true,
+          //enablePresentationSlider: true,
+          //startEditorFromPresentationMode: true,
+          mediaType: ".mp4",
+          showThumbnailTool: true,
+          //showEditorOnLoad: true,
+          onTimeMachinePlayerReady: function(viewerDivId) {
+            setupPostMessageHandlers();
+            loadjscssfile("smoke-" + date + ".js", "js", function() {
+              timelapse.getTimelineMetadataVisualizer().drawMetadata(smoke_detection.values);
+            });
+          },
+          disableTourLooping: true,
+          datasetType: "breathecam",
+          enableTimelineMetadataVisualizer: true
+        };
+        timelapse = new org.gigapan.timelapse.Timelapse("timeMachine", viewerOptions);
+      }
+
+      function loadjscssfile(filename, filetype, callback){
+        if (filetype == "js"){ //if filename is a external JavaScript file
+          var fileref = document.createElement('script');
+          fileref.setAttribute("type","text/javascript");
+          fileref.setAttribute("src", filename);
+          fileref.onload = function() {
+            if (typeof (callback) === "function") {
+              callback();
+            }
+          };
+        }
+        else if (filetype == "css"){ //if filename is an external CSS file
+          var fileref = document.createElement("link");
+          fileref.setAttribute("rel", "stylesheet");
+          fileref.setAttribute("type", "text/css");
+          fileref.setAttribute("href", filename);
+          fileref.onload = function() {
+            if (typeof (callback) === "function")
+              callback();
+          };
+        }
+        if (typeof fileref!="undefined")
+          document.getElementsByTagName("head")[0].appendChild(fileref)
+      }
+
+      $(init);
+    </script>
+  </head>
+  <body>
+    <div id="timeMachine"></div>
+  </body>
+</html>
