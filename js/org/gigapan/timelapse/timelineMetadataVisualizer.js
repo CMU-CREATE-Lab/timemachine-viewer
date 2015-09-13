@@ -277,12 +277,15 @@ if (!org.gigapan.timelapse.Timelapse) {
       $("#" + viewerDivId + " .captureTime").addClass("captureTimeOverride");
 
       // Add listeners
-      timelapse.getSnaplapse().addEventListener('play', function() {
-        $chartContainerContent.hide();
-      });
-      timelapse.getSnaplapse().addEventListener('stop', function() {
-        $chartContainerContent.show();
-      });
+      var snaplapse = timelapse.getSnaplapse();
+      if(snaplapse) {
+        timelapse.getSnaplapse().addEventListener('play', function() {
+          $chartContainerContent.hide();
+        });
+        timelapse.getSnaplapse().addEventListener('stop', function() {
+          $chartContainerContent.show();
+        });
+      }
     };
 
     var showMetadataImages = function() {

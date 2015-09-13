@@ -1015,6 +1015,7 @@ body, html {
 }
 
 .thumbnail-preview-copy-text-button-tooltip p {
+  white-space: nowrap;
   margin-top: 0px;
   margin-bottom: -11px;
   margin-left: 0px;
@@ -1026,7 +1027,7 @@ body, html {
   background-repeat: no-repeat;
   background-position: 50% 100%;
   background-image: url(../images/bubble_edge_horizontal.png);
-  font: 12px "Helvetica Neue", Sans-Serif;
+  font: 13px "Helvetica Neue", Sans-Serif;
   color: white;
 }
 

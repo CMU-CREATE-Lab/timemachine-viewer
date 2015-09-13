@@ -47,7 +47,7 @@
         margin-top: 10px;
         margin-left: 10px;
         width: 900px;
-        height: 700px;
+        height: 500px;
       }
       /*#timeMachine {
         width: 100%;
@@ -66,15 +66,14 @@
         var viewerOptions = {
           url: url,
           showFullScreenBtn: false,
-          enableEditor: true,
-          enablePresentationSlider: true,
-          startEditorFromPresentationMode: true,
+          //enableEditor: true,
+          //enablePresentationSlider: true,
+          //startEditorFromPresentationMode: true,
           mediaType: ".mp4",
           showThumbnailTool: true,
           //showEditorOnLoad: true,
           onTimeMachinePlayerReady: function(viewerDivId) {
             setupPostMessageHandlers();
-            timelapse.setNewView({x: 2994.26564, y: 1427.4431, scale: 0.3228715860544037}, true);
             loadjscssfile("smoke-" + date + ".js", "js", function() {
               timelapse.getTimelineMetadataVisualizer().drawMetadata(smoke_detection.values);
             });
