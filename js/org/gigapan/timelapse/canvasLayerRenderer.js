@@ -236,6 +236,26 @@ if (!org.gigapan.timelapse.Timelapse) {
               };
     })();
 
+    this.addToLegend = function(legend_entry) {
+      var legend_html = "";
+      var $legend = $("#" + timelapse.getViewerDivId() + " #vector-layers");
+      if ($legend.length == 0) {
+        $legend = $('<div id=vector-layers>');
+        $legend.appendTo($("#" + timelapse.getViewerDivId()));
+        $legend.on('click', 'input', function() {
+          var layerId = this.id.replace("show-layer-", "");
+          if ($(this).is(':checked')) {
+            layers[layerId].show();
+          } else {
+            layers[layerId].hide();
+          }
+        });
+      }
+      legend_html += '<input type="checkbox" id="show-layer-' + legend_entry.id + '" checked>';
+      legend_html += '<label for="show-layer-' + legend_entry.id + '" id="layer' + legend_entry.id + '-label" class="vector-layers-label" style="color:' + legend_entry.color + '">' + legend_entry.title + '</label><br/>';
+      $(legend_html).appendTo($legend);
+    };
+
     this.resetTimelapseViewNotChanging = function() {
       timelapseViewNotChanging = true;
     };
@@ -310,6 +330,7 @@ if (!org.gigapan.timelapse.Timelapse) {
     this.Layer = function(layerName, attributes) {
       if (typeof layerName === "undefined") return null;
 
+      this.visible = true;
       var thisLayer = this;
       attributes = attributes || {};
 
@@ -341,6 +362,18 @@ if (!org.gigapan.timelapse.Timelapse) {
 
         this.attrs = attributes;
       };
+
+      this.show = function() {
+        this.visible = true;
+        this.draw();
+      }
+
+      this.hide = function() {
+        this.visible = false;
+        var context = this.ctx;
+        context.setTransform(1, 0, 0, 1, 0, 0);
+        context.clearRect(0, 0, this.width, this.height);
+      }
 
       this.setWidth = function(width) {
         this.width = width;
@@ -375,6 +408,7 @@ if (!org.gigapan.timelapse.Timelapse) {
 
       // Draw all elements in a layer
       this.draw = function(currentView) {
+        if (!this.visible) return;
         var context = thisLayer.ctx;
         // Default alpha for a canvas is 1
         if (thisLayer.alphaLevel < 1)
@@ -495,17 +529,17 @@ if (!org.gigapan.timelapse.Timelapse) {
     if (typeof(options.updateHandler) === "function")
       timelapse.addVideoDrawListener(options.updateHandler);
     // Handle draw while timelapse is paused and not panning/zooming but time slider is manually being scrubbed
-    timelapse.addTargetViewChangeListener(function() { timelapseViewNotChanging = false; });
-    timelapse.addViewEndChangeListener(function() { timelapseViewNotChanging = true; });
+    //timelapse.addTargetViewChangeListener(function() { timelapseViewNotChanging = false; });
+    //timelapse.addViewEndChangeListener(function() { timelapseViewNotChanging = true; });
     timelapse.addZoomChangeListener(function() { currentScale = timelapse.getView().scale; });
     currentScale = timelapse.getView().scale;
-    var idleAnimation = function() {
-      if (timelapse && timelapse.isPaused() && timelapseViewNotChanging) {
-        options.updateHandler();
-      }
-      window.requestAnimFrame(idleAnimation);
-    };
-    window.requestAnimFrame(idleAnimation);
+    //var idleAnimation = function() {
+    //  if (timelapse && timelapse.isPaused() && timelapseViewNotChanging) {
+    //    options.updateHandler();
+    //  }
+    //  window.requestAnimFrame(idleAnimation);
+    //};
+    //window.requestAnimFrame(idleAnimation);
     // Resize all the layers when the browser window changes size
     $(window).resize(function() {
       thisRenderer.resizeLayers();

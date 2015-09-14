@@ -183,6 +183,7 @@ if (!window['$']) {
     var browserSupportsPlaybackRate = UTIL.playbackRateSupported();
     var activeVideoSrcList = {};
     var seekRedrawTimer = null;
+    var drawListenerTimer = null;
 
     ////////////////////////
     //
@@ -1416,7 +1417,15 @@ if (!window['$']) {
           var currentDrawView = timelapse.getView();
           for (var i = 0; i < listeners.length; i++) {
             try {
-              listeners[i](currentDrawView);
+              if (!drawListenerTimer) {
+                (function() {
+                  var idx = i;
+                  drawListenerTimer = setTimeout(function() {
+                    listeners[idx](currentDrawView);
+                    drawListenerTimer = null;
+                  }, 1);
+                })(i);
+              }
             } catch(e) {
               UTIL.error(e.name + " while publishing to videoset 'videoset-draw' event listener: " + e.message, e);
             }

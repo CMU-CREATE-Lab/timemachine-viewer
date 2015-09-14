@@ -1114,3 +1114,29 @@ input::-ms-clear {
 .shareView {
   display: none;
 }
+
+#vector-layers input, #vector-layers label {
+  cursor: pointer;
+}
+
+#vector-layers {
+  width: auto;
+  background: rgba(183, 183, 183, 0.5);
+  position: absolute;
+  right: 19px;
+  bottom: 110px;
+  border: 1px solid #656565;
+  -webkit-border-radius: 3px;
+  -moz-border-radius: 3px;
+  border-radius: 3px !important;
+  box-shadow: 2px 2px 3px rgba(0, 0, 0, 0.3);
+  z-index: 30;
+  outline: none;
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 20px;
+  padding-bottom: 5px;
+  padding-top: 5px;
+  padding-left: 5px;
+  padding-right: 10px;
+  color: #262525;
+}

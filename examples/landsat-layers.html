@@ -72,8 +72,9 @@
           datasetType: "landsat",
           playOnLoad: true,
           onTimeMachinePlayerReady: function(viewerDivId) {
-            var projection = new org.gigapan.timelapse.MercatorProjection(-180, 85.05112877980659, 180, -85.05112877980659, 1335834, 1335834);
+            window.location.hash='#v=35.3913,-92.1648,8.075,latLng&t=0.03';
 
+            var projection = new org.gigapan.timelapse.MercatorProjection(-180, 85.05112877980659, 180, -85.05112877980659, 1335834, 1335834);
             canvasLayerRenderer = new org.gigapan.timelapse.CanvasLayerRenderer({
               timelapse: timelapse,
               updateHandler: function() {
@@ -136,6 +137,7 @@
                 }
                 group.addElement(elem);
               }
+              canvasLayerRenderer.addToLegend({"title" : "Hydraulic Fracking", "color" : "red", "id" : "fracking"});
 
               $.getJSON('http://timemachine1.gc.cs.cmu.edu/timemachines/data/ark-earthquakes.json', function(data) {
                 previousYear = 1983;
@@ -194,6 +196,7 @@
                   }
                   group.addElement(elem);
                 }
+                canvasLayerRenderer.addToLegend({"title" : "Earthquakes", "color" : "yellow", "id": "earthquakes"});
               });
             });
           },
@@ -217,5 +220,9 @@
   </head>
   <body>
     <div id="timeMachine"></div>
+    <div style="position: absolute; top: 20px; left: 100px; z-index: 999;">
+      <button onclick="window.location.hash='#v=35.29112,-92.25176,10.64,latLng&t=2.63'">2010 - 74 quakes</button>
+      <button onclick="window.location.hash='#v=35.29112,-92.25176,10.64,latLng&t=2.73'">2011 - 177 quakes</button>
+    </div>
   </body>
 </html>
