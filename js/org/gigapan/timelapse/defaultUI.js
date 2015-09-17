@@ -744,7 +744,7 @@ if (!org.gigapan.timelapse.Timelapse) {
         $thumbnailPreviewCopyTextButtonTooltip.show();
         tooltipWidth = $thumbnailPreviewCopyTextButtonTooltip.outerWidth();
         $thumbnailPreviewCopyTextButtonTooltip.css({
-          left: targetOffset.left - (tooltipWidth / 2 - ($target.outerWidth() / 2)) - 10 + "px",
+          left: targetOffset.left - (tooltipWidth / 2 - ($target.outerWidth() / 2)) - containerOffset.left + "px",
           top: targetOffset.top - containerOffset.top - 45 + "px"
         });
       } else {
