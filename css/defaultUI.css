@@ -177,6 +177,11 @@ body, html {
   margin-top: -1px;
 }
 
+/* FireFox specific CSS */
+_:-moz-tree-row(hover), .customButton .ui-button-text {
+  margin-top: -2px;
+}
+
 .share {
   position: absolute;
   bottom: 20px;
@@ -220,6 +225,11 @@ body, html {
 .helpPlayerLabel .ui-button-text {
   margin-top: -1px;
   margin-left: 3px;
+}
+
+/* FireFox specific CSS */
+_:-moz-tree-row(hover), .helpPlayerLabel .ui-button-text {
+  margin-top: -2px;
 }
 
 .instructions {
@@ -673,6 +683,22 @@ body, html {
   margin-top: 2px;
 }
 
+/* FireFox specific CSS */
+_:-moz-tree-row(hover), .customDialogButton.generate-thumbnail .ui-button-text {
+  margin-top: 1px !important;
+}
+
+_:-moz-tree-row(hover), .ui-spinner-input {
+  margin: 0.05em 22px 0.2em 0.4em !important;
+}
+
+/* IE specific CSS */
+@media screen and (-ms-high-contrast: active), (-ms-high-contrast: none) {
+  .customDialogButton.generate-thumbnail .ui-button-text {
+    margin-top: 1px !important;
+  }
+}
+
 .customDialog .reset-large, .customDialog .reset-small {
   width: 74px;
 }
@@ -710,6 +736,11 @@ body, html {
   padding-left: 9px;
   padding-right: 9px;
   margin-top: -3px;
+}
+
+/* FireFox specific CSS */
+_:-moz-tree-row(hover), .customDialog .customDialogButton .ui-button-text {
+  margin-top: -5px;
 }
 
 .customDialog .customHighlightDialogButton {
@@ -1080,6 +1111,11 @@ body, html {
   padding-right: 9px;
   margin-top: -3px;
   margin-left: -2px;
+}
+
+/* FireFox specific CSS */
+_:-moz-tree-row(hover), .customDropdownButton .ui-button-text {
+  margin-top: -5px !important;
 }
 
 .customDropdownButton .ui-icon {
