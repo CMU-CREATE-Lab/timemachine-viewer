@@ -9,7 +9,6 @@
     <link href="../css/contextMap.css" rel="stylesheet" type="text/css"/>
     <link href="../css/scaleBar.css" rel="stylesheet" type="text/css"/>
     <link href="../css/customUI.css" rel="stylesheet" type="text/css"/>
-    <link href="../libs/change-detect/css/change.css" media="screen" rel="stylesheet" type="text/css"/>
     <link href="../css/leaflet/leaflet.css" rel="stylesheet" type="text/css"/>
 
     <script src="../js/jquery/jquery.min.js" type="text/javascript"></script>
@@ -32,12 +31,6 @@
 
     <script src="../js/org/gigapan/postmessage.js" type="text/javascript"></script>
     <script src="../js/org/gigapan/timelapse/crossdomain_api.js" type="text/javascript"></script>
-
-    <script src="../libs/change-detect/js/ThumbnailServiceAPI.js" type="text/javascript"></script>
-    <script src="../libs/change-detect/js/TimeMachineCanvasLayer.js" type="text/javascript"></script>
-    <script src="../libs/change-detect/js/ThumbnailTool.js" type="text/javascript"></script>
-    <script src="../libs/change-detect/js/BoxEventHandler.js" type="text/javascript"></script>
-    <script src="../libs/change-detect/js/ChangeDetectionTool.js" type="text/javascript"></script>
 
     <script src="../template_includes.js" type="text/javascript"></script>
     <script src="http://earthengine.google.org/timelapse/data/20130507/ajax_includes.js" type="text/javascript"></script>
@@ -72,6 +65,7 @@
             timelapse.getSnaplapseForPresentationSlider().getSnaplapseViewer().addEventListener("slide-changed", function(slideTitle) {
               post("from-timemachine-slide-changed", slideTitle);
             });
+            //timelapse.loadSharedDataFromUnsafeURL("#tour=EEDkDAVnCdAw_SiI__DkDAFtUaZ_eRrM__DkDAq6saZGdRlQ__BkDACrDZB9QQxS__Untitled_B", true);
           },
           scaleBarOptions: {
             scaleBarDiv: "scaleBar1"
