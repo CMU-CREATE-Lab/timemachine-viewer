@@ -267,8 +267,8 @@ if (!org.gigapan.timelapse.Timelapse) {
               }
             });
             loadContextMapCallback();
-          }
-        }
+          };
+        };
         var leafletScript = document.createElement('script');
         leafletScript.setAttribute('src', 'https://maps.google.com/maps/api/js?sensor=false&libraries=places&callback=loadContextMapLeaflet');
         leafletScript.setAttribute('type', 'text/javascript');
@@ -292,7 +292,7 @@ if (!org.gigapan.timelapse.Timelapse) {
             type: "Road"
           });
           loadContextMapCallback();
-        }
+        };
       } else if (tileType == "Custom") {
         var tileUrl = contextMapOptions["tileUrl"];
         tileLayer = new L.TileLayer(tileUrl);
@@ -446,7 +446,7 @@ if (!org.gigapan.timelapse.Timelapse) {
         timelapse.updateLocationContextUI();
       });
       contextMap.fitBounds(bounds);
-    }
+    };
 
     // Add mouse events for resize
     var addContextMapMouseupEvents = function() {

@@ -41,6 +41,7 @@
 
  Create the global symbol "org" if it doesn't exist.  Throw an error if it does exist but is not an object.
  */
+
 "use strict";
 
 // Create the global symbol "org" if it doesn't exist.  Throw an error if it does exist but is not an object.
@@ -99,7 +100,6 @@ if (!org.gigapan.timelapse.Timelapse) {
 
     // Objects
     var visualizer = timelapse.getVisualizer();
-    var annotator = timelapse.getAnnotator();
     var videoset = timelapse.getVideoset();
     var thumbnailTool = timelapse.getThumbnailTool();
     var changeDetectionTool = timelapse.getChangeDetectionTool();
@@ -150,7 +150,6 @@ if (!org.gigapan.timelapse.Timelapse) {
     var showEditorOnLoad = ( typeof (settings["showEditorOnLoad"]) == "undefined") ? false : settings["showEditorOnLoad"];
     var showThumbnailTool = ( typeof (settings["showThumbnailTool"]) == "undefined") ? false : settings["showThumbnailTool"];
     var editorEnabled = timelapse.isEditorEnabled();
-    var presentationSliderEnabled = timelapse.isPresentationSliderEnabled();
     var annotatorEnabled = timelapse.isAnnotatorEnabled();
     var changeDetectionEnabled = timelapse.isChangeDetectionEnabled();
     var showChangeDetectionOnLoad = ( typeof (settings["showChangeDetectionOnLoad"]) == "undefined") ? false : settings["showChangeDetectionOnLoad"];
@@ -256,7 +255,7 @@ if (!org.gigapan.timelapse.Timelapse) {
         }).on("click", function() {
           timelapse.fullScreen();
         });
-        $fullScreenPlayer.appendTo($("#" + viewerDivId + " .controls"));
+        $fullScreenPlayer.appendTo($controls);
       }
       // Create share button
       if (showShareBtn) {
@@ -277,8 +276,8 @@ if (!org.gigapan.timelapse.Timelapse) {
       createSpeedControl();
       // Settings
       if (!showMainControls || useCustomUI) {
-        $("#" + viewerDivId + " .controls").hide();
-        $("#" + viewerDivId + " .timelineSliderFiller").hide();
+        $controls.hide();
+        $timelineSliderFiller.hide();
       }
     };
 
@@ -479,7 +478,7 @@ if (!org.gigapan.timelapse.Timelapse) {
       if (!showThumbnailTool) {
         removeAccordionPanel("share-thumbnail");
       }
-      var $accordion = $("#" + viewerDivId + " .shareView .accordion")
+      var $accordion = $("#" + viewerDivId + " .shareView .accordion");
       $accordion.accordion({
         heightStyle: "content",
         animate: false,
@@ -927,7 +926,7 @@ if (!org.gigapan.timelapse.Timelapse) {
       $zoom.append('<button class="zoomin" title="Zoom in"></button>');
 
       if (useTouchFriendlyUI)
-        $zoom.addClass("zoom-touchFriendly")
+        $zoom.addClass("zoom-touchFriendly");
 
       $("#" + viewerDivId + " .zoomin").button({
         icons: {
@@ -1177,8 +1176,8 @@ if (!org.gigapan.timelapse.Timelapse) {
 
     var _toggleMainControls = function() {
       showMainControls = !showMainControls;
-      $("#" + viewerDivId + " .controls").toggle();
-      $("#" + viewerDivId + " .timelineSliderFiller").toggle();
+      $controls.toggle();
+      $timelineSliderFiller.toggle();
     };
     this.toggleMainControls = _toggleMainControls;
 
@@ -1319,13 +1318,13 @@ if (!org.gigapan.timelapse.Timelapse) {
       if (showShareBtn) {
         createShareButton();
         var shareButton = $("#" + viewerDivId + " .share");
-        $("#" + viewerDivId + " .controls").children().not(shareButton).hide();
+        $controls.children().not(shareButton).hide();
         shareButton.css("bottom", "110px");
       } else {
         $("#" + viewerDivId + " .controls").hide();
         $("#" + viewerDivId + " .shareView").hide();
       }
-      $("#" + viewerDivId + " .captureTime").hide();
+      $captureTime.hide();
       $("#" + viewerDivId + " .toolDialog").hide();
     }
   };

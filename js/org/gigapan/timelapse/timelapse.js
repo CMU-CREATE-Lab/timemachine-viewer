@@ -208,7 +208,6 @@ if (!window['$']) {
     var enablePanoVideo = true;
     var isChrome = UTIL.isChrome();
     var loadTimelapseWithPreviousViewAndTime = false;
-    var didHashChangeFirstTimeOnLoad = false;
     var didFirstTimeOnLoad = false;
     var isMovingToWaypoint = false;
 
@@ -342,7 +341,7 @@ if (!window['$']) {
     //
     this.setDoDwell = function(state) {
       loopDwell = state;
-    }
+    };
 
     this.getTimePadding = function() {
       return timePadding;
@@ -564,7 +563,7 @@ if (!window['$']) {
 
     this.getDataPanes = function() {
       return $(dataPanesId).children();
-    }
+    };
 
     this.getLoopPlayback = function() {
       return loopPlayback;
@@ -3143,9 +3142,9 @@ if (!window['$']) {
       var sanitized_timeToFind = timeToFind.split(".")[0];
       // If a date string has dashes (i.e. 2015-04-09 08:52:35 GMT-0400), replace with slashes since IE/FireFox Date parser does not support this.
       // However, be sure not to remove the dash from the timezone field.
-      var dashSubString = sanitized_timeToFind.match(/\d\d\d\d-\d\d-\d\d/)
+      var dashSubString = sanitized_timeToFind.match(/\d\d\d\d-\d\d-\d\d/);
       if (dashSubString) {
-        var slashSubString = dashSubString[0].replace(/-/g, "/")
+        var slashSubString = dashSubString[0].replace(/-/g, "/");
         sanitized_timeToFind.replace(dashSubString, slashSubString);
       }
       sanitized_timeToFind = (new Date(sanitized_timeToFind)).toTimeString().substr(0, subStrLength).trim();

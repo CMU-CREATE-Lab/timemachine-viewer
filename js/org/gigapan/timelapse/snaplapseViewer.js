@@ -90,7 +90,6 @@ if (!org.gigapan.timelapse.snaplapse) {
   org.gigapan.timelapse.snaplapse.SnaplapseViewer = function(snaplapse, timelapse, settings, mode) {
 
     // Objects
-    var thisObj = this;
     var videoset = timelapse.getVideoset();
     var eventListeners = {};
 
@@ -150,7 +149,6 @@ if (!org.gigapan.timelapse.snaplapse) {
       from: undefined,
       to: undefined
     };
-    var toolbarHeight = $toolbar.outerHeight();
     var KEYFRAME_THUMBNAIL_WIDTH = useTouchFriendlyUI ? 146 : 126;
     var KEYFRAME_THUMBNAIL_HEIGHT = useTouchFriendlyUI ? 101 : 73;
 
@@ -782,7 +780,6 @@ if (!org.gigapan.timelapse.snaplapse) {
           var elementOffset = $element.offset();
           var elementWidth = $element.width();
           var captionWidth = $keyframeSubtitleBox.width();
-          var documentHeight = $(document).height();
           var pointerLeft = elementOffset.left + elementWidth / 2;
           var captionLeft = pointerLeft - captionWidth / 2;
           var distanceBetweenElementAndLeftEdge = elementOffset.left + elementWidth - containerOffset.left;
@@ -955,7 +952,6 @@ if (!org.gigapan.timelapse.snaplapse) {
               $("#" + viewerDivId + " .toolDialog .accordion").accordion("option", "active", false);
             }
           }
-          ;
 
           if (!useCustomUI) {
             $sideToolbar.hide();
@@ -1051,19 +1047,19 @@ if (!org.gigapan.timelapse.snaplapse) {
                 // so swaping it with other keyframes will give a default value
                 snaplapse.resetKeyframe();
                 if (usePresentationSlider) {
+                  var $desiredSlide;
                   $("#" + composerDivId + " .snaplapse_keyframe_container").scrollLeft(0);
                   if (presentationSliderLoadAnimation != "none") {
                     var unsafeHashObj = UTIL.getUnsafeHashVars();
                     // Go to the desired keyframe if there is no shared view and no tour
                     if (typeof unsafeHashObj.v == "undefined" && typeof unsafeHashObj.tour == "undefined") {
-                      var $desiredSlide;
                       if (typeof unsafeHashObj.slide != "undefined") {
                         $desiredSlide = $("#" + unsafeHashObj.slide);
                       }
                       if (!$desiredSlide || $desiredSlide.length == 0) {
                         if (initialWaypointIndex > 0) {
                           var waypointId = $("#" + composerDivId + " .snaplapse_keyframe_list").children().eq(initialWaypointIndex).children()[0].id;
-                          $desiredSlide = $("#" + waypointId)
+                          $desiredSlide = $("#" + waypointId);
                         } else {
                           // Go to the first keyframe if there is no desired keyframe
                           var firstFrame = snaplapse.getKeyframes()[0];
@@ -1227,9 +1223,6 @@ if (!org.gigapan.timelapse.snaplapse) {
     };
 
     var setCaptureTimePosition = function(position) {
-      var positionBottom;
-      var positionLeft;
-      var fontSize;
       var $captureTime = $("#" + viewerDivId + " .captureTime");
       if (position == "up") {
         if($captureTime.hasClass("captureTimeSmall")) {
@@ -1670,7 +1663,7 @@ if (!org.gigapan.timelapse.snaplapse) {
           } else {
             startAutoModeIdleTimeout();
           }
-        }
+        };
       } else if (usePresentationSlider) {
         setKeyframeCaptionUI(undefined, undefined, true);
       }

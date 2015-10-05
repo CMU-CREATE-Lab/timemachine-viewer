@@ -175,8 +175,8 @@ if (!window['$']) {
     var isChrome = UTIL.isChrome();
     var isSafari = UTIL.isSafari();
     var isFirefox = UTIL.isFirefox();
-    var doChromeSeekableHack = timelapse.doChromeSeekableHack();
-    var doChromeBufferedHack = timelapse.doChromeBufferedHack();
+    //var doChromeSeekableHack = timelapse.doChromeSeekableHack();
+    //var doChromeBufferedHack = timelapse.doChromeBufferedHack();
     var doChromeCacheBreaker = timelapse.doChromeCacheBreaker();
     var spinnerTimeoutId;
     var videoIsSeekingIntervalCheck;
@@ -243,9 +243,9 @@ if (!window['$']) {
 
     this.setLeader = function(newLeader) {
       timeOffset = 0;
-      var currentTime = _getCurrentTime();
       // Subtract 0 to force this to be a number
       leader = newLeader - 0;
+      //var currentTime = _getCurrentTime();
       //_seek(currentTime);
     };
 
@@ -286,7 +286,7 @@ if (!window['$']) {
     };
     this.getFragment = _getFragment;
 
-    var getPerf = function() {
+    /*var getPerf = function() {
       var perf = "Videos added: " + perfAdded;
       perf += "; initial seeks: " + perfInitialSeeks;
       perf += "; # time correction seeks: " + perfTimeSeeks;
@@ -298,7 +298,7 @@ if (!window['$']) {
         perf += perfTimeCorrections[i].toFixed(4);
       }
       return perf;
-    };
+    };*/
 
     ///////////////////////////
     // Add and remove videos
@@ -378,7 +378,7 @@ if (!window['$']) {
         }
         if (activeVideoSrcList[src]) {
           UTIL.log("Video found in local storage, adding cache breaker: " + src);
-          src = src + "?time=" + creationTime
+          src = src + "?time=" + creationTime;
         }
         activeVideoSrcList[src] = creationTime;
         window.localStorage.setItem('activeVideoSrcList', JSON.stringify(activeVideoSrcList));
@@ -492,7 +492,7 @@ if (!window['$']) {
 
     var _videoName = function(video) {
       return 'video(' + _idNumFromVideo(video) + ')';
-    }
+    };
     this.videoName = _videoName;
 
     var _deleteUnneededVideos = function() {
@@ -509,7 +509,7 @@ if (!window['$']) {
           _deleteVideo(video);
         }
       }
-    }
+    };
     this.deleteUnneededVideos = _deleteUnneededVideos;
 
     var _repositionVideo = function(video, geometry) {
@@ -1458,7 +1458,7 @@ if (!window['$']) {
     if (isChrome && doChromeCacheBreaker) {
       activeVideoSrcList = JSON.parse(window.localStorage.getItem('activeVideoSrcList')) || {};
       $(window).on('beforeunload', clearOutVideoLocalStore);
-      clearOutVideoLocalStore(true)
+      clearOutVideoLocalStore(true);
     }
 
     this.setStatusLoggingEnabled(false);

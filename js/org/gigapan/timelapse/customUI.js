@@ -103,7 +103,6 @@ if (!org.gigapan.timelapse.Timelapse) {
     var $viewer = $("#" + viewerDivId);
     var viewer_offset = $viewer.offset();
     var $video = $("#" + viewerDivId + " .tiledContentHolder");
-    var playerWidth = $video.outerWidth();
     var $customControl;
     var $customPlay;
     var $customHelpLabel;
@@ -124,7 +123,6 @@ if (!org.gigapan.timelapse.Timelapse) {
     var numYears;
     var pixelRatio = getPixelRatio();
     var endFrameIdx;
-    var extraHeight = 2;
     var $customSpeedhelp;
     var addedTimelineSliderListener = false;
 
@@ -175,7 +173,6 @@ if (!org.gigapan.timelapse.Timelapse) {
     var timeTickGrow_height = currentTimeTick_height;
     var originalIsPaused;
     var isSafari = org.gigapan.Util.isSafari();
-    var editorEnabled = timelapse.isEditorEnabled();
     var timeTickSpan;
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -662,7 +659,7 @@ if (!org.gigapan.timelapse.Timelapse) {
       // Instruction mask
       var content_instruction = "";
       content_instruction += '<div class="customInstructions">';
-      content_instruction += '  <span class="customZoomhelp"><p>'
+      content_instruction += '  <span class="customZoomhelp"><p>';
       content_instruction += useTouchFriendlyUI ? 'Zoom in and out to explore in greater detail.' : 'Zoom in and out to explore in greater detail. Click or use the mouse scroll wheel.';
       content_instruction += '  </p></span>';
       content_instruction += '  <span class="customMovehelp"><p>';
@@ -792,7 +789,7 @@ if (!org.gigapan.timelapse.Timelapse) {
       if (datasetType == "modis")
         numTicks = numTicks + 1;
       timeTickSpan = 100 / numTicks;
-      var previousTargetFrameIdx = undefined;
+      var previousTargetFrameIdx;
       var targetFrame, targetFrameX, previousTargetFrameX, invisibleSpan, idx;
       for (var i = 0; i < numYears; i++) {
         idx = (datasetType == "modis") ? (firstYear + i) : captureTimes[i];
@@ -990,7 +987,7 @@ if (!org.gigapan.timelapse.Timelapse) {
 
     var handleTimeTickMouseover = function(event) {
       if (isShowHoverEffect) {
-        var currentYearIdx = yearDictionaryKeys[parseInt(this.id.split("_")[3])]
+        var currentYearIdx = yearDictionaryKeys[parseInt(this.id.split("_")[3])];
         var currentFrameIdx = yearDictionary[currentYearIdx]["previousStackEndIdx"] + 1;
         if (timelapse.getCurrentFrameNumber() == currentFrameIdx)
           $(event.target).removeClass("closedHand").addClass("openHand").attr("title", "Drag to go to a different point in time");

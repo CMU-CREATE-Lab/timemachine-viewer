@@ -103,7 +103,6 @@ if (!window['$']) {
     //
     var timeMachineDivId = timelapse.getTimeMachineDivId();
     var annotatorDivId = timeMachineDivId + " .annotator";
-    var $annotatorDivObj = $("#" + annotatorDivId);
     var videoDivId = timelapse.getVideoDivId();
     var videoDiv = document.getElementById(videoDivId);
     var viewerDivId = timelapse.getViewerDivId();
@@ -331,20 +330,20 @@ if (!window['$']) {
       var content = '';
       content += '<div class="removeAnnotation ui-state-default ui-corner-all button" style="float:right; display:none"><span class="ui-icon ui-icon-circle-close" title="Remove annotation"></span></div>';
       content += '<table style="vertical-align:middle;">';
-      content += '	<tr><td>Marker Src: </td><td><input type="text" id="' + annotListItem.id + "_marker_src" + '" size="23" value="' + $(kineticObj.getImage()).attr("src") + '"></td></tr>';
-      content += '	<tr><td>Min Zoom: </td><td><input type="text" id="' + annotListItem.id + "_minZoom" + '" size="2" value="' + minZoom + '"></td></tr>';
+      content += '  <tr><td>Marker Src: </td><td><input type="text" id="' + annotListItem.id + "_marker_src" + '" size="23" value="' + $(kineticObj.getImage()).attr("src") + '"></td></tr>';
+      content += '  <tr><td>Min Zoom: </td><td><input type="text" id="' + annotListItem.id + "_minZoom" + '" size="2" value="' + minZoom + '"></td></tr>';
       content += '  <tr><td>Start Time: </td><td><input type="text" id="' + annotListItem.id + "_startTime" + '" size="2" value="' + startTime + '"> ' + 'End Time: <input type="text" id="' + annotListItem.id + "_endTime" + '" size="2" value="' + endTime + '"></td></tr>';
-      content += '	<tr>'
-      content += '    <td>Type:</td>'
-      content += '    <td>'
+      content += '  <tr>';
+      content += '    <td>Type:</td>';
+      content += '    <td>';
       content += '      <input type="radio" name="' + annotListItem.id + "_" + 'annotationType" value="image"> Image';
       content += '      <input type="radio" name="' + annotListItem.id + "_" + 'annotationType" value="audio"> Audio';
       content += '      <input type="radio" name="' + annotListItem.id + "_" + 'annotationType" value="video"> Video';
       //content += '      <input type="radio" name="' + annotListItem.id + "_" + 'annotationType" value="javascript"> JavaScript';
       content += '    </td>';
       content += '  </tr>';
-      content += '	<tr><td>Src: </td><td><input type="text" id="' + annotListItem.id + "_type_src" + '" size="37"></td></tr>';
-      content += '	<tr style="display:none"><td valign="top">Code: </td><td><textarea id="' + annotListItem.id + "_javascript_code" + '" rows="8" cols="29"></textarea></td></tr>';
+      content += '  <tr><td>Src: </td><td><input type="text" id="' + annotListItem.id + "_type_src" + '" size="37"></td></tr>';
+      content += '  <tr style="display:none"><td valign="top">Code: </td><td><textarea id="' + annotListItem.id + "_javascript_code" + '" rows="8" cols="29"></textarea></td></tr>';
       content += '</table>';
 
       $annotListItem.html(content).addClass("annotation_list_item");
@@ -609,7 +608,7 @@ if (!window['$']) {
       annotationImg.onload = function() {
         kineticImage.setImage(annotationImg);
         kineticImage.on("dragstart", function(e) {
-          // Hackity-hack:
+          // Hackity-hack for KineticJS library:
           // If we are not holding down the defined drag key when we begin dragging, then don't let the user
           // drag the marker. Would be nice to have a dragging event here, but apparently this is not possible
           // with kineticjs
@@ -757,7 +756,7 @@ if (!window['$']) {
             videoTag.style.top = this.attrs.y + "px";
             videoTag.style.left = this.attrs.x + "px";
           } else if (annotation.type == "javascript") {
-            // TODO: Possible security hole
+            // TODO: Properly handle user input javascript
             //eval(annotation.type_src);
           } else {
             UTIL.log("Annotation click event: No type selected");

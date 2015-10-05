@@ -285,6 +285,7 @@ if (!org.gigapan.timelapse.Timelapse) {
       return element;
     };
 
+    // (Unused)
     var updateSplines = function(kineticLayer) {
       //console.log(kineticLayer.getChildren());
     };

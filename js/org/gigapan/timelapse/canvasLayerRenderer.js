@@ -239,7 +239,7 @@ if (!org.gigapan.timelapse.Timelapse) {
     this.addToLegend = function(legend_entry) {
       var legend_html = "";
       var $legend = $("#" + timelapse.getViewerDivId() + " #vector-layers");
-      if ($legend.length == 0) {
+      if ($legend.length === 0) {
         $legend = $('<div id=vector-layers>');
         $legend.appendTo($("#" + timelapse.getViewerDivId()));
         $legend.on('click', 'input', function() {
@@ -366,14 +366,14 @@ if (!org.gigapan.timelapse.Timelapse) {
       this.show = function() {
         this.visible = true;
         this.draw();
-      }
+      };
 
       this.hide = function() {
         this.visible = false;
         var context = this.ctx;
         context.setTransform(1, 0, 0, 1, 0, 0);
         context.clearRect(0, 0, this.width, this.height);
-      }
+      };
 
       this.setWidth = function(width) {
         this.width = width;

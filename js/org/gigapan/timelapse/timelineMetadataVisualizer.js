@@ -113,14 +113,12 @@ if (!org.gigapan.timelapse.Timelapse) {
     var $timelineSliderFiller;
     var $tool;
     var $fastforwardButton;
-    var $fastforwardContainer;
     var isFastforwarding = false;
 
     // variables for showing metadata images
     var $metadataImgsButton;
     var $metadataImgsDialog;
     var $metadataImgsContainer;
-    var $thumbnailSpeed = $("#" + viewerDivId + " .thumbnail-speed");
     var thumbnailTool = timelapse.getThumbnailTool();
     var bbox = {xmin: 2319.434174421393, ymin: 884.3791826815946, xmax: 3752.18890138649, ymax: 1893.4524892574645};
     var cropBox = {xmin: 297, ymin: 39, xmax: 740, ymax: 351};
@@ -202,12 +200,12 @@ if (!org.gigapan.timelapse.Timelapse) {
           markerBorderColor: "#fff",
           markerBorderThickness: 1,
           dataPoints: [{x: currentTimeHighlight, y: data[currentFrame].y}]
-        }
+        };
       } else {
         chart.options.data[1] = {
           markerSize: 0,
           markerBorderThickness: 0
-        }
+        };
       }
       chart.render();
     };
@@ -310,7 +308,7 @@ if (!org.gigapan.timelapse.Timelapse) {
         var linkText = timelapseTitle + " " + captureTimes[frames_start[i]] + " to " + captureTimes[frames_end[i]];
         var desiredTime = (response.args.frameTime + response.args.nframes / (2 * timelapse.getFps())).toFixed(2);
         var linkHref = UTIL.getParentURL() + timelapse.getShareView(desiredTime);
-        var $link = $("<a class='metadataImgLink' href='" + linkHref + "'>" + linkText + "</a>")
+        var $link = $("<a class='metadataImgLink' href='" + linkHref + "'>" + linkText + "</a>");
         $div.append($img).append($link);
         $metadataImgsContainer.append($div);
       }

@@ -496,7 +496,6 @@ if (!Math.uuid) {
           snaplapseJSON['snaplapse']['dataset-name'] = tmJSON['name'];
         }
         if (tmJSON['projection-bounds']) {
-          var projection = timelapse.getProjection();
           snaplapseJSON['snaplapse']['projection'] = timelapse.getProjectionType();
           snaplapseJSON['snaplapse']['projection-bounds'] = tmJSON['projection-bounds'];
         }
@@ -546,6 +545,7 @@ if (!Math.uuid) {
           // Decode center
           var pointCenter;
           if (tmJSON['projection-bounds']) {
+            var projection = timelapse.getProjection();
             pointCenter = projection.latlngToPoint({
               lat: encoder.read_lat(),
               lng: encoder.read_lon()
