@@ -104,6 +104,7 @@ if (!org.gigapan.timelapse.snaplapse) {
     var useCustomUI = timelapse.useCustomUI();
     var useThumbnailServer = ( typeof (settings["useThumbnailServer"]) == "undefined") ? true : settings["useThumbnailServer"];
     var thumbnailServerRootTileUrl = ( typeof (settings["thumbnailServerRootTileUrl"]) == "undefined") ? settings["url"] : settings["thumbnailServerRootTileUrl"];
+    var thumbnailUrlList = ( typeof (settings["thumbnailUrlList"]) == "undefined") ? [] : settings["thumbnailUrlList"];
     var showFullScreenBtn = ( typeof (settings["showFullScreenBtn"]) == "undefined") ? true : settings["showFullScreenBtn"];
     var showEditorModeButton = ( typeof (settings["showEditorModeButton"]) == "undefined") ? true : settings["showEditorModeButton"];
     var showAddressLookup = ( typeof (settings["showAddressLookup"]) == "undefined") ? false : settings["showAddressLookup"];
@@ -1149,9 +1150,9 @@ if (!org.gigapan.timelapse.snaplapse) {
           $("#" + timeMachineDivId + "_snaplapse_keyframe_" + keyframe['id'] + "_timestamp").text(keyframe['captureTime']);
           // TODO: check if the thumbnail server is down and set the flag automatically
           if (useThumbnailServer)
-            loadThumbnailFromServer(keyframe);
+            loadThumbnailFromUrl(keyframe);
           else
-            setKeyframeThumbail(keyframe);
+            setKeyframeThumbnail(keyframe);
         });
 
         snaplapse.addEventListener('keyframe-interval-change', function(keyframe) {
@@ -1235,7 +1236,7 @@ if (!org.gigapan.timelapse.snaplapse) {
       }
     };
 
-    var setKeyframeThumbail = function(keyframe) {
+    var setKeyframeThumbnail = function(keyframe) {
       if (!uiEnabled)
         return;
       try {
@@ -1261,7 +1262,7 @@ if (!org.gigapan.timelapse.snaplapse) {
             ctx.drawImage(canvas, 0, 0, cWidth, cHeight, 0, 0, KEYFRAME_THUMBNAIL_WIDTH, KEYFRAME_THUMBNAIL_HEIGHT);
           }
         } else {
-          UTIL.error("setKeyframeThumbail(): failed to find a good video");
+          UTIL.error("setKeyframeThumbnail(): failed to find a good video");
         }
       } catch(e) {
         UTIL.error("Exception while trying to create thumbnail: " + e);
@@ -1640,12 +1641,18 @@ if (!org.gigapan.timelapse.snaplapse) {
       if (timelapse.getVisualizer() && !usePresentationSlider && uiEnabled && !useCustomUI)
         timelapse.getVisualizer().addTimeTag(keyframes, insertionIndex, isKeyframeFromLoad);
 
-      // Grab the current video frame and store it as the thumbnail in the canvas
-      if (useThumbnailServer)
-        loadThumbnailFromServer(keyframe);
-      else {
+
+      if (thumbnailUrlList.length > 0) {
+        // Pull from list of provided thumbnail URLs
+        // Assumes list is in order of how thumbnails will be displayed
+        loadThumbnailFromUrl(keyframe, insertionIndex);
+      } else if (useThumbnailServer) {
+        // Call thumbnail server to generate URL
+        loadThumbnailFromUrl(keyframe);
+      } else {
         setTimeout(function() {
-          setKeyframeThumbail(keyframe);
+          // Grab the current video frame and store it as the thumbnail in the canvas
+          setKeyframeThumbnail(keyframe);
         }, 500);
       }
 
@@ -1715,9 +1722,11 @@ if (!org.gigapan.timelapse.snaplapse) {
     };
     this.selectAndGo = selectAndGo;
 
-    var loadThumbnailFromServer = function(keyframe) {
+    var loadThumbnailFromUrl = function(keyframe, listIndex) {
       var $img = $("#" + timeMachineDivId + "_snaplapse_keyframe_" + keyframe['id'] + "_thumbnail");
-      var thumbnailURL = generateThumbnailURL(thumbnailServerRootTileUrl, keyframe.bounds, $img.width(), $img.height(), keyframe.time);
+      var thumbnailURL = thumbnailUrlList[listIndex];
+      if (!thumbnailUrlList[listIndex])
+        thumbnailURL = generateThumbnailURL(thumbnailServerRootTileUrl, keyframe.bounds, $img.width(), $img.height(), keyframe.time);
       $img.attr("src", thumbnailURL);
     };
 
