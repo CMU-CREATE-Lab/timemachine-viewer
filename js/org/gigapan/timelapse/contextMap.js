@@ -256,7 +256,7 @@ if (!org.gigapan.timelapse.Timelapse) {
         window.loadContextMapLeaflet = function() {
           var googleAPIScript;
           googleAPIScript = document.createElement('script');
-          googleAPIScript.setAttribute('src', UTIL.getRootAppURL() + '/js/leaflet/Google.js');
+          googleAPIScript.setAttribute('src', UTIL.getRootAppURL() + 'js/leaflet/Google.js');
           googleAPIScript.setAttribute('type', 'text/javascript');
           document.getElementsByTagName('head')[0].appendChild(googleAPIScript);
           googleAPIScript.onload = function() {
@@ -283,7 +283,7 @@ if (!org.gigapan.timelapse.Timelapse) {
         loadContextMapCallback();
       } else if (tileType == "Bing") {
         var bingAPIScript = document.createElement('script');
-        bingAPIScript.setAttribute('src', UTIL.getRootAppURL() + '/js/leaflet/Bing.js');
+        bingAPIScript.setAttribute('src', UTIL.getRootAppURL() + 'js/leaflet/Bing.js');
         bingAPIScript.setAttribute('type', 'text/javascript');
         document.getElementsByTagName('head')[0].appendChild(bingAPIScript);
         bingAPIScript.onload = function() {
