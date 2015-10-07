@@ -306,7 +306,7 @@ if (!org.gigapan.timelapse.Timelapse) {
         center: [0, 0],
         zoom: 0,
         touchZoom: false,
-        scrollWheelZoom: true,
+        scrollWheelZoom: false,
         doubleClickZoom: false,
         boxZoom: false,
         keyboard: false,
