@@ -1599,9 +1599,9 @@ if (!window['$']) {
 
     var _getMaxScale = function() {
       if (tmJSON['projection-bounds'])
-        return 1.25;
+        return 1.25 * scaleRatio;
       else
-        return 2;
+        return 2 * scaleRatio;
     };
     this.getMaxScale = _getMaxScale;
 
