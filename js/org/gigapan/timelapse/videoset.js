@@ -369,21 +369,24 @@ if (!window['$']) {
 
       // New workaround for the Chrome cache loading bug.
       // https://code.google.com/p/chromium/issues/detail?id=31014
-      if (isChrome && doChromeCacheBreaker) {
-        var creationTime = (new Date()).getTime();
-        // The src may be a relative path. When we later call video.src we always get an absolute path,
-        // so we need to ensure that we always store absolute paths.
-        if (src.substring(0, 2) == "./" || src.substring(0, 3) == "../") {
-          src = UTIL.relativeToAbsolutePath(src);
+      try {
+        if (isChrome && doChromeCacheBreaker) {
+          var creationTime = (new Date()).getTime();
+          // The src may be a relative path. When we later call video.src we always get an absolute path,
+          // so we need to ensure that we always store absolute paths.
+          if (src.substring(0, 2) == "./" || src.substring(0, 3) == "../") {
+            src = UTIL.relativeToAbsolutePath(src);
+          }
+          if (activeVideoSrcList[src]) {
+            UTIL.log("Video found in local storage, adding cache breaker: " + src);
+            src = src + "?time=" + creationTime;
+          }
+          activeVideoSrcList[src] = creationTime;
+          window.localStorage.setItem('activeVideoSrcList', JSON.stringify(activeVideoSrcList));
         }
-        if (activeVideoSrcList[src]) {
-          UTIL.log("Video found in local storage, adding cache breaker: " + src);
-          src = src + "?time=" + creationTime;
-        }
-        activeVideoSrcList[src] = creationTime;
-        window.localStorage.setItem('activeVideoSrcList', JSON.stringify(activeVideoSrcList));
+      } catch(e) {
+        UTIL.error("User has disabled local file storage of cookies: " + e);
       }
-
       //UTIL.log(getVideoSummaryAsString(video));
       if (video.src == '')
         video.setAttribute('src', src);
@@ -530,10 +533,14 @@ if (!window['$']) {
     this.repositionVideo = _repositionVideo;
 
     var stopStreaming = function(video) {
-      if (isChrome && doChromeCacheBreaker) {
-        delete activeVideoSrcList[video.src];
-        UTIL.log("Video deleted from local storage: " + video.src);
-        window.localStorage.setItem('activeVideoSrcList', JSON.stringify(activeVideoSrcList));
+      try {
+        if (isChrome && doChromeCacheBreaker) {
+          delete activeVideoSrcList[video.src];
+          UTIL.log("Video deleted from local storage: " + video.src);
+          window.localStorage.setItem('activeVideoSrcList', JSON.stringify(activeVideoSrcList));
+        }
+      } catch(e) {
+        UTIL.error("User has disabled local file storage of cookies: " + e);
       }
       video.src = "";
     };
@@ -1455,12 +1462,15 @@ if (!window['$']) {
     // Clear out the local storage related to videos loaded.
     // This is a workaround for a Chrome cache bug.
     // See new code (and bug report link) in _addVideo()
-    if (isChrome && doChromeCacheBreaker) {
-      activeVideoSrcList = JSON.parse(window.localStorage.getItem('activeVideoSrcList')) || {};
-      $(window).on('beforeunload', clearOutVideoLocalStore);
-      clearOutVideoLocalStore(true);
+    try {
+      if (isChrome && doChromeCacheBreaker) {
+        activeVideoSrcList = JSON.parse(window.localStorage.getItem('activeVideoSrcList')) || {};
+        $(window).on('beforeunload', clearOutVideoLocalStore);
+        clearOutVideoLocalStore(true);
+      }
+    } catch(e) {
+      UTIL.error("User has disabled local file storage of cookies: " + e);
     }
-
     this.setStatusLoggingEnabled(false);
   };
 })();
