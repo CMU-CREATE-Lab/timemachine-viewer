@@ -99,6 +99,8 @@ if (!org.gigapan.timelapse.Timelapse) {
     //
 
     // variables for drawing the metadata
+    var frames_start;
+    var frames_end;
     var timeMachineDivId = timelapse.getTimeMachineDivId();
     var viewerDivId = timelapse.getViewerDivId();
     var $chartContainer;
@@ -127,7 +129,21 @@ if (!org.gigapan.timelapse.Timelapse) {
     //
     // Public methods
     //
+    var loadMetaData = function(metadata, doDraw) {
+      frames_start = metadata.frames_start;
+      frames_end = metadata.frames_end;
+      if(doDraw) {
+        drawMetadata(metadata.response);
+      }
+    };
+    this.loadMetaData = loadMetaData;
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    //
+    // Private methods
+    //
     var drawMetadata = function(response) {
+      console.log(response);
       data = [];
       for (var i = 0; i < response.length; i++) {
         // If a date string has dashes (i.e. 2015-04-09 08:52:35 GMT-0400), replace with slashes since IE/Edge/FireFox Date parser does not support this.
@@ -155,7 +171,7 @@ if (!org.gigapan.timelapse.Timelapse) {
             tickThickness: 0,
             //includeZero: false,
             minimum: 15,
-            maximum: 700,
+            maximum: 500,
             gridThickness: 0
           },
           toolTip: {
@@ -182,12 +198,7 @@ if (!org.gigapan.timelapse.Timelapse) {
       $chartContainer.show();
       chart.render();
     };
-    this.drawMetadata = drawMetadata;
 
-    ////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    //
-    // Private methods
-    //
     var timeChangeListenerForChart = function() {
       var currentFrame = timelapse.getCurrentFrameNumber();
       var currentTimeHighlight = new Date(timelapse.getCaptureTimes()[currentFrame]);

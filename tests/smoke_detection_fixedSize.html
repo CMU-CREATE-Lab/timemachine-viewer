@@ -58,7 +58,7 @@
     <script type="text/javascript">
       jQuery.support.cors = true;
 
-      var date = "2015-05-02";
+      var date = "2015-05-01";
       var url = "http://tiles.cmucreatelab.org/ecam/timemachines/shenango1/" + date + ".timemachine";
       var timelapse;
 
@@ -74,8 +74,8 @@
           //showEditorOnLoad: true,
           onTimeMachinePlayerReady: function(viewerDivId) {
             setupPostMessageHandlers();
-            loadjscssfile("smoke-" + date + ".js", "js", function() {
-              timelapse.getTimelineMetadataVisualizer().drawMetadata(smoke_detection.values);
+            $.getJSON("http://tiles.cmucreatelab.org/ecam/timemachines/smoke_detection/shenango1/smoke-" + date + ".json", function(json) {
+              timelapse.getTimelineMetadataVisualizer().loadMetaData(json, true);
             });
           },
           disableTourLooping: true,
@@ -83,31 +83,6 @@
           enableTimelineMetadataVisualizer: true
         };
         timelapse = new org.gigapan.timelapse.Timelapse("timeMachine", viewerOptions);
-      }
-
-      function loadjscssfile(filename, filetype, callback){
-        if (filetype == "js"){ //if filename is a external JavaScript file
-          var fileref = document.createElement('script');
-          fileref.setAttribute("type","text/javascript");
-          fileref.setAttribute("src", filename);
-          fileref.onload = function() {
-            if (typeof (callback) === "function") {
-              callback();
-            }
-          };
-        }
-        else if (filetype == "css"){ //if filename is an external CSS file
-          var fileref = document.createElement("link");
-          fileref.setAttribute("rel", "stylesheet");
-          fileref.setAttribute("type", "text/css");
-          fileref.setAttribute("href", filename);
-          fileref.onload = function() {
-            if (typeof (callback) === "function")
-              callback();
-          };
-        }
-        if (typeof fileref!="undefined")
-          document.getElementsByTagName("head")[0].appendChild(fileref)
       }
 
       $(init);
