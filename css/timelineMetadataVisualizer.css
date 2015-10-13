@@ -26,6 +26,7 @@
   box-shadow: 2px 2px 3px rgba(0, 0, 0, 0.3);
   outline: none;
   z-index: 30;
+  display: none;
 }
 
 .metadataImgsButton.ui-button {
@@ -33,6 +34,7 @@
   bottom: 20px;
   left: 204px;
   width: 62px;
+  display: none;
 }
 
 .ui-button .ui-icon.ui-icon-custom-forward {
@@ -77,6 +79,7 @@
 
 .metadataImg {
   outline: none;
+  width: 320px;
 }
 
 .metadataImgLink {

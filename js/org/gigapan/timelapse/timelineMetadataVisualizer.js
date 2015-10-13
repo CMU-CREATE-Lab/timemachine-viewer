@@ -111,6 +111,7 @@ if (!org.gigapan.timelapse.Timelapse) {
     // variables for fast-forwarding
     var idxSeg;
     var $playbackButton;
+    var $captureTime;
     var $timelineSlider;
     var $timelineSliderFiller;
     var $tool;
@@ -123,6 +124,7 @@ if (!org.gigapan.timelapse.Timelapse) {
     var $metadataImgsContainer;
     var thumbnailTool = timelapse.getThumbnailTool();
     var bbox = {xmin: 2319.434174421393, ymin: 884.3791826815946, xmax: 3752.18890138649, ymax: 1893.4524892574645};
+    var desiredView = {x: 2726.9852899554394, y: 1279.8581499132647, scale: 0.35118231332244504};
     var cropBox = {xmin: 297, ymin: 39, xmax: 740, ymax: 351};
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -132,11 +134,32 @@ if (!org.gigapan.timelapse.Timelapse) {
     var loadMetaData = function(metadata, doDraw) {
       frames_start = metadata.frames_start;
       frames_end = metadata.frames_end;
+      showControlUI();
+      removeMetadataImages();
+      createMetadataImages();
       if(doDraw) {
         drawMetadata(metadata.response);
       }
     };
     this.loadMetaData = loadMetaData;
+
+    var showControlUI = function() {
+      if(!$captureTime.hasClass("captureTimeOverride")) {
+        $captureTime.addClass("captureTimeOverride");
+      }
+      $metadataImgsButton.show();
+      $fastforwardButton.show();
+    };
+    this.showControlUI = showControlUI;
+
+    var hideControlUI = function() {
+      if($captureTime.hasClass("captureTimeOverride")) {
+        $captureTime.removeClass("captureTimeOverride");
+      }
+      $metadataImgsButton.hide();
+      $fastforwardButton.hide();
+    };
+    this.hideControlUI = hideControlUI;
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////
     //
@@ -225,6 +248,7 @@ if (!org.gigapan.timelapse.Timelapse) {
       $timelineSlider = $("#" + viewerDivId + " .timelineSlider");
       $timelineSliderFiller = $("#" + viewerDivId + " .timelineSliderFiller");
       $tool = $("#" + viewerDivId + " .tool");
+      $captureTime = $("#" + viewerDivId + " .captureTime");
 
       // Create fast-forward button
       $fastforwardButton = $("<button class='fastforwardButton'></button>");
@@ -281,9 +305,6 @@ if (!org.gigapan.timelapse.Timelapse) {
         }
       });
 
-      // Override the default position of the capture time
-      $("#" + viewerDivId + " .captureTime").addClass("captureTimeOverride");
-
       // Add listeners
       var snaplapse = timelapse.getSnaplapse();
       if(snaplapse) {
@@ -296,13 +317,12 @@ if (!org.gigapan.timelapse.Timelapse) {
       }
     };
 
-    var showMetadataImages = function() {
-      $metadataImgsContainer.children().remove();
+    var createMetadataImages = function() {
       for (var i = 0; i < frames_start.length; i++) {
         var urlSettings = {
           bound: bbox,
-          width: (cropBox.xmax - cropBox.xmin) * 0.75,
-          height: (cropBox.ymax - cropBox.ymin) * 0.75,
+          width: (cropBox.xmax - cropBox.xmin) * 0.4,
+          height: (cropBox.ymax - cropBox.ymin) * 0.4,
           startTime: timelapse.frameNumberToTime(frames_start[i]),
           endTime: timelapse.frameNumberToTime(frames_end[i]),
           fps: timelapse.getFps() * 0.5,
@@ -315,13 +335,20 @@ if (!org.gigapan.timelapse.Timelapse) {
         var tmJSON = timelapse.getTmJSON();
         var captureTimes = timelapse.getCaptureTimes();
         var timelapseTitle = ( typeof tmJSON.name == "undefined") ? $("#locationTitle").text() : tmJSON.name;
-        var linkText = timelapseTitle + " " + captureTimes[frames_start[i]] + " to " + captureTimes[frames_end[i]];
+        var linkText = timelapseTitle + " " + captureTimes[frames_start[i]] + " to " + captureTimes[frames_end[i]].split(" ")[1];
         var desiredTime = (response.args.frameTime + response.args.nframes / (2 * timelapse.getFps())).toFixed(2);
-        var linkHref = UTIL.getParentURL() + timelapse.getShareView(desiredTime);
-        var $link = $("<a class='metadataImgLink' href='" + linkHref + "'>" + linkText + "</a>");
+        var linkHref = UTIL.getParentURL() + timelapse.getShareView(desiredTime,desiredView);
+        var $link = $("<a class='metadataImgLink' target='_self' href='" + linkHref + "'>" + linkText + "</a>");
         $div.append($img).append($link);
         $metadataImgsContainer.append($div);
       }
+    };
+
+    var removeMetadataImages = function() {
+      $metadataImgsContainer.children().remove();
+    };
+
+    var showMetadataImages = function() {
       if ($metadataImgsDialog.dialog("isOpen")) {
         $metadataImgsDialog.dialog("close");
       } else {

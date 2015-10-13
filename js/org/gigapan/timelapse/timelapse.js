@@ -1154,16 +1154,17 @@ if (!window['$']) {
       return Math.round(1e5 * latlng.lat) / 1e5 + "," + Math.round(1e5 * latlng.lng) / 1e5 + "," + Math.round(1e3 * Math.log(view.scale / panoView.scale) / Math.log(2)) / 1e3 + "," + "latLng";
     };
 
-    var getViewStrAsPoints = function() {
-      return Math.round(1e5 * view.x) / 1e5 + "," + Math.round(1e5 * view.y) / 1e5 + "," + Math.round(1e3 * Math.log(view.scale / panoView.scale) / Math.log(2)) / 1e3 + "," + "pts";
+    var getViewStrAsPoints = function(desiredView) {
+      desiredView = ( typeof (desiredView) == "undefined") ? view : desiredView;
+      return Math.round(1e5 * desiredView.x) / 1e5 + "," + Math.round(1e5 * desiredView.y) / 1e5 + "," + Math.round(1e3 * Math.log(desiredView.scale / panoView.scale) / Math.log(2)) / 1e3 + "," + "pts";
     };
 
-    var _getViewStr = function() {
+    var _getViewStr = function(desiredView) {
       // TODO: let the user choose lat/lng or points for a dataset with projection info
       if (typeof (tmJSON['projection-bounds']) != 'undefined') {
         return getViewStrAsProjection();
       } else {
-        return getViewStrAsPoints();
+        return getViewStrAsPoints(desiredView);
       }
     };
     this.getViewStr = _getViewStr;
@@ -1245,9 +1246,9 @@ if (!window['$']) {
     };
     this.normalizeView = _normalizeView;
 
-    var getShareView = function(sharedTimestamp) {
+    var getShareView = function(sharedTimestamp, desiredView) {
       sharedTimestamp = sharedTimestamp || thisObj.getCurrentTime().toFixed(2);
-      var shareStr = '#v=' + _getViewStr() + '&t=' + sharedTimestamp;
+      var shareStr = '#v=' + _getViewStr(desiredView) + '&t=' + sharedTimestamp;
       if (datasetType == "modis" && customUI.getLocker() != "none")
         shareStr += '&l=' + customUI.getLocker();
       if (datasetType == "breathecam")
