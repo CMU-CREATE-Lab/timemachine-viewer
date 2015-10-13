@@ -2952,7 +2952,7 @@ if (!window['$']) {
             onNewTimelapseLoadCompleteCallBack();
 
           for (var i = 0; i < datasetLoadedListeners.length; i++)
-            datasetLoadedListeners[i](desiredInitialDate);
+            datasetLoadedListeners[i]();
 
         }
       });
