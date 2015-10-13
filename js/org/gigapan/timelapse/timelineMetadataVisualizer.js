@@ -143,7 +143,6 @@ if (!org.gigapan.timelapse.Timelapse) {
     // Private methods
     //
     var drawMetadata = function(response) {
-      console.log(response);
       data = [];
       for (var i = 0; i < response.length; i++) {
         // If a date string has dashes (i.e. 2015-04-09 08:52:35 GMT-0400), replace with slashes since IE/Edge/FireFox Date parser does not support this.
@@ -171,7 +170,7 @@ if (!org.gigapan.timelapse.Timelapse) {
             tickThickness: 0,
             //includeZero: false,
             minimum: 15,
-            maximum: 500,
+            maximum: Math.max.apply(null, response),
             gridThickness: 0
           },
           toolTip: {
