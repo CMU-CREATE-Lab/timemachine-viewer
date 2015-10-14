@@ -115,6 +115,7 @@ if (!org.gigapan.timelapse.snaplapse) {
     var initialWaypointIndex = ( settings["presentationSliderSettings"] && typeof (settings["presentationSliderSettings"]["initialWaypointIndex"]) != "undefined") ? settings["presentationSliderSettings"]["initialWaypointIndex"] : 0;
     var presentationSliderLoadAnimation = ( settings["presentationSliderSettings"] && typeof (settings["presentationSliderSettings"]["onLoadAnimation"]) != "undefined") ? settings["presentationSliderSettings"]["onLoadAnimation"] : "zoom";
     var presentationSliderPlayAfterAnimation = ( settings["presentationSliderSettings"] && typeof (settings["presentationSliderSettings"]["playAfterAnimation"]) != "undefined") ? settings["presentationSliderSettings"]["playAfterAnimation"] : true;
+
     // Flags
     var didOnce = false;
     var presentationSliderEnabled = timelapse.isPresentationSliderEnabled();
@@ -132,10 +133,6 @@ if (!org.gigapan.timelapse.snaplapse) {
     var $videoSizeSelect;
     var $createSubtitle_dialog = $("#" + composerDivId + " .createSubtitle_dialog");
     var $keyframeContainer = $("#" + composerDivId + " .snaplapse_keyframe_container");
-
-    if (useTouchFriendlyUI)
-      timelapse.touchHorizontalScroll($keyframeContainer);
-
     var $toolbar = $("#" + composerDivId + " .toolbar");
 
     // Parameters
@@ -306,6 +303,8 @@ if (!org.gigapan.timelapse.snaplapse) {
     this.animateTourOverlayAndPlay = animateTourOverlayAndPlay;
 
     var initializeSnaplapseUI = function() {
+      timelapse.touchHorizontalScroll($keyframeContainer);
+
       if (!usePresentationSlider && uiEnabled) {
         createEditorToolbar();
         createDialogWindows();
