@@ -131,31 +131,36 @@ if (!org.gigapan.timelapse.Timelapse) {
     //
     // Public methods
     //
-    var loadMetaData = function(metadata, doDraw) {
+    var loadMetaData = function(metadata, doDraw, useDefaultPosition, showUI) {
       frames_start = metadata.frames_start;
       frames_end = metadata.frames_end;
-      showControlUI();
       removeMetadataImages();
       createMetadataImages();
-      if(doDraw) {
+      if (doDraw) {
         drawMetadata(metadata.response);
+      }
+      if (useDefaultPosition) {
+        if (!$metadataImgsButton.hasClass("defaultPosition")) {
+          $metadataImgsButton.addClass("defaultPosition");
+        }
+        if (!$fastforwardButton.hasClass("defaultPosition")) {
+          $fastforwardButton.addClass("defaultPosition");
+        }
+      }
+      if (showUI) {
+        showControlUI();
       }
     };
     this.loadMetaData = loadMetaData;
 
     var showControlUI = function() {
-      if(!$captureTime.hasClass("captureTimeOverride")) {
-        $captureTime.addClass("captureTimeOverride");
-      }
+      console.log($metadataImgsButton);
       $metadataImgsButton.show();
       $fastforwardButton.show();
     };
     this.showControlUI = showControlUI;
 
     var hideControlUI = function() {
-      if($captureTime.hasClass("captureTimeOverride")) {
-        $captureTime.removeClass("captureTimeOverride");
-      }
       $metadataImgsButton.hide();
       $fastforwardButton.hide();
     };
@@ -307,7 +312,7 @@ if (!org.gigapan.timelapse.Timelapse) {
 
       // Add listeners
       var snaplapse = timelapse.getSnaplapse();
-      if(snaplapse) {
+      if (snaplapse) {
         timelapse.getSnaplapse().addEventListener('play', function() {
           $chartContainerContent.hide();
         });
@@ -337,7 +342,7 @@ if (!org.gigapan.timelapse.Timelapse) {
         var timelapseTitle = ( typeof tmJSON.name == "undefined") ? $("#locationTitle").text() : tmJSON.name;
         var linkText = timelapseTitle + " " + captureTimes[frames_start[i]] + " to " + captureTimes[frames_end[i]].split(" ")[1];
         var desiredTime = (response.args.frameTime + response.args.nframes / (2 * timelapse.getFps())).toFixed(2);
-        var linkHref = UTIL.getParentURL() + timelapse.getShareView(desiredTime,desiredView);
+        var linkHref = UTIL.getParentURL() + timelapse.getShareView(desiredTime, desiredView);
         var $link = $("<a class='metadataImgLink' target='_self' href='" + linkHref + "'>" + linkText + "</a>");
         $div.append($img).append($link);
         $metadataImgsContainer.append($div);

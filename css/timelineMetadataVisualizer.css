@@ -14,12 +14,15 @@
   z-index: 4;
 }
 
-.fastforwardButton.ui-button {
+.fastforwardButton.defaultPosition {
   position: absolute;
+  bottom: 20px;
+  left: 340px;
+}
+
+.fastforwardButton.ui-button {
   width: 40px;
   height: 19px;
-  bottom: 20px;
-  left: 154px;
   background: white !important;
   border: 1px solid #656565 !important;
   border-radius: 2px !important;
@@ -29,10 +32,14 @@
   display: none;
 }
 
-.metadataImgsButton.ui-button {
+.metadataImgsButton.defaultPosition {
   position: absolute;
   bottom: 20px;
-  left: 204px;
+  left: 390px;
+}
+
+.metadataImgsButton.ui-button {
+  position: absolute;
   width: 62px;
   display: none;
 }
@@ -61,10 +68,6 @@
 
 .ui-button.ui-state-hover .ui-icon.ui-icon-custom-stop-small {
   opacity: 1;
-}
-
-.captureTimeOverride {
-  left: 278px;
 }
 
 .metadataImgsContainer {

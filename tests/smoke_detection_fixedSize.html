@@ -75,7 +75,7 @@
           onTimeMachinePlayerReady: function(viewerDivId) {
             setupPostMessageHandlers();
             $.getJSON("http://tiles.cmucreatelab.org/ecam/timemachines/smoke_detection/shenango1/smoke-" + date + ".json", function(json) {
-              timelapse.getTimelineMetadataVisualizer().loadMetaData(json, true);
+              timelapse.getTimelineMetadataVisualizer().loadMetaData(json, true, true, true);
             });
           },
           disableTourLooping: true,
