@@ -801,6 +801,9 @@ if (!org.gigapan.timelapse.Timelapse) {
       $thumbnailPreviewLink.hide();
       $thumbnailPreviewCopyText.val(response.url);
 
+      if (typeof (response.args.nframes) === "undefined") {
+        response.args.nframes = 1;
+      }
       var desiredTime = (response.args.frameTime + response.args.nframes / (2 * timelapse.getFps())).toFixed(2);
       $thumbnailPreviewLink.attr("href", UTIL.getParentURL() + timelapse.getShareView(desiredTime));
       var tmJSON = timelapse.getTmJSON();
