@@ -154,7 +154,6 @@ if (!org.gigapan.timelapse.Timelapse) {
     this.loadMetaData = loadMetaData;
 
     var showControlUI = function() {
-      console.log($metadataImgsButton);
       $metadataImgsButton.show();
       $fastforwardButton.show();
     };
@@ -256,7 +255,7 @@ if (!org.gigapan.timelapse.Timelapse) {
       $captureTime = $("#" + viewerDivId + " .captureTime");
 
       // Create fast-forward button
-      $fastforwardButton = $("<button class='fastforwardButton'></button>");
+      $fastforwardButton = $("<button class='fastforwardButton' title='Automatically step through potential smoke emissions'></button>");
       $fastforwardButton.button({
         icons: {
           secondary: "ui-icon-custom-forward"
@@ -280,7 +279,7 @@ if (!org.gigapan.timelapse.Timelapse) {
       $("#" + viewerDivId + " .controls").append($fastforwardButton);
 
       // Create the button for showing metadata images
-      $metadataImgsButton = $("<button class='metadataImgsButton customButton'>Image</button>");
+      $metadataImgsButton = $("<button class='metadataImgsButton customButton' title='Show an image collection of potential smoke emissions'>Image</button>");
       $metadataImgsButton.button({
         icons: {
           primary: "ui-icon-image"
