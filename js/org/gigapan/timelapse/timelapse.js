@@ -3387,7 +3387,12 @@ if (!window['$']) {
     //
 
     // TODO: This is because of goofy user agent for Google hyperwall
-    browserSupported = (settings["viewerType"] == "webgl") ? true : UTIL.browserSupported(settings["mediaType"]);
+    if (settings["viewerType"] == "webgl") {
+      UTIL.setMediaType(settings["mediaType"]);
+      browserSupported = true;
+    } else {
+      browserSupported = UTIL.browserSupported(settings["mediaType"]);
+    }
 
     if (!browserSupported) {
       UTIL.ajax("html", rootAppURL, "templates/browser_not_supported_template.html", function(html) {

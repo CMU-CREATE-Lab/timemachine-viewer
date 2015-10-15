@@ -267,6 +267,9 @@ if (!org.gigapan.timelapse.Timelapse) {
               }
             });
             loadContextMapCallback();
+            if (typeof (googleMapsLoadedCallback) === "function") {
+              googleMapsLoadedCallback();
+            }
           };
         };
         var leafletScript = document.createElement('script');

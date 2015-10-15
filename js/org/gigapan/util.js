@@ -143,7 +143,7 @@ if (!org.gigapan) {
       return false;
     // See what video formats are actually supported
     //if (!mediaType) {
-      setMediaType(forcedMediaType);
+      org.gigapan.Util.setMediaType(forcedMediaType);
     //}
     // We may support the video tag, but perhaps we do not support the formats that our viewer uses
     if (supportedMediaTypes.length == 0)
@@ -191,7 +191,7 @@ if (!org.gigapan) {
     return mediaType;
   };
 
-  function setMediaType(newType) {
+  org.gigapan.Util.setMediaType = function(newType) {
     var v = document.createElement('video');
     if (!mediaType) { // If this is the first time we are setting the media type, check what formats are supported.
       if (!!v.canPlayType('video/webm; codecs="vp8"').replace(/no/, '')) {
@@ -207,7 +207,7 @@ if (!org.gigapan) {
     } else { // Else set to the format passed in.
       mediaType = newType;
     }
-  }
+  };
 
   org.gigapan.Util.getViewerType = function() {
     return viewerType;
