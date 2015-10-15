@@ -299,7 +299,7 @@ if (!org.gigapan.timelapse.Timelapse) {
         autoOpen: false,
         dialogClass: "customDialog",
         appendTo: "#" + viewerDivId,
-        width: 740,
+        width: 755,
         height: 700,
         minHeight: 50,
         buttons: {
