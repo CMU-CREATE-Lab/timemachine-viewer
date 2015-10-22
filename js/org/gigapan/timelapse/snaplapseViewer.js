@@ -1693,10 +1693,14 @@ if (!org.gigapan.timelapse.snaplapse) {
         }
         if (skipGo != true) {
           var newView;
-          if (typeof (timelapse.getTmJSON()['projection-bounds']) != "undefined") {
-            newView = timelapse.pixelBoundingBoxToLatLngCenterView(keyframe['bounds']);
+          if (keyframe['originalView']) {
+            newView = keyframe['originalView'];
           } else {
-            newView = timelapse.pixelBoundingBoxToPixelCenterView(keyframe['bounds']);
+            if (typeof (timelapse.getTmJSON()['projection-bounds']) != "undefined") {
+              newView = timelapse.pixelBoundingBoxToLatLngCenterView(keyframe['bounds']);
+            } else {
+              newView = timelapse.pixelBoundingBoxToPixelCenterView(keyframe['bounds']);
+            }
           }
           if (usePresentationSlider && useCustomUI) {
             timelapse.setNewView(newView, false, false, setViewCallback);

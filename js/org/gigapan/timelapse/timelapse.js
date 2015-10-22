@@ -189,7 +189,6 @@ if (!window['$']) {
     // Full screen variables
     var fullScreen = false;
     var videoStretchRatio = 1;
-    var scaleRatio = 1;
     var browserSupportsFullScreen = UTIL.fullScreenAPISupported();
     var preFullScreenProperties = {
       width: null,
@@ -485,14 +484,6 @@ if (!window['$']) {
       return scaleBar;
     };
 
-    this.getVideoStretchRatio = function() {
-      return videoStretchRatio;
-    };
-
-    this.getScaleRatio = function() {
-      return scaleRatio;
-    };
-
     this.getVisualizer = function() {
       return visualizer;
     };
@@ -713,7 +704,7 @@ if (!window['$']) {
             return;
           if (event.shiftKey) {
             moveFn = function() {
-              targetView.x -= (translationSpeedConstant * videoStretchRatio * 0.4) / view.scale;
+              targetView.x -= (translationSpeedConstant * 0.4) / view.scale;
               setTargetView(targetView);
             };
           } else {
@@ -733,7 +724,7 @@ if (!window['$']) {
             return;
           if (event.shiftKey) {
             moveFn = function() {
-              targetView.x += (translationSpeedConstant * videoStretchRatio * 0.4) / view.scale;
+              targetView.x += (translationSpeedConstant * 0.4) / view.scale;
               setTargetView(targetView);
             };
           } else {
@@ -754,9 +745,9 @@ if (!window['$']) {
           if (event.shiftKey) {
             moveFn = function() {
               if (event.shiftKey) {
-                targetView.y -= (translationSpeedConstant * videoStretchRatio * 0.4) / view.scale;
+                targetView.y -= (translationSpeedConstant * 0.4) / view.scale;
               } else {
-                targetView.y -= (translationSpeedConstant * videoStretchRatio * 0.8) / view.scale;
+                targetView.y -= (translationSpeedConstant * 0.8) / view.scale;
               }
               setTargetView(targetView);
             };
@@ -769,9 +760,9 @@ if (!window['$']) {
           if (event.shiftKey) {
             moveFn = function() {
               if (event.shiftKey) {
-                targetView.y += (translationSpeedConstant * videoStretchRatio * 0.4) / view.scale;
+                targetView.y += (translationSpeedConstant * 0.4) / view.scale;
               } else {
-                targetView.y += (translationSpeedConstant * videoStretchRatio * 0.8) / view.scale;
+                targetView.y += (translationSpeedConstant * 0.8) / view.scale;
               }
               setTargetView(targetView);
             };
@@ -1599,10 +1590,19 @@ if (!window['$']) {
     this.getMinScale = _getMinScale;
 
     var _getMaxScale = function() {
+      var extraScale = 1;
+      if (levelThreshold < 0) {
+        // If levelThreshold is less than 0, we'll show a video that's always
+        // artificially lower resolution than normal.  Allow additional zoom.
+        // levelThreshold = 0 shows videos from 100% to 200% scale
+        // levelThreshold = -1 shows videos from 200% to 400% scale
+        // So leave levelThreshold = 0 unmodified, and allow 2x extra scale for levelThreshold = -1
+        extraScale = Math.pow(2, -levelThreshold);
+      }
       if (tmJSON['projection-bounds'])
-        return 1.25 * scaleRatio;
+        return 1.25 * extraScale;
       else
-        return 2 * scaleRatio;
+        return 2 * extraScale;
     };
     this.getMaxScale = _getMaxScale;
 
@@ -1776,6 +1776,7 @@ if (!window['$']) {
       viewportWidth = $viewerDiv.width();
       viewportHeight = $viewerDiv.height();
 
+      // TODO: scale might not be correct when we unhide viewport
       if ($( "#" + viewerDivId + ":visible").length == 0) return;
 
       var originalVideoStretchRatio = videoStretchRatio;
@@ -1786,7 +1787,7 @@ if (!window['$']) {
       // so users don't see black bars around the viewport
       videoStretchRatio = Math.max(viewportWidth / originalVideoWidth, viewportHeight / originalVideoHeight);
       levelThreshold = defaultLevelThreshold - log2(videoStretchRatio);
-      scaleRatio = videoStretchRatio / originalVideoStretchRatio;
+      var scaleRatio = videoStretchRatio / originalVideoStretchRatio;
 
       // Update canvas size
       $(canvas).attr({

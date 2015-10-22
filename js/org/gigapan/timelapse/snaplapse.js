@@ -546,18 +546,26 @@ if (!Math.uuid) {
           var pointCenter;
           if (tmJSON['projection-bounds']) {
             var projection = timelapse.getProjection();
+            var latLng = {lat: encoder.read_lat(), lng: encoder.read_lon()};
             pointCenter = projection.latlngToPoint({
-              lat: encoder.read_lat(),
-              lng: encoder.read_lon()
+              lat: latLng.lat,
+              lng: latLng.lng
             });
           } else {
+			var point = {x: encoder.read_udecimal(5), lng:encoder.read_udecimal(5)};
             pointCenter = {
-              x: encoder.read_udecimal(5),
-              y: encoder.read_udecimal(5)
+              x: point.x,
+              y: point.y
             };
           }
           // Decode zoom
           var zoom = encoder.read_udecimal(2);
+          // Store original center view for use with waypoint slider
+          if (tmJSON['projection-bounds']) {
+            var originalView = {center : {lat : latLng.lat, lng : latLng.lng}, zoom : zoom};
+          } else {
+            var originalView = {center : {x : point.x, y : point.y}, zoom : zoom};
+          }
           var centerView = {
             "x": pointCenter.x,
             "y": pointCenter.y,
@@ -569,6 +577,7 @@ if (!Math.uuid) {
           frame["bounds"]["ymin"] = bbox.ymin;
           frame["bounds"]["xmax"] = bbox.xmax;
           frame["bounds"]["ymax"] = bbox.ymax;
+          frame["originalView"] = originalView;
           // Decode keyframe subtitle
           frame["unsafe_string_description"] = encoder.read_unsafe_string();
           if (version >= 4) {
@@ -643,7 +652,7 @@ if (!Math.uuid) {
           if (typeof keyframe['time'] != 'undefined' && typeof keyframe['bounds'] != 'undefined' && typeof keyframe['bounds']['xmin'] != 'undefined' && typeof keyframe['bounds']['ymin'] != 'undefined' && typeof keyframe['bounds']['xmax'] != 'undefined' && typeof keyframe['bounds']['ymax'] != 'undefined') {
             // NOTE: if is-description-visible is undefined, then we define it as *true* in order to maintain
             // backward compatibility with older time warps which don't have this property.
-            this.recordKeyframe(null, keyframe['time'], keyframe['bounds'], keyframe['unsafe_string_description'], ( typeof keyframe['is-description-visible'] == 'undefined') ? true : keyframe['is-description-visible'], keyframe['duration'], true, keyframe['buildConstraint'], keyframe['speed'], keyframe['loopTimes'], loadKeyframesLength, keyframe['unsafe_string_frameTitle']);
+            this.recordKeyframe(null, keyframe['time'], keyframe['bounds'], keyframe['unsafe_string_description'], ( typeof keyframe['is-description-visible'] == 'undefined') ? true : keyframe['is-description-visible'], keyframe['duration'], true, keyframe['buildConstraint'], keyframe['speed'], keyframe['loopTimes'], loadKeyframesLength, keyframe['unsafe_string_frameTitle'], keyframe['originalView']);
           } else {
             UTIL.error("Ignoring invalid keyframe during snaplapse load.");
           }
@@ -667,7 +676,7 @@ if (!Math.uuid) {
       this.recordKeyframe(idOfSourceKeyframe, keyframeCopy['time'], keyframeCopy['bounds'], keyframeCopy['unsafe_string_description'], keyframeCopy['is-description-visible'], keyframeCopy['duration'], false, keyframeCopy['buildConstraint'], keyframeCopy['speed'], keyframeCopy['loopTimes'], undefined, keyframeCopy['unsafe_string_frameTitle']);
     };
 
-    this.recordKeyframe = function(idOfKeyframeToAppendAfter, time, bounds, description, isDescriptionVisible, duration, isFromLoad, buildConstraint, speed, loopTimes, loadKeyframesLength, frameTitle) {
+    this.recordKeyframe = function(idOfKeyframeToAppendAfter, time, bounds, description, isDescriptionVisible, duration, isFromLoad, buildConstraint, speed, loopTimes, loadKeyframesLength, frameTitle, originalView) {
       if (typeof bounds == 'undefined') {
         bounds = timelapse.getBoundingBoxForCurrentView();
       }
@@ -692,6 +701,25 @@ if (!Math.uuid) {
       keyframe['unsafe_string_description'] = ( typeof description == 'undefined') ? '' : description;
       keyframe['unsafe_string_frameTitle'] = ( typeof frameTitle == 'undefined') ? '' : frameTitle;
       keyframe['is-description-visible'] = ( typeof isDescriptionVisible == 'undefined') ? false : isDescriptionVisible;
+      if (originalView) {
+        keyframe['originalView'] = originalView;
+      } else {
+        if (timelapse.getTmJSON()['projection-bounds']) {
+          var projection = timelapse.getProjection();
+          var viewCenter = timelapse.pixelBoundingBoxToPixelCenter(keyframe['bounds']);
+          var latLng = projection.pointToLatlng({
+            x: viewCenter.x,
+            y: viewCenter.y
+          });
+          var zoom = timelapse.scaleToZoom(viewCenter.scale);
+          var originalView = {center : {lat : latLng.lat, lng : latLng.lng}, zoom : zoom};
+        } else {
+          var viewCenter = timelapse.pixelBoundingBoxToPixelCenter(keyframe['bounds']);
+          var zoom = timelapse.scaleToZoom(viewCenter.scale);
+          var originalView = {center : {x : viewCenter.x, y : viewCenter.y}, zoom : zoom};
+        }
+      }
+      keyframe['originalView'] = originalView;
 
       // Determine where the new keyframe will be inserted
       var insertionIndex = keyframes.length;
