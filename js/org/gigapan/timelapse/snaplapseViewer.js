@@ -1066,21 +1066,21 @@ if (!org.gigapan.timelapse.snaplapse) {
                           $desiredSlide = $("#" + timeMachineDivId + "_snaplapse_keyframe_" + firstFrame.id).children(".snaplapse_keyframe_list_item_thumbnail_container_presentation");
                         }
                       }
+                      var keyframeId = $desiredSlide.parent().attr("id").split("_")[3];
+                      var frames = snaplapse.getKeyframeById(keyframeId);
+                      var newView;
+                      if (typeof (timelapse.getTmJSON()['projection-bounds']) != "undefined") {
+                        newView = timelapse.pixelBoundingBoxToLatLngCenterView(frames['bounds']);
+                      } else {
+                        newView = timelapse.pixelBoundingBoxToPixelCenterView(frames['bounds']);
+                      }
+                      if (presentationSliderLoadAnimation == "zoom") {
+                        timelapse.setNewView(newView, false, presentationSliderPlayAfterAnimation);
+                      } else if (presentationSliderLoadAnimation == "warp") {
+                        timelapse.setNewView(newView, true, presentationSliderPlayAfterAnimation);
+                      }
+                      selectAndGo($("#" + timeMachineDivId + "_snaplapse_keyframe_" + keyframeId), keyframeId, true, true, true);
                     }
-                    var keyframeId = $desiredSlide.parent().attr("id").split("_")[3];
-                    var frames = snaplapse.getKeyframeById(keyframeId);
-                    var newView;
-                    if (typeof (timelapse.getTmJSON()['projection-bounds']) != "undefined") {
-                      newView = timelapse.pixelBoundingBoxToLatLngCenterView(frames['bounds']);
-                    } else {
-                      newView = timelapse.pixelBoundingBoxToPixelCenterView(frames['bounds']);
-                    }
-                    if (presentationSliderLoadAnimation == "zoom") {
-                      timelapse.setNewView(newView, false, presentationSliderPlayAfterAnimation);
-                    } else if (presentationSliderLoadAnimation == "warp") {
-                      timelapse.setNewView(newView, true, presentationSliderPlayAfterAnimation);
-                    }
-                    selectAndGo($("#" + timeMachineDivId + "_snaplapse_keyframe_" + keyframeId), keyframeId, true, true, true);
                   } else {
                     if (currentAutoModeWaypointIdx != -1) currentAutoModeWaypointIdx--;
                   }
