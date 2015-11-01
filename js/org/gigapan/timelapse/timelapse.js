@@ -1801,16 +1801,16 @@ if (!window['$']) {
       // set home view to undefined so that it gets recomputed
       computeHomeView();
 
-      if (!didFirstTimeOnLoad)
-        setInitialView();
-
       // Set to the correct view
       if (view) {
         view.scale *= scaleRatio;
       } else {
-        // If it is the first time that we call this function, set the view to home view
-        view = $.extend({}, homeView);
+        if (!didFirstTimeOnLoad)
+          setInitialView();
+        // If we still do not have a view at this point, set to home view
+        view = view || $.extend({}, homeView);
       }
+
       _warpTo(view);
     };
 
