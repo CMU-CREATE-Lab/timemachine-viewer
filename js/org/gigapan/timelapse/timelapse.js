@@ -206,7 +206,6 @@ if (!window['$']) {
     var enableContextMap = true;
     var enablePanoVideo = true;
     var isChrome = UTIL.isChrome();
-    var loadTimelapseWithPreviousViewAndTime = false;
     var didFirstTimeOnLoad = false;
     var isMovingToWaypoint = false;
 
@@ -267,7 +266,6 @@ if (!window['$']) {
     var translationSpeedConstant = 20;
     var parabolicMotionController;
     var parabolicMotionObj = org.gigapan.timelapse.parabolicMotion;
-    var previousCaptureTime;
     var mediaType = null;
     var desiredInitialDate;
     var onNewTimelapseLoadCompleteCallBack;
@@ -1766,7 +1764,7 @@ if (!window['$']) {
         view = _normalizeView(initialView);
       } else if (loadSharedViewFromUnsafeURL(UTIL.getUnsafeHashString())) {
         // loadSharedViewFromUnsafeURL() sets our view (if valid) and returns a boolean
-      } else if (!loadTimelapseWithPreviousViewAndTime) {
+      } else {
         view = null;
       }
     };
@@ -1861,12 +1859,6 @@ if (!window['$']) {
         var unsafeHashObj = UTIL.unpackVars(unsafe_matchURL[1]);
         var newView = getViewFromHash(unsafeHashObj);
         var newTime = getTimeFromHash(unsafeHashObj);
-
-        // If the current URL happens to include a hash with a share link, but a new dataset
-        // is being loaded with the current view/time preserved (which is mostly likely
-        // different from the shared view) then move on.
-        if (loadTimelapseWithPreviousViewAndTime)
-          return;
 
         if (newView) {
           if (didFirstTimeOnLoad) {
@@ -2447,10 +2439,6 @@ if (!window['$']) {
       metadata = data;
       timelapseDurationInSeconds = (frames - 0.7) / data['fps'];
 
-      if (loadTimelapseWithPreviousViewAndTime && captureTimes.length > 0 && captureTimes[timelapseCurrentCaptureTimeIndex] && captureTimes[timelapseCurrentCaptureTimeIndex].length >= 11) {
-        previousCaptureTime = new Date(captureTimes[timelapseCurrentCaptureTimeIndex].replace(/-/g, "/"));
-      }
-
       // Set capture time
       if (tmJSON["capture-times"]) {
         tmJSON["capture-times"].splice(tmJSON["capture-times"].length - framesToSkipAtEnd, framesToSkipAtEnd);
@@ -2900,34 +2888,26 @@ if (!window['$']) {
       _makeVideoVisibleListener(function(videoId) {
         // This is the first video of the dataset being displayed
         if (videoId == firstVideoId) {
-          // If the user requested the same point spatial and temporal point in the previous dataset, calculate and seek there.
-          if (loadTimelapseWithPreviousViewAndTime) {
-            var closestFrame = findExactOrClosestCaptureTime(String(previousCaptureTime));
-            seekToFrame(closestFrame);
-            timelapseCurrentTimeInSeconds = closestFrame / _getFps();
+          if (desiredInitialDate) {
+            initialTime = findExactOrClosestCaptureTime(String(desiredInitialDate)) / _getFps();
+          }
+          if (initialTime == 0) {
+            timelapseCurrentTimeInSeconds = 0;
+            // Fixes Safari/IE bug which causes the video to not be displayed if the video has no leader and the initial
+            // time is zero (the video seeked event is never fired, so videoset never gets the cue that the video
+            // should be displayed).  The fix is to simply seek half a frame in.  Yeah, the video won't be starting at
+            // *zero*, but the displayed frame will still be the right one, so...good enough.  :-)
+
+            // 201506 - Chrome now seems to suffer from a similar problem in that we need to seek a bit further into the
+            // frame so as to not show the leader. Since so many quirks exist for the 0 frame case, we just always seek
+            // half a frame in when we are trying to load from the start of the video.
+            //if (videoset.getLeader() <= 0 && (isSafari || isIE)) {
+            var halfOfAFrame = 1 / _getFps() / 2;
+            _seek(halfOfAFrame);
+            //}
           } else {
-            if (desiredInitialDate) {
-              initialTime = findExactOrClosestCaptureTime(String(desiredInitialDate)) / _getFps();
-            }
-            if (initialTime == 0) {
-              timelapseCurrentTimeInSeconds = 0;
-              // Fixes Safari/IE bug which causes the video to not be displayed if the video has no leader and the initial
-              // time is zero (the video seeked event is never fired, so videoset never gets the cue that the video
-              // should be displayed).  The fix is to simply seek half a frame in.  Yeah, the video won't be starting at
-              // *zero*, but the displayed frame will still be the right one, so...good enough.  :-)
-
-              // 201506 - Chrome now seems to suffer from a similar problem in that we need to seek a bit further into the
-              // frame so as to not show the leader. Since so many quirks exist for the 0 frame case, we just always seek
-              // half a frame in when we are trying to load from the start of the video.
-              //if (videoset.getLeader() <= 0 && (isSafari || isIE)) {
-              var halfOfAFrame = 1 / _getFps() / 2;
-              _seek(halfOfAFrame);
-              //}
-            } else {
-              timelapseCurrentTimeInSeconds = initialTime;
-              _seek(initialTime);
-            }
-
+            timelapseCurrentTimeInSeconds = initialTime;
+            _seek(initialTime);
           }
 
           if (didFirstTimeOnLoad) {
@@ -2948,7 +2928,6 @@ if (!window['$']) {
               settings["onTimeMachinePlayerReady"](timeMachineDivId);
             }
           }
-          loadTimelapseWithPreviousViewAndTime = false;
           hideSpinner(viewerDivId);
           if (typeof onNewTimelapseLoadCompleteCallBack === "function")
             onNewTimelapseLoadCompleteCallBack();
@@ -3035,7 +3014,6 @@ if (!window['$']) {
     this.switchLayer = function(layerNum) {
       var newIndex = layerNum * tmJSON["sizes"].length;
       datasetLayer = layerNum;
-      loadTimelapseWithPreviousViewAndTime = true;
       validateAndSetDatasetIndex(newIndex);
       loadTimelapseCallback(tmJSON);
     };
@@ -3078,7 +3056,22 @@ if (!window['$']) {
       }
     };
 
-    var loadTimelapse = function(url, desiredView, desiredTime, preserveCurrentViewAndTime, desiredDate, onLoadCompleteCallBack) {
+    var loadTimelapse = function(url, desiredView, desiredTime, preserveViewAndTime, desiredDate, onLoadCompleteCallBack) {
+
+      if (preserveViewAndTime) {
+        // TODO: Assumes dates of the form yyyy-mm-dd hh:mm:ss
+        desiredDate = timelapse.getCurrentCaptureTime().substr(11, 8);
+        desiredView = timelapse.getView();
+      }
+
+      if (didFirstTimeOnLoad && settings["url"].indexOf(url) >= 0) {
+        var newFrame = findExactOrClosestCaptureTime(String(desiredDate));
+        timelapse.seekToFrame(newFrame);
+        if (desiredView)
+          timelapse.warpTo(desiredView);
+        return;
+      }
+
       showSpinner(viewerDivId);
 
       settings["url"] = url;
@@ -3094,6 +3087,9 @@ if (!window['$']) {
       }
       settings["initialView"] = initialView;
 
+      // Set the initial desired date
+      desiredInitialDate = desiredDate;
+
       // If the user specifies a starting time, use it.
       if (desiredTime && typeof (desiredTime) === "number") {
         initialTime = desiredTime;
@@ -3102,13 +3098,8 @@ if (!window['$']) {
         initialTime = 0;
       }
 
-      // Set the initial desired date (Date object)
-      desiredInitialDate = desiredDate;
-
       // Set the call back
       onNewTimelapseLoadCompleteCallBack = onLoadCompleteCallBack;
-
-      loadTimelapseWithPreviousViewAndTime = !!preserveCurrentViewAndTime;
 
       UTIL.ajax("json", settings["url"], "tm.json" + getMetadataCacheBreaker(), loadTimelapseCallback);
     };
@@ -3149,14 +3140,18 @@ if (!window['$']) {
         var slashSubString = dashSubString[0].replace(/-/g, "/");
         sanitized_timeToFind.replace(dashSubString, slashSubString);
       }
-      sanitized_timeToFind = (new Date(sanitized_timeToFind)).toTimeString().substr(0, subStrLength).trim();
-      // If date parsing fails, we assume the input only included the hour, min, [sec], so manually insert a year, month, day
-      if (sanitized_timeToFind === "Invalid") {
-        sanitized_timeToFind = (new Date("2001/01/01 " + timeToFind)).toTimeString().substr(0, subStrLength);
+      sanitized_timeToFind = new Date(sanitized_timeToFind);
+      var tmpNewCompare = new Date(captureTimes[Math.max(0, frames - 1)].replace(/-/g, "/"));
+      // If date parsing fails, we assume the input only included the hour, min, [sec], so manually insert a year, month, day based on captureTime array
+      if (String(sanitized_timeToFind).indexOf("Invalid") >= 0) {
+        var yearMonthDay = tmpNewCompare.getFullYear() + "/" + (1e2 + (tmpNewCompare.getMonth() + 1) + '').substr(1) + "/" + (1e2 + (tmpNewCompare.getDate()) + '').substr(1) + " ";
+        sanitized_timeToFind = new Date(yearMonthDay + timeToFind);
       }
+      // Convert to epoch time for comparisons
+      sanitized_timeToFind = sanitized_timeToFind.getTime();
       while (low <= high) {
         i = Math.floor((low + high) / 2);
-        newCompare = (new Date(captureTimes[i].replace(/-/g, "/"))).toTimeString().substr(0, subStrLength);
+        newCompare = (new Date(captureTimes[i].replace(/-/g, "/"))).getTime();
         if (newCompare < sanitized_timeToFind) {
           low = i + 1;
           continue;
@@ -3206,9 +3201,6 @@ if (!window['$']) {
         computeHomeView();
 
         setInitialView();
-        // Discard the custom home view setting if the user is not preserving the previous current view for the new dataset
-        if (!loadTimelapseWithPreviousViewAndTime)
-          settings["newHomeView"] = undefined;
 
         if (!view)
           view = $.extend({}, homeView);
