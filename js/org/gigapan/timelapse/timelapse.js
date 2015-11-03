@@ -1867,7 +1867,7 @@ if (!window['$']) {
             view = _normalizeView(newView);
           }
         }
-        if (newTime && typeof desiredInitialDate == "undefined") {
+        if (newTime) {
           if (didFirstTimeOnLoad) {
             _seek(newTime);
           } else {
@@ -3064,7 +3064,7 @@ if (!window['$']) {
         desiredView = timelapse.getView();
       }
 
-      if (didFirstTimeOnLoad && settings["url"].indexOf(url) >= 0) {
+      if (didFirstTimeOnLoad && desiredDate && settings["url"].indexOf(url) >= 0) {
         var newFrame = findExactOrClosestCaptureTime(String(desiredDate));
         timelapse.seekToFrame(newFrame);
         if (desiredView)

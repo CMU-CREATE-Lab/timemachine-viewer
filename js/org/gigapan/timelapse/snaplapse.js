@@ -552,7 +552,7 @@ if (!Math.uuid) {
               lng: latLng.lng
             });
           } else {
-			var point = {x: encoder.read_udecimal(5), lng:encoder.read_udecimal(5)};
+            var point = {x: encoder.read_udecimal(5), y: encoder.read_udecimal(5)};
             pointCenter = {
               x: point.x,
               y: point.y
@@ -572,12 +572,14 @@ if (!Math.uuid) {
             "scale": timelapse.zoomToScale(zoom)
           };
           var bbox = timelapse.pixelCenterToPixelBoundingBoxView(centerView).bbox;
+
           frame["bounds"] = {};
           frame["bounds"]["xmin"] = bbox.xmin;
           frame["bounds"]["ymin"] = bbox.ymin;
           frame["bounds"]["xmax"] = bbox.xmax;
           frame["bounds"]["ymax"] = bbox.ymax;
           frame["originalView"] = originalView;
+
           // Decode keyframe subtitle
           frame["unsafe_string_description"] = encoder.read_unsafe_string();
           if (version >= 4) {
