@@ -150,7 +150,7 @@ if (!window['$']) {
     var minViewportHeight = 370;
     var minViewportWidth = 540;
     var defaultLoopDwellTime = 0.5;
-    var timePadding = isFirefox ? 0 : 0.3;
+    var timePadding = isFirefox ? 0 : 0.25;
 
     // If the user requested a tour editor AND has a div in the DOM for the editor,
     // then do all related edtior stuff (pull thumbnails for keyframes, etc.)
@@ -2902,8 +2902,8 @@ if (!window['$']) {
             // frame so as to not show the leader. Since so many quirks exist for the 0 frame case, we just always seek
             // half a frame in when we are trying to load from the start of the video.
             //if (videoset.getLeader() <= 0 && (isSafari || isIE)) {
-            var halfOfAFrame = 1 / _getFps() / 2;
-            _seek(halfOfAFrame);
+            var quarterOfAFrame = 1 / _getFps() / 4;
+            _seek(quarterOfAFrame);
             //}
           } else {
             timelapseCurrentTimeInSeconds = initialTime;
