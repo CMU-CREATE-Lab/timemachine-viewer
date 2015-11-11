@@ -336,6 +336,11 @@ if (!window['$']) {
     //
     // Public methods
     //
+    this.showThumbnailToolWindow = function() {
+      if (defaultUI && settings["showThumbnailTool"])
+        defaultUI.showThumbnailToolWindow();
+    };
+
     this.setDoDwell = function(state) {
       loopDwell = state;
     };
