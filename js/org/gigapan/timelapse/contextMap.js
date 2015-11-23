@@ -273,7 +273,7 @@ if (!org.gigapan.timelapse.Timelapse) {
           };
         };
         var leafletScript = document.createElement('script');
-        leafletScript.setAttribute('src', 'https://maps.google.com/maps/api/js?sensor=false&libraries=places&callback=loadContextMapLeaflet');
+        leafletScript.setAttribute('src', 'https://maps.google.com/maps/api/js?libraries=places&callback=loadContextMapLeaflet');
         leafletScript.setAttribute('type', 'text/javascript');
         document.getElementsByTagName('head')[0].appendChild(leafletScript);
       } else if (tileType == "OpenStreetMap") {
