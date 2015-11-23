@@ -1254,10 +1254,8 @@ if (!org.gigapan.timelapse.Timelapse) {
         slide: function(e, ui) {
           // $(this).slider('value')  --> previous value
           // ui.value                 --> current value
-          // If we are manually using the slider and we are pulling it back to the start
-          // we wont actually get to time 0 because of how we are snapping.
-          // Manually seek to position 0 when this happens.
-          seekFromTimeLineSlider($(this).slider("value"), ui.value + timePadding);
+          //seekFromTimeLineSlider($(this).slider("value"), ui.value + timePadding);
+          timelapse.seekToFrame(ui.value);
         }
       }).removeClass("ui-corner-all").children().removeClass("ui-corner-all");
       $("#" + viewerDivId + " .timelineSlider .ui-slider-handle").attr("title", "Drag to go to a different point in time");

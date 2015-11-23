@@ -183,6 +183,7 @@ if (!window['$']) {
     var browserSupportsPlaybackRate = UTIL.playbackRateSupported();
     var activeVideoSrcList = {};
     var seekRedrawTimer = null;
+    var pauseRedrawTimer = null;
     var drawListenerTimer = null;
 
     ////////////////////////
@@ -477,6 +478,12 @@ if (!window['$']) {
         video.addEventListener('pause', function() {
           clearInterval(video.drawIntervalId);
           video.drawIntervalId = null;
+          if (isChrome && mediaType == ".mp4" && !pauseRedrawTimer) {
+            pauseRedrawTimer = setTimeout(function() {
+              pauseRedrawTimer = null;
+              drawToCanvas(video);
+            }, 100);
+          }
         }, false);
 
         video.addEventListener('ended', function() {

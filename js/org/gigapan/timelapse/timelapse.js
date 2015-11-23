@@ -150,7 +150,6 @@ if (!window['$']) {
     var minViewportHeight = 370;
     var minViewportWidth = 540;
     var defaultLoopDwellTime = 0.5;
-    var timePadding = isFirefox ? 0 : 0.25;
 
     // If the user requested a tour editor AND has a div in the DOM for the editor,
     // then do all related edtior stuff (pull thumbnails for keyframes, etc.)
@@ -271,6 +270,7 @@ if (!window['$']) {
     var onNewTimelapseLoadCompleteCallBack;
     var currentTimelineStyle;
 
+    var timePadding = isIE ? 0.3 : 0.0;
     // animateRate in milliseconds, 40 means 25 FPS
     var animateRate = 40;
     if (isHyperwall)
@@ -2902,14 +2902,11 @@ if (!window['$']) {
             // time is zero (the video seeked event is never fired, so videoset never gets the cue that the video
             // should be displayed).  The fix is to simply seek half a frame in.  Yeah, the video won't be starting at
             // *zero*, but the displayed frame will still be the right one, so...good enough.  :-)
-
-            // 201506 - Chrome now seems to suffer from a similar problem in that we need to seek a bit further into the
-            // frame so as to not show the leader. Since so many quirks exist for the 0 frame case, we just always seek
-            // half a frame in when we are trying to load from the start of the video.
             //if (videoset.getLeader() <= 0 && (isSafari || isIE)) {
-            var quarterOfAFrame = 1 / _getFps() / 4;
-            _seek(quarterOfAFrame);
-            //}
+            if (isSafari || isIE) {
+              var halfOfAFrame = 1 / _getFps() / 2;
+              _seek(halfOfAFrame);
+            }
           } else {
             timelapseCurrentTimeInSeconds = initialTime;
             _seek(initialTime);
@@ -3146,7 +3143,7 @@ if (!window['$']) {
         sanitized_timeToFind.replace(dashSubString, slashSubString);
       }
       sanitized_timeToFind = new Date(sanitized_timeToFind);
-      var tmpNewCompare = new Date(captureTimes[Math.max(0, frames - 1)].replace(/-/g, "/"));
+      var tmpNewCompare = new Date(captureTimes[Math.max(0, frames - 1)].replace(/-/g, "/").replace("UTC", ""));
       // If date parsing fails, we assume the input only included the hour, min, [sec], so manually insert a year, month, day based on captureTime array
       if (String(sanitized_timeToFind).indexOf("Invalid") >= 0) {
         var yearMonthDay = tmpNewCompare.getFullYear() + "/" + (1e2 + (tmpNewCompare.getMonth() + 1) + '').substr(1) + "/" + (1e2 + (tmpNewCompare.getDate()) + '').substr(1) + " ";
@@ -3156,7 +3153,7 @@ if (!window['$']) {
       sanitized_timeToFind = sanitized_timeToFind.getTime();
       while (low <= high) {
         i = Math.floor((low + high) / 2);
-        newCompare = (new Date(captureTimes[i].replace(/-/g, "/"))).getTime();
+        newCompare = (new Date(captureTimes[i].replace(/-/g, "/").replace("UTC", ""))).getTime();
         if (newCompare < sanitized_timeToFind) {
           low = i + 1;
           continue;
