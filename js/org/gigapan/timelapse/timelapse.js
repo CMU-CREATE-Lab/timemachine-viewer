@@ -808,7 +808,7 @@ if (!window['$']) {
       }
       // Install interval to run every 50 msec while key is down
       // Each arrow key and +/- has its own interval, so multiple can be down at once
-      if (keyIntervals[event.which] == undefined)
+      if (moveFn && keyIntervals[event.which] == undefined)
         keyIntervals[event.which] = setInterval(moveFn, 50);
     };
 
