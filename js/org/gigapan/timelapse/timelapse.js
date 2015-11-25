@@ -118,7 +118,7 @@ if (!window['$']) {
 
     // Settings
     var isHyperwall = settings["isHyperwall"] || false;
-    var loopPlayback = settings["loopPlayback"] || true;
+    var loopPlayback = ( typeof (settings["loopPlayback"]) == "undefined") ? true : settings["loopPlayback"];
     var customLoopPlaybackRates = settings["customLoopPlaybackRates"] || null;
     var playOnLoad = settings["playOnLoad"] || false;
     var playbackSpeed = settings["playbackSpeed"] && UTIL.isNumber(settings["playbackSpeed"]) ? settings["playbackSpeed"] : 1;
