@@ -381,6 +381,11 @@ if (!window['$']) {
       return endDwell;
     };
 
+    this.setDwellTimes = function(newStartDwell, newEndDwell) {
+      startDwell = newStartDwell;
+      endDwell = newEndDwell;
+    };
+
     this.getPlayOnLoad = function() {
       return playOnLoad;
     };
@@ -3034,7 +3039,7 @@ if (!window['$']) {
       timelapseDurationInSeconds = (frames - 0.7) / _getFps();
       videoset.setDuration((1 / _getFps()) * frames);
       timelapseCurrentCaptureTimeIndex = Math.min(frames - 1, Math.floor(timelapseCurrentTimeInSeconds * _getFps()));
-
+      var timelineVisible = $("#" + viewerDivId + " .controls").is(":visible") || $("#" + viewerDivId + " .customTimeline").is(":visible");
       if (currentTimelineStyle == "customUI") {
         $("#" + viewerDivId + " .controls").hide();
         $("#" + viewerDivId + " .customControl").show().css("z-index", "19");
@@ -3045,6 +3050,13 @@ if (!window['$']) {
         $("#" + viewerDivId + " .customControl .customHelpLabel").css({"bottom" : "44px", "z-index" : "inherit"});
 
         customUI.resetCustomTimeline();
+
+        if (!timelineVisible) {
+          $("#" + viewerDivId + " .customTimeline").hide();
+          $("#" + viewerDivId + " .timeText").hide();
+          $("#" + viewerDivId + " .customPlay").hide();
+          $("#" + viewerDivId + " .customToggleSpeed").hide();
+        }
       } else {
         $previousCustomUIElements = $("#" + viewerDivId + " .customControl").css("z-index", "inherit").children().not(".customHelpLabel, .customHelpCheckbox").detach();
         $("#" + viewerDivId + " .controls").show();
@@ -3055,6 +3067,11 @@ if (!window['$']) {
         $("#" + viewerDivId + " .help").hide();
 
         defaultUI.resetTimelineSlider();
+
+        if (!timelineVisible) {
+          $("#" + viewerDivId + " .controls").hide();
+          $("#" + viewerDivId + " .captureTime").hide();
+        }
       }
     };
 

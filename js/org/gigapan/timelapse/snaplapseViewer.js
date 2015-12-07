@@ -1734,7 +1734,7 @@ if (!org.gigapan.timelapse.snaplapse) {
     };
 
     var generateThumbnailURL = function(root, bounds, width, height, time) {
-      var serverURL = "http://timemachine-api.cmucreatelab.org/thumbnail?";
+      var serverURL = "http://thumbnails.cmucreatelab.org/thumbnail?";
       var rootFlag = "root=" + root + "&";
       var boundsFlag = "boundsLTRB=" + bounds.xmin + "," + bounds.ymin + "," + bounds.xmax + "," + bounds.ymax + "&";
       var sizeFlag = "width=" + width + "&height=" + height + "&";
