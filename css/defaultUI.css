@@ -907,6 +907,34 @@ _:-moz-tree-row(hover), .customDialog .customDialogButton .ui-button-text {
   padding: 0px;
 }
 
+.ui-button .ui-icon.ui-icon-custom-plus-white {
+  background: url(../images/buttons/plus_white.png);
+  left: 14px;
+  top: 16px;
+  width: 14px;
+  height: 14px;
+  background-size: contain !important;
+  opacity: 1;
+}
+
+.ui-button.ui-state-hover .ui-icon.ui-icon-custom-plus-white {
+  opacity: 1;
+}
+
+.ui-button .ui-icon.ui-icon-custom-minus-white {
+  background-image: url(../images/buttons/minus_white.png);
+  left: 14px;
+  top: 16px;
+  width: 14px;
+  height: 14px;
+  background-size: contain !important;
+  opacity: 1;
+}
+
+.ui-button.ui-state-hover .ui-icon.ui-icon-custom-minus-white {
+  opacity: 1;
+}
+
 /* Touch support */
 .ui-button .ui-icon.ui-icon-custom-plus {
   background: url(../images/touch/plus.png) !important;
