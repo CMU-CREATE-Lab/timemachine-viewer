@@ -1698,10 +1698,6 @@ if (!window['$']) {
       var viewerBottomPx = 0;
       if (editorEnabled && UTIL.getSharedDataType() != "presentation")
         viewerBottomPx = 210;
-      else {
-        if (presentationSliderEnabled)
-          viewerBottomPx = 100;
-      }
 
       var userDefinedtimeMachineDivWidth = UTIL.getElementStyle("#" + timeMachineDivId, "width");
       var userDefinedtimeMachineDivHeight = UTIL.getElementStyle("#" + timeMachineDivId, "height");
@@ -1778,6 +1774,21 @@ if (!window['$']) {
         view = null;
       }
     };
+
+    var addViewerBottomMargin = function(viewerDivBottom) {
+      // Resize the slider and the viewer to fit the window
+      $("#" + viewerDivId).css({
+        "position": "absolute",
+        "top": "0px",
+        "left": "0px",
+        "right": "0px",
+        "bottom": viewerDivBottom + "px",
+        "width": "auto",
+        "height": "auto"
+      });
+      onresize();
+    };
+    this.addViewerBottomMargin = addViewerBottomMargin;
 
     var resizeViewer = function() {
       var $viewerDiv = $("#" + viewerDivId);
@@ -2548,6 +2559,7 @@ if (!window['$']) {
         } else if (unsafe_sharedVars.presentation && snaplapseForPresentationSlider) {
           unsafe_sharedData = unsafe_sharedVars.presentation;
           snaplapseForSharedData = snaplapseForPresentationSlider;
+          addViewerBottomMargin(100);
           UTIL.addGoogleAnalyticEvent('window', 'onHashChange', 'url-load-presentation');
         }
         // Handle the shared data

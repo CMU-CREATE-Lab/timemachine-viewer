@@ -1090,22 +1090,10 @@ if (!org.gigapan.timelapse.snaplapse) {
                   var slideWidth = $firstFrameThumbnailButton.width() + 2;
                   var stripWidth = slideWidth * keyframes.length;
                   var maxWidth = $("#" + timeMachineDivId + " .player").width();
-                  var viewerDivBottom = 100;
                   if (stripWidth < maxWidth) {
                     $("#" + timeMachineDivId + " .presentationSlider .snaplapse_keyframe_container").css("right", "auto");
-                    viewerDivBottom = 80;
+                    timelapse.addViewerBottomMargin(80);
                   }
-                  // Resize the slider and the viewer to fit the window
-                  $("#" + viewerDivId).css({
-                    "position": "absolute",
-                    "top": "0px",
-                    "left": "0px",
-                    "right": "0px",
-                    "bottom": viewerDivBottom + "px",
-                    "width": "auto",
-                    "height": "auto"
-                  });
-                  timelapse.onresize();
                   startAutoModeIdleTimeout();
                 } else {
                   if (!uiEnabled) {
