@@ -3095,7 +3095,7 @@ if (!window['$']) {
         desiredView = timelapse.getView();
       }
 
-      if (didFirstTimeOnLoad && desiredDate && settings["url"].indexOf(url) >= 0) {
+      if (didFirstTimeOnLoad && desiredDate && url && settings["url"].indexOf(url) >= 0) {
         var newFrame = findExactOrClosestCaptureTime(String(desiredDate));
         timelapse.seekToFrame(newFrame);
         if (desiredView)
