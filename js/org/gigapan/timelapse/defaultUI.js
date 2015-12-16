@@ -280,6 +280,7 @@ if (!org.gigapan.timelapse.Timelapse) {
         $controls.hide();
         $timelineSliderFiller.hide();
       }
+
     };
 
     var createToolButton = function() {
@@ -398,6 +399,85 @@ if (!org.gigapan.timelapse.Timelapse) {
       }
       resetShareThumbnailUI();
     };
+
+    var createAddressLookupUI = function() {
+      if (typeof google === "undefined")
+        return;
+
+      var $addressLookupElem = $('<input>').attr({
+        size: 35,
+        type: "textbox",
+        id: "addressLookup",
+        "placeholder": "Search for places..."
+      });
+
+      $addressLookupElem.wrap("<div id='addressLookupContainer'>").parent().appendTo("#" + viewerDivId);
+
+      $('<div class="search-button"><span class="search-button-icon"></span></div>').appendTo("#addressLookupContainer");
+
+      var autocomplete = new google.maps.places.Autocomplete($addressLookupElem.get(0));
+      var geocoder = new google.maps.Geocoder();
+
+      $('#addressLookupContainer .search-button').on("click", function(e) {
+        google.maps.event.trigger(autocomplete, 'place_changed');
+        return false;
+      });
+
+      google.maps.event.addListener(autocomplete, 'place_changed', function() {
+        var place = autocomplete.getPlace();
+        if (!place || !place.geometry) {
+          var address = $addressLookupElem.val();
+          geocoder.geocode({
+            'address': address
+          }, function(results, status) {
+            if (status == google.maps.GeocoderStatus.OK) {
+              var northEastLatLng = results[0].geometry.bounds.getNorthEast();
+              var southWestLatLng = results[0].geometry.bounds.getSouthWest();
+              var newView;
+              if (!northEastLatLng || !southWestLatLng) {
+                var lat = results[0].geometry.location.lat();
+                var lng = results[0].geometry.location.lng();
+                newView = {
+                  center: {
+                    lat: lat,
+                    lng: lng
+                  },
+                  zoom: 10
+                };
+              } else {
+                newView = {
+                  bbox: {
+                    ne: {
+                      lat: northEastLatLng.lat(),
+                      lng: northEastLatLng.lng()
+                    },
+                    sw: {
+                      lat: southWestLatLng.lat(),
+                      lng: southWestLatLng.lng()
+                    }
+                  }
+                };
+              }
+              timelapse.setNewView(newView, false, false);
+              UTIL.addGoogleAnalyticEvent('textbox', 'search', 'go-to-searched-place');
+            } else {
+              UTIL.log("Geocode failed: " + status);
+            }
+          });
+        } else {
+          var newView = {
+            center: {
+              "lat": place.geometry.location.lat(),
+              "lng": place.geometry.location.lng()
+            },
+            "zoom": 10
+          };
+          timelapse.setNewView(newView, false, false);
+          UTIL.addGoogleAnalyticEvent('textbox', 'search', 'go-to-searched-place');
+        }
+      });
+    };
+    this.createAddressLookupUI = createAddressLookupUI;
 
     var setShareThumbnailUI = function(starting, duration) {
       if (typeof starting != "undefined") {

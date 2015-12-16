@@ -613,9 +613,6 @@ if (!org.gigapan.timelapse.snaplapse) {
         $("#" + composerDivId + " .toolbar .toggleMode").remove();
         $("#" + composerDivId + " .toolbar .editorModeOptions").remove();
       }
-      // Create search box
-      if (showAddressLookup)
-        setAddressLookupUI();
       // Create fullscreen button
       if (showFullScreenBtn) {
         var $fullScreenBtnContainer = $("#" + composerDivId + " .fullScreenBtnContainer");
@@ -643,61 +640,6 @@ if (!org.gigapan.timelapse.snaplapse) {
         return "Tour Editor";
       else if (mode == "presentation")
         return "Slideshow Editor";
-    };
-
-    var setAddressLookupUI = function() {
-      if (typeof google === "undefined")
-        return;
-
-      var $addressLookupElem = $('<input>').attr({
-        size: 35,
-        type: "textbox",
-        "placeholder": "Enter the name of a place to zoom to..."
-      }).addClass("addressLookup");
-
-      if (!showEditorModeButton)
-        $addressLookupElem.css("left", "18px");
-
-      $toolbar.append($addressLookupElem);
-
-      var autocomplete = new google.maps.places.Autocomplete($addressLookupElem.get(0));
-      var geocoder = new google.maps.Geocoder();
-
-      google.maps.event.addListener(autocomplete, 'place_changed', function() {
-        var place = autocomplete.getPlace();
-        if (!place.geometry) {
-          var address = $addressLookupElem.val();
-          geocoder.geocode({
-            'address': address
-          }, function(results, status) {
-            if (status == google.maps.GeocoderStatus.OK) {
-              var lat = results[0].geometry.location.lat();
-              var lng = results[0].geometry.location.lng();
-              newView = {
-                center: {
-                  "lat": lat,
-                  "lng": lng
-                },
-                "zoom": 10
-              };
-              timelapse.setNewView(newView, false, false);
-              UTIL.addGoogleAnalyticEvent('textbox', 'search', 'go-to-searched-place');
-            } else {
-              console.log("Geocode failed: " + status);
-            }
-          });
-        } else {
-          var newView = {
-            center: {
-              "lat": place.geometry.location.lat(),
-              "lng": place.geometry.location.lng()
-            },
-            "zoom": 10
-          };
-          timelapse.setNewView(newView, false, false);
-          UTIL.addGoogleAnalyticEvent('textbox', 'search', 'go-to-searched-place');
-        }
-      });
     };
 
     // Change the status of the editor toolbar

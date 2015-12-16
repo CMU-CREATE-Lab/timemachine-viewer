@@ -100,6 +100,7 @@ if (!org.gigapan.timelapse.Timelapse) {
     var availableTileSources = ["Bing", "Google", "OpenStreetMap", "Custom"];
     var isHyperwall = settings["isHyperwall"];
     var useTouchFriendlyUI = timelapse.useTouchFriendlyUI();
+    var defaultUI = timelapse.getDefaultUI();
     var minHeight = isHyperwall ? 450 : 120;
     var minWidth = isHyperwall ? 500 : 160;
     var maxHeight = isHyperwall ? 768 : 380;
@@ -116,6 +117,7 @@ if (!org.gigapan.timelapse.Timelapse) {
         maxHeight = contextMapOptions["geometry"]["height"] + 100;
       }
     }
+    var showAddressLookup = ( typeof (settings["showAddressLookup"]) == "undefined") ? false : settings["showAddressLookup"];
     var contextMapDivId = (typeof(contextMapOptions["contextMapDiv"]) == "undefined") ? "timelapse-contextmap" : contextMapOptions["contextMapDiv"];
     var resizable = (typeof(contextMapOptions["resizable"]) == "undefined") ? true : contextMapOptions["resizable"];
     var showToggleBtn = (typeof(contextMapOptions["showToggleBtn"]) == "undefined") ? true : contextMapOptions["showToggleBtn"];
@@ -267,6 +269,9 @@ if (!org.gigapan.timelapse.Timelapse) {
               }
             });
             loadContextMapCallback();
+            // Create search box
+            if (defaultUI && showAddressLookup)
+              defaultUI.createAddressLookupUI();
             if (typeof (googleMapsLoadedCallback) === "function") {
               googleMapsLoadedCallback();
             }
