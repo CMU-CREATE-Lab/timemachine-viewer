@@ -3307,7 +3307,7 @@ if (!window['$']) {
         document.addEventListener("touchmove", touch2Mouse, true);
         document.addEventListener("touchend", touch2Mouse, true);
         document.addEventListener("touchcancel", touch2Mouse, true);
-        $("#" + timeMachineDivId).on("touchstart", function(e) {
+        $(document).on("touchstart", function(e) {
           if (tapped && e.originalEvent.touches.length == 2) {
             //stop single tap callback
             clearTimeout(tapped);
