@@ -861,7 +861,7 @@ if (!org.gigapan.timelapse.snaplapse) {
 
           // Add masks to prevent clicking
           $("#" + viewerDivId).append('<div class="snaplapsePlayingMaskViewer"></div>');
-          $("#" + composerDivId).append('<div class="snaplapsePlayingMask"></div>');
+          $("#" + composerDivId + " .snaplapse_keyframe_container").append('<div class="snaplapsePlayingMask"></div>');
           var leftOffset = 0;
           var topOffset = 0;
           var $snaplapseContainer = $("#" + composerDivId + " .snaplapse_keyframe_container");
@@ -1836,17 +1836,6 @@ if (!org.gigapan.timelapse.snaplapse) {
     };
 
     var resizeUI = function() {
-      var viewportHeight = timelapse.getViewportHeight();
-      var newTop = viewportHeight;
-      $("#" + composerDivId).css({
-        "position": "absolute",
-        "top": newTop + "px",
-        "left": "0px",
-        "right": "0px",
-        "bottom": "",
-        "width": "auto",
-        "height": ""
-      });
     };
     this.resizeUI = resizeUI;
 
