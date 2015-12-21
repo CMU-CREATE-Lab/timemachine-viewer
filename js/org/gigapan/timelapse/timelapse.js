@@ -2559,7 +2559,8 @@ if (!window['$']) {
         } else if (unsafe_sharedVars.presentation && snaplapseForPresentationSlider) {
           unsafe_sharedData = unsafe_sharedVars.presentation;
           snaplapseForSharedData = snaplapseForPresentationSlider;
-          addViewerBottomMargin(100);
+          var $keyframeContainer = snaplapseForPresentationSlider.getSnaplapseViewer().getKeyframeContainer();
+          addViewerBottomMargin($keyframeContainer.outerHeight());
           UTIL.addGoogleAnalyticEvent('window', 'onHashChange', 'url-load-presentation');
         }
         // Handle the shared data

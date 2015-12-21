@@ -115,6 +115,7 @@ if (!org.gigapan.timelapse.snaplapse) {
     var initialWaypointIndex = ( settings["presentationSliderSettings"] && typeof (settings["presentationSliderSettings"]["initialWaypointIndex"]) != "undefined") ? settings["presentationSliderSettings"]["initialWaypointIndex"] : 0;
     var presentationSliderLoadAnimation = ( settings["presentationSliderSettings"] && typeof (settings["presentationSliderSettings"]["onLoadAnimation"]) != "undefined") ? settings["presentationSliderSettings"]["onLoadAnimation"] : "zoom";
     var presentationSliderPlayAfterAnimation = ( settings["presentationSliderSettings"] && typeof (settings["presentationSliderSettings"]["playAfterAnimation"]) != "undefined") ? settings["presentationSliderSettings"]["playAfterAnimation"] : true;
+    var desiredPresentationSliderHeight = ( settings["presentationSliderSettings"] && typeof (settings["presentationSliderSettings"]["height"]) != "undefined") ? settings["presentationSliderSettings"]["height"] : 94;
 
     // Flags
     var didOnce = false;
@@ -141,14 +142,15 @@ if (!org.gigapan.timelapse.snaplapse) {
     var rootAppURL = UTIL.getRootAppURL();
     var maxSubtitleLength = 120;
     var embedWidth = 854;
-    var embedHeight = 480 + ( presentationSliderEnabled ? 103 : 0);
+    var embedHeight = 480 + (presentationSliderEnabled ? 103 : 0);
     var sortingStartDistance = 30;
     var moveOneKeyframeIdx = {
       from: undefined,
       to: undefined
     };
-    var KEYFRAME_THUMBNAIL_WIDTH = useTouchFriendlyUI ? 146 : 126;
-    var KEYFRAME_THUMBNAIL_HEIGHT = useTouchFriendlyUI ? 101 : 73;
+    var scrollBarWidth = UTIL.getScrollBarWidth();
+    var KEYFRAME_THUMBNAIL_WIDTH = 126;
+    var KEYFRAME_THUMBNAIL_HEIGHT = 73;
 
     this.addEventListener = function(eventName, listener) {
       if (eventName && listener && typeof (listener) == "function") {
@@ -1032,10 +1034,10 @@ if (!org.gigapan.timelapse.snaplapse) {
                   var slideWidth = $firstFrameThumbnailButton.width() + 2;
                   var stripWidth = slideWidth * keyframes.length;
                   var maxWidth = $("#" + timeMachineDivId + " .player").width();
-                  if (stripWidth < maxWidth) {
-                    $("#" + timeMachineDivId + " .presentationSlider .snaplapse_keyframe_container").css("right", "auto");
-                    timelapse.addViewerBottomMargin(80);
-                  }
+                  //if (stripWidth < maxWidth) {
+                    //$("#" + timeMachineDivId + " .presentationSlider .snaplapse_keyframe_container").css("right", "auto");
+                    //timelapse.addViewerBottomMargin(80);
+                  //}
                   startAutoModeIdleTimeout();
                 } else {
                   if (!uiEnabled) {
@@ -1699,18 +1701,16 @@ if (!org.gigapan.timelapse.snaplapse) {
     };
 
     var setToPresentationViewOnlyMode = function() {
-      var $snaplapseContainer = $("#" + composerDivId + " .snaplapse_keyframe_container");
-      $snaplapseContainer.css({
-        "top": "0px",
-        "height": "inherit",
-        "overflow-x": "auto"
+      $keyframeContainer.addClass("presentation_mode").css({
+        "height" : desiredPresentationSliderHeight + "px"
       });
+      if(useTouchFriendlyUI) {
+        $keyframeContainer.addClass("touch_friendly");
+      }
+      KEYFRAME_THUMBNAIL_HEIGHT = $keyframeContainer.outerHeight() - (useTouchFriendlyUI ? 2 : scrollBarWidth);
+      KEYFRAME_THUMBNAIL_WIDTH = KEYFRAME_THUMBNAIL_HEIGHT * 1.73;
       $sortable.sortable("disable").css({
-        "height": "75px",
-        "margin-left": "-1px",
-        "margin-right": "0",
-        "margin-top": "0px",
-        "margin-bottom": "0"
+        "height" : KEYFRAME_THUMBNAIL_HEIGHT
       });
     };
 
@@ -1835,12 +1835,12 @@ if (!org.gigapan.timelapse.snaplapse) {
 
     var resizeUI = function() {
       var viewportHeight = timelapse.getViewportHeight();
-      var newTop = usePresentationSlider ? (viewportHeight + (useTouchFriendlyUI ? -3 : 4)) : (viewportHeight - 2);
+      var newTop = viewportHeight - 2;
       $("#" + composerDivId).css({
         "position": "absolute",
         "top": newTop + "px",
         "left": "0px",
-        "right": useTouchFriendlyUI ? "-2px" : "2px",
+        "right": "2px",
         "bottom": "",
         "width": "auto",
         "height": ""
@@ -1888,6 +1888,10 @@ if (!org.gigapan.timelapse.snaplapse) {
         currentAutoModeWaypointIdx = 0;
       var waypoint = $("#" + composerDivId + " .snaplapse_keyframe_list").children().eq(currentAutoModeWaypointIdx).children()[0];
       waypoint.click();
+    };
+
+    this.getKeyframeContainer = function() {
+      return $keyframeContainer;
     };
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////
