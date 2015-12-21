@@ -914,6 +914,7 @@ if (!org.gigapan.timelapse.snaplapse) {
           $("#" + viewerDivId + ' .timelineSlider').slider("disable");
           $("#" + viewerDivId + " .tourLoadOverlayPlay").attr("src", rootAppURL + "images/tour_stop_outline.png").css("opacity", "1.0");
           $("#" + viewerDivId + " .snaplapseTourPlayBack").css("left", "0px").toggleClass("playTour stopTour").attr("title", "Click to stop this tour");
+          $("#addressLookupContainer").hide();
         });
 
         snaplapse.addEventListener('stop', function() {
@@ -966,6 +967,7 @@ if (!org.gigapan.timelapse.snaplapse) {
           $("#" + viewerDivId + ' .timelineSlider').slider("enable");
           $("#" + viewerDivId + " .tourLoadOverlayPlay").attr("src", rootAppURL + "images/tour_replay_outline.png").css("opacity", "1.0");
           $("#" + viewerDivId + " .snaplapseTourPlayBack").css("left", "67px").toggleClass("stopTour playTour").attr("title", "Click to replay this tour");
+          $("#addressLookupContainer").show();
         });
 
         snaplapse.addEventListener('keyframe-added', function(keyframe, insertionIndex, keyframes) {
@@ -1835,12 +1837,12 @@ if (!org.gigapan.timelapse.snaplapse) {
 
     var resizeUI = function() {
       var viewportHeight = timelapse.getViewportHeight();
-      var newTop = viewportHeight - 2;
+      var newTop = viewportHeight;
       $("#" + composerDivId).css({
         "position": "absolute",
         "top": newTop + "px",
         "left": "0px",
-        "right": "2px",
+        "right": "0px",
         "bottom": "",
         "width": "auto",
         "height": ""

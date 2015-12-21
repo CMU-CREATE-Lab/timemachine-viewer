@@ -229,11 +229,12 @@
 .snaplapse_keyframe_container {
   position: relative;
   top: 37px;
-  left: 1px;
-  right: 1px;
-  border-bottom: 1px solid #656565;
-  border-left: 1px solid #656565;
+  left: 0px;
+  right: 0px;
+  border-top: 0px solid #656565;
   border-right: 1px solid #656565;
+  border-left: 1px solid #656565;
+  border-bottom: 1px solid #656565;
   width: auto;
   height: 174px;
   padding: 0;
@@ -706,8 +707,8 @@
 .composer .toolbar {
   position: absolute;
   top: 0px;
-  left: 1px;
-  right: -1px;
+  left: 0px;
+  right: 0px;
   width: auto;
   height: 36px;
   background-color: rgb(220, 220, 220);

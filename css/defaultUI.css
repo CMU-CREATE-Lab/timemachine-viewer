@@ -7,6 +7,10 @@ body, html {
   background: transparent;
 }
 
+.player {
+  border: 1px solid #656565;
+}
+
 .ui-dialog {
   box-shadow: 2px 2px 3px rgba(0, 0, 0, 0.3);
 }
@@ -38,11 +42,11 @@ body, html {
 
 .tiledContentHolder {
   position: absolute;
-  left: 1px;
-  top: 1px;
-  bottom: 1px;
-  right: 1px;
-  border: 1px solid #656565;
+  left: 0px;
+  top: 0px;
+  bottom: 0px;
+  right: 0px;
+  border: 0px solid #656565;
   width: auto;
   height: auto;
   background: black;
