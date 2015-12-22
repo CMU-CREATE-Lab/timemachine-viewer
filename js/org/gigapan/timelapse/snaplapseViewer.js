@@ -125,6 +125,7 @@ if (!org.gigapan.timelapse.snaplapse) {
     var autoModeTimeout;
     var currentAutoModeWaypointIdx = (initialWaypointIndex >= 0) ? initialWaypointIndex : -1;
     var wayPointClickedByAutoMode = false;
+    var hideAllUIWhenPlay = false;
 
     // DOM elements
     var composerDivId = snaplapse.getComposerDivId();
@@ -174,6 +175,12 @@ if (!org.gigapan.timelapse.snaplapse) {
     };
 
     var hideCustomUI = function() {
+      if(!isHidingCustomUI && hideAllUIWhenPlay) {
+        isHidingCustomUI = true;
+        $("#" + viewerDivId + " .sideToolBar").hide();
+        $("#" + viewerDivId + " .customControl").hide();
+        $("#" + viewerDivId + " .scaleBarContainer").hide();
+      }
       if (!isHidingCustomUI) {
         isHidingCustomUI = true;
         $("#" + viewerDivId + " .sideToolBar").hide();
@@ -199,6 +206,12 @@ if (!org.gigapan.timelapse.snaplapse) {
     };
 
     var showCustomUI = function() {
+      if(isHidingCustomUI && hideAllUIWhenPlay) {
+        isHidingCustomUI = false;
+        $("#" + viewerDivId + " .sideToolBar").show();
+        $("#" + viewerDivId + " .customControl").show();
+        $("#" + viewerDivId + " .scaleBarContainer").show();
+      }
       if (isHidingCustomUI) {
         isHidingCustomUI = false;
         $("#" + viewerDivId + " .sideToolBar").show();
@@ -1146,6 +1159,10 @@ if (!org.gigapan.timelapse.snaplapse) {
       return true;
     };
     this.loadNewSnaplapse = loadNewSnaplapse;
+
+    this.setHideAllUIWhenPlay = function() {
+      hideAllUIWhenPlay = true;
+    };
 
     var setSubtitlePosition = function(position) {
       var positionBottom;

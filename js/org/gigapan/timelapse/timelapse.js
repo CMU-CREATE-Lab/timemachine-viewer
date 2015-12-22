@@ -3056,14 +3056,10 @@ if (!window['$']) {
       if (currentTimelineStyle == "customUI") {
         $("#" + viewerDivId + " .controls").hide();
         $("#" + viewerDivId + " .customControl").show().css("z-index", "19");
-        if ($previousCustomUIElements)
-          $previousCustomUIElements.appendTo("#" + viewerDivId + " .customControl");
         $("#" + viewerDivId + " .timelineSliderFiller").css("right", "21px").hide();
         $("#" + viewerDivId + " .captureTime").hide();
-        $("#" + viewerDivId + " .customControl .customHelpLabel").css({"bottom" : "44px", "z-index" : "inherit"});
-
+        $("#" + viewerDivId + " .controls .customHelpLabel").appendTo($("#" + viewerDivId + " .customControl")).css({"z-index" : "inherit"});
         customUI.resetCustomTimeline();
-
         if (!timelineVisible) {
           $("#" + viewerDivId + " .customTimeline").hide();
           $("#" + viewerDivId + " .timeText").hide();
@@ -3071,11 +3067,11 @@ if (!window['$']) {
           $("#" + viewerDivId + " .customToggleSpeed").hide();
         }
       } else {
-        $previousCustomUIElements = $("#" + viewerDivId + " .customControl").css("z-index", "inherit").children().not(".customHelpLabel, .customHelpCheckbox").detach();
+        $("#" + viewerDivId + " .customControl").hide();
         $("#" + viewerDivId + " .controls").show();
         $("#" + viewerDivId + " .helpPlayerLabel").hide();
-        $("#" + viewerDivId + " .customControl .customHelpLabel").css({"bottom" : "27px", "z-index" : "19"});
-        $("#" + viewerDivId + " .timelineSliderFiller").css("right", "85px").show();
+        $("#" + viewerDivId + " .customControl .customHelpLabel").appendTo($("#" + viewerDivId + " .controls")).css({"z-index" : "19"});
+        $("#" + viewerDivId + " .timelineSliderFiller").css("right", "80px").show();
         $("#" + viewerDivId + " .captureTime").show();
         $("#" + viewerDivId + " .help").hide();
 
