@@ -125,7 +125,7 @@ if (!org.gigapan.timelapse.snaplapse) {
     var autoModeTimeout;
     var currentAutoModeWaypointIdx = (initialWaypointIndex >= 0) ? initialWaypointIndex : -1;
     var wayPointClickedByAutoMode = false;
-    var hideAllUIWhenPlay = false;
+    var useRecordingMode = false;
 
     // DOM elements
     var composerDivId = snaplapse.getComposerDivId();
@@ -175,7 +175,7 @@ if (!org.gigapan.timelapse.snaplapse) {
     };
 
     var hideCustomUI = function() {
-      if(!isHidingCustomUI && hideAllUIWhenPlay) {
+      if(!isHidingCustomUI && useRecordingMode) {
         isHidingCustomUI = true;
         $("#" + viewerDivId + " .sideToolBar").hide();
         $("#" + viewerDivId + " .customControl").hide();
@@ -206,7 +206,7 @@ if (!org.gigapan.timelapse.snaplapse) {
     };
 
     var showCustomUI = function() {
-      if(isHidingCustomUI && hideAllUIWhenPlay) {
+      if(isHidingCustomUI && useRecordingMode) {
         isHidingCustomUI = false;
         $("#" + viewerDivId + " .sideToolBar").show();
         $("#" + viewerDivId + " .customControl").show();
@@ -1160,17 +1160,28 @@ if (!org.gigapan.timelapse.snaplapse) {
     };
     this.loadNewSnaplapse = loadNewSnaplapse;
 
-    this.setHideAllUIWhenPlay = function() {
-      hideAllUIWhenPlay = true;
+    this.setToRecordingMode = function() {
+      useRecordingMode = true;
     };
 
     var setSubtitlePosition = function(position) {
-      var positionBottom;
-      if (position == "up")
-        positionBottom = 62;
-      else if (position == "down")
-        positionBottom = 15;
-      $("#" + viewerDivId + " .snaplapse-annotation-description").css("bottom", positionBottom + "px");
+      var $description = $("#" + viewerDivId + " .snaplapse-annotation-description");
+      if (position == "up") {
+        $description.css({
+          "bottom": "62px"
+        });
+        if(useRecordingMode) {
+          $description.children().removeClass("recording");
+        }
+      }
+      else if (position == "down") {
+        $description.css({
+          "bottom": "15px"
+        });
+        if(useRecordingMode) {
+          $description.children().addClass("recording");
+        }
+      }
     };
 
     var setCaptureTimePosition = function(position) {

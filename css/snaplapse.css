@@ -970,3 +970,10 @@
   bottom: 0px;
   width: auto;
 }
+
+.snaplapse-annotation-description .recording {
+  font-size: 80px;
+  text-align: right;
+  padding-left: 10px;
+  padding-right: 20px;
+}
