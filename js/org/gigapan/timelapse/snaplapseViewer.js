@@ -177,8 +177,8 @@ if (!org.gigapan.timelapse.snaplapse) {
     var hideCustomUI = function() {
       if(!isHidingCustomUI && useRecordingMode) {
         isHidingCustomUI = true;
+        $("#" + viewerDivId + " .googleLogo").remove();
         $("#" + viewerDivId + " .sideToolBar").hide();
-        $("#" + viewerDivId + " .customControl").hide();
         $("#" + viewerDivId + " .scaleBarContainer").hide();
       }
       if (!isHidingCustomUI) {
@@ -209,7 +209,6 @@ if (!org.gigapan.timelapse.snaplapse) {
       if(isHidingCustomUI && useRecordingMode) {
         isHidingCustomUI = false;
         $("#" + viewerDivId + " .sideToolBar").show();
-        $("#" + viewerDivId + " .customControl").show();
         $("#" + viewerDivId + " .scaleBarContainer").show();
       }
       if (isHidingCustomUI) {
@@ -915,7 +914,7 @@ if (!org.gigapan.timelapse.snaplapse) {
             $controls.hide();
             setCaptureTimePosition("down");
           } else {
-            if ($("#" + viewerDivId + " .customTimeline").is(':visible'))
+            if ($("#" + viewerDivId + " .customTimeline").is(':visible') || useRecordingMode)
               hideCustomUI();
           }
 
