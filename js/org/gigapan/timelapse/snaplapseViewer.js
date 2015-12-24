@@ -1655,7 +1655,7 @@ if (!org.gigapan.timelapse.snaplapse) {
         }
         if (skipGo != true) {
           var newView;
-          if (keyframe['originalView']) {
+          if (keyframe['originalView'] && !editorEnabled) {
             newView = keyframe['originalView'];
           } else {
             if (typeof (timelapse.getTmJSON()['projection-bounds']) != "undefined") {
