@@ -269,6 +269,7 @@ if (!window['$']) {
     var desiredInitialDate;
     var onNewTimelapseLoadCompleteCallBack;
     var currentTimelineStyle;
+    var customMaxScale;
 
     var timePadding = isIE ? 0.3 : 0.0;
     // animateRate in milliseconds, 40 means 25 FPS
@@ -340,6 +341,10 @@ if (!window['$']) {
       if (defaultUI && settings["showThumbnailTool"])
         defaultUI.showThumbnailToolWindow();
     };
+
+    this.setMaxScale = function(newMaxScale) {
+      customMaxScale = newMaxScale;
+    }
 
     this.setDoDwell = function(state) {
       loopDwell = state;
@@ -1607,7 +1612,9 @@ if (!window['$']) {
         // So leave levelThreshold = 0 unmodified, and allow 2x extra scale for levelThreshold = -1
         extraScale = Math.pow(2, -levelThreshold);
       }
-      if (tmJSON['projection-bounds'])
+      if (customMaxScale)
+        return customMaxScale * extraScale;
+      else if (tmJSON['projection-bounds'])
         return 1.25 * extraScale;
       else
         return 2 * extraScale;
