@@ -1674,7 +1674,7 @@ if (!org.gigapan.timelapse.snaplapse) {
             if (listeners) {
               for (var i = 0; i < listeners.length; i++) {
                 try {
-                  listeners[i](keyframe.unsafe_string_frameTitle);
+                  listeners[i](keyframe.unsafe_string_frameTitle, $select.index());
                 } catch(e) {
                   UTIL.error(e.name + " while calling presentationSlider slide-changed event listener: " + e.message, e);
                 }
