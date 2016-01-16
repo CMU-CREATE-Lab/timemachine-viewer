@@ -1904,7 +1904,9 @@ if (!org.gigapan.timelapse.snaplapse) {
       currentAutoModeWaypointIdx++;
       if (currentAutoModeWaypointIdx >= timelapse.getSnaplapseForPresentationSlider().getNumKeyframes())
         currentAutoModeWaypointIdx = 0;
-      var waypoint = $("#" + composerDivId + " .snaplapse_keyframe_list").children().eq(currentAutoModeWaypointIdx).children()[0];
+      // TODO: Previously we'd further refine the selector to include 'composerDivId' but the hyperwall codebase
+      // pulls the waypoints out of the normal container when displaying in a special letterbox mode.
+      var waypoint = $(".snaplapse_keyframe_list").children().eq(currentAutoModeWaypointIdx).children()[0];
       waypoint.click();
     };
 
