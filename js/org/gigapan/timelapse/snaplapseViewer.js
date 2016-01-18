@@ -1874,7 +1874,6 @@ if (!org.gigapan.timelapse.snaplapse) {
           listeners[i]();
         }
       }
-      currentAutoModeWaypointIdx = -1;
       runAutoMode();
     };
     this.initializeAndRunAutoMode = initializeAndRunAutoMode;
