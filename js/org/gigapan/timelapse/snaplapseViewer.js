@@ -1674,7 +1674,7 @@ if (!org.gigapan.timelapse.snaplapse) {
             if (listeners) {
               for (var i = 0; i < listeners.length; i++) {
                 try {
-                  listeners[i](keyframe.unsafe_string_frameTitle, $select.index());
+                  listeners[i](keyframe.unsafe_string_frameTitle, $select.index(), keyframe['bounds']);
                 } catch(e) {
                   UTIL.error(e.name + " while calling presentationSlider slide-changed event listener: " + e.message, e);
                 }
@@ -1866,18 +1866,25 @@ if (!org.gigapan.timelapse.snaplapse) {
     };
     this.resizeUI = resizeUI;
 
+    var initializeAndRunAutoMode = function() {
+      clearAutoModeTimeout();
+      var listeners = eventListeners["automode-start"];
+      if (listeners) {
+        for (var i = 0; i < listeners.length; i++) {
+          listeners[i]();
+        }
+      }
+      currentAutoModeWaypointIdx = -1;
+      runAutoMode();
+    };
+    this.initializeAndRunAutoMode = initializeAndRunAutoMode;
+
     var startAutoModeIdleTimeout = function() {
       if (!doAutoMode)
         return;
       clearAutoModeTimeout();
       autoModeTimeout = setTimeout(function() {
-        var listeners = eventListeners["automode-start"];
-        if (listeners) {
-          for (var i = 0; i < listeners.length; i++) {
-            listeners[i]();
-          }
-        }
-        runAutoMode();
+        initializeAndRunAutoMode();
       }, screenIdleTime);
     };
 
