@@ -1384,9 +1384,9 @@ if (!org.gigapan.timelapse.snaplapse) {
 
       var $thumbnailButton = $("#" + thumbnailButtonId);
 
-      $thumbnailButton.click(function(event) {
+      $thumbnailButton.click(function(event, extraParams) {
         clearAutoModeTimeout();
-        wayPointClickedByAutoMode = (event.pageX == 0 && event.pageY == 0) ? true : false;
+        wayPointClickedByAutoMode = ((event.pageX == 0 && event.pageY == 0) || (extraParams && extraParams.forcedWayPointClickedByAutoMode)) ? true : false;
         var keyframeId = $(this).parent().attr("id").split("_")[3];
         if (usePresentationSlider) {
           selectAndGo($("#" + keyframeListItem.id), keyframeId);
