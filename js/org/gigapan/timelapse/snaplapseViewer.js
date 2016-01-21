@@ -126,6 +126,7 @@ if (!org.gigapan.timelapse.snaplapse) {
     var currentAutoModeWaypointIdx = (initialWaypointIndex >= 0) ? initialWaypointIndex : -1;
     var wayPointClickedByAutoMode = false;
     var useRecordingMode = false;
+    var isAutoModeRunning = false;
 
     // DOM elements
     var composerDivId = snaplapse.getComposerDivId();
@@ -1384,10 +1385,26 @@ if (!org.gigapan.timelapse.snaplapse) {
 
       var $thumbnailButton = $("#" + thumbnailButtonId);
 
-      $thumbnailButton.click(function(event, extraParams) {
+      $thumbnailButton.click(function(event) {
         clearAutoModeTimeout();
-        wayPointClickedByAutoMode = ((event.pageX == 0 && event.pageY == 0) || (extraParams && extraParams.forcedWayPointClickedByAutoMode)) ? true : false;
+        wayPointClickedByAutoMode = (event.pageX == 0 && event.pageY == 0) ? true : false;
+        if (wayPointClickedByAutoMode) isAutoModeRunning = true;
+        else isAutoModeRunning = false;
+
         var keyframeId = $(this).parent().attr("id").split("_")[3];
+        var keyframe = snaplapse.getKeyframeById(keyframeId);
+
+        var listeners = eventListeners["slide-before-changed"];
+        if (listeners) {
+          for (var i = 0; i < listeners.length; i++) {
+            try {
+              listeners[i](keyframe.unsafe_string_frameTitle, $("#" + keyframeListItem.id).index(), keyframe['bounds']);
+            } catch(e) {
+              UTIL.error(e.name + " while calling presentationSlider slide-before-changed event listener: " + e.message, e);
+            }
+          }
+        }
+
         if (usePresentationSlider) {
           selectAndGo($("#" + keyframeListItem.id), keyframeId);
         } else {
@@ -1879,6 +1896,7 @@ if (!org.gigapan.timelapse.snaplapse) {
     this.initializeAndRunAutoMode = initializeAndRunAutoMode;
 
     var startAutoModeIdleTimeout = function() {
+      isAutoModeRunning = false;
       if (!doAutoMode)
         return;
       clearAutoModeTimeout();
@@ -1886,8 +1904,10 @@ if (!org.gigapan.timelapse.snaplapse) {
         initializeAndRunAutoMode();
       }, screenIdleTime);
     };
+    this.startAutoModeIdleTimeout = startAutoModeIdleTimeout;
 
     var startAutoModeWaypointTimeout = function() {
+      isAutoModeRunning = true;
       if (!doAutoMode)
         return;
       clearAutoModeTimeout();
@@ -1895,6 +1915,7 @@ if (!org.gigapan.timelapse.snaplapse) {
         runAutoMode();
       }, waypointDelayTime);
     };
+    this.startAutoModeWaypointTimeout = startAutoModeWaypointTimeout;
 
     var clearAutoModeTimeout = function() {
       clearTimeout(autoModeTimeout);
@@ -1918,6 +1939,10 @@ if (!org.gigapan.timelapse.snaplapse) {
 
     this.getKeyframeContainer = function() {
       return $keyframeContainer;
+    };
+
+    this.isAutoModeRunning = function() {
+      return isAutoModeRunning;
     };
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////

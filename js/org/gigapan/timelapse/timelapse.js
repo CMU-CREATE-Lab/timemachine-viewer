@@ -996,7 +996,7 @@ if (!window['$']) {
 
     var _removeFullScreenChangeListener = function(listener) {
       for (var i = 0; i < fullScreenChangeListeners.length; i++) {
-        if (fullScreenChangeListeners[i] == listener[0]) {
+        if (fullScreenChangeListeners[i] == listener) {
           fullScreenChangeListeners.splice(i, 1);
           break;
         }
@@ -1011,7 +1011,7 @@ if (!window['$']) {
 
     var _removeTargetViewChangeListener = function(listener) {
       for (var i = 0; i < targetViewChangeListeners.length; i++) {
-        if (targetViewChangeListeners[i] == listener[0]) {
+        if (targetViewChangeListeners[i] == listener) {
           targetViewChangeListeners.splice(i, 1);
           break;
         }
@@ -1026,7 +1026,7 @@ if (!window['$']) {
 
     var _removeViewChangeListener = function(listener) {
       for (var i = 0; i < viewChangeListeners.length; i++) {
-        if (viewChangeListeners[i] == listener[0]) {
+        if (viewChangeListeners[i] == listener) {
           viewChangeListeners.splice(i, 1);
           break;
         }
@@ -1041,7 +1041,7 @@ if (!window['$']) {
 
     var removeResizeListener = function(listener) {
       for (var i = 0; i < resizeListeners.length; i++) {
-        if (resizeListeners[i] == listener[0]) {
+        if (resizeListeners[i] == listener) {
           resizeListeners.splice(i, 1);
           break;
         }
@@ -1056,7 +1056,7 @@ if (!window['$']) {
 
     var _removeViewEndChangeListener = function(listener) {
       for (var i = 0; i < viewEndChangeListeners.length; i++) {
-        if (viewEndChangeListeners[i] == listener[0]) {
+        if (viewEndChangeListeners[i] == listener) {
           viewEndChangeListeners.splice(i, 1);
           break;
         }
@@ -1071,7 +1071,7 @@ if (!window['$']) {
 
     var _removeZoomChangeListener = function(listener) {
       for (var i = 0; i < zoomChangeListeners.length; i++) {
-        if (zoomChangeListeners[i] == listener[0]) {
+        if (zoomChangeListeners[i] == listener) {
           zoomChangeListeners.splice(i, 1);
           break;
         }
@@ -1131,7 +1131,7 @@ if (!window['$']) {
 
     var _removeDatasetLoadedListener = function(listener) {
       for (var i = 0; i < datasetLoadedListeners.length; i++) {
-        if (datasetLoadedListeners[i] == listener[0]) {
+        if (datasetLoadedListeners[i] == listener) {
           datasetLoadedListeners.splice(i, 1);
           break;
         }
@@ -1184,7 +1184,7 @@ if (!window['$']) {
 
       var defaultEndViewCallback = function() {
         isMovingToWaypoint = false;
-        _removeViewEndChangeListener(this);
+        _removeViewEndChangeListener(defaultEndViewCallback);
         parabolicMotionController = null;
         if (doPlay)
           _play();
