@@ -137,16 +137,6 @@ if (!window['$']) {
       var viewportWidth = timelapse.getViewportWidth();
       annotationStage.setSize(viewportWidth, viewportHeight);
       annotationLayer.draw();
-      var newTop = viewportHeight - 2;
-      $("#" + annotatorDivId).css({
-        "position": "absolute",
-        "top": newTop + "px",
-        "left": "0px",
-        "right": "0px",
-        "bottom": "",
-        "width": "auto",
-        "height": ""
-      });
     };
     this.resizeUI = resizeUI;
 

@@ -138,6 +138,9 @@ if (!org.gigapan.timelapse.Timelapse) {
     var $timelineSelectorStartHandle;
     var $timelineSelectorEndHandle;
     var $shareAccordion = $("#" + viewerDivId + " .shareView .accordion");
+    var $editorAccordion = $("#" + viewerDivId + " .toolDialog .accordion[data-mode='editor']")
+    var $annotatorAccordion = $("#" + viewerDivId + " .toolDialog .accordion[data-mode='annotator']");
+    var $changeDetectionAccordion = $("#" + viewerDivId + " .toolDialog .accordion[data-mode='change-detection']");
 
     // Settings
     var useCustomUI = timelapse.useCustomUI();
@@ -298,57 +301,67 @@ if (!org.gigapan.timelapse.Timelapse) {
         }
       });
       if (!editorEnabled) {
-        removeAccordionPanel("accordion-editor");
+        $editorAccordion.remove();
       }
       if (!annotatorEnabled) {
-        removeAccordionPanel("accordion-annotator");
+        $annotatorAccordion.remove();
       }
       if (!changeDetectionEnabled) {
-        removeAccordionPanel("accordion-change-detection");
+        $changeDetectionAccordion.remove();
       }
-      var activeState = false;
-      if (showEditorOnLoad) {
-        showChangeDetectionOnLoad = false;
-        activeState = 0;
-        setMode("editor");
-      } else if (showChangeDetectionOnLoad) {
-        activeState = $("#" + viewerDivId + " .toolDialog .accordion h3").length - 1;
-        if (typeof changeDetectionTool != "undefined") {
-          changeDetectionTool.enable();
-        }
-      }
+
       // Tool accordion
-      var $accordion = $("#" + viewerDivId + " .toolDialog .accordion");
-      $accordion.accordion({
+      $("#" + viewerDivId + " .toolDialog .accordion").accordion({
         heightStyle: "content",
         animate: false,
         collapsible: true,
-        active: activeState,
+        active: false,
         beforeActivate: function(event, ui) {
+          var desiredMode = $(this).data("mode");
           if (ui.newPanel.length > 0) {
-            if (ui.newPanel.hasClass("accordion-editor")) {
-              setMode("editor");
+            if (desiredMode == "editor") {
+              if (mode == "annotator") {
+                setMode("editor-annotator");
+              } else {
+                setMode("editor");
+              }
+              $changeDetectionAccordion.accordion({active: false});
               if (typeof changeDetectionTool != "undefined") {
                 changeDetectionTool.disable();
               }
               UTIL.addGoogleAnalyticEvent('button', 'click', 'viewer-set-to-editor-mode');
-            } else if (ui.newPanel.hasClass("accordion-annotator")) {
-              setMode("annotator");
+            } else if (desiredMode == "annotator") {
+              if (mode == "editor") {
+                setMode("editor-annotator");
+              } else {
+                setMode("annotator");
+              }
+              $changeDetectionAccordion.accordion({active: false});
               if (typeof changeDetectionTool != "undefined") {
                 changeDetectionTool.disable();
               }
-            } else if (ui.newPanel.hasClass("accordion-change-detection")) {
+            } else if (desiredMode == "change-detection") {
               setMode("player");
+              $editorAccordion.accordion({active: false});
+              $annotatorAccordion.accordion({active: false});
               if (typeof changeDetectionTool != "undefined") {
                 changeDetectionTool.enable();
               }
               UTIL.addGoogleAnalyticEvent('button', 'click', 'viewer-set-to-player-mode');
             }
           } else {
-            if (ui.oldPanel.hasClass("accordion-editor") || ui.oldPanel.hasClass("accordion-annotator")) {
-              setMode("player");
-              UTIL.addGoogleAnalyticEvent('button', 'click', 'viewer-set-to-player-mode');
-            } else if (ui.oldPanel.hasClass("accordion-change-detection")) {
+            if (desiredMode == "editor" || desiredMode == "annotator") {
+              if (mode == "editor-annotator") {
+                if (desiredMode == "editor") {
+                  setMode("annotator");
+                } else if (desiredMode == "annotator") {
+                  setMode("editor");
+                }
+              } else {
+                setMode("player");
+                UTIL.addGoogleAnalyticEvent('button', 'click', 'viewer-set-to-player-mode');
+              }
+            } else if (desiredMode == "change-detection") {
               if (typeof changeDetectionTool != "undefined") {
                 changeDetectionTool.disable();
               }
@@ -356,6 +369,15 @@ if (!org.gigapan.timelapse.Timelapse) {
           }
         }
       });
+      // Initialize
+      if (showEditorOnLoad) {
+        showChangeDetectionOnLoad = false;
+        setMode("editor");
+      } else if (showChangeDetectionOnLoad) {
+        if (typeof changeDetectionTool != "undefined") {
+          changeDetectionTool.enable();
+        }
+      }
       // Tool dialog
       $("#" + viewerDivId + " .toolDialog").dialog({
         resizable: false,
@@ -1193,6 +1215,13 @@ if (!org.gigapan.timelapse.Timelapse) {
       if (snaplapse)
         snaplapseViewer = timelapse.getSnaplapse().getSnaplapseViewer();
 
+      if (mode = "editor-annotator") {
+        if (newMode == "editor" || newMode == "annotator") {
+          $("#" + timeMachineDivId + " .annotator").css("left", "0px");
+          $("#" + timeMachineDivId + " .composer").css("right", "0px");
+        }
+      }
+
       if (newMode == "player") {
         mode = "player";
         $("#" + timeMachineDivId + " .composer").hide();
@@ -1215,7 +1244,12 @@ if (!org.gigapan.timelapse.Timelapse) {
         mode = "annotator";
         $("#" + timeMachineDivId + " .annotator").show();
         $("#" + timeMachineDivId + " .composer").hide();
+      } else if (newMode == "editor-annotator") {
+        mode = "editor-annotator";
+        $("#" + timeMachineDivId + " .annotator").css("left", "50%").show();
+        $("#" + timeMachineDivId + " .composer").css("right", "50%").show();
       }
+
       if (visualizer)
         visualizer.setMode(mode, false);
     };

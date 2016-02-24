@@ -684,7 +684,7 @@ if (!org.gigapan.timelapse.Timelapse) {
         }
         if (panoVideo)
           panoVideo.pause();
-      } else if (mode == "editor") {
+      } else if (mode == "editor" || mode == "editor-annotator") {
         if (isFitToWindow) {
           //handleShowHideNavigationMap("hide");
         } else {

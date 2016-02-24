@@ -6,13 +6,12 @@
 }
 
 .annotation_container {
-  position: absolute;
-  top: 37px;
-  left: 1px;
-  right: 1px;
-  border-bottom: 1px solid #656565;
-  border-left: 1px solid #656565;
+  position: relative;
+  display: block;
+  border-top: 0px solid #656565;
   border-right: 1px solid #656565;
+  border-left: 1px solid #656565;
+  border-bottom: 1px solid #656565;
   width: auto;
   height: 174px;
   padding: 0;
@@ -26,7 +25,6 @@
   -ms-user-select: none;
   -o-user-select: none;
   user-select: none;
-  z-index: 5;
 }
 
 .annotation_list {
@@ -115,13 +113,9 @@
 }
 
 .annotator .toolbar {
-  position: absolute;
-  top: 0px;
-  left: 1px;
-  right: 1px;
-  width: auto;
+  display: block;
   height: 36px;
-  background-color: rgb(220,220,220);
+  background-color: rgb(220, 220, 220);
   border: 1px solid #656565;
   font-size: 12px;
   margin: 0;
@@ -199,8 +193,16 @@
 .annotator-title {
   position: absolute;
   height: 20px;
-  bottom: 5px;
+  top: 12px;
   left: 20px;
   z-index: 30;
   font-size: 14px;
+}
+
+.annotator {
+  position: absolute;
+  left: 0px;
+  right: 0px;
+  bottom: 0px;
+  width: auto;
 }
