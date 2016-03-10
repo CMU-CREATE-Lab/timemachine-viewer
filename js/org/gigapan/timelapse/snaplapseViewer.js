@@ -1410,7 +1410,9 @@ if (!org.gigapan.timelapse.snaplapse) {
         } else {
           selectAndGo($("#" + keyframeListItem.id), keyframeId, null, null, null, false);
         }
-        UTIL.addGoogleAnalyticEvent('button', 'click', 'editor-go-to-keyframe');
+
+        if (!wayPointClickedByAutoMode)
+          UTIL.addGoogleAnalyticEvent('button', 'click', 'editor-go-to-keyframe=' + $(this).prop("id"));
       });
 
       if (usePresentationSlider) {
