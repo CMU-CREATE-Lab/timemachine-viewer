@@ -1101,6 +1101,36 @@ _:-moz-tree-row(hover), .customDialog .customDialogButton .ui-button-text {
   cursor: pointer;
 }
 
+.toolDialogContent {
+  padding-top: 25px;
+  padding-bottom: 5px;
+  padding-left: 17px;
+  padding-right: 17px;
+}
+
+.toolDialogContent p {
+  padding-left: 28px;
+  padding-right: 25px;
+}
+
+.customCheckbox {
+  margin: -1px 6px 0 0;
+  width: 17px;
+  height: 17px;
+  vertical-align: middle;
+  cursor: pointer;
+}
+
+.customCheckboxLabelBold {
+  font-weight: bold;
+  vertical-align: middle;
+  font-size: 14px;
+}
+
+.changeDetectionControl {
+  display: none;
+}
+
 .thumbnail-type-image {
   background: white !important;
   margin-right: -5px !important;

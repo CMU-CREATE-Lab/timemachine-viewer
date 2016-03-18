@@ -138,9 +138,13 @@ if (!org.gigapan.timelapse.Timelapse) {
     var $timelineSelectorStartHandle;
     var $timelineSelectorEndHandle;
     var $shareAccordion = $("#" + viewerDivId + " .shareView .accordion");
-    var $editorAccordion = $("#" + viewerDivId + " .toolDialog .accordion[data-mode='editor']")
-    var $annotatorAccordion = $("#" + viewerDivId + " .toolDialog .accordion[data-mode='annotator']");
-    var $changeDetectionAccordion = $("#" + viewerDivId + " .toolDialog .accordion[data-mode='change-detection']");
+    var $editorCheckboxContainer = $("#" + viewerDivId + " .toolDialog .customCheckboxContainer[data-mode='editor']")
+    var $annotatorCheckboxContainer = $("#" + viewerDivId + " .toolDialog .customCheckboxContainer[data-mode='annotator']");
+    var $changeDetectionCheckboxContainer = $("#" + viewerDivId + " .toolDialog .customCheckboxContainer[data-mode='change-detection']");
+    var $editorCheckbox = $("#" + viewerDivId + " .toolDialog .customCheckbox[value='editor']")
+    var $annotatorCheckbox = $("#" + viewerDivId + " .toolDialog .customCheckbox[value='annotator']");
+    var $changeDetectionCheckbox = $("#" + viewerDivId + " .toolDialog .customCheckbox[value='change-detection']");
+    var $changeDetectionControl = $("#" + viewerDivId + " .toolDialog .changeDetectionControl");
 
     // Settings
     var useCustomUI = timelapse.useCustomUI();
@@ -301,70 +305,69 @@ if (!org.gigapan.timelapse.Timelapse) {
         }
       });
       if (!editorEnabled) {
-        $editorAccordion.remove();
+        $editorCheckboxContainer.remove();
       }
       if (!annotatorEnabled) {
-        $annotatorAccordion.remove();
+        $annotatorCheckboxContainer.remove();
       }
       if (!changeDetectionEnabled) {
-        $changeDetectionAccordion.remove();
+        $changeDetectionCheckboxContainer.remove();
       }
 
-      // Tool accordion
-      $("#" + viewerDivId + " .toolDialog .accordion").accordion({
-        heightStyle: "content",
-        animate: false,
-        collapsible: true,
-        active: false,
-        beforeActivate: function(event, ui) {
-          var desiredMode = $(this).data("mode");
-          if (ui.newPanel.length > 0) {
-            if (desiredMode == "editor") {
-              if (mode == "annotator") {
-                setMode("editor-annotator");
-              } else {
+      // Tool checkbox
+      $("#" + viewerDivId + " .toolDialog .customCheckbox").on("change", function() {
+        var $this = $(this);
+        var desiredMode = $this.val();
+        if($this.is(':checked')) {
+          if (desiredMode == "editor") {
+            if (mode == "annotator") {
+              setMode("editor-annotator");
+            } else {
+              setMode("editor");
+            }
+            $changeDetectionCheckbox.prop('checked', false);
+            if (typeof changeDetectionTool != "undefined") {
+              changeDetectionTool.disable();
+              $changeDetectionControl.hide();
+            }
+            UTIL.addGoogleAnalyticEvent('button', 'click', 'viewer-set-to-editor-mode');
+          } else if (desiredMode == "annotator") {
+            if (mode == "editor") {
+              setMode("editor-annotator");
+            } else {
+              setMode("annotator");
+            }
+            $changeDetectionCheckbox.prop('checked', false);
+            if (typeof changeDetectionTool != "undefined") {
+              changeDetectionTool.disable();
+              $changeDetectionControl.hide();
+            }
+          } else if (desiredMode == "change-detection") {
+            setMode("player");
+            $editorCheckbox.prop('checked', false);
+            $annotatorCheckbox.prop('checked', false);
+            if (typeof changeDetectionTool != "undefined") {
+              changeDetectionTool.enable();
+              $changeDetectionControl.show();
+            }
+            UTIL.addGoogleAnalyticEvent('button', 'click', 'viewer-set-to-player-mode');
+          }
+        } else {
+          if (desiredMode == "editor" || desiredMode == "annotator") {
+            if (mode == "editor-annotator") {
+              if (desiredMode == "editor") {
+                setMode("annotator");
+              } else if (desiredMode == "annotator") {
                 setMode("editor");
               }
-              $changeDetectionAccordion.accordion({active: false});
-              if (typeof changeDetectionTool != "undefined") {
-                changeDetectionTool.disable();
-              }
-              UTIL.addGoogleAnalyticEvent('button', 'click', 'viewer-set-to-editor-mode');
-            } else if (desiredMode == "annotator") {
-              if (mode == "editor") {
-                setMode("editor-annotator");
-              } else {
-                setMode("annotator");
-              }
-              $changeDetectionAccordion.accordion({active: false});
-              if (typeof changeDetectionTool != "undefined") {
-                changeDetectionTool.disable();
-              }
-            } else if (desiredMode == "change-detection") {
+            } else {
               setMode("player");
-              $editorAccordion.accordion({active: false});
-              $annotatorAccordion.accordion({active: false});
-              if (typeof changeDetectionTool != "undefined") {
-                changeDetectionTool.enable();
-              }
               UTIL.addGoogleAnalyticEvent('button', 'click', 'viewer-set-to-player-mode');
             }
-          } else {
-            if (desiredMode == "editor" || desiredMode == "annotator") {
-              if (mode == "editor-annotator") {
-                if (desiredMode == "editor") {
-                  setMode("annotator");
-                } else if (desiredMode == "annotator") {
-                  setMode("editor");
-                }
-              } else {
-                setMode("player");
-                UTIL.addGoogleAnalyticEvent('button', 'click', 'viewer-set-to-player-mode');
-              }
-            } else if (desiredMode == "change-detection") {
-              if (typeof changeDetectionTool != "undefined") {
-                changeDetectionTool.disable();
-              }
+          } else if (desiredMode == "change-detection") {
+            if (typeof changeDetectionTool != "undefined") {
+              changeDetectionTool.disable();
+              $changeDetectionControl.hide();
             }
           }
         }

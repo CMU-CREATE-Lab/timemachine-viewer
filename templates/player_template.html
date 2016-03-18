@@ -62,24 +62,32 @@
   </div>
 
   <div class="toolDialog" title="Tools">
-    <div class="accordion" data-mode="editor">
-      <h3>Toggle tour and slideshow editor</h3>
-      <div class="accordion-editor">
-        The tour and slideshow editor enables telling and sharing interesting stories by creating custom guided tours and interactive slideshows, travelling through space and time. For more information, refer to the <a href="http://wiki.gigapan.org/creating-time-machines/embedding-time-machine" target="_blank">tutorial</a>.
+    <div class="toolDialogContent">
+      <div class="customCheckboxContainer" data-mode="editor">
+        <input type="checkbox" class="customCheckbox" value="editor"/>
+        <label class="customCheckboxLabelBold">Toggle tour and slideshow editor</label>
+        <p>
+          The tour and slideshow editor enables telling and sharing interesting stories by creating custom guided tours and interactive slideshows, travelling through space and time. For more information, refer to the <a href="http://wiki.gigapan.org/creating-time-machines/embedding-time-machine" target="_blank">tutorial</a>.
+        </p>
       </div>
-    </div>
-    <div class="accordion" data-mode="annotator">
-      <h3>Toggle annotator</h3>
-      <div class="accordion-annotator">
-        The annotator enables creating customized annotations on the viewer.
+      <div class="customCheckboxContainer" data-mode="annotator">
+        <input type="checkbox" class="customCheckbox" value="annotator">
+        <label class="customCheckboxLabelBold">Toggle annotator</label>
+        <p>
+          The annotator enables creating customized annotations on the viewer.
+        </p>
       </div>
-    </div>
-    <div class="accordion" data-mode="change-detection">
-      <h3>Toggle change detection tool</h3>
-      <div class="accordion-change-detection">
-        <a href="javascript:void(0)" class="apply-change-detect">Click here to detect</a> changes in the selected region.
-        <br>
-        Center the box to a <a href="javascript:void(0)" class="reset-large-change-detect">large</a>,&nbsp;<a href="javascript:void(0)" class="reset-medium-change-detect">medium</a>, or&nbsp;<a href="javascript:void(0)" class="reset-small-change-detect">small</a> size
+      <div class="customCheckboxContainer" data-mode="change-detection">
+        <input type="checkbox" class="customCheckbox" value="change-detection">
+        <label class="customCheckboxLabelBold">Toggle change detection tool</label>
+        <p>
+          The change detection tool computes the number of moving pixels in an area in the video.
+        </p>
+        <p class="changeDetectionControl">
+          <a href="javascript:void(0)" class="apply-change-detect">Click here to detect</a> changes in the selected region.
+          <br>
+          Center the box to a <a href="javascript:void(0)" class="reset-large-change-detect">large</a>,&nbsp;<a href="javascript:void(0)" class="reset-medium-change-detect">medium</a>, or&nbsp;<a href="javascript:void(0)" class="reset-small-change-detect">small</a> size
+        </p>
       </div>
     </div>
   </div>
