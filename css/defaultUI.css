@@ -1125,6 +1125,7 @@ _:-moz-tree-row(hover), .customDialog .customDialogButton .ui-button-text {
   font-weight: bold;
   vertical-align: middle;
   font-size: 14px;
+  cursor: pointer;
 }
 
 .changeDetectionControl {
