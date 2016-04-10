@@ -242,6 +242,7 @@ if (!window['$']) {
     var zoomChangeListeners = [];
     var fullScreenChangeListeners = [];
     var datasetLoadedListeners = [];
+    var timelineUIChangeListeners = [];
     var thisObj = this;
     var tmJSON;
     var datasetJSON = null;
@@ -1138,6 +1139,21 @@ if (!window['$']) {
       }
     };
     this.removeDatasetLoadedListener = _removeDatasetLoadedListener;
+
+    var _addTimelineUIChangeListener = function(listener) {
+      timelineUIChangeListeners.push(listener);
+    };
+    this.addTimelineUIChangeListener = _addTimelineUIChangeListener;
+
+    var _removeTimelineUIChangeListener = function(listener) {
+      for (var i = 0; i < timelineUIChangeListeners.length; i++) {
+        if (timelineUIChangeListeners[i] == listener) {
+          timelineUIChangeListeners.splice(i, 1);
+          break;
+        }
+      }
+    };
+    this.removeTimelineUIChangeListener = _removeTimelineUIChangeListener;
 
     var _getProjection = function(desiredProjectionType) {
       projectionType = typeof (desiredProjectionType) != 'undefined' ? desiredProjectionType : "mercator";
@@ -3089,6 +3105,9 @@ if (!window['$']) {
           $("#" + viewerDivId + " .captureTime").hide();
         }
       }
+
+      for (var i = 0; i < timelineUIChangeListeners.length; i++)
+        timelineUIChangeListeners[i]();
     };
 
     var loadTimelapse = function(url, desiredView, desiredTime, preserveViewAndTime, desiredDate, onLoadCompleteCallBack) {
