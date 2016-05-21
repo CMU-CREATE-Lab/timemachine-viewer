@@ -464,20 +464,6 @@ if (!Math.uuid) {
       }
     };
 
-    this.setKeyframeTitleState = function(state) {
-      if (state == "disable") {
-        disableKeyframeTitle = true;
-        TOUR_SHARING_VERSION = 3;
-        $("#" + composerDivId + " .keyframe_title_container").hide();
-        $("#" + composerDivId + " .snaplapse_keyframe_list_item_title").hide();
-      } else {
-        disableKeyframeTitle = false;
-        TOUR_SHARING_VERSION = 4;
-        $("#" + composerDivId + " .keyframe_title_container").show();
-        $("#" + composerDivId + " .snaplapse_keyframe_list_item_title").show();
-      }
-    };
-
     // Variables storing the return value of encoder.read_unsafe_string() must follow the convention
     // of being appended with "unsafe_string_" to ensure awareness that they may contain
     // potentially unsafe user inputted data.
@@ -671,6 +657,20 @@ if (!Math.uuid) {
         return false;
       }
       return true;
+    };
+
+    this.setKeyframeTitleState = function(state) {
+      if (state == "disable") {
+        disableKeyframeTitle = true;
+        TOUR_SHARING_VERSION = 3;
+        $("#" + composerDivId + " .keyframe_title_container").hide();
+        $("#" + composerDivId + " .snaplapse_keyframe_list_item_title").hide();
+      } else {
+        disableKeyframeTitle = false;
+        TOUR_SHARING_VERSION = 4;
+        $("#" + composerDivId + " .keyframe_title_container").show();
+        $("#" + composerDivId + " .snaplapse_keyframe_list_item_title").show();
+      }
     };
 
     this.duplicateKeyframe = function(idOfSourceKeyframe) {
