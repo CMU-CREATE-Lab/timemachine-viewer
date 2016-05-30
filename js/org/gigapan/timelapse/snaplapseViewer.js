@@ -1396,9 +1396,10 @@ if (!org.gigapan.timelapse.snaplapse) {
 
         var listeners = eventListeners["slide-before-changed"];
         if (listeners) {
+          var waypoint = {index: $("#" + keyframeListItem.id).index(), title: keyframe.unsafe_string_frameTitle, annotationBoxTitle: keyframe.unsafe_string_annotationBoxTitle, description: keyframe.unsafe_string_description, bounds: keyframe.bounds, layers: keyframe.layers};
           for (var i = 0; i < listeners.length; i++) {
             try {
-              listeners[i](keyframe.unsafe_string_frameTitle, $("#" + keyframeListItem.id).index(), keyframe['bounds']);
+              listeners[i](waypoint);
             } catch(e) {
               UTIL.error(e.name + " while calling presentationSlider slide-before-changed event listener: " + e.message, e);
             }
@@ -1691,9 +1692,10 @@ if (!org.gigapan.timelapse.snaplapse) {
           if (usePresentationSlider && doNotFireListener != true) {
             var listeners = eventListeners["slide-changed"];
             if (listeners) {
+              var waypoint = {index: $select.index(), title: keyframe.unsafe_string_frameTitle, annotationBoxTitle: keyframe.unsafe_string_annotationBoxTitle, description: keyframe.unsafe_string_description, bounds: keyframe.bounds, layers: keyframe.layers};
               for (var i = 0; i < listeners.length; i++) {
                 try {
-                  listeners[i](keyframe.unsafe_string_frameTitle, $select.index(), keyframe['bounds']);
+                  listeners[i](waypoint);
                 } catch(e) {
                   UTIL.error(e.name + " while calling presentationSlider slide-changed event listener: " + e.message, e);
                 }

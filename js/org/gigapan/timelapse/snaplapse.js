@@ -140,7 +140,9 @@ if (!Math.uuid) {
 
     // Because the viewer on Google Earth Engine is not updated yet,
     // we need to use disableKeyframeTitle flag for backward compatibility.
-    var TOUR_SHARING_VERSION = disableKeyframeTitle ? 3 : 4;
+    var TOUR_SHARING_VERSION = 5;
+
+    var ROOT_GDOC_URL = "http://docs-proxy.cmucreatelab.org/spreadsheets/d";
 
     // Loop Dwell
     var doLoopDwellTimeout;
@@ -450,6 +452,17 @@ if (!Math.uuid) {
             // Keyframe title
             encoder.write_string(desiredKeyframes[i]['unsafe_string_frameTitle']);
           }
+          // Keframe annotation box title
+          // The title above is what is shown on the waypoint slider, whereas this one
+          // is what appears in the annotation box.
+          encoder.write_string(desiredKeyframes[i]['unsafe_string_annotationBoxTitle']);
+          // Layers asssoicated with a keyfram
+          try {
+            var layers = String(desiredKeyframes[i]['layers']);
+            encoder.write_string(layers);
+          } catch(e) {
+              // TODO
+            }
         }
         // Tour title
         var title = $("#" + composerDivId + " .saveTimewarpWindow_tourTitleInput").val();
@@ -573,6 +586,13 @@ if (!Math.uuid) {
             frame["unsafe_string_frameTitle"] = encoder.read_unsafe_string();
           }
           frame["is-description-visible"] = (frame["unsafe_string_description"] || frame["unsafe_string_frameTitle"]) ? true : false;
+
+          if (version >= 5) {
+            // Decode annotation box title
+            frame["unsafe_string_annotationBoxTitle"] = encoder.read_unsafe_string();
+            // Decode layers
+            frame["layers"] = encoder.read_unsafe_string().split(",");
+          }
           keyframes.push(frame);
         }
         var checksum;
@@ -640,7 +660,7 @@ if (!Math.uuid) {
           if (typeof keyframe['time'] != 'undefined' && typeof keyframe['bounds'] != 'undefined' && typeof keyframe['bounds']['xmin'] != 'undefined' && typeof keyframe['bounds']['ymin'] != 'undefined' && typeof keyframe['bounds']['xmax'] != 'undefined' && typeof keyframe['bounds']['ymax'] != 'undefined') {
             // NOTE: if is-description-visible is undefined, then we define it as *true* in order to maintain
             // backward compatibility with older time warps which don't have this property.
-            this.recordKeyframe(null, keyframe['time'], keyframe['bounds'], keyframe['unsafe_string_description'], ( typeof keyframe['is-description-visible'] == 'undefined') ? true : keyframe['is-description-visible'], keyframe['duration'], true, keyframe['buildConstraint'], keyframe['speed'], keyframe['loopTimes'], loadKeyframesLength, keyframe['unsafe_string_frameTitle'], keyframe['originalView']);
+            this.recordKeyframe(null, keyframe['time'], keyframe['bounds'], keyframe['unsafe_string_description'], ( typeof keyframe['is-description-visible'] == 'undefined') ? true : keyframe['is-description-visible'], keyframe['duration'], true, keyframe['buildConstraint'], keyframe['speed'], keyframe['loopTimes'], loadKeyframesLength, keyframe['unsafe_string_frameTitle'], keyframe['originalView'], keyframe['layers'], keyframe['unsafe_string_annotationBoxTitle']);
           } else {
             UTIL.error("Ignoring invalid keyframe during snaplapse load.");
           }
@@ -659,6 +679,90 @@ if (!Math.uuid) {
       return true;
     };
 
+    var CSVToJSON = function(csvData) {
+      // The csv format assumes the following columns:
+      // Waypoint Title, Annotation Title, Annotation Text, Share View
+      try {
+        var snaplapseJSON = {};
+        var tmJSON = timelapse.getTmJSON();
+        snaplapseJSON['snaplapse'] = {};
+        if (tmJSON['name']) {
+          snaplapseJSON['snaplapse']['dataset-name'] = tmJSON['name'];
+        }
+        if (tmJSON['projection-bounds']) {
+          snaplapseJSON['snaplapse']['projection'] = timelapse.getProjectionType();
+          snaplapseJSON['snaplapse']['projection-bounds'] = tmJSON['projection-bounds'];
+        }
+        snaplapseJSON['snaplapse']['pixel-bounds'] = {
+          xmin: 0,
+          ymin: 0,
+          xmax: timelapse.getPanoWidth(),
+          ymax: timelapse.getPanoHeight()
+        };
+        snaplapseJSON['snaplapse']['source-duration'] = timelapse.getDuration();
+        var fps = timelapse.getFps();
+        snaplapseJSON['snaplapse']['fps'] = fps;
+        var keyframes = [];
+
+        var csvArray = csvData.split("\n");
+
+        // First row contains headings
+        for (var i = 1; i < csvArray.length; i++) {
+          var csvLineAsArray = csvArray[i].split("\t");
+          var unsafe_matchURL = csvLineAsArray[3].match(/#(.+)/);
+          var unsafeHashObj = UTIL.unpackVars(unsafe_matchURL[1]);
+          var frame = {};
+          frame["id"] = Math.uuid(20);
+          frame["buildConstraint"] = "speed";
+          frame["loopTimes"] = 2;
+          frame["duration"] = null;
+          frame["speed"] = 100;
+          frame["waitStart"] = timelapse.getStartDwell();
+          frame["waitEnd"] = timelapse.getEndDwell();
+          frame["time"] = unsafeHashObj.hasOwnProperty("t") ? parseFloat(unsafeHashObj.t) : 0;
+          var frameNumber = Math.floor(frame["time"] * timelapse.getFps());
+          frame["captureTime"] = captureTimes[frameNumber];
+
+          var view = unsafeHashObj.hasOwnProperty("v") ? timelapse.unsafeViewToView(unsafeHashObj.v.split(",")) : null;
+          if (tmJSON['projection-bounds']) {
+            var bbox = timelapse.pixelCenterToPixelBoundingBoxView(view).bbox;
+          } else {
+            var bbox = timelapse.pixelCenterToPixelBoundingBoxView(timelapse.latLngBoundingBoxToPixelCenter(view)).bbox;
+          }
+
+          frame["bounds"] = {};
+          frame["bounds"]["xmin"] = bbox.xmin;
+          frame["bounds"]["ymin"] = bbox.ymin;
+          frame["bounds"]["xmax"] = bbox.xmax;
+          frame["bounds"]["ymax"] = bbox.ymax;
+          frame["originalView"] = view;
+          frame["unsafe_string_description"] = csvLineAsArray[2].trim();
+          frame["unsafe_string_frameTitle"] = csvLineAsArray[0].trim();
+          frame["unsafe_string_annotationBoxTitle"] = csvLineAsArray[1].trim();
+          frame["layers"] = unsafeHashObj.l ? unsafeHashObj.l.split(",") : [""];
+          frame["is-description-visible"] = (frame["unsafe_string_description"] || frame["unsafe_string_frameTitle"]) ? true : false;
+          keyframes.push(frame);
+        }
+        snaplapseJSON['snaplapse']['unsafe_string_title'] = "";
+        snaplapseJSON['snaplapse']['keyframes'] = keyframes;
+        return JSON.stringify(snaplapseJSON, null, 3);
+      } catch(e) {
+        UTIL.error("Error converting snaplapse CSV to JSON: " + e.message, e);
+      }
+    }
+    this.CSVToJSON = CSVToJSON;
+
+    var gdocToJSON = function(gdocUrl, callback) {
+      var gdocId = gdocUrl.split("/d/")[1].split("/")[0];
+      $.ajax({
+        url: ROOT_GDOC_URL + "/" + gdocId + "/export?format=tsv&id=" + gdocId,
+        success: function(csvData) {
+          callback(csvData);
+        }
+      });
+    }
+    this.gdocToJSON = gdocToJSON;
+
     this.setKeyframeTitleState = function(state) {
       if (state == "disable") {
         disableKeyframeTitle = true;
@@ -667,7 +771,7 @@ if (!Math.uuid) {
         $("#" + composerDivId + " .snaplapse_keyframe_list_item_title").hide();
       } else {
         disableKeyframeTitle = false;
-        TOUR_SHARING_VERSION = 4;
+        TOUR_SHARING_VERSION = 5;
         $("#" + composerDivId + " .keyframe_title_container").show();
         $("#" + composerDivId + " .snaplapse_keyframe_list_item_title").show();
       }
@@ -675,10 +779,10 @@ if (!Math.uuid) {
 
     this.duplicateKeyframe = function(idOfSourceKeyframe) {
       var keyframeCopy = cloneFrame(keyframesById[idOfSourceKeyframe]);
-      this.recordKeyframe(idOfSourceKeyframe, keyframeCopy['time'], keyframeCopy['bounds'], keyframeCopy['unsafe_string_description'], keyframeCopy['is-description-visible'], keyframeCopy['duration'], false, keyframeCopy['buildConstraint'], keyframeCopy['speed'], keyframeCopy['loopTimes'], undefined, keyframeCopy['unsafe_string_frameTitle']);
+      this.recordKeyframe(idOfSourceKeyframe, keyframeCopy['time'], keyframeCopy['bounds'], keyframeCopy['unsafe_string_description'], keyframeCopy['is-description-visible'], keyframeCopy['duration'], false, keyframeCopy['buildConstraint'], keyframeCopy['speed'], keyframeCopy['loopTimes'], undefined, keyframeCopy['unsafe_string_frameTitle'], undefined, keyframeCopy['layers'], keyframeCopy['unsafe_string_annotationBoxTitle']);
     };
 
-    this.recordKeyframe = function(idOfKeyframeToAppendAfter, time, bounds, description, isDescriptionVisible, duration, isFromLoad, buildConstraint, speed, loopTimes, loadKeyframesLength, frameTitle, originalView) {
+    this.recordKeyframe = function(idOfKeyframeToAppendAfter, time, bounds, description, isDescriptionVisible, duration, isFromLoad, buildConstraint, speed, loopTimes, loadKeyframesLength, frameTitle, originalView, layers, frameAnnotationBoxTitle) {
       if (typeof bounds == 'undefined') {
         bounds = timelapse.getBoundingBoxForCurrentView();
       }
@@ -722,6 +826,8 @@ if (!Math.uuid) {
         }
       }
       keyframe['originalView'] = originalView;
+      keyframe['layers'] = layers;
+      keyframe['unsafe_string_annotationBoxTitle'] = ( typeof frameTitle == 'undefined') ? '' : frameAnnotationBoxTitle;
 
       // Determine where the new keyframe will be inserted
       var insertionIndex = keyframes.length;

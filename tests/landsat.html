@@ -74,8 +74,8 @@
           playOnLoad: true,
           onTimeMachinePlayerReady: function(viewerDivId) {
             setupPostMessageHandlers();
-            timelapse.getSnaplapseForPresentationSlider().getSnaplapseViewer().addEventListener("slide-changed", function(slideTitle) {
-              post("from-timemachine-slide-changed", slideTitle);
+            timelapse.getSnaplapseForPresentationSlider().getSnaplapseViewer().addEventListener("slide-changed", function(waypoint) {
+              post("from-timemachine-slide-changed", waypoint.title);
             });
           },
           scaleBarOptions: {

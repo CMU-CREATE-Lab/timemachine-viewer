@@ -1270,9 +1270,16 @@ if (!window['$']) {
       sharedTimestamp = sharedTimestamp || thisObj.getCurrentTime().toFixed(2);
       var shareStr = '#v=' + _getViewStr(desiredView) + '&t=' + sharedTimestamp;
       if (datasetType == "modis" && customUI.getLocker() != "none")
-        shareStr += '&l=' + customUI.getLocker();
+        shareStr += '&lk=' + customUI.getLocker();
       if (datasetType == "breathecam")
         shareStr += '&d=' + settings["url"].match(/\d\d\d\d-\d\d-\d\d/) + "&s=" + tmJSON['id'];
+      var selectedLayers = $("#" + timeMachineDivId + " #layers-list input:checked");
+      if (selectedLayers.length) {
+        var layers = $.map(selectedLayers, function(obj) {
+          return $(obj).parent("label").attr("name");
+        });
+        shareStr += '&l=' + String(layers);
+      }
       return shareStr;
     };
     this.getShareView = getShareView;
@@ -1935,9 +1942,8 @@ if (!window['$']) {
     };
 
     // Gets a safe time value (Float) from an unsafe object containing key-value pairs from the URL hash.
-    // TODO: what if time is 0?
     var getTimeFromHash = function(unsafeHashObj) {
-      if (unsafeHashObj && unsafeHashObj.t) {
+      if (unsafeHashObj && unsafeHashObj.hasOwnProperty("t")) {
         var newTime = parseFloat(unsafeHashObj.t);
         return newTime;
       }

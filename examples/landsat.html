@@ -70,8 +70,8 @@
           playOnLoad: true,
           onTimeMachinePlayerReady: function(viewerDivId) {
             setupPostMessageHandlers();
-            timelapse.getSnaplapseForPresentationSlider().getSnaplapseViewer().addEventListener("slide-changed", function(slideTitle) {
-              post("from-timemachine-slide-changed", slideTitle);
+            timelapse.getSnaplapseForPresentationSlider().getSnaplapseViewer().addEventListener("slide-changed", function(waypoint) {
+              post("from-timemachine-slide-changed", waypoint.title);
             });
             //timelapse.loadSharedDataFromUnsafeURL("#tour=EEDkDAVnCdAw_SiI__DkDAFtUaZ_eRrM__DkDAq6saZGdRlQ__BkDACrDZB9QQxS__Untitled_B", true);
           },
