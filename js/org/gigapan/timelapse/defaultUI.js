@@ -266,11 +266,10 @@ if (!org.gigapan.timelapse.Timelapse) {
         $fullScreenPlayer.appendTo($controls);
       }
       // Create share button
-      if (showShareBtn) {
-        createShareButton();
-      } else {
-        $("#" + viewerDivId + " .share").remove();
-        $("#" + viewerDivId + " .shareView").remove();
+      createShareButton();
+      if (!showShareBtn) {
+        $("#" + viewerDivId + " .share").hide();
+        $("#" + viewerDivId + " .shareView").hide();
       }
       // Create tool button
       if (editorEnabled || annotatorEnabled || changeDetectionEnabled) {
