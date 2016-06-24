@@ -710,6 +710,8 @@ if (!Math.uuid) {
         for (var i = 1; i < csvArray.length; i++) {
           var csvLineAsArray = csvArray[i].split("\t");
           var unsafe_matchURL = csvLineAsArray[3].match(/#(.+)/);
+          // Ignore the entry if there is no share view
+          if (!unsafe_matchURL) continue;
           var unsafeHashObj = UTIL.unpackVars(unsafe_matchURL[1]);
           var frame = {};
           frame["id"] = Math.uuid(20);
