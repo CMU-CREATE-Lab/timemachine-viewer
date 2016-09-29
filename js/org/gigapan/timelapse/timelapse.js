@@ -3332,10 +3332,10 @@ if (!window['$']) {
       $.event.special.mousewheel.settings.adjustOldDeltas = false;
 
       if (hasTouchSupport) {
-        document.addEventListener("touchstart", touch2Mouse, true);
-        document.addEventListener("touchmove", touch2Mouse, true);
-        document.addEventListener("touchend", touch2Mouse, true);
-        document.addEventListener("touchcancel", touch2Mouse, true);
+        document.addEventListener("touchstart", touch2Mouse, {capture: true, passive: false});
+        document.addEventListener("touchmove", touch2Mouse, {capture: true, passive: false});
+        document.addEventListener("touchend", touch2Mouse, {capture: true, passive: false});
+        document.addEventListener("touchcancel", touch2Mouse, {capture: true, passive: false});
         $(document).on("touchstart", function(e) {
           if (tapped && e.originalEvent.touches.length == 2) {
             //stop single tap callback
