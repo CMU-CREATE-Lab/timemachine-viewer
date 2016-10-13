@@ -151,6 +151,7 @@ if (!window['$']) {
     var minViewportHeight = 370;
     var minViewportWidth = 540;
     var defaultLoopDwellTime = 0.5;
+    var pixelRatio = window.devicePixelRatio || 1;
 
     // If the user requested a tour editor AND has a div in the DOM for the editor,
     // then do all related edtior stuff (pull thumbnails for keyframes, etc.)
@@ -1823,6 +1824,7 @@ if (!window['$']) {
 
     var resizeViewer = function() {
       var $viewerDiv = $("#" + viewerDivId);
+
       viewportWidth = $viewerDiv.width();
       viewportHeight = $viewerDiv.height();
 
@@ -1841,13 +1843,21 @@ if (!window['$']) {
 
       // Update canvas size
       $(canvas).attr({
+        width: viewportWidth * pixelRatio,
+        height: viewportHeight * pixelRatio
+      }).css({
         width: viewportWidth,
         height: viewportHeight
       });
+
       $(blackFrameDetectionCanvas).attr({
-        width: viewportWidth,
-        height: viewportHeight
+        width: viewportWidth * pixelRatio,
+        height: viewportHeight * pixelRatio
       });
+
+      // Rescale the canvas if we are on a screen that has a pixel ratio > 1
+      if (pixelRatio > 1)
+        canvas.getContext('2d').scale(pixelRatio, pixelRatio);
 
       // Stretching the video affects the home view,
       // set home view to undefined so that it gets recomputed
