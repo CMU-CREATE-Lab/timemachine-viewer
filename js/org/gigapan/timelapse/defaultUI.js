@@ -424,6 +424,26 @@ if (!org.gigapan.timelapse.Timelapse) {
       resetShareThumbnailUI();
     };
 
+    var createSizePicker = function() {
+      var tmJSON = timelapse.getTmJSON();
+      var $sizeSelection = $("<select id=\"sizeSelection\" />");
+      $("<option />", {value: 0, text: "Select Quality"}).appendTo($sizeSelection);
+      for (var i = 0; i < tmJSON.datasets.length; i++) {
+        var $option = $("<option />", {value: i+1, text: tmJSON.datasets[i].name});
+        if (i == 0) $option.prop("selected", true);
+        $option.appendTo($sizeSelection);
+      }
+      $sizeSelection.wrap("<div id='sizeSelectionContainer'>").parent().appendTo("#" + viewerDivId);
+      $sizeSelection.on("change", function() {
+        if ($(this).val() > 0)
+          timelapse.switchLayer($(this).val() - 1);
+      });
+      if ($(".scaleBarContainer").length == 0) {
+        $("#sizeSelectionContainer").css("bottom", "90px");
+      }
+    };
+    this.createSizePicker = createSizePicker;
+
     var createAddressLookupUI = function() {
       if (typeof google === "undefined")
         return;

@@ -143,6 +143,7 @@ if (!window['$']) {
     var useTouchFriendlyUI = ( typeof (settings["useTouchFriendlyUI"]) == "undefined") ? false : settings["useTouchFriendlyUI"];
     var thumbnailServerRootTileUrl = ( typeof (settings["thumbnailServerRootTileUrl"]) == "undefined") ? settings["url"] : settings["thumbnailServerRootTileUrl"];
     var useThumbnailServer = ( typeof (settings["useThumbnailServer"]) == "undefined") ? true : settings["useThumbnailServer"];
+    var showSizePicker = settings["showSizePicker"] || false;
     var visualizerGeometry = {
       width: 250,
       height: 142
@@ -3051,6 +3052,9 @@ if (!window['$']) {
       setupUIHandlers();
       //setupSliderHandlers(viewerDivId);
 
+      if (showSizePicker)
+        defaultUI.createSizePicker();
+
       // The UI is now ready and we can display it
       $("#" + viewerDivId).css("visibility", "visible");
       if (viewerType == "webgl")
@@ -3060,12 +3064,17 @@ if (!window['$']) {
       $(videoDiv).focus();
     }
 
-    this.switchLayer = function(layerNum) {
-      var newIndex = layerNum * tmJSON["sizes"].length;
+    var switchLayer = function(layerNum) {
+      if (layerNum == datasetLayer) return;
+      showSpinner(viewerDivId);
       datasetLayer = layerNum;
-      validateAndSetDatasetIndex(newIndex);
+      initialTime = timelapse.getCurrentTime();
+      initialView = timelapse.getView();
+      settings["initialView"] = initialView;
+      settings["initialTime"] = initialTime;
       loadTimelapseCallback(tmJSON);
     };
+    this.switchLayer = switchLayer;
 
     var loadNewTimeline = function(url, newTimelineStyle) {
       currentTimelineStyle = newTimelineStyle;
@@ -3170,8 +3179,7 @@ if (!window['$']) {
       // Assume tiles and json are on same host
       tileRootPath = settings["url"];
 
-      // layer + size = index of dataset
-      validateAndSetDatasetIndex(datasetLayer * tmJSON["sizes"].length);
+      validateAndSetDatasetIndex(datasetLayer);
       var path = tmJSON["datasets"][datasetIndex]['id'] + "/";
       datasetPath = settings["url"] + path;
       UTIL.ajax("json", settings["url"], path + "r.json" + getMetadataCacheBreaker(), loadVideoSetCallback);
