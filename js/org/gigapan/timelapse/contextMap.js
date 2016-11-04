@@ -117,11 +117,13 @@ if (!org.gigapan.timelapse.Timelapse) {
         maxHeight = contextMapOptions["geometry"]["height"] + 100;
       }
     }
-    var showAddressLookup = ( typeof (settings["showAddressLookup"]) == "undefined") ? false : settings["showAddressLookup"];
+    var showAddressLookup = (typeof(settings["showAddressLookup"]) == "undefined") ? false : settings["showAddressLookup"];
     var contextMapDivId = (typeof(contextMapOptions["contextMapDiv"]) == "undefined") ? "timelapse-contextmap" : contextMapOptions["contextMapDiv"];
     var resizable = (typeof(contextMapOptions["resizable"]) == "undefined") ? true : contextMapOptions["resizable"];
     var showToggleBtn = (typeof(contextMapOptions["showToggleBtn"]) == "undefined") ? true : contextMapOptions["showToggleBtn"];
     var tileType = (availableTileSources.indexOf(contextMapOptions["tileType"]) < 0) ? "Google" : contextMapOptions["tileType"];
+    var apiKeys = (typeof (settings["apiKeys"]) == "undefined") ? {} : settings["apiKeys"];
+
     var mapResizeStart = {
       "x": undefined,
       "y": undefined
@@ -278,7 +280,10 @@ if (!org.gigapan.timelapse.Timelapse) {
           };
         };
         var leafletScript = document.createElement('script');
-        leafletScript.setAttribute('src', 'https://maps.google.com/maps/api/js?libraries=places&callback=loadContextMapLeaflet');
+        var mapSrc = 'https://maps.google.com/maps/api/js?libraries=places&callback=loadContextMapLeaflet';
+        if (apiKeys["googleMaps"])
+          mapSrc += '&key=' + apiKeys["googleMaps"];
+        leafletScript.setAttribute('src', mapSrc);
         leafletScript.setAttribute('type', 'text/javascript');
         document.getElementsByTagName('head')[0].appendChild(leafletScript);
       } else if (tileType == "OpenStreetMap") {
