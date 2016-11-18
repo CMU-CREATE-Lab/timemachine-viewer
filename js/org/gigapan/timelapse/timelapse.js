@@ -1856,7 +1856,7 @@ if (!window['$']) {
       });
 
       // Rescale the canvas if we are on a screen that has a pixel ratio > 1
-      if (pixelRatio > 1)
+      if (pixelRatio > 1 && viewerType != "video")
         canvas.getContext('2d').scale(pixelRatio, pixelRatio);
 
       // Stretching the video affects the home view,
