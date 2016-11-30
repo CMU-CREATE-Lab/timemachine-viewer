@@ -3087,6 +3087,15 @@ if (!window['$']) {
 
       // Force initial focus on viewer
       $(videoDiv).focus();
+
+      // If webgl, we need to force trigger this since no video tags will fire this.
+      if (viewerType == "webgl") {
+        didFirstTimeOnLoad = true;
+        // Fire onTimeMachinePlayerReady the first time the page is loaded.
+        if (typeof (settings["onTimeMachinePlayerReady"]) === "function") {
+          settings["onTimeMachinePlayerReady"](timeMachineDivId);
+        }
+      }
     }
 
     var switchLayer = function(layerNum) {
