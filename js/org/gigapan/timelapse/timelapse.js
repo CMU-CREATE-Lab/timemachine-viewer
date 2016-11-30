@@ -273,6 +273,7 @@ if (!window['$']) {
     var onNewTimelapseLoadCompleteCallBack;
     var currentTimelineStyle;
     var customMaxScale;
+    var keysDown = [];
 
     var timePadding = isIE ? 0.3 : 0.0;
     // animateRate in milliseconds, 40 means 25 FPS
@@ -707,6 +708,7 @@ if (!window['$']) {
       if (activeElement == "[object HTMLInputElement]" || activeElement == "[object HTMLTextAreaElement]")
         return;
       var moveFn;
+      keysDown.push(event.which);
       switch (event.which) {
         // Escape key
         case 27:
@@ -821,14 +823,28 @@ if (!window['$']) {
       }
       // Install interval to run every 50 msec while key is down
       // Each arrow key and +/- has its own interval, so multiple can be down at once
-      if (moveFn && keyIntervals[event.which] == undefined)
+      if (moveFn && keyIntervals[event.which] == undefined) {
         keyIntervals[event.which] = setInterval(moveFn, 50);
+      }
     };
 
     var handleKeyupEvent = function(event) {
-      if (keyIntervals[event.which] != undefined) {
-        clearInterval(keyIntervals[event.which]);
-        keyIntervals[event.which] = undefined;
+      var numKeysdown = 1;
+      // This addresses the issue where holding down the command key on a Mac, pressing another key
+      // and then releasing that key won't actually trigger a keyup event. Only when the command
+      // key is finally released is this event triggered. At that point, we need to manually remove
+      // all other keys that may have been pressed during that time or we'll be stuck with their
+      // timers still going. Ugh.
+      // Possible Mac 'command' key values depending upon browser and location on keyboard:
+      if (event.which == 224 || event.which == 17 || event.which == 91 || event.which == 92) {
+        numKeysdown = keysDown.length;
+      }
+      for (var i = 0; i < numKeysdown; i++) {
+        var keyUp = keysDown.pop();
+        if (keyIntervals[keyUp] != undefined) {
+          clearInterval(keyIntervals[keyUp]);
+          keyIntervals[keyUp] = undefined;
+        }
       }
     };
 
@@ -1824,7 +1840,6 @@ if (!window['$']) {
 
     var resizeViewer = function() {
       var $viewerDiv = $("#" + viewerDivId);
-
       viewportWidth = $viewerDiv.width();
       viewportHeight = $viewerDiv.height();
 
