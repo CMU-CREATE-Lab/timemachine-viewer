@@ -86,6 +86,7 @@ if (!org.gigapan) {
   var viewerType = (isSafariUserAgent || isChromeOS) ? "video" : "canvas";
   var rootAppURL = computeRootAppURL();
   var supportedMediaTypes = [];
+  var scrollBarWidth = null;
 
   //0 == none
   //1 == errors only
@@ -115,10 +116,16 @@ if (!org.gigapan) {
   };
 
   org.gigapan.Util.getScrollBarWidth = function() {
-    var $outer = $('<div>').css({visibility: 'hidden', width: 100, overflow: 'scroll'}).appendTo('body');
-    var widthWithScroll = $('<div>').css({width: '100%'}).appendTo($outer).outerWidth();
-    $outer.remove();
-    return 100 - widthWithScroll;
+    if (scrollBarWidth == null) {
+      var $outer = $('<div>').css({visibility: 'hidden', width: 100, overflow: 'scroll'}).appendTo('body');
+      var widthWithScroll = $('<div>').css({width: '100%'}).appendTo($outer).outerWidth();
+      $outer.remove();
+      scrollBarWidth = 100 - widthWithScroll;
+      // Default scrollbar width for Macs which report 0 if no mouse is plugged in in combination with specific system settings.
+      if (scrollBarWidth == 0)
+        scrollBarWidth = 17;
+    }
+    return scrollBarWidth;
   };
 
   org.gigapan.Util.getParentURL = function() {
