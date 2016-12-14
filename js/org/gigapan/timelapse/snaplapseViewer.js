@@ -1722,10 +1722,8 @@ if (!org.gigapan.timelapse.snaplapse) {
       var sizeFlag = "width=" + width + "&height=" + height + "&";
       var timeFlag = "frameTime=" + time;
       var thumbnailURL = serverURL + rootFlag + boundsFlag + sizeFlag + timeFlag;
-      var mediaType = ( typeof (settings["mediaType"]) == "undefined") ? null : settings["mediaType"];
-      // TODO: There are issues pulling thumbnails from mp4 files. Below is a quick hack, since at the moment
-      // Landsat is the only dataset that will be utilizing the 'thumbnailServerRootTileUrl' flag.
-      if (mediaType && ( typeof (settings["thumbnailServerRootTileUrl"]) == "undefined"))
+      var mediaType = (typeof (settings["mediaType"]) == "undefined") ? null : settings["mediaType"];
+      if (mediaType)
         thumbnailURL += "&tileFormat=" + mediaType.split(".")[1];
       return thumbnailURL;
     };
