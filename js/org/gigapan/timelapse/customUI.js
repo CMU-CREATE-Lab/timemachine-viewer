@@ -888,7 +888,7 @@ if (!org.gigapan.timelapse.Timelapse) {
           updateTimelineSlider(timelapse.getCurrentFrameNumber());
         });
       }
-      updateTimelineSlider(timelapse.getCurrentFrameNumber());
+      updateTimelineSlider(Math.min(timelapse.getNumFrames() - 1, timelapse.getCurrentFrameNumber()));
     };
     this.createCustomTimeline = createCustomTimeline;
 
