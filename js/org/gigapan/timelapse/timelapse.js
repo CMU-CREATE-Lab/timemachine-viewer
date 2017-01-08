@@ -1506,6 +1506,11 @@ if (!window['$']) {
       thisObj.setPlaybackRate(originalPlaybackRate);
     };
 
+    this.setMasterPlaybackRate = function(rate) {
+      defaultUI.setPlaybackRate(rate);
+      customUI.setPlaybackRate(rate);
+    };
+
     this.setPlaybackRate = function(rate, preserveOriginalRate, skipUpdateUI) {
       if (!preserveOriginalRate)
         originalPlaybackRate = rate;

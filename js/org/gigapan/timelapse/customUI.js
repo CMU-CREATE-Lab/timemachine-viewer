@@ -174,6 +174,7 @@ if (!org.gigapan.timelapse.Timelapse) {
     var originalIsPaused;
     var isSafari = org.gigapan.Util.isSafari();
     var timeTickSpan;
+    var maxPlaybackRate = 1;
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////
     //
@@ -468,7 +469,25 @@ if (!org.gigapan.timelapse.Timelapse) {
       return dpr / bsr;
     }
 
+    var setPlaybackRate = function(newSpeed) {
+      setMaxPlaybackSpeed(newSpeed);
+      timelapse.setPlaybackRate(newSpeed, null, true);
+    };
+    this.setPlaybackRate = setPlaybackRate;
+
+    var setMaxPlaybackSpeed = function(newMaxPlaybackRate) {
+      maxPlaybackRate = newMaxPlaybackRate;
+    };
+
+    var getMaxPlaybackSpeed = function() {
+      return maxPlaybackRate;
+    };
+
     var createSpeedControl = function() {
+      var fastRate = maxPlaybackRate;
+      var mediumRate = maxPlaybackRate / 2;
+      var slowRate = maxPlaybackRate / 4;
+
       // Toggle speed
       $fastSpeed = $('<button class="customToggleSpeed" title="Toggle playback speed">Fast</button>');
       $mediumSpeed = $('<button class="customToggleSpeed" title="Toggle playback speed">Medium</button>');
@@ -494,7 +513,7 @@ if (!org.gigapan.timelapse.Timelapse) {
       $fastSpeed.button({
         text: true
       }).click(function() {
-        timelapse.setPlaybackRate(0.5, null, true);
+        timelapse.setPlaybackRate(mediumRate, null, true);
         $customControl.prepend($mediumSpeed);
         $mediumSpeed.stop(true, true).show();
         $fastSpeed.slideUp(300);
@@ -508,12 +527,12 @@ if (!org.gigapan.timelapse.Timelapse) {
       }).click(function() {
         // Due to playback issues, we are not allowing the "slow" option for Safari users
         if (isSafari) {
-          timelapse.setPlaybackRate(1, null, true);
+          timelapse.setPlaybackRate(fastRate, null, true);
           $customControl.prepend($fastSpeed);
           $fastSpeed.stop(true, true).show();
           UTIL.addGoogleAnalyticEvent('button', 'click', 'viewer-set-speed-to-fast');
         } else {
-          timelapse.setPlaybackRate(0.25, null, true);
+          timelapse.setPlaybackRate(slowRate, null, true);
           $customControl.prepend($slowSpeed);
           $slowSpeed.stop(true, true).show();
           UTIL.addGoogleAnalyticEvent('button', 'click', 'viewer-set-speed-to-slow');
@@ -526,7 +545,7 @@ if (!org.gigapan.timelapse.Timelapse) {
       $slowSpeed.button({
         text: true
       }).click(function() {
-        timelapse.setPlaybackRate(1, null, true);
+        timelapse.setPlaybackRate(fastRate, null, true);
         $customControl.prepend($fastSpeed);
         $fastSpeed.stop(true, true).show();
         $slowSpeed.slideUp(300);
@@ -536,17 +555,21 @@ if (!org.gigapan.timelapse.Timelapse) {
       });
 
       timelapse.addPlaybackRateChangeListener(function(rate, skipUpdateUI) {
+        var fastRate = maxPlaybackRate;
+        var mediumRate = maxPlaybackRate / 2;
+        var slowRate = maxPlaybackRate / 4;
+
         if (!skipUpdateUI) {
           var snaplapse = timelapse.getSnaplapse();
           var snaplapseForSharedTour = timelapse.getSnaplapseForSharedTour();
           if ((snaplapse && snaplapse.isPlaying()) || (snaplapseForSharedTour && snaplapseForSharedTour.isPlaying()))
             return;
           $("#" + viewerDivId + " .customToggleSpeed").hide();
-          if (rate >= 1) {
+          if (rate >= fastRate) {
             $fastSpeed.show();
             $mediumSpeed.hide();
             $slowSpeed.hide();
-          } else if ((rate < 1 && rate >= 0.5) || (isSafari && rate < 0.5)) {
+          } else if ((rate < fastRate && rate >= mediumRate) || (isSafari && rate < mediumRate)) {
             $mediumSpeed.show();
             $fastSpeed.hide();
             $slowSpeed.hide();
@@ -562,9 +585,9 @@ if (!org.gigapan.timelapse.Timelapse) {
       // happens before the UI is setup, we need to run it again below to properly
       // update the UI.
       var playbackRate = timelapse.getPlaybackRate();
-      if (playbackRate >= 1) {
+      if (playbackRate >= fastRate) {
         $fastSpeed.show();
-      } else if (playbackRate < 1 && playbackRate >= 0.5) {
+      } else if (playbackRate < fastRate && playbackRate >= mediumRate) {
         $mediumSpeed.show();
       } else {
         $slowSpeed.show();
@@ -906,6 +929,7 @@ if (!org.gigapan.timelapse.Timelapse) {
           "title": "Pause"
         });
       }
+      timelapse.setPlaybackRate(timelapse.getPlaybackRate());
     };
     this.resetCustomTimeline = resetCustomTimeline;
 
