@@ -1291,7 +1291,7 @@ if (!window['$']) {
         shareStr += '&lk=' + customUI.getLocker();
       if (datasetType == "breathecam")
         shareStr += '&d=' + settings["url"].match(/\d\d\d\d-\d\d-\d\d/) + "&s=" + tmJSON['id'];
-      var selectedLayers = $("#" + timeMachineDivId + " #layers-list input:checked");
+      var selectedLayers = $("#layers-list, .ui-multiselect-checkboxes").find("input:checked");
       if (selectedLayers.length) {
         var layers = $.map(selectedLayers, function(obj) {
           return $(obj).parent("label").attr("name");
