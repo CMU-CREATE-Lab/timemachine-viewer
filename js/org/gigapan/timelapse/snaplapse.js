@@ -756,8 +756,9 @@ if (!Math.uuid) {
 
     var gdocToJSON = function(gdocUrl, callback) {
       var gdocId = gdocUrl.split("/d/")[1].split("/")[0];
+      var gdocTabId = gdocUrl.split("#gid=")[1] || "0";
       $.ajax({
-        url: ROOT_GDOC_URL + "/" + gdocId + "/export?format=tsv&id=" + gdocId,
+        url: ROOT_GDOC_URL + "/" + gdocId + "/export?format=tsv&id=" + gdocId + "&gid=" + gdocTabId,
         success: function(csvData) {
           callback(csvData);
         }
