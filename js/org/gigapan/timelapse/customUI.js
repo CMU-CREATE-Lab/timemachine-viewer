@@ -470,7 +470,7 @@ if (!org.gigapan.timelapse.Timelapse) {
     }
 
     var setPlaybackRate = function(newSpeed) {
-      setMaxPlaybackSpeed(newSpeed);
+      //setMaxPlaybackSpeed(newSpeed);
       timelapse.setPlaybackRate(newSpeed, null, true);
     };
     this.setPlaybackRate = setPlaybackRate;
@@ -478,6 +478,7 @@ if (!org.gigapan.timelapse.Timelapse) {
     var setMaxPlaybackSpeed = function(newMaxPlaybackRate) {
       maxPlaybackRate = newMaxPlaybackRate;
     };
+    this.setMaxPlaybackSpeed = setMaxPlaybackSpeed;
 
     var getMaxPlaybackSpeed = function() {
       return maxPlaybackRate;
@@ -563,7 +564,7 @@ if (!org.gigapan.timelapse.Timelapse) {
         var mediumRate = getMaxPlaybackSpeed() / 2;
         var slowRate = getMaxPlaybackSpeed() / 4;
 
-        if (!skipUpdateUI) {
+        //if (!skipUpdateUI) {
           var snaplapse = timelapse.getSnaplapse();
           var snaplapseForSharedTour = timelapse.getSnaplapseForSharedTour();
           if ((snaplapse && snaplapse.isPlaying()) || (snaplapseForSharedTour && snaplapseForSharedTour.isPlaying()))
@@ -582,7 +583,7 @@ if (!org.gigapan.timelapse.Timelapse) {
             $mediumSpeed.hide();
             $fastSpeed.hide();
           }
-        }
+        //}
       });
 
       // Since the call to set the playback rate when first creating the timelapse
@@ -591,10 +592,16 @@ if (!org.gigapan.timelapse.Timelapse) {
       var playbackRate = timelapse.getPlaybackRate();
       if (playbackRate >= fastRate) {
         $fastSpeed.show();
+        $mediumSpeed.hide();
+        $slowSpeed.hide();
       } else if (playbackRate < fastRate && playbackRate >= mediumRate) {
         $mediumSpeed.show();
+        $fastSpeed.hide();
+        $slowSpeed.hide();
       } else {
         $slowSpeed.show();
+        $mediumSpeed.hide();
+        $fastSpeed.hide();
       }
     };
 

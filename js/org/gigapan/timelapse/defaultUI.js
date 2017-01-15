@@ -1150,7 +1150,7 @@ if (!org.gigapan.timelapse.Timelapse) {
     };
 
     var setPlaybackRate = function(newSpeed) {
-      setMaxPlaybackSpeed(newSpeed);
+      //timelapse.setMaxPlaybackSpeed(newSpeed);
       timelapse.setPlaybackRate(newSpeed, null, true);
     };
     this.setPlaybackRate = setPlaybackRate;
@@ -1158,6 +1158,7 @@ if (!org.gigapan.timelapse.Timelapse) {
     var setMaxPlaybackSpeed = function(newMaxPlaybackRate) {
       maxPlaybackRate = newMaxPlaybackRate;
     };
+    this.setMaxPlaybackSpeed = setMaxPlaybackSpeed;
 
     var getMaxPlaybackSpeed = function() {
       return maxPlaybackRate;

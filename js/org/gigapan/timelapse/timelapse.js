@@ -1507,8 +1507,8 @@ if (!window['$']) {
     };
 
     this.setMasterPlaybackRate = function(rate) {
-      defaultUI.setPlaybackRate(rate);
-      customUI.setPlaybackRate(rate);
+      defaultUI.setMaxPlaybackSpeed(rate);
+      customUI.setMaxPlaybackSpeed(rate);
     };
 
     this.setPlaybackRate = function(rate, preserveOriginalRate, skipUpdateUI) {
