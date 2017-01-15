@@ -140,7 +140,7 @@ if (!Math.uuid) {
 
     // Because the viewer on Google Earth Engine is not updated yet,
     // we need to use disableKeyframeTitle flag for backward compatibility.
-    var TOUR_SHARING_VERSION = 5;
+    var TOUR_SHARING_VERSION = 6;
 
     var ROOT_GDOC_URL = "http://docs-proxy.cmucreatelab.org/spreadsheets/d";
 
@@ -457,12 +457,10 @@ if (!Math.uuid) {
           // is what appears in the annotation box.
           encoder.write_string(desiredKeyframes[i]['unsafe_string_annotationBoxTitle']);
           // Layers asssoicated with a keyfram
-          try {
-            var layers = String(desiredKeyframes[i]['layers']);
-            encoder.write_string(layers);
-          } catch(e) {
-              // TODO
-            }
+          encoder.write_string(String(desiredKeyframes[i]['layers']));
+          // End Time
+          var endTime = desiredKeyframes[i]['endTime'] !== "" ? String(desiredKeyframes[i]['endTime']) : "";
+          encoder.write_string(endTime);
         }
         // Tour title
         var title = $("#" + composerDivId + " .saveTimewarpWindow_tourTitleInput").val();
@@ -593,6 +591,11 @@ if (!Math.uuid) {
             // Decode layers
             frame["layers"] = encoder.read_unsafe_string().split(",");
           }
+          if (version >= 6) {
+            // Decode end frame number
+            var endTime = parseFloat(encoder.read_unsafe_string());
+            frame["endTime"] = isNaN(endTime) ? -1 : endTime;
+          }
           keyframes.push(frame);
         }
         var checksum;
@@ -660,7 +663,7 @@ if (!Math.uuid) {
           if (typeof keyframe['time'] != 'undefined' && typeof keyframe['bounds'] != 'undefined' && typeof keyframe['bounds']['xmin'] != 'undefined' && typeof keyframe['bounds']['ymin'] != 'undefined' && typeof keyframe['bounds']['xmax'] != 'undefined' && typeof keyframe['bounds']['ymax'] != 'undefined') {
             // NOTE: if is-description-visible is undefined, then we define it as *true* in order to maintain
             // backward compatibility with older time warps which don't have this property.
-            this.recordKeyframe(null, keyframe['time'], keyframe['bounds'], keyframe['unsafe_string_description'], ( typeof keyframe['is-description-visible'] == 'undefined') ? true : keyframe['is-description-visible'], keyframe['duration'], true, keyframe['buildConstraint'], keyframe['speed'], keyframe['loopTimes'], loadKeyframesLength, keyframe['unsafe_string_frameTitle'], keyframe['originalView'], keyframe['layers'], keyframe['unsafe_string_annotationBoxTitle']);
+            this.recordKeyframe(null, keyframe['time'], keyframe['bounds'], keyframe['unsafe_string_description'], ( typeof keyframe['is-description-visible'] == 'undefined') ? true : keyframe['is-description-visible'], keyframe['duration'], true, keyframe['buildConstraint'], keyframe['speed'], keyframe['loopTimes'], loadKeyframesLength, keyframe['unsafe_string_frameTitle'], keyframe['originalView'], keyframe['layers'], keyframe['unsafe_string_annotationBoxTitle'], keyframe['endTime']);
           } else {
             UTIL.error("Ignoring invalid keyframe during snaplapse load.");
           }
@@ -722,6 +725,7 @@ if (!Math.uuid) {
           frame["waitStart"] = timelapse.getStartDwell();
           frame["waitEnd"] = timelapse.getEndDwell();
           frame["time"] = unsafeHashObj.hasOwnProperty("t") ? parseFloat(unsafeHashObj.t) : 0;
+          frame["endTime"] = unsafeHashObj.et ? parseFloat(unsafeHashObj.et) : "";
           var frameNumber = Math.floor(frame["time"] * timelapse.getFps());
           frame["captureTime"] = captureTimes[frameNumber];
 
@@ -774,7 +778,7 @@ if (!Math.uuid) {
         $("#" + composerDivId + " .snaplapse_keyframe_list_item_title").hide();
       } else {
         disableKeyframeTitle = false;
-        TOUR_SHARING_VERSION = 5;
+        TOUR_SHARING_VERSION = 6;
         $("#" + composerDivId + " .keyframe_title_container").show();
         $("#" + composerDivId + " .snaplapse_keyframe_list_item_title").show();
       }
@@ -782,10 +786,10 @@ if (!Math.uuid) {
 
     this.duplicateKeyframe = function(idOfSourceKeyframe) {
       var keyframeCopy = cloneFrame(keyframesById[idOfSourceKeyframe]);
-      this.recordKeyframe(idOfSourceKeyframe, keyframeCopy['time'], keyframeCopy['bounds'], keyframeCopy['unsafe_string_description'], keyframeCopy['is-description-visible'], keyframeCopy['duration'], false, keyframeCopy['buildConstraint'], keyframeCopy['speed'], keyframeCopy['loopTimes'], undefined, keyframeCopy['unsafe_string_frameTitle'], undefined, keyframeCopy['layers'], keyframeCopy['unsafe_string_annotationBoxTitle']);
+      this.recordKeyframe(idOfSourceKeyframe, keyframeCopy['time'], keyframeCopy['bounds'], keyframeCopy['unsafe_string_description'], keyframeCopy['is-description-visible'], keyframeCopy['duration'], false, keyframeCopy['buildConstraint'], keyframeCopy['speed'], keyframeCopy['loopTimes'], undefined, keyframeCopy['unsafe_string_frameTitle'], undefined, keyframeCopy['layers'], keyframeCopy['unsafe_string_annotationBoxTitle'], keyframeCopy['endTime']);
     };
 
-    this.recordKeyframe = function(idOfKeyframeToAppendAfter, time, bounds, description, isDescriptionVisible, duration, isFromLoad, buildConstraint, speed, loopTimes, loadKeyframesLength, frameTitle, originalView, layers, frameAnnotationBoxTitle) {
+    this.recordKeyframe = function(idOfKeyframeToAppendAfter, time, bounds, description, isDescriptionVisible, duration, isFromLoad, buildConstraint, speed, loopTimes, loadKeyframesLength, frameTitle, originalView, layers, frameAnnotationBoxTitle, endTime) {
       if (typeof bounds == 'undefined') {
         bounds = timelapse.getBoundingBoxForCurrentView();
       }
@@ -799,6 +803,7 @@ if (!Math.uuid) {
       keyframe['loopTimes'] = loopTimes;
       keyframe['speed'] = speed;
       keyframe['time'] = org.gigapan.timelapse.Snaplapse.normalizeTime(( typeof time == 'undefined') ? timelapse.getCurrentTime() : time);
+      keyframe['endTime'] = endTime;
       var frameNumber = Math.floor(keyframe['time'] * timelapse.getFps());
       keyframe['captureTime'] = captureTimes[frameNumber];
       keyframe['bounds'] = {};
