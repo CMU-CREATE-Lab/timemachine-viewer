@@ -742,12 +742,12 @@ if (!Math.uuid) {
           frame["bounds"]["xmax"] = bbox.xmax;
           frame["bounds"]["ymax"] = bbox.ymax;
           frame["originalView"] = view;
-          frame["unsafe_string_description"] = csvLineAsArray[2].trim();
-          frame["unsafe_string_frameTitle"] = csvLineAsArray[0].trim();
-          frame["unsafe_string_annotationBoxTitle"] = csvLineAsArray[1].trim();
+          frame["unsafe_string_description"] = csvLineAsArray[2] ? csvLineAsArray[2].trim() : "";
+          frame["unsafe_string_frameTitle"] = csvLineAsArray[0] ? csvLineAsArray[0].trim() : "";
+          frame["unsafe_string_annotationBoxTitle"] = csvLineAsArray[1] ? csvLineAsArray[1].trim() : "";
           frame["layers"] = unsafeHashObj.l ? unsafeHashObj.l.split(",") : [""];
           frame["is-description-visible"] = (frame["unsafe_string_description"] || frame["unsafe_string_frameTitle"]) ? true : false;
-          var annotationPicturePath = csvLineAsArray[4].trim();
+          var annotationPicturePath = csvLineAsArray[4] ? csvLineAsArray[4].trim() : "";
           // TODO: Revisit how we check if this column actually contains an image
           if (annotationPicturePath.lastIndexOf('.jpg', annotationPicturePath.length - 4) === annotationPicturePath.length - 4 || annotationPicturePath.lastIndexOf('.png', annotationPicturePath.length - 4) === annotationPicturePath.length - 4)
             frame["unsafe_string_annotationPicPath"] = annotationPicturePath;
