@@ -1231,7 +1231,7 @@ if (!window['$']) {
         _warpTo(newView);
       } else {
         // If we are really close to our current location, just slide there rather than do a very short parabolic curve.
-        if (newView.scale && newView.scale.toFixed(17) == view.scale.toFixed(17) && (Math.abs(newView.x - view.x) <= 1000 && Math.abs(newView.y - view.y) <= 1000)) {
+        if (newView.scale && newView.scale.toFixed(12) == view.scale.toFixed(12) && (Math.abs(newView.x - view.x) <= 1000 && Math.abs(newView.y - view.y) <= 1000)) {
           _addViewEndChangeListener(defaultEndViewCallback);
           setTargetView(newView);
         } else {
