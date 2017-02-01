@@ -333,9 +333,9 @@ if (!window['$']) {
     var hasTouchSupport = UTIL.isTouchDevice();
     var tapped = false;
     var lastDist = null;
-    var draggingSlider = false;
     var lastLocation;
     var thisLocation;
+    var isTouchMoving = false;
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////
     //
@@ -874,6 +874,7 @@ if (!window['$']) {
       var thisTouchCount = e.touches.length;
       var mouseEvent;
       var theMouse;
+      isTouchMoving = false;
 
       switch (e.type) {
         case "touchstart":
@@ -899,6 +900,7 @@ if (!window['$']) {
           }
           break;
         case "touchmove":
+          isTouchMoving = true;
           mouseEvent = "mousemove";
           if (thisTouchCount == 1) {
             // Translate
@@ -941,11 +943,8 @@ if (!window['$']) {
         e.preventDefault();
       }).on("touchmove", function(e) {
         var newPos = scrollStartPos - e.originalEvent.touches[0].pageX;
-        draggingSlider = true;
         this.scrollLeft = newPos;
         e.preventDefault();
-      }).on("touchend touchcancel", function(e) {
-        draggingSlider = false;
       });
     };
     this.touchHorizontalScroll = touchHorizontalScroll;
@@ -3395,9 +3394,9 @@ if (!window['$']) {
           var theTouch = e.originalEvent.changedTouches[0];
 
           if (!tapped) {//if tap is not set, set up single tap
-            // wait 300ms then run single click code
+            // wait 350ms then run single click code
             tapped = setTimeout(function() {
-              if (draggingSlider) {
+              if (isTouchMoving) {
                 //stop single tap callback
                 clearTimeout(tapped);
                 tapped = null;
@@ -3408,7 +3407,7 @@ if (!window['$']) {
               mouseEvent.initMouseEvent('click', true, true, window, 1, theTouch.screenX, theTouch.screenY, theTouch.clientX, theTouch.clientY, false, false, false, false, 0, null);
               theTouch.target.dispatchEvent(mouseEvent);
             }, 350);
-          } else {// we consider a double tap to be tap within 300ms of last tap.
+          } else {// we consider a double tap to be tap within 350ms of last tap.
             // stop single tap callback
             clearTimeout(tapped);
             tapped = null;
