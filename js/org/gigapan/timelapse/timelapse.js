@@ -1285,17 +1285,32 @@ if (!window['$']) {
 
     var getShareView = function(sharedTimestamp, desiredView) {
       sharedTimestamp = sharedTimestamp || thisObj.getCurrentTime().toFixed(2);
-      var shareStr = '#v=' + _getViewStr(desiredView) + '&t=' + sharedTimestamp;
+      var hashparams = org.gigapan.Util.getUnsafeHashVars();
+      hashparams.v = _getViewStr(desiredView);
+      hashparams.t = sharedTimestamp;
       if (datasetType == "modis" && customUI.getLocker() != "none")
-        shareStr += '&lk=' + customUI.getLocker();
-      if (datasetType == "breathecam")
-        shareStr += '&d=' + settings["url"].match(/\d\d\d\d-\d\d-\d\d/) + "&s=" + tmJSON['id'];
+        hashparams.lk + customUI.getLocker();
+      if (datasetType == "breathecam") {
+        hashparams.d = settings["url"].match(/\d\d\d\d-\d\d-\d\d/);
+        hashparams.s = tmJSON['id'];
+      }
       var selectedLayers = $("#layers-list, .ui-multiselect-checkboxes").find("input:checked");
       if (selectedLayers.length) {
         var layers = $.map(selectedLayers, function(obj) {
           return $(obj).parent("label").attr("name");
         });
-        shareStr += '&l=' + String(layers);
+        hashparams.l = String(layers);
+      }
+      var shareStr;
+      for (var prop in hashparams) {
+        if (hashparams.hasOwnProperty(prop)) {
+          if (shareStr) {
+            shareStr += '&';
+          } else {
+            shareStr = '#';
+          }
+          shareStr += prop + '=' + hashparams[prop];
+        }
       }
       return shareStr;
     };
