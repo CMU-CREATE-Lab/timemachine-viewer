@@ -601,4 +601,15 @@ if (!org.gigapan) {
     }
   }
 
+  org.gigapan.Util.gdocToJSON = function(gdocUrl, callback) {
+    var ROOT_GDOC_URL = "http://docs-proxy.cmucreatelab.org/spreadsheets/d";
+    var gdocId = gdocUrl.split("/d/")[1].split("/")[0];
+    var gdocTabId = gdocUrl.split("#gid=")[1] || "0";
+    $.ajax({
+      url: ROOT_GDOC_URL + "/" + gdocId + "/export?format=tsv&id=" + gdocId + "&gid=" + gdocTabId,
+      success: function(csvData) {
+        callback(csvData);
+      }
+    });
+  }
 })();

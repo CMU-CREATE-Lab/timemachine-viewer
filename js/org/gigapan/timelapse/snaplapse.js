@@ -142,8 +142,6 @@ if (!Math.uuid) {
     // we need to use disableKeyframeTitle flag for backward compatibility.
     var TOUR_SHARING_VERSION = 6;
 
-    var ROOT_GDOC_URL = "http://docs-proxy.cmucreatelab.org/spreadsheets/d";
-
     // Loop Dwell
     var doLoopDwellTimeout;
     var waitForSeekTimeout;
@@ -761,18 +759,6 @@ if (!Math.uuid) {
       }
     }
     this.CSVToJSON = CSVToJSON;
-
-    var gdocToJSON = function(gdocUrl, callback) {
-      var gdocId = gdocUrl.split("/d/")[1].split("/")[0];
-      var gdocTabId = gdocUrl.split("#gid=")[1] || "0";
-      $.ajax({
-        url: ROOT_GDOC_URL + "/" + gdocId + "/export?format=tsv&id=" + gdocId + "&gid=" + gdocTabId,
-        success: function(csvData) {
-          callback(csvData);
-        }
-      });
-    }
-    this.gdocToJSON = gdocToJSON;
 
     this.setKeyframeTitleState = function(state) {
       if (state == "disable") {
