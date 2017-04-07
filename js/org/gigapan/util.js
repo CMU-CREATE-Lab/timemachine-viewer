@@ -369,15 +369,14 @@ if (!org.gigapan) {
   };
 
   org.gigapan.Util.unpackVars = function(str) {
-    var keyvals = str.split('&');
     var vars = {};
-
-    if (keyvals.length == 1 && keyvals[0] == "")
-      return null;
-
-    for (var i = 0; i < keyvals.length; i++) {
-      var keyval = keyvals[i].split('=');
-      vars[keyval[0]] = keyval[1];
+    if (str) {
+      var keyvals = str.split('&');
+      
+      for (var i = 0; i < keyvals.length; i++) {
+        var keyval = keyvals[i].split('=');
+        vars[keyval[0]] = keyval[1];
+      }
     }
     return vars;
   };
@@ -395,7 +394,11 @@ if (!org.gigapan) {
     } catch(e) {
       // Most likely we are dealing with different domains and cannot access window.top
     }
-    return unsafeHashSource + "&" + unsafeHashIframe;
+    if (unsafeHashIframe) {
+      return unsafeHashSource + "&" + unsafeHashIframe;
+    } else {
+      return unsafeHashSource;
+    }
   }
 
   // Note: Hash variables may contain potentially unsafe user-inputted data.
