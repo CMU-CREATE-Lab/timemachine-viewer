@@ -3137,6 +3137,12 @@ if (!window['$']) {
     };
     this.loadNewTimeline = loadNewTimeline;
 
+    var loadNewTimelineFromObj = function(obj, newTimelineStyle) {
+      currentTimelineStyle = newTimelineStyle;
+      loadNewTimelineCallback(obj)
+    };
+    this.loadNewTimelineFromObj = loadNewTimelineFromObj;
+
     var loadNewTimelineCallback = function(json) {
       captureTimes = json["capture-times"];
       frames = captureTimes.length;
