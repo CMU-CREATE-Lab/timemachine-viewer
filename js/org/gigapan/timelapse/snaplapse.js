@@ -122,6 +122,7 @@ if (!Math.uuid) {
     var usePresentationSlider = (mode == "presentation") ? true : false;
     var disableKeyframeTitle = false;
     var uiEnabled = (mode == "noUI") ? false : true;
+    var editorEnabled = settings.editorEnabled;
 
     // Flags
     var isCurrentlyPlaying = false;
@@ -648,8 +649,10 @@ if (!Math.uuid) {
     this.loadFromJSON = function(json, loadIndex) {
       try {
         if (json != undefined) {
-          $(document.body).append('<div class="loadingOverlay"></div>');
-          $(document.body).css("cursor", "wait");
+          if (editorEnabled) {
+            $(document.body).append('<div class="loadingOverlay"></div>');
+            $(document.body).css("cursor", "wait");
+          }
           loadJSON = JSON.parse(json);
           _clearSnaplapse();
         }
