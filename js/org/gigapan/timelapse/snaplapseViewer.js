@@ -1885,6 +1885,15 @@ if (!org.gigapan.timelapse.snaplapse) {
     };
     this.resizeUI = resizeUI;
 
+    var showHideSnaplapseContainer = function(doShow) {
+      if (doShow) {
+        timelapse.addViewerBottomMargin(desiredPresentationSliderHeight);
+      } else {
+        timelapse.addViewerBottomMargin(0);
+      }
+    };
+    this.showHideSnaplapseContainer = showHideSnaplapseContainer;
+
     var initializeAndRunAutoMode = function() {
       clearAutoModeTimeout();
       var listeners = eventListeners["automode-start"];
