@@ -683,6 +683,37 @@ if (!Math.uuid) {
       return true;
     };
 
+    // Create multiple presentation strings based on categories
+    var CSVToJSONList = function(csvData) {
+      var jsonList = {};
+      var csvArray = csvData.split("\n");
+      var categoryTitle = "";
+      var rowString = "\n";
+      var rowCount = 0;
+      // First row contains headings
+      for (var i = 1; i < csvArray.length; i++) {
+        var csvLineAsArray = csvArray[i].split("\t");
+        var waypointTitle = csvLineAsArray[0].trim();
+        if (waypointTitle.charAt(0) == "#") {
+          if (rowCount > 0) {
+            jsonList[categoryTitle] = CSVToJSON(rowString.replace(/\n$/, ""));
+            rowString = "\n";
+            rowCount = 0;
+          }
+          categoryTitle = waypointTitle.slice(1).toLowerCase();
+        } else {
+          rowCount++;
+          rowString += csvArray[i] + "\n";
+        }
+      }
+      // Legacy case where we may not have categories set
+      if (categoryTitle == "") {
+        jsonList["default"] = CSVToJSON(rowString.replace(/\n$/, ""));
+      }
+      return jsonList;
+    };
+    this.CSVToJSONList = CSVToJSONList;
+
     var CSVToJSON = function(csvData) {
       // The csv format assumes the following columns:
       // Waypoint Title, Annotation Title, Annotation Text, Share View
