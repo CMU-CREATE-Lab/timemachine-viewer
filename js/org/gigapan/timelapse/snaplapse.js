@@ -708,8 +708,12 @@ if (!Math.uuid) {
       }
       // Legacy case where we may not have categories set
       if (categoryTitle == "") {
-        jsonList["default"] = CSVToJSON(rowString.replace(/\n$/, ""));
+        categoryTitle = "default";
       }
+
+      // Last category found
+      jsonList[categoryTitle] = CSVToJSON(rowString.replace(/\n$/, ""));
+
       return jsonList;
     };
     this.CSVToJSONList = CSVToJSONList;
