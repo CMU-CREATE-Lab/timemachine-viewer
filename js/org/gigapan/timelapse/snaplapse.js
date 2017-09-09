@@ -683,36 +683,47 @@ if (!Math.uuid) {
       return true;
     };
 
-    // Create multiple presentation strings based on categories
+    // Create multiple presentation JSON strings based on themes
     var CSVToJSONList = function(csvData) {
       var jsonList = {};
       var csvArray = csvData.split("\n");
-      var categoryTitle = "";
+      var themeTitle;
+      var themeId;
       var rowString = "\n";
       var rowCount = 0;
       // First row contains headings
       for (var i = 1; i < csvArray.length; i++) {
         var csvLineAsArray = csvArray[i].split("\t");
         var waypointTitle = csvLineAsArray[0].trim();
+        // Themes in a spreadsheet are designated by a hash symbol
         if (waypointTitle.charAt(0) == "#") {
           if (rowCount > 0) {
-            jsonList[categoryTitle] = CSVToJSON(rowString.replace(/\n$/, ""));
+            jsonList[themeId] = {
+              themeTitle : themeTitle,
+              waypoints : CSVToJSON(rowString.replace(/\n$/, ""))
+            }
             rowString = "\n";
             rowCount = 0;
           }
-          categoryTitle = waypointTitle.slice(1).toLowerCase();
+          themeTitle = waypointTitle.slice(1);
+          // Sanitize
+          themeId = themeTitle.replace(/ /g,"_").replace(/[^a-zA-Z0-9-_]/g, '').toLowerCase();
         } else {
           rowCount++;
           rowString += csvArray[i] + "\n";
         }
       }
-      // Legacy case where we may not have categories set
-      if (categoryTitle == "") {
-        categoryTitle = "default";
+      // Legacy case where we may not have a theme set
+      if (!themeTitle) {
+        themeTitle = "Default";
+        themeId = "default";
       }
 
-      // Last category found
-      jsonList[categoryTitle] = CSVToJSON(rowString.replace(/\n$/, ""));
+      // Last theme found
+      jsonList[themeId] = {
+        themeTitle : themeTitle,
+        waypoints: CSVToJSON(rowString.replace(/\n$/, ""))
+      }
 
       return jsonList;
     };
