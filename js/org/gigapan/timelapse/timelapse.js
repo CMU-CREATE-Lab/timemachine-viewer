@@ -1288,6 +1288,7 @@ if (!window['$']) {
       var hashparams = org.gigapan.Util.getUnsafeHashVars();
       hashparams.v = _getViewStr(desiredView);
       hashparams.t = sharedTimestamp;
+      hashparams.ps = (thisObj.getPlaybackRate() / thisObj.getMaxPlaybackRate()) * 100;
       if (datasetType == "modis" && customUI.getLocker() != "none")
         hashparams.lk + customUI.getLocker();
       if (datasetType == "breathecam") {
@@ -1521,8 +1522,18 @@ if (!window['$']) {
     };
 
     this.setMasterPlaybackRate = function(rate) {
-      defaultUI.setMaxPlaybackSpeed(rate);
-      customUI.setMaxPlaybackSpeed(rate);
+      defaultUI.setMaxPlaybackRate(rate);
+      customUI.setMaxPlaybackRate(rate);
+    };
+
+    this.getMaxPlaybackRate = function() {
+      if (customUI) {
+        return customUI.getMaxPlaybackRate();
+      } else if (defaultUI) {
+        return defaultUI.getMaxPlaybackRate();
+      } else {
+        return playbackSpeed * 100;
+      }
     };
 
     this.setPlaybackRate = function(rate, preserveOriginalRate, skipUpdateUI) {
@@ -1955,6 +1966,7 @@ if (!window['$']) {
         var unsafeHashObj = UTIL.unpackVars(unsafe_matchURL[1]);
         var newView = getViewFromHash(unsafeHashObj);
         var newTime = getTimeFromHash(unsafeHashObj);
+        var newPlaybackSpeed = getPlaybackSpeedFromHash(unsafeHashObj);
 
         if (newView) {
           if (didFirstTimeOnLoad) {
@@ -1968,6 +1980,14 @@ if (!window['$']) {
             _seek(newTime);
           } else {
             initialTime = newTime;
+          }
+        }
+        if (newPlaybackSpeed) {
+          var newPlaybackRate = (newPlaybackSpeed / 100.0) * thisObj.getMaxPlaybackRate();
+          if (didFirstTimeOnLoad) {
+            thisObj.setPlaybackRate(newPlaybackRate);
+          } else {
+            playbackSpeed = newPlaybackRate;
           }
         }
         return true;
@@ -1991,6 +2011,15 @@ if (!window['$']) {
       if (unsafeHashObj && unsafeHashObj.hasOwnProperty("t")) {
         var newTime = parseFloat(unsafeHashObj.t);
         return newTime;
+      }
+      return null;
+    };
+
+    // Gets a safe playback speed value (Float) from an unsafe object containing key-value pairs from the URL hash.
+    var getPlaybackSpeedFromHash = function(unsafeHashObj) {
+      if (unsafeHashObj && unsafeHashObj.hasOwnProperty("ps")) {
+        var newPlaybackSpeed = parseFloat(unsafeHashObj.ps);
+        return newPlaybackSpeed;
       }
       return null;
     };

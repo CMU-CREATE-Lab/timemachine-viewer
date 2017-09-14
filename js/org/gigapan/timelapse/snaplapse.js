@@ -768,7 +768,7 @@ if (!Math.uuid) {
           frame["buildConstraint"] = "speed";
           frame["loopTimes"] = 2;
           frame["duration"] = null;
-          frame["speed"] = 100;
+          frame["speed"] = unsafeHashObj.hasOwnProperty("ps") ? parseFloat(unsafeHashObj.ps) : 50;
           frame["waitStart"] = timelapse.getStartDwell();
           frame["waitEnd"] = timelapse.getEndDwell();
           frame["time"] = unsafeHashObj.hasOwnProperty("t") ? parseFloat(unsafeHashObj.t) : 0;

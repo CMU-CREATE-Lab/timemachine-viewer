@@ -1150,24 +1150,24 @@ if (!org.gigapan.timelapse.Timelapse) {
     };
 
     var setPlaybackRate = function(newSpeed) {
-      //timelapse.setMaxPlaybackSpeed(newSpeed);
       timelapse.setPlaybackRate(newSpeed, null, true);
     };
     this.setPlaybackRate = setPlaybackRate;
 
-    var setMaxPlaybackSpeed = function(newMaxPlaybackRate) {
+    var setMaxPlaybackRate = function(newMaxPlaybackRate) {
       maxPlaybackRate = newMaxPlaybackRate;
     };
-    this.setMaxPlaybackSpeed = setMaxPlaybackSpeed;
+    this.setMaxPlaybackRate = setMaxPlaybackRate;
 
-    var getMaxPlaybackSpeed = function() {
+    var getMaxPlaybackRate = function() {
       return maxPlaybackRate;
     };
+    this.getMaxPlaybackRate = getMaxPlaybackRate;
 
     var createSpeedControl = function() {
-      var fastRate = getMaxPlaybackSpeed();
-      var mediumRate = getMaxPlaybackSpeed() / 2;
-      var slowRate = getMaxPlaybackSpeed() / 4;
+      var fastRate = getMaxPlaybackRate();
+      var mediumRate = getMaxPlaybackRate() / 2;
+      var slowRate = getMaxPlaybackRate() / 4;
 
       // Speeds < 0.5x in Safari, even if emulated, result in broken playback, so do not include the "slow" (0.25x) speed option
       if (isSafari)
@@ -1176,7 +1176,7 @@ if (!org.gigapan.timelapse.Timelapse) {
       $fastSpeed.button({
         text: true
       }).click(function() {
-        var mediumRate = getMaxPlaybackSpeed() / 2;
+        var mediumRate = getMaxPlaybackRate() / 2;
         timelapse.setPlaybackRate(mediumRate, null, true);
         $controls.prepend($mediumSpeed);
         $mediumSpeed.stop(true, true).show();
@@ -1189,13 +1189,13 @@ if (!org.gigapan.timelapse.Timelapse) {
       }).click(function() {
         // Due to playback issues, we are not allowing the "slow" option for Safari users
         if (isSafari) {
-          var fastRate = getMaxPlaybackSpeed();
+          var fastRate = getMaxPlaybackRate();
           timelapse.setPlaybackRate(fastRate, null, true);
           $controls.prepend($fastSpeed);
           $fastSpeed.stop(true, true).show();
           UTIL.addGoogleAnalyticEvent('button', 'click', 'viewer-set-speed-to-fast');
         } else {
-          var slowRate = getMaxPlaybackSpeed() / 4;
+          var slowRate = getMaxPlaybackRate() / 4;
           timelapse.setPlaybackRate(slowRate, null, true);
           $controls.prepend($slowSpeed);
           $slowSpeed.stop(true, true).show();
@@ -1207,7 +1207,7 @@ if (!org.gigapan.timelapse.Timelapse) {
       $slowSpeed.button({
         text: true
       }).click(function() {
-        var fastRate = getMaxPlaybackSpeed();
+        var fastRate = getMaxPlaybackRate();
         timelapse.setPlaybackRate(fastRate, null, true);
         $controls.prepend($fastSpeed);
         $fastSpeed.stop(true, true).show();
@@ -1216,9 +1216,9 @@ if (!org.gigapan.timelapse.Timelapse) {
       });
 
       timelapse.addPlaybackRateChangeListener(function(rate, skipUpdateUI) {
-        var fastRate = getMaxPlaybackSpeed();
-        var mediumRate = getMaxPlaybackSpeed() / 2;
-        var slowRate = getMaxPlaybackSpeed() / 4;
+        var fastRate = getMaxPlaybackRate();
+        var mediumRate = getMaxPlaybackRate() / 2;
+        var slowRate = getMaxPlaybackRate() / 4;
 
         if (!skipUpdateUI) {
           var snaplapse = timelapse.getSnaplapse();
