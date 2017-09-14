@@ -1532,7 +1532,7 @@ if (!window['$']) {
       } else if (defaultUI) {
         return defaultUI.getMaxPlaybackRate();
       } else {
-        return playbackSpeed * 100;
+        return 1.0;
       }
     };
 
