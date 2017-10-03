@@ -1002,9 +1002,6 @@ if (!org.gigapan.timelapse.snaplapse) {
                 // Loading completed
                 $(".loadingOverlay").remove();
                 $(document.body).css("cursor", "default");
-                // Set the value of the last keyframe to null (need to use reference but not clone)
-                // so swaping it with other keyframes will give a default value
-                snaplapse.resetKeyframe();
                 if (usePresentationSlider) {
                   var $desiredSlide;
                   $("#" + composerDivId + " .snaplapse_keyframe_container").scrollLeft(0);
@@ -1055,6 +1052,9 @@ if (!org.gigapan.timelapse.snaplapse) {
                   //}
                   startAutoModeIdleTimeout();
                 } else {
+                  // Set the value of the last keyframe to null (need to use reference but not clone)
+                  // so swaping it with other keyframes will give a default value
+                  snaplapse.resetKeyframe();
                   if (!uiEnabled) {
                     // If the editor UI is not enabled, then we are in view-only mode
                     // and we need to seek to the first keyframe.
