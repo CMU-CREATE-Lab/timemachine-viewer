@@ -70,6 +70,15 @@ function setupPostMessageHandlers() {
     }
   });
 
+  // Handles the cross-domain iframe request to seek a time machine to the specified frame number.
+  // Note that frame counting begins at 0.
+  pm.bind("timemachine-set-frame", function(unsafe_data) {
+    if (unsafe_data && typeof (unsafe_data) !== 'undefined' && timelapse) {
+      var frameNumber = parseInt(unsafe_data);
+      timelapse.seekToFrame(frameNumber)
+    }
+  });
+
   // Handles the cross-domain iframe request to change the view of a time machine.
   pm.bind("timemachine-set-view", function(unsafe_data) {
     if (unsafe_data && typeof (unsafe_data) !== 'undefined' && timelapse) {
@@ -131,8 +140,7 @@ function setupPostMessageHandlers() {
       var slideId = unsafe_slideTitle.split(' ').join('_');
       var $slideContainer = $("#" + slideId).parent();
       if ($slideContainer) {
-        var keyframeId = $slideContainer.attr("id").split("_")[3];
-        timelapse.getSnaplapseForPresentationSlider().getSnaplapseViewer().selectAndGo($slideContainer, keyframeId, undefined, undefined, true);
+        $("#" + slideId).click();
       }
     }
   });
