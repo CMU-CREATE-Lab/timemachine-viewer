@@ -372,7 +372,7 @@ if (!org.gigapan) {
     var vars = {};
     if (str) {
       var keyvals = str.split('&');
-      
+
       for (var i = 0; i < keyvals.length; i++) {
         var keyval = keyvals[i].split('=');
         vars[keyval[0]] = keyval[1];
@@ -614,5 +614,31 @@ if (!org.gigapan) {
         callback(csvData);
       }
     });
+  }
+
+  // Add horizontal scroll touch support to a jQuery HTML element.
+  org.gigapan.Util.touchHorizontalScroll = function($elem) {
+    var scrollStartPos = 0;
+    $elem.on("touchstart", function(e) {
+      scrollStartPos = this.scrollLeft + e.originalEvent.touches[0].pageX;
+      e.preventDefault();
+    }).on("touchmove", function(e) {
+      this.scrollLeft = scrollStartPos - e.originalEvent.touches[0].pageX;
+      e.preventDefault();
+    });
+  }
+
+  // Add vertical scroll touch support to an HTML element
+  org.gigapan.Util.verticalTouchScroll = function($elem){
+    var el = $elem[0];
+    var scrollStartPos = 0;
+    el.addEventListener("touchstart", function(e) {
+      scrollStartPos = this.scrollTop + e.touches[0].pageY;
+      e.preventDefault();
+    }, false);
+    el.addEventListener("touchmove", function(e) {
+      this.scrollTop = scrollStartPos - e.touches[0].pageY;
+      e.preventDefault();
+    }, false);
   }
 })();

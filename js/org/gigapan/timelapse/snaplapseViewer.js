@@ -318,7 +318,7 @@ if (!org.gigapan.timelapse.snaplapse) {
     this.animateTourOverlayAndPlay = animateTourOverlayAndPlay;
 
     var initializeSnaplapseUI = function() {
-      timelapse.touchHorizontalScroll($keyframeContainer);
+      UTIL.touchHorizontalScroll($keyframeContainer);
 
       if (!usePresentationSlider && uiEnabled) {
         createEditorToolbar();

@@ -331,11 +331,12 @@ if (!window['$']) {
 
     // Touch support
     var hasTouchSupport = UTIL.isTouchDevice();
-    var tapped = false;
+    var tappedTimer = null;
     var lastDist = null;
     var lastLocation;
     var thisLocation;
     var isTouchMoving = false;
+    var touchStartTargetElement;
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////
     //
@@ -613,7 +614,7 @@ if (!window['$']) {
           playPauseBtn = " .customPlay";
         else
           playPauseBtn = " .playbackButton";
-        $("#" + viewerDivId + playPauseBtn).button({
+        $("#" + timeMachineDivId + playPauseBtn).button({
           icons: {
             primary: "ui-icon-custom-play"
           },
@@ -703,7 +704,7 @@ if (!window['$']) {
 
     var handleKeydownEvent = function(event) {
       var activeElement = document.activeElement;
-      var sliderActive = $("#" + viewerDivId + " .timelineSlider .ui-slider-handle:focus").length || $("#" + viewerDivId + " .zoomSlider .ui-slider-handle:focus").length;
+      var sliderActive = $("#" + timeMachineDivId + " .timelineSlider .ui-slider-handle:focus").length || $("#" + timeMachineDivId + " .zoomSlider .ui-slider-handle:focus").length;
       // If we are focused on a text field or the slider handlers, do not run any player specific controls.
       if (activeElement == "[object HTMLInputElement]" || activeElement == "[object HTMLTextAreaElement]")
         return;
@@ -874,16 +875,49 @@ if (!window['$']) {
       var thisTouchCount = e.touches.length;
       var mouseEvent;
       var theMouse;
-      isTouchMoving = false;
 
       switch (e.type) {
         case "touchstart":
           mouseEvent = "mousedown";
+          touchStartTargetElement = theTouch;
+
+          if (tappedTimer && thisTouchCount == 2) {
+            // stop single tap callback
+            clearTimeout(tappedTimer);
+            tappedTimer = null;
+            return;
+          }
+
+          if (tappedTimer) {
+            clearTimeout(tappedTimer);
+            tappedTimer = null;
+
+            theMouse = document.createEvent("MouseEvent");
+            theMouse.initMouseEvent('dblclick', true, true, window, 1, theTouch.screenX, theTouch.screenY, theTouch.clientX, theTouch.clientY, false, false, false, false, 0, null);
+            theTouch.target.dispatchEvent(theMouse);
+          }
+
+          tappedTimer = setTimeout(function() {
+            tappedTimer = null;
+          }, 350);
+
+          isTouchMoving = false;
           break;
         case "touchcancel":
         case "touchend":
           mouseEvent = "mouseup";
           lastDist = null;
+          // Take into account a slight epsilon due to a finger potentially moving just a few pixels when touching the screen
+          var notRealTouchMove = isTouchMoving && touchStartTargetElement && Math.abs(touchStartTargetElement.clientX - theTouch.clientX) < 5 && Math.abs(touchStartTargetElement.clientY - theTouch.clientY) < 5;
+
+          if ((!isTouchMoving || notRealTouchMove) && touchStartTargetElement && touchStartTargetElement.target == document.elementFromPoint(theTouch.clientX, theTouch.clientY)) {
+              theMouse = document.createEvent("MouseEvent");
+              theMouse.initMouseEvent('click', true, true, window, 1, theTouch.screenX, theTouch.screenY, theTouch.clientX, theTouch.clientY, false, false, false, false, 0, null);
+              theTouch.target.dispatchEvent(theMouse);
+          }
+
+          isTouchMoving = false;
+
           if (thisTouchCount == 1) {
             // Handle going from 2 fingers to 1 finger pan.
             theTouch = e.touches[0];
@@ -900,8 +934,9 @@ if (!window['$']) {
           }
           break;
         case "touchmove":
-          isTouchMoving = true;
           mouseEvent = "mousemove";
+          isTouchMoving = true;
+
           if (thisTouchCount == 1) {
             // Translate
           } else if (thisTouchCount == 2) {
@@ -910,17 +945,22 @@ if (!window['$']) {
               pageX: (e.touches[0].pageX + e.touches[1].pageX) / 2,
               pageY: (e.touches[0].pageY + e.touches[1].pageY) / 2
             };
+
             if (lastDist) {
               // Zoom
               var zoom = dist / lastDist;
               zoomAbout(zoom, thisLocation.pageX, thisLocation.pageY);
+
               // Translate
               targetView.x += (lastLocation.pageX - thisLocation.pageX) / view.scale;
               targetView.y += (lastLocation.pageY - thisLocation.pageY) / view.scale;
+
               setTargetView(targetView);
             }
+
             lastDist = dist;
             lastLocation = thisLocation;
+
             return;
           } else {
             // TODO: More than 2 finger support
@@ -930,24 +970,11 @@ if (!window['$']) {
         default:
           return;
       }
+
       theMouse = document.createEvent("MouseEvent");
       theMouse.initMouseEvent(mouseEvent, true, true, window, 1, theTouch.screenX, theTouch.screenY, theTouch.clientX, theTouch.clientY, false, false, false, false, 0, null);
       theTouch.target.dispatchEvent(theMouse);
     };
-
-    // Add horizontal scroll touch support to an HTML element.
-    var touchHorizontalScroll = function(elem) {
-      var scrollStartPos = 0;
-      $(elem).on("touchstart", function(e) {
-        scrollStartPos = this.scrollLeft + e.originalEvent.touches[0].pageX;
-        e.preventDefault();
-      }).on("touchmove", function(e) {
-        var newPos = scrollStartPos - e.originalEvent.touches[0].pageX;
-        this.scrollLeft = newPos;
-        e.preventDefault();
-      });
-    };
-    this.touchHorizontalScroll = touchHorizontalScroll;
 
     var _warpTo = function(newView) {
       setTargetView(newView);
@@ -2922,13 +2949,13 @@ if (!window['$']) {
             }
           }
         }
-        $("#" + viewerDivId + " .currentTime").html(UTIL.formatTime(timelapseCurrentTimeInSeconds, true));
-        $("#" + viewerDivId + " .currentCaptureTime").html(UTIL.htmlForTextWithEmbeddedNewlines(captureTimes[timelapseCurrentCaptureTimeIndex]));
-        $("#" + viewerDivId + " .timelineSlider").slider("value", (timelapseCurrentTimeInSeconds * _getFps() - timePadding));
+        $("#" + timeMachineDivId + " .currentTime").html(UTIL.formatTime(timelapseCurrentTimeInSeconds, true));
+        $("#" + timeMachineDivId + " .currentCaptureTime").html(UTIL.htmlForTextWithEmbeddedNewlines(captureTimes[timelapseCurrentCaptureTimeIndex]));
+        $("#" + timeMachineDivId + " .timelineSlider").slider("value", (timelapseCurrentTimeInSeconds * _getFps() - timePadding));
       });
 
       _addTargetViewChangeListener(function(view) {
-        $("#" + viewerDivId + " .zoomSlider").slider("value", _viewScaleToZoomSlider(view.scale));
+        $("#" + timeMachineDivId + " .zoomSlider").slider("value", _viewScaleToZoomSlider(view.scale));
       });
 
       _addViewChangeListener(function() {
@@ -2947,7 +2974,7 @@ if (!window['$']) {
           return;
         // TODO: UI Class should handle this
         if (customUI) {
-          $("#" + viewerDivId + " .customPlay").button({
+          $("#" + timeMachineDivId + " .customPlay").button({
             icons: {
               primary: "ui-icon-custom-play"
             },
@@ -2957,7 +2984,7 @@ if (!window['$']) {
           });
           if (customUI.getLocker() != "month") {
             // The UI when the month locker is enabled is handled in customUI.js
-            $("#" + viewerDivId + " .modisCustomPlay").button({
+            $("#" + timeMachineDivId + " .modisCustomPlay").button({
               icons: {
                 primary: "ui-icon-custom-play"
               },
@@ -2968,12 +2995,12 @@ if (!window['$']) {
           }
         }
         // TODO: UI Class should handle this
-        $("#" + viewerDivId + " .playbackButton").button({
+        $("#" + timeMachineDivId + " .playbackButton").button({
           icons: {
             secondary: "ui-icon-custom-play"
           }
         }).attr('title', 'Play');
-        $("#" + viewerDivId + " .playbackButton").removeClass("pause").addClass("play").attr('title', 'Play');
+        $("#" + timeMachineDivId + " .playbackButton").removeClass("pause").addClass("play").attr('title', 'Play');
       });
 
       _addVideoPlayListener(function() {
@@ -2982,7 +3009,7 @@ if (!window['$']) {
           return;
         // TODO: UI Class should handle this
         if (customUI) {
-          $("#" + viewerDivId + " .customPlay").button({
+          $("#" + timeMachineDivId + " .customPlay").button({
             icons: {
               primary: "ui-icon-custom-pause"
             },
@@ -2992,7 +3019,7 @@ if (!window['$']) {
           });
           if (customUI.getLocker() != "month") {
             // The UI when the month locker is enabled is handled in customUI.js
-            $("#" + viewerDivId + " .modisCustomPlay").button({
+            $("#" + timeMachineDivId + " .modisCustomPlay").button({
               icons: {
                 primary: "ui-icon-custom-pause"
               },
@@ -3003,12 +3030,12 @@ if (!window['$']) {
           }
         }
         // TODO: UI Class should handle this
-        $("#" + viewerDivId + " .playbackButton").button({
+        $("#" + timeMachineDivId + " .playbackButton").button({
           icons: {
             secondary: "ui-icon-custom-pause"
           }
         }).attr('title', 'Pause');
-        $("#" + viewerDivId + " .playbackButton").removeClass("play").addClass("pause").attr('title', 'Pause');
+        $("#" + timeMachineDivId + " .playbackButton").removeClass("play").addClass("pause").attr('title', 'Pause');
       });
 
       _makeVideoVisibleListener(function(videoId) {
@@ -3178,34 +3205,34 @@ if (!window['$']) {
       timelapseDurationInSeconds = (frames - 0.7) / _getFps();
       videoset.setDuration((1 / _getFps()) * frames);
       timelapseCurrentCaptureTimeIndex = Math.min(frames - 1, Math.floor(timelapseCurrentTimeInSeconds * _getFps()));
-      var timelineVisible = $("#" + viewerDivId + " .controls").is(":visible") || $("#" + viewerDivId + " .customTimeline").is(":visible");
+      var timelineVisible = $("#" + timeMachineDivId + " .controls").is(":visible") || $("#" + timeMachineDivId + " .customTimeline").is(":visible");
       if (currentTimelineStyle == "customUI") {
-        $("#" + viewerDivId + " .controls").hide();
-        $("#" + viewerDivId + " .customControl").show().css("z-index", "19");
-        $("#" + viewerDivId + " .timelineSliderFiller").css("right", "21px").hide();
-        $("#" + viewerDivId + " .captureTime").hide();
-        $("#" + viewerDivId + " .controls .customHelpLabel").appendTo($("#" + viewerDivId + " .customControl")).css({"z-index" : "inherit"});
+        $("#" + timeMachineDivId + " .controls").hide();
+        $("#" + timeMachineDivId + " .customControl").show().css("z-index", "19");
+        $("#" + timeMachineDivId + " .timelineSliderFiller").css("right", "21px").hide();
+        $("#" + timeMachineDivId + " .captureTime").hide();
+        $("#" + timeMachineDivId + " .controls .customHelpLabel").appendTo($("#" + timeMachineDivId + " .customControl")).css({"z-index" : "inherit"});
         customUI.resetCustomTimeline();
         if (!timelineVisible) {
-          $("#" + viewerDivId + " .customTimeline").hide();
-          $("#" + viewerDivId + " .timeText").hide();
-          $("#" + viewerDivId + " .customPlay").hide();
-          $("#" + viewerDivId + " .customToggleSpeed").hide();
+          $("#" + timeMachineDivId + " .customTimeline").hide();
+          $("#" + timeMachineDivId + " .timeText").hide();
+          $("#" + timeMachineDivId + " .customPlay").hide();
+          $("#" + timeMachineDivId + " .customToggleSpeed").hide();
         }
       } else {
-        $("#" + viewerDivId + " .customControl").hide();
-        $("#" + viewerDivId + " .controls").show();
-        $("#" + viewerDivId + " .helpPlayerLabel").hide();
-        $("#" + viewerDivId + " .customControl .customHelpLabel").appendTo($("#" + viewerDivId + " .controls")).css({"z-index" : "19"});
-        $("#" + viewerDivId + " .timelineSliderFiller").css("right", "80px").show();
-        $("#" + viewerDivId + " .captureTime").show();
-        $("#" + viewerDivId + " .help").hide();
+        $("#" + timeMachineDivId + " .customControl").hide();
+        $("#" + timeMachineDivId + " .controls").show();
+        $("#" + timeMachineDivId + " .helpPlayerLabel").hide();
+        $("#" + timeMachineDivId + " .customControl .customHelpLabel").appendTo($("#" + timeMachineDivId + " .controls")).css({"z-index" : "19"});
+        $("#" + timeMachineDivId + " .timelineSliderFiller").css("right", "80px").show();
+        $("#" + timeMachineDivId + " .captureTime").show();
+        $("#" + timeMachineDivId + " .help").hide();
 
         defaultUI.resetTimelineSlider();
 
         if (!timelineVisible) {
-          $("#" + viewerDivId + " .controls").hide();
-          $("#" + viewerDivId + " .captureTime").hide();
+          $("#" + timeMachineDivId + " .controls").hide();
+          $("#" + timeMachineDivId + " .captureTime").hide();
         }
       }
 
@@ -3432,41 +3459,6 @@ if (!window['$']) {
         document.addEventListener("touchmove", touch2Mouse, {capture: true, passive: false});
         document.addEventListener("touchend", touch2Mouse, {capture: true, passive: false});
         document.addEventListener("touchcancel", touch2Mouse, {capture: true, passive: false});
-        $(document).on("touchstart", function(e) {
-          if (tapped && e.originalEvent.touches.length == 2) {
-            //stop single tap callback
-            clearTimeout(tapped);
-            tapped = null;
-            e.preventDefault();
-            return;
-          }
-
-          var theTouch = e.originalEvent.changedTouches[0];
-
-          if (!tapped) {//if tap is not set, set up single tap
-            // wait 350ms then run single click code
-            tapped = setTimeout(function() {
-              if (isTouchMoving) {
-                //stop single tap callback
-                clearTimeout(tapped);
-                tapped = null;
-                return;
-              }
-              tapped = null;
-              var mouseEvent = document.createEvent("MouseEvent");
-              mouseEvent.initMouseEvent('click', true, true, window, 1, theTouch.screenX, theTouch.screenY, theTouch.clientX, theTouch.clientY, false, false, false, false, 0, null);
-              theTouch.target.dispatchEvent(mouseEvent);
-            }, 350);
-          } else {// we consider a double tap to be tap within 350ms of last tap.
-            // stop single tap callback
-            clearTimeout(tapped);
-            tapped = null;
-            var mouseEvent = document.createEvent("MouseEvent");
-            mouseEvent.initMouseEvent('dblclick', true, true, window, 1, theTouch.screenX, theTouch.screenY, theTouch.clientX, theTouch.clientY, false, false, false, false, 0, null);
-            theTouch.target.dispatchEvent(mouseEvent);
-          }
-          e.preventDefault();
-        });
       }
 
       $("body").on("keydown.tm_keydown", handleKeydownEvent).on("keyup.tm_keyup", handleKeyupEvent);

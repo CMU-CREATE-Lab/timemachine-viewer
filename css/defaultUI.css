@@ -73,9 +73,10 @@ body, html {
 .ui-button .ui-icon.ui-icon-custom-play {
   background-image: url(../images/buttons/custom_play.png);
   margin-top: -12px;
-  margin-left: -7px;
-  width: 18px;
-  height: 24px;
+  margin-left: -9px;
+  width: 38px;
+  height: 38px;
+  background-size: 25px 25px;
   opacity: 0.7;
 }
 
@@ -96,9 +97,10 @@ body, html {
 .ui-button .ui-icon.ui-icon-custom-pause {
   background-image: url(../images/buttons/custom_pause.png);
   margin-top: -12px;
-  margin-left: -11px;
-  width: 24px;
-  height: 24px;
+  margin-left: -15px;
+  background-size: 30px 25px;
+  width: 38px;
+  height: 38px;
   opacity: 0.7;
 }
 

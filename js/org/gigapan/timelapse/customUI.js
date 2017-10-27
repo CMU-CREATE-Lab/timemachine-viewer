@@ -784,7 +784,7 @@ if (!org.gigapan.timelapse.Timelapse) {
         $(".customTimeline").addClass("customTimeline-touchFriendly");
         $(".timeText").addClass("timeText-touchFriendly");
       }
-      var extraSliderLeftMargin = (datasetType == "landsat") ? 50 : 60;
+      var extraSliderLeftMargin = (datasetType == "landsat") ? 57 : 60;
       sliderLeftMargin = $customPlay.width() + $timeText.width() + extraSliderLeftMargin;
       var extraSliderRightMargin;
       if (datasetType == "landsat") {
@@ -792,8 +792,9 @@ if (!org.gigapan.timelapse.Timelapse) {
           extraSliderRightMargin = 5;
         else
           extraSliderRightMargin = 35;
-      } else
+      } else {
         extraSliderRightMargin = 40;
+      }
       sliderRightMargin = $customHelpLabel.width() + extraSliderRightMargin;
       $customTimeline.css({
         "left": sliderLeftMargin + "px",

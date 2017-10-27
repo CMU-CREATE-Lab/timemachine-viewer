@@ -102,9 +102,9 @@ if (!org.gigapan.timelapse.Timelapse) {
     var useTouchFriendlyUI = timelapse.useTouchFriendlyUI();
     var scaleBarGeometryLandsat = {
       "x": 9,
-      "y": useTouchFriendlyUI ? 106 : 77,
+      "y": useTouchFriendlyUI ? 106 : 85,
       "position": "left",
-      "barLength": useTouchFriendlyUI ? 155 : 113
+      "barLength": useTouchFriendlyUI ? 155 : 133
     };
     var scaleBarGeometryMODIS = {
       "x": 9,
