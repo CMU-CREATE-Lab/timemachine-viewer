@@ -70,23 +70,46 @@ if (!org.gigapan) {
 // CODE
 //
 (function() {
-  var isMSIEUserAgent = navigator.userAgent.match(/MSIE|Trident|Edge/) != null;
+  var navigatorUserAgent = navigator.userAgent;
+  var isMSIEUserAgent = navigatorUserAgent.match(/MSIE|Trident|Edge/) != null;
+  var matchIEPre11VersionString = navigatorUserAgent.match(/MSIE\s([\d]+)/);
+  var isIEEdgeUserAgent = !!(isMSIEUserAgent && navigatorUserAgent.match(/Edge\/([\d]+)/))
+  var isIE9UserAgent = !!(isMSIEUserAgent && matchIEPre11VersionString && parseInt(matchIEPre11VersionString[1]) == 9);
   // The Edge (IE 12+) user agent actually has the word "Chrome" in it.
-  var isChromeUserAgent = navigator.userAgent.match(/Chrome/) != null && !isMSIEUserAgent;
+  var isChromeUserAgent = navigatorUserAgent.match(/Chrome/) != null && !isMSIEUserAgent;
+  var matchChromeVersionString = navigatorUserAgent.match(/Chrome\/([0-9.]+)/);
   // The Chrome and Edge (IE 12+) user agents actually have the word "Safari" in it.
-  var isSafariUserAgent = navigator.userAgent.match(/Safari/) != null && !isChromeUserAgent && !isMSIEUserAgent;
-  var matchIEPre11Version = navigator.userAgent.match(/MSIE\s([\d]+)/);
-  var isIEEdgeUserAgent = !!(isMSIEUserAgent && navigator.userAgent.match(/Edge\/([\d]+)/))
-  var isIE9UserAgent = !!(isMSIEUserAgent && matchIEPre11Version && matchIEPre11Version[1] == 9);
-  var isFirefoxUserAgent = navigator.userAgent.match(/Firefox/) != null;
+  var isSafariUserAgent = navigatorUserAgent.match(/Safari/) != null && !isChromeUserAgent && !isMSIEUserAgent;
+  var isFirefoxUserAgent = navigatorUserAgent.match(/Firefox/) != null;
   var isOperaLegacyUserAgent = typeof (window.opera) !== "undefined";
-  var isOperaUserAgent = navigator.userAgent.match(/OPR/) != null;
-  var isChromeOS = navigator.userAgent.match(/CrOS/) != null;
+  var isOperaUserAgent = navigatorUserAgent.match(/OPR/) != null;
+  var isSilkUserAgent = navigatorUserAgent.match(/Silk/) != null;
+  var isMobileIEEdgeUserAgent = navigatorUserAgent.match(/EdgA/) != null;
+  var isChromeOS = navigatorUserAgent.match(/CrOS/) != null;
+  var isSamsungInternetUserAgent = navigatorUserAgent.match(/SamsungBrowser/) != null;
+  var isMobileDevice = !isChromeOS && (navigatorUserAgent.match(/Android/i) || navigatorUserAgent.match(/webOS/i) || navigatorUserAgent.match(/iPhone/i) || navigatorUserAgent.match(/iPad/i) || navigatorUserAgent.match(/iPod/i) || navigatorUserAgent.match(/BlackBerry/i) || navigatorUserAgent.match(/Windows Phone/i) || navigatorUserAgent.match(/Mobile/i)) != null;
+  var isIOSDevice = navigatorUserAgent.match(/iPad|iPhone|iPod/) != null;
+  var matchIOSVersionString = navigatorUserAgent.match(/OS (\d+)_(\d+)_?(\d+)?/);
+  // iOS 10 is the first version to support auto play of videos.
+  // That said, I've confirmed that v9.3.5 does autoplay, but devices running that version just don't have the hardware power for a good user experience.
+  var isSupportedIOSVersion = isIOSDevice && parseInt(matchIOSVersionString[1]) >= 10;
+  // Chrome 53 is the first version to support autoplay of videos on mobile.
+  // Chrome 54 added background playback of media, which shouldn't be relevant to our needs but it might be.
+  var isSupportedChromeMobileVersion = isChromeUserAgent && parseInt(matchChromeVersionString[1]) >= 54;
+  var matchAndroidVersionString = navigatorUserAgent.match(/Android (\d+(?:\.\d+){1,2})/);
+  // There's no good way to detect Android devices that have powerful gpus/cpus so look at screen resolution and then combine that with Android version check further below.
+  var minAndroidResolutionInPixelsForCanvasOnOldDevices = 600*1024;
+  var currentDeviceResolutionInPixels = window.screen.width * window.screen.height;
+  var isSupportedFirefoxMobileAndroid = matchAndroidVersionString && parseInt(matchAndroidVersionString[1]) > 4;
+
   var mediaType = null;
-  var viewerType = (isSafariUserAgent || isChromeOS) ? "video" : "canvas";
+  // Force Safari on mobile to use canvas: Strange jitter/zoom with video tag
+  // Force Firefox on mobile to use video tag: Throws an "exception component is not available" error when drawing a video to canvas
+  var viewerType = ((isSafariUserAgent && !isMobileDevice) || (isFirefoxUserAgent && isMobileDevice) || (isChromeOS && parseInt(matchChromeVersionString[1]) < 54) || (matchAndroidVersionString && parseInt(matchAndroidVersionString[1]) < 6 && currentDeviceResolutionInPixels > minAndroidResolutionInPixelsForCanvasOnOldDevices)) ? "video" : "canvas";
   var rootAppURL = computeRootAppURL();
   var supportedMediaTypes = [];
   var scrollBarWidth = null;
+  var doDraw = true;
 
   //0 == none
   //1 == errors only
@@ -102,8 +125,14 @@ if (!org.gigapan) {
     loggingLevel = newLevel;
   };
 
-  org.gigapan.Util.isMobile = function() {
-    return (navigator.userAgent.match(/Android/i) || navigator.userAgent.match(/webOS/i) || navigator.userAgent.match(/iPhone/i) || navigator.userAgent.match(/iPad/i) || navigator.userAgent.match(/iPod/i) || navigator.userAgent.match(/BlackBerry/i) || navigator.userAgent.match(/Windows Phone/i));
+  org.gigapan.Util.isMobileSupported = function() {
+    //// The following mobile browsers do not currently support autoplay of videos
+    // Opera Mobile
+    // Samsung Internet
+    //// The following mobile browsers are failing to display the video, though autoplay is supported
+    // Microsoft Edge Mobile
+    // Firefox Mobile on Android <= 4.4
+    return isMobileDevice && (isSupportedIOSVersion || (isSupportedChromeMobileVersion && !isOperaUserAgent && !isMobileIEEdgeUserAgent && !isSamsungInternetUserAgent) || (isFirefoxUserAgent && isSupportedFirefoxMobileAndroid));
   };
 
   org.gigapan.Util.isTouchDevice = function() {
@@ -142,8 +171,9 @@ if (!org.gigapan) {
 
   org.gigapan.Util.browserSupported = function(forcedMediaType) {
     var v = document.createElement('video');
-    // We do not support mobile devices (Android, iOS, etc) due to their OS limitations
-    if (org.gigapan.Util.isMobile())
+
+    // Restrictions on which mobile devices work
+    if (isMobileDevice && !org.gigapan.Util.isMobileSupported())
       return false;
     // Check if the video tag is supported
     if (!!!v.canPlayType)
@@ -192,6 +222,43 @@ if (!org.gigapan) {
 
   org.gigapan.Util.isOpera = function() {
     return isOperaUserAgent;
+  };
+
+  org.gigapan.Util.isMobileDevice = function() {
+    return isMobileDevice;
+  };
+
+  org.gigapan.Util.isWebGLSupported = function() {
+    try{
+      var canvas = document.createElement('canvas');
+      return !!(window.WebGLRenderingContext && canvas.getContext('experimental-webgl'));
+    } catch(e) {
+      return false;
+    }
+  };
+
+  org.gigapan.Util.getGPURenderer = function() {
+    var canvas;
+    var gl;
+    var debugInfo;
+    var vendor;
+    var renderer;
+
+    try {
+      canvas = document.createElement('canvas');
+      gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
+    } catch (e) {
+    }
+
+    if (gl) {
+      debugInfo = gl.getExtension('WEBGL_debug_renderer_info');
+      renderer = gl.getParameter(debugInfo.UNMASKED_RENDERER_WEBGL);
+      if (renderer) {
+        renderer = renderer.replace("(TM)", "").replace(/\s+/g,' ');
+      }
+    }
+
+    return renderer;
   };
 
   org.gigapan.Util.getMediaType = function() {
@@ -372,7 +439,6 @@ if (!org.gigapan) {
     var vars = {};
     if (str) {
       var keyvals = str.split('&');
-
       for (var i = 0; i < keyvals.length; i++) {
         var keyval = keyvals[i].split('=');
         vars[keyval[0]] = keyval[1];
@@ -614,6 +680,25 @@ if (!org.gigapan) {
         callback(csvData);
       }
     });
+  }
+
+  org.gigapan.Util.setDrawState = function(newDoDraw) {
+    doDraw = newDoDraw;
+    if (timelapse && !doDraw) {
+      var videoset = timelapse.getVideoset();
+      var canvasContext = videoset.getCanvasContext();
+      var canvas = videoset.getCanvas();
+      if (canvas && canvasContext) {
+        canvasContext.clearRect(0, 0, canvas.width, canvas.height);
+      } else {
+        $(timelapse.getVideoDiv()).find("video").remove();
+      }
+      timelapse.hideSpinner(timelapse.getViewerDivId());
+    }
+  }
+
+  org.gigapan.Util.doDraw = function() {
+    return doDraw;
   }
 
   // Add horizontal scroll touch support to a jQuery HTML element.

@@ -175,6 +175,7 @@ if (!window['$']) {
     var isChrome = UTIL.isChrome();
     var isSafari = UTIL.isSafari();
     var isFirefox = UTIL.isFirefox();
+    var isMobileSupported = UTIL.isMobileSupported();
     //var doChromeSeekableHack = timelapse.doChromeSeekableHack();
     //var doChromeBufferedHack = timelapse.doChromeBufferedHack();
     var doChromeCacheBreaker = timelapse.doChromeCacheBreaker();
@@ -190,6 +191,14 @@ if (!window['$']) {
     //
     // Public methods
     //
+    this.getCanvasContext = function() {
+      return canvasContext;
+    }
+
+    this.getCanvas = function() {
+      return canvas;
+    }
+
     this.getCurrentVideoId = function() {
       return id;
     };
@@ -326,6 +335,12 @@ if (!window['$']) {
       video.id = currentVideoId;
       video.active = true;
       video.ready = false;
+      video.muted = true;
+      video.playsinline = true;
+      // The attribute should be all lowercase per the Apple docs, but apparently it needs to be camelcase.
+      // Leaving both in just in case.
+      video.playsInline = true;
+      video.crossOrigin = "anonymous";
 
       // Add methods getCurrentTime() and setCurrentTime() to the video.  We MUST use these methods instead of accessing
       // the currentTime property directly so that we can abstract away the time offset calculations required for split
@@ -389,9 +404,10 @@ if (!window['$']) {
         UTIL.error("User has disabled local file storage of cookies: " + e);
       }
       //UTIL.log(getVideoSummaryAsString(video));
-      if (video.src == '')
+      if (video.src == '' && UTIL.doDraw()) {
         video.setAttribute('src', src);
-      //UTIL.log("set src successfully");
+        //UTIL.log("set src successfully");
+      }
       if (areNativeVideoControlsVisible) {
         video.setAttribute('controls', true);
       }
@@ -419,6 +435,7 @@ if (!window['$']) {
 
       _deleteUnneededVideos();
 
+      // TODO: Check if still needed for Edge
       if (isIEEdge || isOperaLegacy) {
         // Videos in Opera <= 12 and IE Edge often seem to get stuck in a state of always seeking.
         // This will ensure that if we are stuck, we reload the video.
@@ -463,6 +480,19 @@ if (!window['$']) {
 
       mostRecentlyAddedVideo = video;
 
+      if (isMobileSupported) {
+        $("#" + currentVideoId).one('loadedmetadata', function() {
+          if (video.readyState == 1) {
+            video.load();
+            if (_isPaused()) {
+              video.play();
+              setTimeout(function() {
+                video.pause();
+              }, 1);
+            }
+          }
+        });
+      }
       if (viewerType != "video") {
         video.addEventListener('playing', function() {
           if (video.handleSeekStuck && !advancing) {
@@ -490,6 +520,15 @@ if (!window['$']) {
           clearInterval(video.drawIntervalId);
           video.drawIntervalId = null;
         }, false);
+      }
+      if (isMobileSupported) {
+        video.load();
+        if (_isPaused()) {
+          video.play();
+          setTimeout(function() {
+            video.pause();
+          }, 1);
+        }
       }
       return video;
     };
@@ -768,11 +807,10 @@ if (!window['$']) {
       if (isChrome)
         return 0.0 <= rate;
       // Safari *can* go faster than 2x, but playback becomes choppy
-      // Safari *can* go slower than 0.5x, but when playing back (even emulated) at that rate and a new video is brought in, playback gets stuck
-      // Safari *can* go slower than -2x, but playback becomes questionable and sometimes stops entirely
+      // Safari *can* go slower than -2x (backwards), but playback becomes questionable and sometimes stops entirely.
       if (isSafari)
-        return 0.0 == rate || (0.5 <= Math.abs(rate) && Math.abs(rate) <= 2.0);
-      // Opera <= 12 does not support rates slower than 1x
+        return 0.0 <= rate && rate <= 2.0;
+      // Opera <= v12 does not support rates slower than 1x
       if (isOperaLegacy)
         return 0.0 == rate || 1.0 <= rate;
       // Firefox bounds rates to be between 0.25x and 5x
@@ -786,9 +824,6 @@ if (!window['$']) {
     };
 
     this.setPlaybackRate = function(rate) {
-      if (isSafari && rate > 0 && rate <= 0.25)
-        rate = 0.5;
-
       if (rate != playbackRate) {
         var t = _getCurrentTime();
         playbackRate = rate;
@@ -1049,6 +1084,12 @@ if (!window['$']) {
         drawToCanvas(video);
       }
 
+      if (_isPaused() && isMobileSupported) {
+        setTimeout(function() {
+          _setVideoToCurrentTime(video);
+        }, 250);
+      }
+
       // Delete all videos earlier than new visible video
 
       // Delete video which is being replaced, following the chain until we get to a null.  We do this in a timeout
@@ -1171,13 +1212,20 @@ if (!window['$']) {
     };
 
     var stall = function(isVideo) {
-      if (isVideo === undefined)
+      if (isVideo === undefined) {
         isVideo = false;
+      }
+      if (!UTIL.doDraw()) {
+        window.clearTimeout(spinnerTimeoutId);
+        timelapse.hideSpinner(viewerDivId);
+        return;
+      }
       if (stalled && (videoStalled || !isVideo)) {
         return;
       }
-      if (!videoStalled)
+      if (!videoStalled) {
         videoStalled = isVideo;
+      }
       if (!stalled) {
         UTIL.log("Video stalling...");
         stalled = true;
@@ -1186,7 +1234,9 @@ if (!window['$']) {
         // this way.
         window.clearTimeout(spinnerTimeoutId);
         spinnerTimeoutId = window.setTimeout(function() {
-          timelapse.showSpinner(viewerDivId);
+          if (UTIL.doDraw()) {
+            timelapse.showSpinner(viewerDivId);
+          }
         }, 250);
         notifyStallEventListeners();
         _updateVideoAdvance();
@@ -1385,6 +1435,10 @@ if (!window['$']) {
 
     var drawToCanvas = function(video) {
       // DEBUG 4
+      if (!UTIL.doDraw()) {
+        canvasContext.clearRect(0, 0, canvas.width, canvas.height);
+        return;
+      }
       if (video.active && video.ready && !video.seeking && video.readyState >= 2 && video.canDraw == true) {
         // Black frame detection
         var videoGeometry = video.geometry;

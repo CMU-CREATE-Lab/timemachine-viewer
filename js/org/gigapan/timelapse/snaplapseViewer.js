@@ -127,6 +127,7 @@ if (!org.gigapan.timelapse.snaplapse) {
     var wayPointClickedByAutoMode = false;
     var useRecordingMode = false;
     var isAutoModeRunning = false;
+    var isMobileDevice = UTIL.isMobileDevice();
 
     // DOM elements
     var composerDivId = snaplapse.getComposerDivId();
@@ -1352,7 +1353,7 @@ if (!org.gigapan.timelapse.snaplapse) {
 
       if (usePresentationSlider)
         $("#" + keyframeListItem.id).addClass("snaplapse_keyframe_list_item_presentation");
-      if (useTouchFriendlyUI)
+      if (useTouchFriendlyUI || isMobileDevice)
         $(".snaplapse_keyframe_list_item_thumbnail_overlay_presentation").addClass("snaplapse_keyframe_list_item_thumbnail_overlay_presentation-touchFriendly");
 
       if (startEditorFromPresentationMode && !usePresentationSlider) {
@@ -1643,17 +1644,19 @@ if (!org.gigapan.timelapse.snaplapse) {
 
     var selectAndGo = function($select, keyframeId, skipAnnotation, skipGo, doNotFireListener, autoScroll) {
       var setViewCallback = null;
-      if (doAutoMode) {
-        setViewCallback = function() {
+      if (usePresentationSlider) {
+        setKeyframeCaptionUI(undefined, undefined, true);
+      }
+      setViewCallback = function() {
+        timelapse.seek(keyframe['time']);
+        if (doAutoMode) {
           if (wayPointClickedByAutoMode) {
             startAutoModeWaypointTimeout();
           } else {
             startAutoModeIdleTimeout();
           }
-        };
-      } else if (usePresentationSlider) {
-        setKeyframeCaptionUI(undefined, undefined, true);
-      }
+        }
+      };
       if (autoScroll != false) {
         autoScroll = true;
       }
@@ -1688,7 +1691,6 @@ if (!org.gigapan.timelapse.snaplapse) {
           } else {
             timelapse.setNewView(newView, true, false, setViewCallback);
           }
-          timelapse.seek(keyframe['time']);
           if (usePresentationSlider && doNotFireListener != true) {
             var listeners = eventListeners["slide-changed"];
             if (listeners) {
@@ -1755,7 +1757,7 @@ if (!org.gigapan.timelapse.snaplapse) {
       if(useTouchFriendlyUI) {
         $keyframeContainer.addClass("touch_friendly");
       }
-      KEYFRAME_THUMBNAIL_HEIGHT = $keyframeContainer.outerHeight() - (useTouchFriendlyUI ? 2 : scrollBarWidth);
+      KEYFRAME_THUMBNAIL_HEIGHT = $keyframeContainer.outerHeight() - ((useTouchFriendlyUI || isMobileDevice) ? 2 : scrollBarWidth);
       KEYFRAME_THUMBNAIL_WIDTH = KEYFRAME_THUMBNAIL_HEIGHT * 1.73;
       $sortable.sortable("disable").css({
         "height" : KEYFRAME_THUMBNAIL_HEIGHT

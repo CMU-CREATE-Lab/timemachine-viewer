@@ -172,7 +172,6 @@ if (!org.gigapan.timelapse.Timelapse) {
     var timeTickGrow_width = 2;
     var timeTickGrow_height = currentTimeTick_height;
     var originalIsPaused;
-    var isSafari = org.gigapan.Util.isSafari();
     var timeTickSpan;
     var maxPlaybackRate = 1;
 
@@ -501,9 +500,6 @@ if (!org.gigapan.timelapse.Timelapse) {
       }
 
       var speedOptions = [$slowSpeed, $fastSpeed, $mediumSpeed];
-      // Speeds < 0.5x in Safari, even if emulated, result in broken playback, so do not include the "slow" (0.25x) speed option
-      if (isSafari)
-        speedOptions.shift();
 
       $customControl.prepend(speedOptions);
 
@@ -527,20 +523,11 @@ if (!org.gigapan.timelapse.Timelapse) {
       $mediumSpeed.button({
         text: true
       }).click(function() {
-        // Due to playback issues, we are not allowing the "slow" option for Safari users
-        if (isSafari) {
-          var fastRate = getMaxPlaybackRate();
-          timelapse.setPlaybackRate(fastRate, null, true);
-          $customControl.prepend($fastSpeed);
-          $fastSpeed.stop(true, true).show();
-          UTIL.addGoogleAnalyticEvent('button', 'click', 'viewer-set-speed-to-fast');
-        } else {
-          var slowRate = getMaxPlaybackRate() / 4;
-          timelapse.setPlaybackRate(slowRate, null, true);
-          $customControl.prepend($slowSpeed);
-          $slowSpeed.stop(true, true).show();
-          UTIL.addGoogleAnalyticEvent('button', 'click', 'viewer-set-speed-to-slow');
-        }
+        var slowRate = getMaxPlaybackRate() / 4;
+        timelapse.setPlaybackRate(slowRate, null, true);
+        $customControl.prepend($slowSpeed);
+        $slowSpeed.stop(true, true).show();
+        UTIL.addGoogleAnalyticEvent('button', 'click', 'viewer-set-speed-to-slow');
         $mediumSpeed.slideUp(300);
         if (locker == "month" && isPlaying)
           playMonthLockFrames();
@@ -574,7 +561,7 @@ if (!org.gigapan.timelapse.Timelapse) {
             $fastSpeed.show();
             $mediumSpeed.hide();
             $slowSpeed.hide();
-          } else if ((rate < fastRate && rate >= mediumRate) || (isSafari && rate < mediumRate)) {
+          } else if (rate < fastRate && rate >= mediumRate) {
             $mediumSpeed.show();
             $fastSpeed.hide();
             $slowSpeed.hide();

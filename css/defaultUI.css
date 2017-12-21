@@ -823,12 +823,12 @@ _:-moz-tree-row(hover), .customDialog .customDialogButton .ui-button-text {
 
 .spinnerOverlay {
   background-image: url(../images/loading.gif);
-  width: 32px;
-  height: 32px;
+  width: 64px;
+  height: 64px;
   top: 50%;
   left: 50%;
-  margin-left: -16px;
-  margin-top: -16px;
+  margin-left: -32px;
+  margin-top: -32px;
   position: absolute;
   display: none;
   z-index: 10;
