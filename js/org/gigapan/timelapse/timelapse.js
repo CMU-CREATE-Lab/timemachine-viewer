@@ -1262,6 +1262,12 @@ if (!window['$']) {
           setTargetView(newView);
         } else {
           if (!parabolicMotionController) {
+            // When we do a parabolic move, pause the video and seek to the first frame.
+            // This should result in smoother transitions because the browser won't be trying to play and re-seek while moving.
+            if (!thisObj.isPaused() || thisObj.isDoingLoopingDwell()) {
+              thisObj.handlePlayPause();
+            }
+            _seek(0);
             parabolicMotionController = new parabolicMotionObj.MotionController({
               animationFPS: 1000 / animateRate,
               pathSpeed: parabolicMotionPathSpeed,
@@ -1466,7 +1472,6 @@ if (!window['$']) {
       window.clearTimeout(customPlaybackTimeout);
       window.clearTimeout(loopStartTimeoutId);
       window.clearTimeout(loopEndTimeoutId);
-      //thisObj.setPlaybackRate(originalPlaybackRate);
       videoset.pause();
 
       // Pano video is used for the timewarp map in editor
@@ -2002,19 +2007,23 @@ if (!window['$']) {
             view = _normalizeView(newView);
           }
         }
-        if (newTime) {
+        if (typeof(newTime) != "undefined") {
           if (didFirstTimeOnLoad) {
             _seek(newTime);
           } else {
             initialTime = newTime;
           }
         }
-        if (newPlaybackSpeed) {
+        if (typeof(newPlaybackSpeed) != "undefined") {
           var newPlaybackRate = (newPlaybackSpeed / 100.0) * thisObj.getMaxPlaybackRate();
-          if (didFirstTimeOnLoad) {
-            thisObj.setPlaybackRate(newPlaybackRate);
+          if (newPlaybackRate == 0) {
+            _pause();
           } else {
-            playbackSpeed = newPlaybackRate;
+            if (didFirstTimeOnLoad) {
+              thisObj.setPlaybackRate(newPlaybackRate);
+            } else {
+              playbackSpeed = newPlaybackRate;
+            }
           }
         }
         return true;
