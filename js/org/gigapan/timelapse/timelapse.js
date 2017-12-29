@@ -908,7 +908,7 @@ if (!window['$']) {
           mouseEvent = "mouseup";
           lastDist = null;
           // Take into account a slight epsilon due to a finger potentially moving just a few pixels when touching the screen
-          var notRealTouchMove = isTouchMoving && touchStartTargetElement && Math.abs(touchStartTargetElement.clientX - theTouch.clientX) < 5 && Math.abs(touchStartTargetElement.clientY - theTouch.clientY) < 5;
+          var notRealTouchMove = isTouchMoving && touchStartTargetElement && Math.abs(touchStartTargetElement.clientX - theTouch.clientX) < 10 && Math.abs(touchStartTargetElement.clientY - theTouch.clientY) < 10;
 
           if ((!isTouchMoving || notRealTouchMove) && touchStartTargetElement && touchStartTargetElement.target == document.elementFromPoint(theTouch.clientX, theTouch.clientY)) {
               theMouse = document.createEvent("MouseEvent");
@@ -1490,10 +1490,13 @@ if (!window['$']) {
       // In IE, seeking to <= 50% of the first frame causes flickering from that point forward
       var minIESeekTime = (1 / _getFps()) * 0.5;
       var seekTime = Math.min(Math.max(0, t), timelapseDurationInSeconds);
-      if (isIE && seekTime < minIESeekTime)
+      if (isIE && seekTime < minIESeekTime) {
         seekTime = minIESeekTime;
-      videoset.seek(seekTime);
-      seek_panoVideo(seekTime);
+      }
+      if (!isNaN(seekTime)) {
+        videoset.seek(seekTime);
+        seek_panoVideo(seekTime);
+      }
     };
     this.seek = _seek;
 

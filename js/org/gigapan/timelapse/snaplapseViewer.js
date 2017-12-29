@@ -1660,6 +1660,7 @@ if (!org.gigapan.timelapse.snaplapse) {
       if (autoScroll != false) {
         autoScroll = true;
       }
+      if (!$select.length) return;
       UTIL.selectSortableElements($sortable, $select, autoScroll, function() {
         if (doAutoMode && showAnnotations) {
           setKeyframeCaptionUI(snaplapse.getKeyframeById(keyframeId), $("#timeMachine_snaplapse_keyframe_" + keyframeId));
@@ -1896,6 +1897,11 @@ if (!org.gigapan.timelapse.snaplapse) {
     };
     this.showHideSnaplapseContainer = showHideSnaplapseContainer;
 
+    var setAutoModeEnableState = function(state) {
+      doAutoMode = state;
+    }
+    this.setAutoModeEnableState = setAutoModeEnableState;
+
     var initializeAndRunAutoMode = function() {
       clearAutoModeTimeout();
       var listeners = eventListeners["automode-start"];
@@ -1935,6 +1941,7 @@ if (!org.gigapan.timelapse.snaplapse) {
       autoModeTimeout = null;
       $("#" + composerDivId + " .keyframeSubtitleBoxForHovering").fadeOut(200);
     };
+    this.clearAutoModeTimeout = clearAutoModeTimeout;
 
     var runAutoMode = function() {
       triggerAutoModeClick();
@@ -1942,11 +1949,10 @@ if (!org.gigapan.timelapse.snaplapse) {
 
     var triggerAutoModeClick = function() {
       currentAutoModeWaypointIdx++;
-      if (currentAutoModeWaypointIdx >= timelapse.getSnaplapseForPresentationSlider().getNumKeyframes())
+      if (currentAutoModeWaypointIdx >= timelapse.getSnaplapseForPresentationSlider().getNumKeyframes()) {
         currentAutoModeWaypointIdx = 0;
-      // TODO: Previously we'd further refine the selector to include 'composerDivId' but the hyperwall codebase
-      // pulls the waypoints out of the normal container when displaying in a special letterbox mode.
-      var waypoint = $(".snaplapse_keyframe_list").children().eq(currentAutoModeWaypointIdx).children()[0];
+      }
+      var waypoint = $("#" + timeMachineDivId + " .snaplapse_keyframe_list").children().eq(currentAutoModeWaypointIdx).children()[0];
       waypoint.click();
     };
 
