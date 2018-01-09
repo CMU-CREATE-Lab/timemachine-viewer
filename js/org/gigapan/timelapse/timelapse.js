@@ -861,6 +861,8 @@ if (!window['$']) {
         } else if (delta < 0) {
           magnitude = (event.shiftKey) ? -0.01 : -0.1;
         }
+	// Macs are very sensitive
+        if (UTIL.isMac()) magnitude /= 5;  
         event.preventDefault();
       }
       zoomAbout(1 + magnitude, event.pageX, event.pageY);

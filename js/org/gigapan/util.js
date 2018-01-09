@@ -77,6 +77,7 @@ if (!org.gigapan) {
   var isIE9UserAgent = !!(isMSIEUserAgent && matchIEPre11VersionString && parseInt(matchIEPre11VersionString[1]) == 9);
   // The Edge (IE 12+) user agent actually has the word "Chrome" in it.
   var isChromeUserAgent = navigatorUserAgent.match(/Chrome/) != null && !isMSIEUserAgent;
+  var isMac = navigatorUserAgent.match(/Macintosh/) != null;
   var matchChromeVersionString = navigatorUserAgent.match(/Chrome\/([0-9.]+)/);
   // The Chrome and Edge (IE 12+) user agents actually have the word "Safari" in it.
   var isSafariUserAgent = navigatorUserAgent.match(/Safari/) != null && !isChromeUserAgent && !isMSIEUserAgent;
@@ -226,6 +227,10 @@ if (!org.gigapan) {
 
   org.gigapan.Util.isMobileDevice = function() {
     return isMobileDevice;
+  };
+
+  org.gigapan.Util.isMac = function() {
+    return isMac;
   };
 
   org.gigapan.Util.isWebGLSupported = function() {
