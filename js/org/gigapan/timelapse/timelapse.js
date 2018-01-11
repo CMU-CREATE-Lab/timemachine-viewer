@@ -245,6 +245,7 @@ if (!window['$']) {
     var fullScreenChangeListeners = [];
     var datasetLoadedListeners = [];
     var timelineUIChangeListeners = [];
+    var parabolicMotionStoppedListeners = [];
     var thisObj = this;
     var tmJSON;
     var datasetJSON = null;
@@ -640,6 +641,9 @@ if (!window['$']) {
       if (parabolicMotionController) {
         isMovingToWaypoint = false;
         parabolicMotionController._disableAnimation();
+        for (var i = parabolicMotionStoppedListeners.length - 1; i >= 0; i--) {
+          parabolicMotionStoppedListeners[i]();
+        }
       }
     };
     this.stopParabolicMotion = stopParabolicMotion;
@@ -861,8 +865,11 @@ if (!window['$']) {
         } else if (delta < 0) {
           magnitude = (event.shiftKey) ? -0.01 : -0.1;
         }
-	// Macs are very sensitive
-        if (UTIL.isMac()) magnitude /= 5;  
+        // Macs are very sensitive
+        // TODO: This is only relevant to touchpad and magic mouse (i.e. no mechanical scroll wheel)
+        if (UTIL.isMac()) {
+          magnitude /= 5;
+        }
         event.preventDefault();
       }
       zoomAbout(1 + magnitude, event.pageX, event.pageY);
@@ -1200,6 +1207,21 @@ if (!window['$']) {
       }
     };
     this.removeTimelineUIChangeListener = _removeTimelineUIChangeListener;
+
+    var _addParabolicMotionStoppedListener = function(listener) {
+      parabolicMotionStoppedListeners.push(listener);
+    };
+    this.addParabolicMotionStoppedListener = _addParabolicMotionStoppedListener;
+
+    var _removeParabolicMotionStoppedListener = function(listener) {
+      for (var i = 0; i < parabolicMotionStoppedListeners.length; i++) {
+        if (parabolicMotionStoppedListeners[i] == listener) {
+          parabolicMotionStoppedListeners.splice(i, 1);
+          break;
+        }
+      }
+    };
+    this.removeParabolicMotionStoppedListener = _removeParabolicMotionStoppedListener;
 
     var _getProjection = function(desiredProjectionType) {
       projectionType = typeof (desiredProjectionType) != 'undefined' ? desiredProjectionType : "mercator";
