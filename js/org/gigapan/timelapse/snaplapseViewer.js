@@ -1758,7 +1758,7 @@ if (!org.gigapan.timelapse.snaplapse) {
       if(useTouchFriendlyUI) {
         $keyframeContainer.addClass("touch_friendly");
       }
-      KEYFRAME_THUMBNAIL_HEIGHT = $keyframeContainer.outerHeight() - ((useTouchFriendlyUI || isMobileDevice) ? 2 : scrollBarWidth);
+      KEYFRAME_THUMBNAIL_HEIGHT = $keyframeContainer.outerHeight() - ((useTouchFriendlyUI || isMobileDevice) ? 2 : scrollBarWidth + 3);
       KEYFRAME_THUMBNAIL_WIDTH = KEYFRAME_THUMBNAIL_HEIGHT * 1.73;
       $sortable.sortable("disable").css({
         "height" : KEYFRAME_THUMBNAIL_HEIGHT

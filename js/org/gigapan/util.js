@@ -537,14 +537,16 @@ if (!org.gigapan) {
       var containerWidth = $keyframeContainer.width();
       var elementOffset = $elementsToSelect.offset();
       var elementWidth = $elementsToSelect.width();
-      var distanceBetweenElementAndLeftEdge = elementOffset.left + elementWidth - containerOffset.left;
+      var keyframeContainerLeftMargin = parseInt($sortableContainer.css("margin-left"));
+      var distanceBetweenElementAndLeftEdge = elementOffset.left + elementWidth - containerOffset.left - keyframeContainerLeftMargin;
       var distanceBetweenElementAndRightEdge = containerWidth - elementOffset.left + containerOffset.left;
       var scrollLeftPx;
       var scrollDuration = (autoScroll == "noAnimation") ? 0 : 500;
-      if (distanceBetweenElementAndRightEdge < elementWidth * 1.5)
-        scrollLeftPx = $keyframeContainer.scrollLeft() + (elementWidth * 1.5 - distanceBetweenElementAndRightEdge);
-      else if (distanceBetweenElementAndLeftEdge < elementWidth * 1.5)
-        scrollLeftPx = $keyframeContainer.scrollLeft() - (elementWidth * 1.5 - distanceBetweenElementAndLeftEdge);
+      if (distanceBetweenElementAndRightEdge < elementWidth * 2.52) {
+        scrollLeftPx = $keyframeContainer.scrollLeft() + (elementWidth * 2.52 - distanceBetweenElementAndRightEdge);
+      } else if (distanceBetweenElementAndLeftEdge < elementWidth * 2.52) {
+        scrollLeftPx = $keyframeContainer.scrollLeft() - (elementWidth * 2.52 - distanceBetweenElementAndLeftEdge);
+      }
       if (scrollLeftPx) {
         $keyframeContainer.stop(true, true).animate({
           scrollLeft: scrollLeftPx
@@ -556,10 +558,9 @@ if (!org.gigapan) {
           }
         });
       } else {
-        if (scrollStartCallback)
+        if (scrollStartCallback) {
           scrollStartCallback();
-        // The reason to hide and show the elements is the workaround for a webkit refresh bug
-        //$keyframeContainer.hide().show(0);
+        }
       }
     }
   };
@@ -650,7 +651,7 @@ if (!org.gigapan) {
 
   // Compute the root URL for where all the Time Machine files exist.
   // Note: Need to be run when loading a Time Machine file or the returned
-  // path will not useful For example, if we call this after everything is loaded
+  // path will not useful. For example, if we call this after everything is loaded
   // and the last include is of say external Google Maps, then we get an
   // external path and not one that points to the Time Machine source directory.
   function computeRootAppURL() {

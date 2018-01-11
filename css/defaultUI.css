@@ -81,7 +81,6 @@ body, html {
 }
 
 .customPlay-touchFriendly .ui-icon.ui-icon-custom-play {
-  background-image: url(../images/touch/play.png);
   margin-top: -14px;
   margin-left: -11px;
   width: 28px;
@@ -102,16 +101,6 @@ body, html {
   width: 38px;
   height: 38px;
   opacity: 0.7;
-}
-
-.customPlay-touchFriendly .ui-icon.ui-icon-custom-pause {
-  background-image: url(../images/touch/pause.png);
-  margin-top: -15px;
-  margin-left: -15px;
-  width: 30px;
-  height: 30px;
-  opacity: 0.55;
-  background-size: contain !important;
 }
 
 .ui-button.ui-state-hover .ui-icon.ui-icon-custom-pause {
@@ -351,11 +340,10 @@ _:-moz-tree-row(hover), .helpPlayerLabel .ui-button-text {
 }
 
 .playbackButton.ui-button {
-  display: block;
   position: absolute;
-  width: 50px;
-  height: 50px;
-  bottom: 17px;
+  width: 58px;
+  height: 58px;
+  bottom: 16px;
   left: 20px;
   background: white;
   border: 1px solid #656565;
@@ -363,6 +351,40 @@ _:-moz-tree-row(hover), .helpPlayerLabel .ui-button-text {
   box-shadow: 2px 2px 3px rgba(0, 0, 0, 0.3);
   z-index: 10;
   outline: none;
+}
+
+.playbackButton-touchFriendly.ui-button {
+  width: 68px;
+  height: 68px;
+  bottom: 23px;
+}
+
+.controls-touchFriendly .timelineSlider .ui-slider-handle {
+  height: 22px;
+  width: 15px;
+}
+
+.controls-touchFriendly .timelineSliderFiller {
+  left: 110px;
+  bottom: 51px;
+}
+
+.controls-touchFriendly .timelineSlider, .controls-touchFriendly .timelineSelector {
+  height: 14px;
+}
+
+.controls-touchFriendly .toggleSpeed.ui-button {
+  width: 55px;
+  height: 23px;
+  bottom: 18px;
+  left: 110px;
+  font-size: 9pt;
+}
+
+.captureTime-touchFriendly {
+  bottom: 17px;
+  font-size: 20px;
+  left: 185px;
 }
 
 .timelineSliderFiller {
@@ -380,8 +402,7 @@ _:-moz-tree-row(hover), .helpPlayerLabel .ui-button-text {
   background: rgba(255, 255, 255, 0.3);
   cursor: pointer;
   border: 2px solid rgba(255, 255, 255, 0.8);
-  position: absolute;
-  height: 7px;
+  height: 10px;
   width: inherit;
   position: relative;
   top: 0px;
@@ -394,7 +415,7 @@ _:-moz-tree-row(hover), .helpPlayerLabel .ui-button-text {
 .timelineSlider .ui-slider-handle {
   width: 12px;
   margin-left: -5px !important;
-  height: 15px;
+  height: 18px;
   overflow: hidden;
   top: -5px;
   border-style: none;
@@ -464,8 +485,7 @@ _:-moz-tree-row(hover), .helpPlayerLabel .ui-button-text {
   background: rgba(255, 255, 255, 0.3);
   cursor: pointer;
   border: 2px solid rgba(255, 255, 255, 0.8);
-  position: absolute;
-  height: 7px;
+  height: 10px;
   width: inherit;
   position: relative;
   top: 0px;
@@ -602,6 +622,7 @@ _:-moz-tree-row(hover), .helpPlayerLabel .ui-button-text {
   border: 1px solid #656565;
   border-radius: 2px !important;
   box-shadow: 2px 2px 3px rgba(0, 0, 0, 0.3);
+  outline: none;
 }
 
 .zoom-touchFriendly .ui-button {

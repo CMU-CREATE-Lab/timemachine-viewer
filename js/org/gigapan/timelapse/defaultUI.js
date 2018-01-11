@@ -202,6 +202,9 @@ if (!org.gigapan.timelapse.Timelapse) {
         else
           UTIL.addGoogleAnalyticEvent('button', 'click', 'viewer-pause');
       });
+      if (useTouchFriendlyUI) {
+        $playbackButton.addClass("playbackButton-touchFriendly");
+      }
       // Create help button
       var helpPlayerCheckbox = $("#" + viewerDivId + " .helpPlayerCheckbox");
       helpPlayerCheckbox.attr("id", timeMachineDivId + "_helpPlayerCheckbox");
@@ -1447,6 +1450,9 @@ if (!org.gigapan.timelapse.Timelapse) {
         });
         UTIL.addGoogleAnalyticEvent('slider', 'click', 'viewer-seek');
       });
+      if (useTouchFriendlyUI) {
+        $captureTime.addClass("captureTime-touchFriendly");
+      }
     };
     this.createTimelineSlider = createTimelineSlider;
 
@@ -1501,6 +1507,9 @@ if (!org.gigapan.timelapse.Timelapse) {
       }
       $captureTime.hide();
       $("#" + viewerDivId + " .toolDialog").hide();
+    }
+    if (useTouchFriendlyUI) {
+      $controls.addClass("controls-touchFriendly");
     }
   };
   //end of org.gigapan.timelapse.DefaultUI
