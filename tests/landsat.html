@@ -8,16 +8,12 @@
     <link href="../css/defaultUI.css" rel="stylesheet" type="text/css"/>
     <link href="../css/contextMap.css" rel="stylesheet" type="text/css"/>
     <link href="../css/scaleBar.css" rel="stylesheet" type="text/css"/>
-    <link href="../css/visualizer.css" rel="stylesheet" type="text/css"/>
-    <link href="../css/annotator.css" rel="stylesheet" type="text/css"/>
     <link href="../css/customUI.css" rel="stylesheet" type="text/css"/>
-    <link href="../libs/change-detect/css/change.css" media="screen" rel="stylesheet" type="text/css"/>
     <link href="../css/leaflet/leaflet.css" rel="stylesheet" type="text/css"/>
 
     <script src="../js/jquery/jquery.min.js" type="text/javascript"></script>
     <script src="../js/jquery/jquery-ui.custom.min.js" type="text/javascript"></script>
     <script src="../js/jquery/plugins/mouse/jquery.mousewheel.min.js" type="text/javascript"></script>
-    <script src="../js/kinetic/kinetic.min.js" type="text/javascript"></script>
     <script src="../js/org/gigapan/util.js" type="text/javascript"></script>
     <script src="../js/org/gigapan/timelapse/videoset.js" type="text/javascript"></script>
     <script src="../js/org/gigapan/timelapse/parabolicMotion.js" type="text/javascript"></script>
@@ -28,8 +24,6 @@
     <script src="../js/org/gigapan/timelapse/mercator.js" type="text/javascript"></script>
     <script src="../js/org/gigapan/timelapse/scaleBar.js" type="text/javascript"></script>
     <script src="../js/org/gigapan/timelapse/contextMap.js" type="text/javascript"></script>
-    <script src="../js/org/gigapan/timelapse/visualizer.js" type="text/javascript"></script>
-    <script src="../js/org/gigapan/timelapse/annotator.js" type="text/javascript"></script>
     <script src="../js/org/gigapan/timelapse/customUI.js" type="text/javascript"></script>
     <script src="../js/org/gigapan/timelapse/defaultUI.js" type="text/javascript"></script>
     <script src="../js/org/gigapan/timelapse/urlEncoder.js" type="text/javascript"></script>
@@ -45,7 +39,7 @@
     <script src="../libs/change-detect/js/ChangeDetectionTool.js" type="text/javascript"></script>
 
     <script src="../template_includes.js" type="text/javascript"></script>
-    <script src="http://earthengine.google.org/timelapse/data/20130507/ajax_includes.js" type="text/javascript"></script>
+    <script src="https://earthengine.google.com/timelapse/data/20161025/ajax_includes.js" type="text/javascript"></script>
 
     <style>
       #timeMachine {
@@ -58,25 +52,24 @@
     <script type="text/javascript">
       jQuery.support.cors = true;
 
-      // Landsat ("https" will casue the thumbnail loading from the server to fail)
-      var url = "http://earthengine.google.org/timelapse/data/20130507/"
+      var url = "https://earthengine.google.com/timelapse/data/20161025/"
 
       function init() {
-        myHomeView = {
-          x: 677982.255550633,
-          y: 521801.7016044302,
-          scale: 0.0005840897249061237
-        };
         var settings = {
           url: url,
+          showThumbnailTool: true,
+          showShareBtn: true,
           enablePresentationSlider: true,
           datasetType: "landsat",
+          mediaType: ".mp4",
+          apiKeys: {'googleMaps': ''},
           playOnLoad: true,
           onTimeMachinePlayerReady: function(viewerDivId) {
             setupPostMessageHandlers();
             timelapse.getSnaplapseForPresentationSlider().getSnaplapseViewer().addEventListener("slide-changed", function(waypoint) {
               post("from-timemachine-slide-changed", waypoint.title);
             });
+            //timelapse.loadSharedDataFromUnsafeURL("#tour=EEDkDAVnCdAw_SiI__DkDAFtUaZ_eRrM__DkDAq6saZGdRlQ__BkDACrDZB9QQxS__Untitled_B", true);
           },
           scaleBarOptions: {
             scaleBarDiv: "scaleBar1"
@@ -84,8 +77,9 @@
           contextMapOptions: {
             contextMapDiv: "contextMap1"
           },
-          newHomeView: myHomeView,
-          showHomeBtn: false
+          newHomeView: null,
+          showHomeBtn: false,
+          showAddressLookup: true
         };
         timelapse = new org.gigapan.timelapse.Timelapse("timeMachine", settings);
       }
