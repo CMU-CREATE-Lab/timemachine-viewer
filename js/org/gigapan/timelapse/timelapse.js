@@ -637,12 +637,14 @@ if (!window['$']) {
       }
     };
 
-    var stopParabolicMotion = function() {
+    var stopParabolicMotion = function(opts) {
       if (parabolicMotionController) {
         isMovingToWaypoint = false;
         parabolicMotionController._disableAnimation();
-        for (var i = parabolicMotionStoppedListeners.length - 1; i >= 0; i--) {
-          parabolicMotionStoppedListeners[i]();
+        if (!opts || opts & opts.doCallback) {
+          for (var i = parabolicMotionStoppedListeners.length - 1; i >= 0; i--) {
+            parabolicMotionStoppedListeners[i]();
+          }
         }
       }
     };
