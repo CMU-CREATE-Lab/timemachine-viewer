@@ -1393,7 +1393,7 @@ if (!org.gigapan.timelapse.snaplapse) {
         else isAutoModeRunning = false;
 
         var keyframeId = $(this).parent().attr("id").split("_")[3];
-        var keyframe = snaplapse.getKeyframeById(keyframeId);
+        var keyframe = snaplapse.cloneFrame(snaplapse.getKeyframeById(keyframeId));
 
         var listeners = eventListeners["slide-before-changed"];
         if (listeners) {
@@ -1671,7 +1671,7 @@ if (!org.gigapan.timelapse.snaplapse) {
         $select.children().children(".snaplapse_keyframe_list_item_thumbnail_overlay_presentation").addClass("thumbnail_highlight");
       }
       if (typeof (keyframeId) != "undefined") {
-        var keyframe = snaplapse.getKeyframeById(keyframeId);
+        var keyframe = snaplapse.cloneFrame(snaplapse.getKeyframeById(keyframeId));
         if (skipAnnotation != true) {
           displaySnaplapseFrameAnnotation(keyframe);
           setKeyframeTitleUI(keyframe);

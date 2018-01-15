@@ -1123,8 +1123,10 @@ if (!Math.uuid) {
     };
 
     var cloneFrame = function(frame) {
-      return $.extend({}, frame);
+      return $.extend(true, {}, frame);
     };
+    this.cloneFrame = cloneFrame;
+
 
     var setCurrentKeyframeInterval = function(newKeyframeInterval) {
       UTIL.log("setCurrentKeyframeInterval(" + newKeyframeInterval + ")");
