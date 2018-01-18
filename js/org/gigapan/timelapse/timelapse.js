@@ -2036,14 +2036,14 @@ if (!window['$']) {
             view = _normalizeView(newView);
           }
         }
-        if (typeof(newTime) != "undefined") {
+        if (newTime != null && !isNaN(newTime)) {
           if (didFirstTimeOnLoad) {
             _seek(newTime);
           } else {
             initialTime = newTime;
           }
         }
-        if (typeof(newPlaybackSpeed) != "undefined") {
+        if (newPlaybackSpeed != null && !isNaN(newPlaybackSpeed)) {
           var newPlaybackRate = (newPlaybackSpeed / 100.0) * thisObj.getMaxPlaybackRate();
           if (newPlaybackRate == 0) {
             _pause();
