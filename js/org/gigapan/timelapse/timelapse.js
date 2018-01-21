@@ -641,6 +641,7 @@ if (!window['$']) {
       if (parabolicMotionController) {
         isMovingToWaypoint = false;
         parabolicMotionController._disableAnimation();
+        parabolicMotionController = null;
         if (!opts || opts & opts.doCallback) {
           for (var i = parabolicMotionStoppedListeners.length - 1; i >= 0; i--) {
             parabolicMotionStoppedListeners[i]();

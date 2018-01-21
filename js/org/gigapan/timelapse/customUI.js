@@ -1283,7 +1283,7 @@ if (!org.gigapan.timelapse.Timelapse) {
     };
 
     var updateTimelineSlider = function(frameIdx) {
-      if (frameIdx < 0 || frameIdx > numFrames - 1)
+      if (frameIdx < 0 || frameIdx > numFrames - 1 || frameDictionary[frameIdx] == undefined)
         return;
       var currentYear = frameDictionary[frameIdx]["year"];
       if (datasetType == "modis" && $monthSpinnerTxt) {

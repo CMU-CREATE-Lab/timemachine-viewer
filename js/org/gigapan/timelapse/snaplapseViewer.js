@@ -1643,35 +1643,36 @@ if (!org.gigapan.timelapse.snaplapse) {
     };
 
     var selectAndGo = function($select, keyframeId, skipAnnotation, skipGo, doNotFireListener, autoScroll) {
+      timelapse.stopParabolicMotion();
       var setViewCallback = null;
       if (usePresentationSlider) {
         setKeyframeCaptionUI(undefined, undefined, true);
       }
-      setViewCallback = function() {
-        timelapse.seek(keyframe['time']);
-        if (doAutoMode) {
-          if (wayPointClickedByAutoMode) {
-            startAutoModeWaypointTimeout();
-          } else {
-            startAutoModeIdleTimeout();
-          }
-        }
-      };
       if (autoScroll != false) {
         autoScroll = true;
       }
       if (!$select.length) return;
-      UTIL.selectSortableElements($sortable, $select, autoScroll, function() {
-        if (doAutoMode && showAnnotations) {
-          setKeyframeCaptionUI(snaplapse.getKeyframeById(keyframeId), $("#timeMachine_snaplapse_keyframe_" + keyframeId));
-        }
-      });
       if (usePresentationSlider) {
         $sortable.children().children().children(".snaplapse_keyframe_list_item_thumbnail_overlay_presentation").removeClass("thumbnail_highlight");
         $select.children().children(".snaplapse_keyframe_list_item_thumbnail_overlay_presentation").addClass("thumbnail_highlight");
       }
       if (typeof (keyframeId) != "undefined") {
         var keyframe = snaplapse.cloneFrame(snaplapse.getKeyframeById(keyframeId));
+        UTIL.selectSortableElements($sortable, $select, autoScroll, function() {
+          if (doAutoMode && showAnnotations) {
+            setKeyframeCaptionUI(keyframe, $("#timeMachine_snaplapse_keyframe_" + keyframeId));
+          }
+        });
+        setViewCallback = function() {
+          timelapse.seek(keyframe['time']);
+          if (doAutoMode) {
+            if (wayPointClickedByAutoMode) {
+              startAutoModeWaypointTimeout();
+            } else {
+              startAutoModeIdleTimeout();
+            }
+          }
+        };
         if (skipAnnotation != true) {
           displaySnaplapseFrameAnnotation(keyframe);
           setKeyframeTitleUI(keyframe);
@@ -1952,7 +1953,7 @@ if (!org.gigapan.timelapse.snaplapse) {
       if (currentAutoModeWaypointIdx >= timelapse.getSnaplapseForPresentationSlider().getNumKeyframes()) {
         currentAutoModeWaypointIdx = 0;
       }
-      var waypoint = $("#" + timeMachineDivId + " .snaplapse_keyframe_list").children().eq(currentAutoModeWaypointIdx).children()[0];
+      var waypoint = $("#" + timeMachineDivId).parent().find(".snaplapse_keyframe_list").children().eq(currentAutoModeWaypointIdx).children()[0];
       waypoint.click();
     };
 
