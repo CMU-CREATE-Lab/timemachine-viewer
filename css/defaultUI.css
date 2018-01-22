@@ -866,10 +866,9 @@ _:-moz-tree-row(hover), .customDialog .customDialogButton .ui-button-text {
 
 #browser_not_supported {
   display: block;
-  height: 348px;
-  left: 34px;
+  left: calc(50% - 257px);
   position: fixed;
-  top: 100px;
+  top: calc(50% - 79px);
   width: 514px;
 }
 
@@ -884,10 +883,6 @@ _:-moz-tree-row(hover), .customDialog .customDialogButton .ui-button-text {
 
 .warning, .error {
   border: 1px solid;
-  width: 400px;
-  margin-left: auto;
-  margin-right: auto;
-  margin-top: 50px;
   padding: 15px 10px 15px 60px;
   background-repeat: no-repeat;
   background-position: 10px center;
