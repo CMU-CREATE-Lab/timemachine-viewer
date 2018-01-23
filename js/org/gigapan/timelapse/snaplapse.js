@@ -777,6 +777,10 @@ if (!Math.uuid) {
           frame["captureTime"] = captureTimes[frameNumber];
 
           var view = unsafeHashObj.hasOwnProperty("v") ? timelapse.unsafeViewToView(unsafeHashObj.v.split(",")) : null;
+          if (!view) {
+            UTIL.error("Invalid view in snaplapse share link at keyframe=[" + (i - 1) + "]. Skipping.");
+            continue;
+          }
           if (tmJSON['projection-bounds']) {
             var bbox = timelapse.pixelCenterToPixelBoundingBoxView(view).bbox;
           } else {
