@@ -485,9 +485,11 @@ if (!window['$']) {
           if (video.readyState == 1) {
             video.load();
             if (_isPaused()) {
-              video.play();
+              if (!video.playPromise) {
+                video.playPromise = video.play();
+              }
               setTimeout(function() {
-                video.pause();
+                _handlePlayPausePromise(video);
               }, 1);
             }
           }
@@ -496,7 +498,7 @@ if (!window['$']) {
       if (viewerType != "video") {
         video.addEventListener('playing', function() {
           if (video.handleSeekStuck && !advancing) {
-            video.pause();
+            _handlePlayPausePromise(video);
             video.handleSeekStuck = null;
           }
           if (video.drawIntervalId == null)
@@ -524,9 +526,11 @@ if (!window['$']) {
       if (isMobileSupported) {
         video.load();
         if (_isPaused()) {
-          video.play();
+          if (!video.playPromise) {
+            video.playPromise = video.play();
+          }
           setTimeout(function() {
-            video.pause();
+            _handlePlayPausePromise(video);
           }, 1);
         }
       }
@@ -659,7 +663,7 @@ if (!window['$']) {
       video.ready = false;
       video.setCurrentTime = null;
       try {
-        video.pause();
+        _handlePlayPausePromise(video);
       } catch(e) {
         UTIL.error(e.name + " while pausing " + video + " in deleteVideo(). Most likely you are running IE 9.");
       }
@@ -715,7 +719,10 @@ if (!window['$']) {
 
         for (videoId in activeVideos) {
           UTIL.log("video(" + videoId + ") play");
-          activeVideos[videoId].play();
+          var activeVideo = activeVideos[videoId];
+          if (!activeVideo.playPromise) {
+            activeVideo.playPromise = activeVideo.play();
+          }
         }
       } else if (advancing && (paused || stalled)) {
         //UTIL.log("stop advance");
@@ -727,7 +734,7 @@ if (!window['$']) {
         for (videoId in activeVideos) {
           UTIL.log("video(" + videoId + ") pause");
           try {
-            activeVideos[videoId].pause();
+            _handlePlayPausePromise(activeVideos[videoId]);
           } catch(e) {
             UTIL.error(e.name + " while pausing " + activeVideos[videoId] + " in updateVideoAdvance(). Most likely you are running IE 9.");
           }
@@ -735,6 +742,23 @@ if (!window['$']) {
         _seek(time);
       } else {
         UTIL.log("advance = " + !(paused || stalled));
+      }
+    };
+
+    var _handlePlayPausePromise = function(video) {
+      if (video.playPromise !== undefined) {
+        video.playPromise.then(function (_) {
+          if (!video) return;
+          if (!video.paused) {
+            video.pause();
+          }
+        }).catch(function (error) {
+          UTIL.error(error);
+        });
+      } else {
+        if (!video.paused) {
+          video.pause();
+        }
       }
     };
 
@@ -917,7 +941,9 @@ if (!window['$']) {
 
       _setVideoToCurrentTime(video);
       if (advancing) {
-        video.play();
+        if (!video.playPromise) {
+          video.playPromise = video.play();
+        }
       }
     };
 
@@ -1103,9 +1129,12 @@ if (!window['$']) {
       window.clearInterval(videoIsSeekingIntervalCheck);
       videoIsSeekingIntervalCheck = window.setInterval(function() {
         UTIL.error("We're still seeking after 250ms, so let's reload the video. This is an Opera <= 12 and IE Edge only workaround.");
-        event.target.load();
-        event.target.handleSeekStuck = true;
-        event.target.play();
+        var targetVideo = event.target;
+        targetVideo.load();
+        targetVideo.handleSeekStuck = true;
+        if (!targetVideo.playPromise) {
+          targetVideo.playPromise = targetVideo.play();
+        }
       }, 250);
     };
 
