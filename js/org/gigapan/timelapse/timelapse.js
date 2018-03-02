@@ -2702,7 +2702,7 @@ if (!window['$']) {
         // Update context maps
         if (visualizer || contextMap) {
           var desiredBound = pixelCenterToPixelBoundingBoxView(desiredView).bbox;
-          if (videoViewer_projection && contextMap && enableContextMap == true) {
+          if (videoViewer_projection && contextMap && enableContextMap == true && latlngCenter) {
             contextMap.setMap(desiredBound, latlngCenter);
           }
           if (visualizer) {
