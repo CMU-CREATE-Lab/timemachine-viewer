@@ -1346,7 +1346,12 @@ if (!window['$']) {
     var getShareView = function(sharedTimestamp, desiredView) {
       sharedTimestamp = sharedTimestamp || thisObj.getCurrentTime().toFixed(2);
       var hashparams = org.gigapan.Util.getUnsafeHashVars();
-      hashparams.v = _getViewStr(desiredView);
+      // View is already in string format
+      if (desiredView && desiredView.indexOf(",")) {
+        hashparams.v = desiredView;
+      } else {
+        hashparams.v = desiredView ? _getViewStr(desiredView) : String(Object.values(timelapse.getBoundingBoxForCurrentView())) + ",pts";
+      }
       hashparams.t = sharedTimestamp;
       hashparams.ps = (thisObj.getPlaybackRate() / thisObj.getMaxPlaybackRate()) * 100;
       if (datasetType == "modis" && customUI.getLocker() != "none")
@@ -1425,7 +1430,7 @@ if (!window['$']) {
       }
 
       if (unsafe_viewParam.indexOf("latLng") != -1) {
-        if (unsafe_viewParam.length == 4)
+        if (unsafe_viewParam.length == 4) {
           view = {
             center: {
               "lat": parseFloat(unsafe_viewParam[0]),
@@ -1433,7 +1438,7 @@ if (!window['$']) {
             },
             "zoom": parseFloat(unsafe_viewParam[2])
           };
-        else if (unsafe_viewParam.length == 5)
+        } else if (unsafe_viewParam.length == 5) {
           view = {
             bbox: {
               "ne": {
@@ -1446,8 +1451,9 @@ if (!window['$']) {
               }
             }
           };
+        }
       } else {// Assume points if the user did not specify latLng. Also allow for the omission of 'pts' param for backwards compatibility
-        if ((unsafe_viewParam.indexOf("pts") == -1 && unsafe_viewParam.length == 3) || unsafe_viewParam.length == 4)
+        if ((unsafe_viewParam.indexOf("pts") == -1 && unsafe_viewParam.length == 3) || unsafe_viewParam.length == 4) {
           view = {
             center: {
               "x": parseFloat(unsafe_viewParam[0]),
@@ -1455,15 +1461,16 @@ if (!window['$']) {
             },
             "zoom": parseFloat(unsafe_viewParam[2])
           };
-        else if ((unsafe_viewParam.indexOf("pts") == -1 && unsafe_viewParam.length == 4) || unsafe_viewParam.length == 5)
+        } else if ((unsafe_viewParam.indexOf("pts") == -1 && unsafe_viewParam.length == 4) || unsafe_viewParam.length == 5) {
           view = {
             bbox: {
               "xmin": parseFloat(unsafe_viewParam[0]),
-              "xmax": parseFloat(unsafe_viewParam[1]),
-              "ymin": parseFloat(unsafe_viewParam[2]),
+              "ymin": parseFloat(unsafe_viewParam[1]),
+              "xmax": parseFloat(unsafe_viewParam[2]),
               "ymax": parseFloat(unsafe_viewParam[3])
             }
           };
+        }
       }
       return view;
     };
@@ -1584,8 +1591,11 @@ if (!window['$']) {
     };
 
     this.setMasterPlaybackRate = function(rate) {
-      defaultUI.setMaxPlaybackRate(rate);
-      customUI.setMaxPlaybackRate(rate);
+      var newRate = parseFloat(rate);
+      if (!isNaN(newRate)) {
+        defaultUI.setMaxPlaybackRate(newRate);
+        customUI.setMaxPlaybackRate(newRate);
+      }
     };
 
     this.getMaxPlaybackRate = function() {
@@ -1599,18 +1609,23 @@ if (!window['$']) {
     };
 
     this.setPlaybackRate = function(rate, preserveOriginalRate, skipUpdateUI) {
-      if (!preserveOriginalRate)
-        originalPlaybackRate = rate;
-      videoset.setPlaybackRate(rate);
+      var newRate = parseFloat(rate);
+      if (!isNaN(newRate)) {
+        if (!preserveOriginalRate) {
+          originalPlaybackRate = newRate;
+        }
+        videoset.setPlaybackRate(newRate);
 
-      // Pano video is used for the timewarp map in editor
-      // TODO: This should probably be done through a listener
-      if (panoVideo && defaultUI.getMode() != "player" && !fullScreen) {
-        panoVideo.playbackRate = rate;
+        // Pano video is used for the timewarp map in editor
+        // TODO: This should probably be done through a listener
+        if (panoVideo && defaultUI.getMode() != "player" && !fullScreen) {
+          panoVideo.playbackRate = newRate;
+        }
+
+        for (var i = 0; i < playbackRateChangeListeners.length; i++) {
+          playbackRateChangeListeners[i](newRate, skipUpdateUI);
+        }
       }
-
-      for (var i = 0; i < playbackRateChangeListeners.length; i++)
-        playbackRateChangeListeners[i](rate, skipUpdateUI);
     };
 
     this.toggleMainControls = function() {
@@ -2673,6 +2688,11 @@ if (!window['$']) {
     };
     this.frameNumberToTime = frameNumberToTime;
 
+    var timeToFrameNumber = function(value) {
+      return Math.floor(value * _getFps());
+    };
+    this.timeToFrameNumber = timeToFrameNumber;
+
     // Update the scale bar and the context map
     // Need to call this when changing the view
     var updateLocationContextUI = function() {
@@ -3199,8 +3219,10 @@ if (!window['$']) {
       if (viewerType == "webgl")
         hideSpinner(viewerDivId);
 
-      // Force initial focus on viewer
-      $(videoDiv).focus();
+      // Force initial focus on viewer only if we are not inside an iframe
+      if (window && (window.self === window.top)) {
+        $(videoDiv).focus();
+      }
 
       // If webgl, we need to force trigger this since no video tags will fire this.
       if (viewerType == "webgl") {
@@ -3363,6 +3385,9 @@ if (!window['$']) {
         sanitized_timeToFind.replace(dashSubString, slashSubString);
       }
       sanitized_timeToFind = new Date(sanitized_timeToFind);
+      if (!sanitized_timeToFind || isNaN(sanitized_timeToFind.getTime())) {
+        return -1;
+      }
       var tmpNewCompare = new Date(captureTimes[Math.max(0, frames - 1)].replace(/-/g, "/").replace("UTC", ""));
       // If date parsing fails, we assume the input only included the hour, min, [sec], so manually insert a year, month, day based on captureTime array
       if (String(sanitized_timeToFind).indexOf("Invalid") >= 0) {
