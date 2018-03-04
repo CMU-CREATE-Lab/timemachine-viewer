@@ -1347,10 +1347,13 @@ if (!window['$']) {
       sharedTimestamp = sharedTimestamp || thisObj.getCurrentTime().toFixed(2);
       var hashparams = org.gigapan.Util.getUnsafeHashVars();
       // View is already in string format
-      if (desiredView && desiredView.indexOf(",")) {
+      if (desiredView && typeof(desiredView) === "string" && desiredView.indexOf(",")) {
         hashparams.v = desiredView;
       } else {
-        hashparams.v = desiredView ? _getViewStr(desiredView) : String(Object.values(timelapse.getBoundingBoxForCurrentView())) + ",pts";
+        //var bbox = timelapse.getBoundingBoxForCurrentView();
+        //var ltrbStr = bbox.xmin + "," + bbox.ymin + "," + bbox.xmax + "," + bbox.ymax + ",pts";
+        //hashparams.v = desiredView ? _getViewStr(desiredView) : ltrbStr;
+        hashparams.v = _getViewStr(desiredView);
       }
       hashparams.t = sharedTimestamp;
       hashparams.ps = (thisObj.getPlaybackRate() / thisObj.getMaxPlaybackRate()) * 100;
@@ -1439,6 +1442,7 @@ if (!window['$']) {
             "zoom": parseFloat(unsafe_viewParam[2])
           };
         } else if (unsafe_viewParam.length == 5) {
+          // share view was in the form NWSE
           view = {
             bbox: {
               "ne": {
@@ -1462,6 +1466,7 @@ if (!window['$']) {
             "zoom": parseFloat(unsafe_viewParam[2])
           };
         } else if ((unsafe_viewParam.indexOf("pts") == -1 && unsafe_viewParam.length == 4) || unsafe_viewParam.length == 5) {
+          // share view was in the form LTRB
           view = {
             bbox: {
               "xmin": parseFloat(unsafe_viewParam[0]),
