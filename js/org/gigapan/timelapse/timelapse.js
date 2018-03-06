@@ -3378,29 +3378,7 @@ if (!window['$']) {
       var low = 0, high = captureTimes.length - 1, i, newCompare;
       if (!timeToFind)
         return null;
-      // Requested date may not have seconds
-      var subStrLength = captureTimes[0].match(/\d\d:\d\d:\d\d/) ? 8 : 5;
-      // FireFox/IE cannot parse a Date in the form of "Thu Apr 09 2015, 08:52:35.000" (milliseconds must be removed)
-      var sanitized_timeToFind = timeToFind.split(".")[0];
-      // If a date string has dashes (i.e. 2015-04-09 08:52:35 GMT-0400), replace with slashes since IE/FireFox Date parser does not support this.
-      // However, be sure not to remove the dash from the timezone field.
-      var dashSubString = sanitized_timeToFind.match(/\d\d\d\d-\d\d-\d\d/);
-      if (dashSubString) {
-        var slashSubString = dashSubString[0].replace(/-/g, "/");
-        sanitized_timeToFind.replace(dashSubString, slashSubString);
-      }
-      sanitized_timeToFind = new Date(sanitized_timeToFind);
-      if (!sanitized_timeToFind || isNaN(sanitized_timeToFind.getTime())) {
-        return -1;
-      }
-      var tmpNewCompare = new Date(captureTimes[Math.max(0, frames - 1)].replace(/-/g, "/").replace("UTC", ""));
-      // If date parsing fails, we assume the input only included the hour, min, [sec], so manually insert a year, month, day based on captureTime array
-      if (String(sanitized_timeToFind).indexOf("Invalid") >= 0) {
-        var yearMonthDay = tmpNewCompare.getFullYear() + "/" + (1e2 + (tmpNewCompare.getMonth() + 1) + '').substr(1) + "/" + (1e2 + (tmpNewCompare.getDate()) + '').substr(1) + " ";
-        sanitized_timeToFind = new Date(yearMonthDay + timeToFind);
-      }
-      // Convert to epoch time for comparisons
-      sanitized_timeToFind = sanitized_timeToFind.getTime();
+      var sanitized_timeToFind = sanitizedParseTime(timeToFind);
       while (low <= high) {
         i = Math.floor((low + high) / 2);
         newCompare = (new Date(captureTimes[i].replace(/-/g, "/").replace("UTC", ""))).getTime();
@@ -3430,6 +3408,81 @@ if (!window['$']) {
       return i;
     };
     this.findExactOrClosestCaptureTime = findExactOrClosestCaptureTime;
+
+    var sanitizedParseTime = function(timeToFind) {
+      // FireFox/IE cannot parse a Date in the form of "Thu Apr 09 2015, 08:52:35.000" (milliseconds must be removed)
+      var sanitized_timeToFind = timeToFind.split(".")[0];
+      // If a date string has dashes (i.e. 2015-04-09 08:52:35 GMT-0400), replace with slashes since IE/FireFox Date parser does not support this.
+      // However, be sure not to remove the dash from the timezone field.
+      var dashSubString = sanitized_timeToFind.match(/\d\d\d\d-\d\d-\d\d/);
+      if (dashSubString) {
+        var slashSubString = dashSubString[0].replace(/-/g, "/");
+        sanitized_timeToFind.replace(dashSubString, slashSubString);
+      }
+      sanitized_timeToFind = new Date(sanitized_timeToFind);
+      if (!sanitized_timeToFind || isNaN(sanitized_timeToFind.getTime())) {
+        return -1;
+      }
+      var tmpNewCompare = new Date(captureTimes[Math.max(0, frames - 1)].replace(/-/g, "/").replace("UTC", ""));
+      // If date parsing fails, we assume the input only included the hour, min, [sec], so manually insert a year, month, day based on captureTime array
+      if (String(sanitized_timeToFind).indexOf("Invalid") >= 0) {
+        var yearMonthDay = tmpNewCompare.getFullYear() + "/" + (1e2 + (tmpNewCompare.getMonth() + 1) + '').substr(1) + "/" + (1e2 + (tmpNewCompare.getDate()) + '').substr(1) + " ";
+        sanitized_timeToFind = new Date(yearMonthDay + timeToFind);
+      }
+      // Convert to epoch time
+      return sanitized_timeToFind.getTime();
+    }
+    this.sanitizedParseTime = sanitizedParseTime;
+
+    var playbackTimeFromDate = function(time) {
+      var b = findExactOrClosestCaptureTime(time, 'down');
+      var e = findExactOrClosestCaptureTime(time, 'up');
+      var frameno;
+      if (b == e) {
+	frameno = b;
+      } else {
+	var b_epoch = getFrameEpochTime(b);
+	var e_epoch = getFrameEpochTime(e);
+	var time_epoch = sanitizedParseTime(time);
+	if (Math.abs(b_epoch - e_epoch) < 1e-10) {
+	  frameno = b;
+	} else {
+	  frameno = b + (time_epoch - b_epoch) / (e_epoch - b_epoch);
+	}
+      }
+      return frameno / _getFps();
+    };
+    this.playbackTimeFromDate = playbackTimeFromDate;
+
+    // t= bt= et= from share should be of form
+    // YYYYMMDD
+    // YYYYMMDDHHMM (TODO)
+    //
+    // DEPRECATED:  This function also supports, for now, old-style share link time
+    // in units of seconds in playback time
+    
+    var playbackTimeFromShareDate = function(sharedate) {
+      // Might be an old-style # of seconds
+      if (sharedate - 0 < 1000) {
+	console.log('DEPRECATED: Old-style share link using playback seconds: "' + sharedate + '"');
+	return sharedate - 0;
+      }
+
+      var parsed;
+      if (sharedate.match(/\d\d\d\d\d\d\d\d/)) {
+	parsed = sharedate.substr(0, 4) + '-' + sharedate.substr(4, 2) + '-' + sharedate.substr(6, 2);
+      } else {
+	return 0;
+      }
+
+      return playbackTimeFromDate(parsed);
+    }
+    this.playbackTimeFromShareDate = playbackTimeFromShareDate;
+
+    var getFrameEpochTime = function(frame) {
+      return Date.parse(new Date(captureTimes[frame].replace(/-/g, "/")));
+    }
+    this.getFrameEpochTime = getFrameEpochTime;
 
     var loadVideoSetCallback = function(data) {
       datasetJSON = data;
