@@ -1,6 +1,5 @@
 // @license
 // Redistribution and use in source and binary forms ...
-
 // Class for managing a timelapse.
 //
 // Dependencies:
@@ -3378,10 +3377,10 @@ if (!window['$']) {
       var low = 0, high = captureTimes.length - 1, i, newCompare;
       if (!timeToFind)
         return null;
-      var sanitized_timeToFind = sanitizedParseTime(timeToFind);
+      var sanitized_timeToFind = sanitizedParseTimeGMT(timeToFind);
       while (low <= high) {
         i = Math.floor((low + high) / 2);
-        newCompare = (new Date(captureTimes[i].replace(/-/g, "/").replace("UTC", ""))).getTime();
+        newCompare = sanitizedParseTimeGMT(captureTimes[i]);
         if (newCompare < sanitized_timeToFind) {
           low = i + 1;
           continue;
@@ -3396,43 +3395,45 @@ if (!window['$']) {
         return (captureTimes.length - 1);
       if (high < 0)
         return 0;
-      // No exact match. Now find the closest and alter direction if requested by user
-      var lowCompare = Date.parse(new Date(captureTimes[low].replace(/-/g, "/")));
-      var highCompare = Date.parse(new Date(captureTimes[high].replace(/-/g, "/")));
-      var timeToFindCompare = Date.parse(captureTimes[low].replace(/-/g, "/").substr(0, 11) + sanitized_timeToFind);
-      if (Math.abs(lowCompare - timeToFindCompare) > Math.abs(highCompare - timeToFindCompare)) {
-        i = (direction === "up") ? low : high;
+      // No exact match. Return lower or upper bound if 'down' or 'up' is selected
+      if (direction === 'down') return Math.min(low, high);
+      if (direction === 'up') return Math.max(low, high);
+      // Otherwise, select closest
+      var lowCompare = sanitizedParseTimeGMT(captureTimes[low]);
+      var highCompare = sanitizedParseTimeGMT(captureTimes[high]);
+      if (Math.abs(lowCompare - sanitized_timeToFind) > Math.abs(highCompare - sanitized_timeToFind)) {
+	return high;
       } else {
-        i = (direction === "down") ? high : low;
+	return low;
       }
-      return i;
     };
     this.findExactOrClosestCaptureTime = findExactOrClosestCaptureTime;
 
-    var sanitizedParseTime = function(timeToFind) {
-      // FireFox/IE cannot parse a Date in the form of "Thu Apr 09 2015, 08:52:35.000" (milliseconds must be removed)
-      var sanitized_timeToFind = timeToFind.split(".")[0];
-      // If a date string has dashes (i.e. 2015-04-09 08:52:35 GMT-0400), replace with slashes since IE/FireFox Date parser does not support this.
-      // However, be sure not to remove the dash from the timezone field.
-      var dashSubString = sanitized_timeToFind.match(/\d\d\d\d-\d\d-\d\d/);
-      if (dashSubString) {
-        var slashSubString = dashSubString[0].replace(/-/g, "/");
-        sanitized_timeToFind.replace(dashSubString, slashSubString);
+    var sanitizedParseTimeGMT = function(time) {
+      // Remove milliseconds "Thu Apr 09 2015, 08:52:35.000" (FireFox/IE)
+      time = time.replace(/(\d\d)\.\d+/, '$1')
+
+      // Remove leading whitespace
+      time = time.replace(/^\s+/, '')
+
+      // Remove trailing whitespace
+      time = time.replace(/\s+$/, '')
+      
+      // Remove timezone
+      time = time.replace(/\s+[A-Z]+([-+]\d+)?$/, '')
+
+      // If form HH:MM or HH:MM:SS, add date from capture array
+      if (time.match(/^\d\d:\d\d(:\d\d)?$/)) {
+	lastCapture = new Date(sanitizedParseTimeGMT(captureTimes[Math.max(0, frames - 1)]));
+	time = lastCapture.getFullYear() + "/" + (1e2 + (lastCapture.getMonth() + 1) + '').substr(1) + "/" + (1e2 + (lastCapture.getDate()) + '').substr(1) + " " + time;
       }
-      sanitized_timeToFind = new Date(sanitized_timeToFind);
-      if (!sanitized_timeToFind || isNaN(sanitized_timeToFind.getTime())) {
-        return -1;
-      }
-      var tmpNewCompare = new Date(captureTimes[Math.max(0, frames - 1)].replace(/-/g, "/").replace("UTC", ""));
-      // If date parsing fails, we assume the input only included the hour, min, [sec], so manually insert a year, month, day based on captureTime array
-      if (String(sanitized_timeToFind).indexOf("Invalid") >= 0) {
-        var yearMonthDay = tmpNewCompare.getFullYear() + "/" + (1e2 + (tmpNewCompare.getMonth() + 1) + '').substr(1) + "/" + (1e2 + (tmpNewCompare.getDate()) + '').substr(1) + " ";
-        sanitized_timeToFind = new Date(yearMonthDay + timeToFind);
-      }
-      // Convert to epoch time
-      return sanitized_timeToFind.getTime();
+
+      time += ' GMT';
+      var epoch = Date.parse(time);
+      if (epoch != 0 && (!epoch || isNaN(epoch))) return -1;
+      return epoch;
     }
-    this.sanitizedParseTime = sanitizedParseTime;
+    this.sanitizedParseTimeGMT = sanitizedParseTimeGMT;
 
     var playbackTimeFromDate = function(time) {
       var b = findExactOrClosestCaptureTime(time, 'down');
@@ -3443,7 +3444,7 @@ if (!window['$']) {
       } else {
 	var b_epoch = getFrameEpochTime(b);
 	var e_epoch = getFrameEpochTime(e);
-	var time_epoch = sanitizedParseTime(time);
+	var time_epoch = sanitizedParseTimeGMT(time);
 	if (Math.abs(b_epoch - e_epoch) < 1e-10) {
 	  frameno = b;
 	} else {
@@ -3469,12 +3470,16 @@ if (!window['$']) {
       }
 
       var parsed;
-      if (sharedate.match(/\d\d\d\d\d\d\d\d/)) {
+      if (sharedate.length == 8 && sharedate.match(/^\d+$/)) {
 	parsed = sharedate.substr(0, 4) + '-' + sharedate.substr(4, 2) + '-' + sharedate.substr(6, 2);
+      } else if (sharedate.length == 8+6 && sharedate.match(/^\d+$/)) {
+	parsed = sharedate.substr(0, 4) + '-' + sharedate.substr(4, 2) + '-' + sharedate.substr(6, 2) + ' ' +
+	  sharedate.substr(8, 2) + ':' + sharedate.substr(10, 2) + ':' + sharedate.substr(12, 2);
       } else {
+	// Error parsing;  return beginning of playback
+	console.log('Error parsting share date ' + sharedate + '; returning playbackTime = 0');
 	return 0;
       }
-
       return playbackTimeFromDate(parsed);
     }
     this.playbackTimeFromShareDate = playbackTimeFromShareDate;
