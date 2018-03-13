@@ -687,7 +687,7 @@ _:-moz-tree-row(hover), .helpPlayerLabel .ui-button-text {
 .customDialog .ui-spinner {
   overflow: visible;
   border-radius: 1px;
-  width: 205px;
+  width: 155px;
   height: 20px;
 }
 
@@ -700,6 +700,10 @@ _:-moz-tree-row(hover), .helpPlayerLabel .ui-button-text {
   font-size: 1em;
 }
 
+.customDialogButton.ui-state-disabled {
+  cursor: not-allowed !important;
+}
+
 .customDialog .customDialogButton.generate-thumbnail {
   width: 335px;
   height: 30px;
@@ -708,6 +712,7 @@ _:-moz-tree-row(hover), .helpPlayerLabel .ui-button-text {
 
 .customDialog .customDialogButton.generate-thumbnail .ui-button-text {
   margin-top: 2px;
+  font-size: 13px;
 }
 
 /* FireFox specific CSS */
@@ -726,12 +731,15 @@ _:-moz-tree-row(hover), .ui-spinner-input {
   }
 }
 
-.customDialog .reset-large, .customDialog .reset-small {
-  width: 74px;
+.customDialog .reset-custom, .customDialog .reset-viewport, .customDialog .playback-custom {
+  background: white !important;
+  width: 85px;
 }
 
-.customDialog .reset-medium {
-  width: 85px;
+.customDialog .reset-custom.selected, .customDialog .reset-viewport.selected, .customDialog .playback-custom.selected {
+  background: #e6e6e6 !important;
+  box-shadow: 0px 0px 2px 2px #ccc;
+  z-index: 100;
 }
 
 .customDialog .customSlider {
@@ -748,13 +756,22 @@ _:-moz-tree-row(hover), .ui-spinner-input {
   cursor: pointer;
 }
 
+.custom-thumbnail-playback-rate {
+  width: 40px !important;
+  position: absolute;
+}
+
+#thumbnail-fps-overlay {
+  width: 54px;
+}
+
 .customDialog .customSlider .ui-slider-handle:focus {
   outline: none;
 }
 
 .customDialog .customDialogButton {
-  margin-right: 5px;
   height: 20px;
+  min-width: 60px;
   border-radius: 1px;
   background-image: none;
 }
@@ -762,7 +779,11 @@ _:-moz-tree-row(hover), .ui-spinner-input {
 .customDialog .customDialogButton .ui-button-text {
   padding-left: 9px;
   padding-right: 9px;
-  margin-top: -3px;
+  margin-top: -4px;
+}
+
+.share-thumbnail-tool > .ui-state-default, .ui-widget-content .ui-state-default, .ui-widget-header .ui-state-default {
+  border: 1px solid #a9a9a9;
 }
 
 /* FireFox specific CSS */
@@ -1050,9 +1071,18 @@ _:-moz-tree-row(hover), .customDialog .customDialogButton .ui-button-text {
   width: 350px;
 }
 
+.thumbnail-preview-link {
+  font-size: 14px;
+}
+
 .thumbnail-preview-copy-text-button {
   margin-right: 0px;
   margin-bottom: 3px;
+  width: 112px;
+}
+
+.thumbnail-preview-copy-data-button, .thumbnail-preview-copy-download-button {
+  width: 100px;
 }
 
 .thumbnail-preview-copy-text {
@@ -1078,9 +1108,9 @@ _:-moz-tree-row(hover), .customDialog .customDialogButton .ui-button-text {
   z-index: 1100;
   position: absolute;
   line-height: 18px;
-  background-color: #262626;
-  border: 1px solid #262626;
-  opacity: 0.7;
+  background-color: #3a3a3a;
+  border: 1px solid #3a3a3a;
+  opacity: 1;
   border-radius: 2px;
   overflow: visible;
   -moz-box-shadow: 2px 2px 3px rgba(0, 0, 0, 0.3);
@@ -1112,11 +1142,15 @@ _:-moz-tree-row(hover), .customDialog .customDialogButton .ui-button-text {
   color: white;
 }
 
-.embed-capture-time {
+.embed-capture-time, .smooth-playback {
   margin-left: 0px;
   width: 15px;
   height: 15px;
   cursor: pointer;
+}
+
+input:disabled, .thumbnail-speed.ui-state-disabled {
+  cursor: not-allowed !important;
 }
 
 .toolDialogContent {
@@ -1142,7 +1176,7 @@ _:-moz-tree-row(hover), .customDialog .customDialogButton .ui-button-text {
 .customCheckboxLabelBold {
   font-weight: bold;
   vertical-align: middle;
-  font-size: 14px;
+  font-size: 13px;
   cursor: pointer;
 }
 
@@ -1160,12 +1194,10 @@ _:-moz-tree-row(hover), .customDialog .customDialogButton .ui-button-text {
   margin-right: -5px !important;
 }
 
-.thumbnail-type-video.selected {
+.thumbnail-type-video.selected, .thumbnail-type-image.selected {
   background: #e6e6e6 !important;
-}
-
-.thumbnail-type-image.selected {
-  background: #e6e6e6 !important;
+  box-shadow: 0px 0px 2px 2px #ccc;
+  z-index: 100;
 }
 
 .thumbnail-type-video.disabled {
@@ -1177,7 +1209,7 @@ _:-moz-tree-row(hover), .customDialog .customDialogButton .ui-button-text {
 }
 
 .customDropdownButton {
-  width: 70px;
+  width: 76px;
   height: 20px;
   border-radius: 1px !important;
   z-index: 30;
@@ -1190,7 +1222,7 @@ _:-moz-tree-row(hover), .customDialog .customDialogButton .ui-button-text {
   text-align: left;
   padding-left: 9px;
   padding-right: 9px;
-  margin-top: -3px;
+  margin-top: -4px;
   margin-left: -2px;
 }
 
@@ -1205,9 +1237,13 @@ _:-moz-tree-row(hover), .customDropdownButton .ui-button-text {
 
 .customDropdownMenu {
   display: none;
-  width: 70px;
+  width: 76px;
   position: absolute;
   z-index: 115;
+}
+
+input[type=number]{
+    width: 50px;
 }
 
 .customDropdownMenu .ui-menu-item {

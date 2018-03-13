@@ -1342,7 +1342,7 @@ if (!window['$']) {
     };
     this.normalizeView = _normalizeView;
 
-    var getShareView = function(sharedTimestamp, desiredView) {
+    var getShareView = function(sharedTimestamp, desiredView, options) {
       sharedTimestamp = sharedTimestamp || thisObj.getCurrentTime().toFixed(2);
       var hashparams = org.gigapan.Util.getUnsafeHashVars();
       // View is already in string format
@@ -1356,6 +1356,30 @@ if (!window['$']) {
       }
       hashparams.t = sharedTimestamp;
       hashparams.ps = (thisObj.getPlaybackRate() / thisObj.getMaxPlaybackRate()) * 100;
+
+      if (options && typeof(options) === "object") {
+        $.extend(hashparams, options);
+      }
+
+      if (!hashparams.bt) {
+        var isStartTimeADate = (timelapse.sanitizedParseTimeGMT(timelapse.getCaptureTimes()[0]) != -1)
+        if (isStartTimeADate) {
+          hashparams.bt = new Date(timelapse.getFrameEpochTime(0)).toISOString().substr(0,10).replace(/-/g, "");
+        } else {
+          hashparams.bt = 0;
+        }
+      }
+
+      if (!hashparams.et) {
+        var lastFrameIdx = timelapse.getNumFrames() - 1;
+        var isEndTimeADate = (timelapse.sanitizedParseTimeGMT(timelapse.getCaptureTimes()[lastFrameIdx]) != -1)
+        if (isEndTimeADate) {
+          hashparams.et = new Date(timelapse.getFrameEpochTime(lastFrameIdx)).toISOString().substr(0,10).replace(/-/g, "").replace(/0101/g, "1231");
+        } else {
+          hashparams.et = parseFloat(timelapse.getDuration().toFixed(3));
+        }
+      }
+
       if (datasetType == "modis" && customUI.getLocker() != "none")
         hashparams.lk + customUI.getLocker();
       if (datasetType == "breathecam") {
@@ -3410,6 +3434,10 @@ if (!window['$']) {
     this.findExactOrClosestCaptureTime = findExactOrClosestCaptureTime;
 
     var sanitizedParseTimeGMT = function(time) {
+      if (!time || parseInt(time) < 1000) {
+        return -1;
+      }
+
       // Remove milliseconds "Thu Apr 09 2015, 08:52:35.000" (FireFox/IE)
       time = time.replace(/(\d\d)\.\d+/, '$1')
 
@@ -3418,7 +3446,7 @@ if (!window['$']) {
 
       // Remove trailing whitespace
       time = time.replace(/\s+$/, '')
-      
+
       // Remove timezone
       time = time.replace(/\s+[A-Z]+([-+]\d+)?$/, '')
 
@@ -3457,11 +3485,11 @@ if (!window['$']) {
 
     // t= bt= et= from share should be of form
     // YYYYMMDD
-    // YYYYMMDDHHMM (TODO)
+    // YYYYMMDDHHMM
     //
     // DEPRECATED:  This function also supports, for now, old-style share link time
     // in units of seconds in playback time
-    
+
     var playbackTimeFromShareDate = function(sharedate) {
       // Might be an old-style # of seconds
       if (sharedate - 0 < 1000) {
@@ -3477,7 +3505,7 @@ if (!window['$']) {
 	  sharedate.substr(8, 2) + ':' + sharedate.substr(10, 2) + ':' + sharedate.substr(12, 2);
       } else {
 	// Error parsing;  return beginning of playback
-	console.log('Error parsting share date ' + sharedate + '; returning playbackTime = 0');
+	console.log('Error parsing share date ' + sharedate + '; returning playbackTime = 0');
 	return 0;
       }
       return playbackTimeFromDate(parsed);
