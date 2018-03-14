@@ -107,9 +107,10 @@ function setupPostMessageHandlers() {
       // as a string, then unpack it based on the hash vars.
       // Otherwise we are dealing with an object of unpacked hash vars, so move on.
       if (typeof (unsafe_data) === "string") {
-        if (unsafe_data.substr(0, 1) == "#")
-          unsafe_data = unsafe_data.slice(1);
-        unsafe_data = org.gigapan.Util.unpackVars(unsafe_data);
+        var unsafe_matchURL = unsafe_data.match(/#(.+)/);
+        if (unsafe_matchURL) {
+          unsafe_data = org.gigapan.Util.unpackVars(unsafe_matchURL[1]);
+        }
       }
 
       // Before we change the view, cancel any tours that may be playing.
