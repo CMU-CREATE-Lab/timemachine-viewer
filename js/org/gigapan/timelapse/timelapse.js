@@ -1278,6 +1278,13 @@ if (!window['$']) {
           callBack();
       };
 
+      var defaultParabolicMotionEndCallback = function() {
+        defaultEndViewCallback();
+        for (var i = parabolicMotionStoppedListeners.length - 1; i >= 0; i--) {
+          parabolicMotionStoppedListeners[i]();
+        }
+      }
+
       if (doWarp) {
         _addViewEndChangeListener(defaultEndViewCallback);
         _warpTo(newView);
@@ -1300,7 +1307,7 @@ if (!window['$']) {
               animateCallback: function(pt) {
                 _warpTo(parabolicMotionObj.pixelPointToView(viewportWidth, viewportHeight, pt));
               },
-              onCompleteCallback: defaultEndViewCallback
+              onCompleteCallback: defaultParabolicMotionEndCallback
             });
           }
           var a = parabolicMotionObj.viewToPixelPoint(viewportWidth, viewportHeight, view);
