@@ -1418,7 +1418,7 @@ if (!org.gigapan.timelapse.snaplapse) {
       });
 
       if (usePresentationSlider) {
-        $thumbnailButton.attr("id", keyframe.unsafe_string_frameTitle.split(' ').join('_'));
+        $thumbnailButton.attr("id", keyframe.unsafe_string_frameTitle.replace(/\W+/g, "_"));
         $thumbnailButton.hover(function() {
           var thisKeyframeId = $(this).parent().attr("id").split("_")[3];
           var thisKeyframe = snaplapse.getKeyframeById(thisKeyframeId);
