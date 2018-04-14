@@ -818,25 +818,25 @@ if (!org.gigapan.timelapse.Timelapse) {
           }
         }
 
-        var startCaptureTime = timelapse.getCaptureTimes()[$startingTimeSpinner.captureTimeSpinner("value")].replace("UTC", "").replace("T","-").replace(" ", "-").replace(/:/g,"-").replace(/ /g,"").split("-");
-        var endCaptureTime = timelapse.getCaptureTimes()[$endingTimeSpinner.captureTimeSpinner("value")].replace("UTC", "").replace("T","-").replace(" ", "-").replace(/:/g,"-").replace(/ /g,"").split("-");
+        var startCaptureTime = timelapse.getCaptureTimes()[$startingTimeSpinner.captureTimeSpinner("value")].replace("UTC", "").replace("T","-").replace(" ", "-").replace(/:/g,"-").split("-");
+        var endCaptureTime = timelapse.getCaptureTimes()[$endingTimeSpinner.captureTimeSpinner("value")].replace("UTC", "").replace("T","-").replace(" ", "-").replace(/:/g,"-").split("-");
 
-        var startYear = startCaptureTime[0];
-        var startMonth = startCaptureTime[1] || "01";
-        var startDay = startCaptureTime[2] || "01";
-        var startHour = startCaptureTime[3] || "00";
-        var startMinute = startCaptureTime[4] || "00";
-        var startSecond = startCaptureTime[5] || "00";
+        var startYear = parseInt(startCaptureTime[0]);
+        var startMonth = parseInt(startCaptureTime[1]) || 1;
+        var startDay = parseInt(startCaptureTime[2]) || 1;
+        var startHour = parseInt(startCaptureTime[3]) || 0;
+        var startMinute = parseInt(startCaptureTime[4]) || 0;
+        var startSecond = parseInt(startCaptureTime[5]) || 0;
 
-        var endYear = endCaptureTime[0];
-        var endMonth = endCaptureTime[1] || "01";
-        var endDay = endCaptureTime[2] || "01";
-        var endHour = endCaptureTime[3] || "00";
-        var endMinute = endCaptureTime[4] || "00";
-        var endSecond = endCaptureTime[5] || "00";
+        var endYear = parseInt(endCaptureTime[0]);
+        var endMonth = parseInt(endCaptureTime[1]) || 12;
+        var endDay = parseInt(endCaptureTime[2]) || 31;
+        var endHour = parseInt(endCaptureTime[3]) || 0;
+        var endMinute = parseInt(endCaptureTime[4]) || 0;
+        var endSecond = parseInt(endCaptureTime[5]) || 0;
 
-        thumbnailBeginTime = startYear + startMonth + startDay + startHour + startMinute + startSecond;
-        thumbnailEndTime = endYear + endMonth + endDay + endHour + endMinute + endSecond;
+        thumbnailBeginTime = new Date(Date.UTC(startYear, (startMonth - 1), startDay, startHour, startMinute, startSecond)).toISOString().substr(0,10).replace(/-/g, "");
+        thumbnailEndTime = new Date(Date.UTC(endYear, (endMonth - 1), endDay, endHour, endMinute, endSecond)).toISOString().substr(0,10).replace(/-/g, "");
         thumbnailPlaybackSpeed = (parseFloat($("#" + viewerDivId + " .custom-thumbnail-playback-rate").val()) * 100) || ($thumbnailPlaybackRate.data("rate") * 100);
 
         //var desiredFps = Math.max(1,$("#" + viewerDivId + " .custom-thumbnail-playback-rate").val() || timelapse.getFps() * Math.max(1,timelapse.getMaxPlaybackRate()) * $thumbnailPlaybackRate.data("rate"));
