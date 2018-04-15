@@ -427,23 +427,38 @@ if (!Math.uuid) {
           // Frame Number
           encoder.write_uint(Math.floor(desiredKeyframes[i]['time'] * timelapse.getFps()));
           var viewCenter;
-          if (tmJSON['projection-bounds']) {
-            var projection = timelapse.getProjection();
-            // Lat/Lng center view
-            viewCenter = timelapse.pixelBoundingBoxToPixelCenter(desiredKeyframes[i]['bounds']);
-            var latLng = projection.pointToLatlng({
-              x: viewCenter.x,
-              y: viewCenter.y
-            });
-            encoder.write_lat(latLng.lat);
-            encoder.write_lon(latLng.lng);
+          var zoom;
+          // Bounds & Zoom
+          if (desiredKeyframes[i].originalView.center) {
+            viewCenter = desiredKeyframes[i].originalView.center;
+            if (desiredKeyframes[i].originalView.center.lat) {
+              // Lat/Lng center view
+              encoder.write_lat(viewCenter.lat);
+              encoder.write_lon(viewCenter.lng);
+            } else {
+              // x/y center view
+              encoder.write_udecimal(viewCenter.x.toFixed(5), 5);
+              encoder.write_udecimal(viewCenter.y.toFixed(5), 5);
+            }
+            zoom = desiredKeyframes[i].originalView.zoom;
           } else {
-            // x/y center view
             viewCenter = timelapse.pixelBoundingBoxToPixelCenter(desiredKeyframes[i]['bounds']);
-            encoder.write_udecimal(viewCenter.x.toFixed(5), 5);
-            encoder.write_udecimal(viewCenter.y.toFixed(5), 5);
+            if (tmJSON['projection-bounds']) {
+              var projection = timelapse.getProjection();
+              // Lat/Lng center view
+              var latLng = projection.pointToLatlng({
+                x: viewCenter.x,
+                y: viewCenter.y
+              });
+              encoder.write_lat(latLng.lat);
+              encoder.write_lon(latLng.lng);
+            } else {
+              // x/y center view
+              encoder.write_udecimal(viewCenter.x.toFixed(5), 5);
+              encoder.write_udecimal(viewCenter.y.toFixed(5), 5);
+            }
+            zoom = timelapse.scaleToZoom(viewCenter.scale);
           }
-          var zoom = timelapse.scaleToZoom(viewCenter.scale);
           encoder.write_udecimal(zoom, 2);
           // Keyframe description
           encoder.write_string(desiredKeyframes[i]['unsafe_string_description']);
@@ -567,8 +582,8 @@ if (!Math.uuid) {
             "y": pointCenter.y,
             "scale": timelapse.zoomToScale(zoom)
           };
-          var bbox = timelapse.pixelCenterToPixelBoundingBoxView(centerView).bbox;
 
+          var bbox = timelapse.pixelCenterToPixelBoundingBoxView(centerView).bbox;
           frame["bounds"] = {};
           frame["bounds"]["xmin"] = bbox.xmin;
           frame["bounds"]["ymin"] = bbox.ymin;

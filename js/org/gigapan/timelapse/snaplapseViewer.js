@@ -1097,7 +1097,7 @@ if (!org.gigapan.timelapse.snaplapse) {
           $("#" + timeMachineDivId + "_snaplapse_keyframe_" + keyframe['id'] + "_timestamp").text(keyframe['captureTime']);
           // TODO: check if the thumbnail server is down and set the flag automatically
           if (useThumbnailServer)
-            loadThumbnailFromUrl(keyframe);
+            loadThumbnailFromKeyframe(keyframe);
           else
             setKeyframeThumbnail(keyframe);
         });
@@ -1286,15 +1286,15 @@ if (!org.gigapan.timelapse.snaplapse) {
         content += '  <tr valign="center">';
         content += '    <td valign="center" id="' + keyframeTableId + '" class="keyframe_table">';
         content += '      <div id="' + timestampId + '" class="snaplapse_keyframe_list_item_timestamp">' + keyframe['captureTime'] + '</div>';
-        content += '			<div id="' + thumbnailButtonId + '" class="snaplapse_keyframe_list_item_thumbnail_container" title="Go to this keyframe">';
-        content += '				<div class="snaplapse_keyframe_list_item_thumbnail_overlay"></div>';
+        content += '      <div id="' + thumbnailButtonId + '" class="snaplapse_keyframe_list_item_thumbnail_container" title="Go to this keyframe">';
+        content += '        <div class="snaplapse_keyframe_list_item_thumbnail_overlay"></div>';
         if (useThumbnailServer) {
-          content += '      	<img id="' + thumbnailId + '" width="' + KEYFRAME_THUMBNAIL_WIDTH + '" height="' + KEYFRAME_THUMBNAIL_HEIGHT + '" class="snaplapse_keyframe_list_item_thumbnail"></img>';
+          content += '        <img id="' + thumbnailId + '" width="' + KEYFRAME_THUMBNAIL_WIDTH + '" height="' + KEYFRAME_THUMBNAIL_HEIGHT + '" class="snaplapse_keyframe_list_item_thumbnail"></img>';
         } else {
-          content += '      	<canvas id="' + thumbnailId + '" width="' + KEYFRAME_THUMBNAIL_WIDTH + '" height="' + KEYFRAME_THUMBNAIL_HEIGHT + '" class="snaplapse_keyframe_list_item_thumbnail"></canvas>';
+          content += '        <canvas id="' + thumbnailId + '" width="' + KEYFRAME_THUMBNAIL_WIDTH + '" height="' + KEYFRAME_THUMBNAIL_HEIGHT + '" class="snaplapse_keyframe_list_item_thumbnail"></canvas>';
         }
-        content += '				<div id="' + titleId + '" class="snaplapse_keyframe_list_item_title"></div>';
-        content += '			</div>';
+        content += '        <div id="' + titleId + '" class="snaplapse_keyframe_list_item_title"></div>';
+        content += '      </div>';
         content += '      <div id="' + buttonContainerId + '" class="keyframe-button-container">';
         content += '        <button id="' + updateButtonId + '" title="Update this keyframe to current view">&nbsp</button>';
         content += '        <button id="' + duplicateButtonId + '" title="Duplicate this keyframe">&nbsp</button>';
@@ -1305,48 +1305,48 @@ if (!org.gigapan.timelapse.snaplapse) {
         content += '    </td>';
         content += '    <td valign="center" id="' + transitionTableId + '" class="transition_table">';
         content += '      <table border="0" cellspacing="0" cellpadding="0" class="transition_table_mask">';
-        content += '  			<tr>';
-        content += '  				<td>';
-        content += '						<input class="snaplapse_keyframe_list_item_loopRadio" type="radio" name="' + transitionSelection + '" id="' + speedBlockId + '"  value="speed" ' + (buildConstraint == "speed" ? 'checked="checked"' : '') + '/>';
-        content += '					</td>';
-        content += '  				<td>';
-        content += '        		<div class="snaplapse_keyframe_list_item_loop_container">';
-        content += '          		<span class="snaplapse_keyframe_list_item_loop_label" id="' + loopTextId + '">Loops:</span>';
-        content += '          		<input type="text" id="' + loopTimesId + '" class="snaplapse_keyframe_list_item_loop" title="Times for looping the entire video" value="' + loopTimes + '">';
-        content += '        		</div>';
-        content += '						<div class="snaplapse_keyframe_list_item_speed_container">';
-        content += '          		<span class="snaplapse_keyframe_list_item_speed_label_1">Speed:</span>';
-        content += '          		<input type="text" id="' + speedId + '" class="snaplapse_keyframe_list_item_speed" value="' + speed + '">';
-        content += '          		<span class="snaplapse_keyframe_list_item_speed_label_2">%</span>';
-        content += '        		</div>';
-        content += '					</td>';
-        content += '				</tr>';
-        content += '  			<tr>';
-        content += '  				<td>';
-        content += '						<input class="snaplapse_keyframe_list_item_durationRadio" type="radio" name="' + transitionSelection + '" id="' + durationBlockId + '" value="duration" ' + (buildConstraint == "duration" ? 'checked="checked"' : '') + '/>';
-        content += '					</td>';
-        content += '  				<td>';
-        content += '        		<div class="snaplapse_keyframe_list_item_duration_container">';
-        content += '          		<span class="snaplapse_keyframe_list_item_duration_label_1">Duration:</span>';
-        content += '          		<input type="text" id="' + durationId + '" class="snaplapse_keyframe_list_item_duration" value="' + duration + '">';
-        content += '          		<span class="snaplapse_keyframe_list_item_duration_label_2">secs</span>';
-        content += '        		</div>';
-        content += '					</td>';
-        content += '				</tr>';
+        content += '        <tr>';
+        content += '          <td>';
+        content += '            <input class="snaplapse_keyframe_list_item_loopRadio" type="radio" name="' + transitionSelection + '" id="' + speedBlockId + '"  value="speed" ' + (buildConstraint == "speed" ? 'checked="checked"' : '') + '/>';
+        content += '          </td>';
+        content += '          <td>';
+        content += '            <div class="snaplapse_keyframe_list_item_loop_container">';
+        content += '              <span class="snaplapse_keyframe_list_item_loop_label" id="' + loopTextId + '">Loops:</span>';
+        content += '              <input type="text" id="' + loopTimesId + '" class="snaplapse_keyframe_list_item_loop" title="Times for looping the entire video" value="' + loopTimes + '">';
+        content += '            </div>';
+        content += '            <div class="snaplapse_keyframe_list_item_speed_container">';
+        content += '              <span class="snaplapse_keyframe_list_item_speed_label_1">Speed:</span>';
+        content += '              <input type="text" id="' + speedId + '" class="snaplapse_keyframe_list_item_speed" value="' + speed + '">';
+        content += '              <span class="snaplapse_keyframe_list_item_speed_label_2">%</span>';
+        content += '            </div>';
+        content += '          </td>';
+        content += '        </tr>';
+        content += '        <tr>';
+        content += '          <td>';
+        content += '            <input class="snaplapse_keyframe_list_item_durationRadio" type="radio" name="' + transitionSelection + '" id="' + durationBlockId + '" value="duration" ' + (buildConstraint == "duration" ? 'checked="checked"' : '') + '/>';
+        content += '          </td>';
+        content += '          <td>';
+        content += '            <div class="snaplapse_keyframe_list_item_duration_container">';
+        content += '              <span class="snaplapse_keyframe_list_item_duration_label_1">Duration:</span>';
+        content += '              <input type="text" id="' + durationId + '" class="snaplapse_keyframe_list_item_duration" value="' + duration + '">';
+        content += '              <span class="snaplapse_keyframe_list_item_duration_label_2">secs</span>';
+        content += '            </div>';
+        content += '          </td>';
+        content += '        </tr>';
         content += '      </table>';
         content += '    </td>';
         content += '  </tr>';
         content += '</table>';
       } else {
         // Presentation mode view only state
-        content += '			<div id="' + thumbnailButtonId + '" class="snaplapse_keyframe_list_item_thumbnail_container_presentation" title="">';
-        content += '				<div class="snaplapse_keyframe_list_item_thumbnail_overlay_presentation"></div>';
+        content += '      <div id="' + thumbnailButtonId + '" class="snaplapse_keyframe_list_item_thumbnail_container_presentation" title="">';
+        content += '        <div class="snaplapse_keyframe_list_item_thumbnail_overlay_presentation"></div>';
         if (useThumbnailServer)
-          content += '      	<img id="' + thumbnailId + '" width="' + KEYFRAME_THUMBNAIL_WIDTH + '" height="' + KEYFRAME_THUMBNAIL_HEIGHT + '" class="snaplapse_keyframe_list_item_thumbnail"></img>';
+          content += '        <img id="' + thumbnailId + '" width="' + KEYFRAME_THUMBNAIL_WIDTH + '" height="' + KEYFRAME_THUMBNAIL_HEIGHT + '" class="snaplapse_keyframe_list_item_thumbnail"></img>';
         else
-          content += '      	<canvas id="' + thumbnailId + '" width="' + KEYFRAME_THUMBNAIL_WIDTH + '" height="' + KEYFRAME_THUMBNAIL_HEIGHT + '" class="snaplapse_keyframe_list_item_thumbnail"></canvas>';
-        content += '				<div id="' + titleId + '" class="snaplapse_keyframe_list_item_title"></div>';
-        content += '			</div>';
+          content += '        <canvas id="' + thumbnailId + '" width="' + KEYFRAME_THUMBNAIL_WIDTH + '" height="' + KEYFRAME_THUMBNAIL_HEIGHT + '" class="snaplapse_keyframe_list_item_thumbnail"></canvas>';
+        content += '        <div id="' + titleId + '" class="snaplapse_keyframe_list_item_title"></div>';
+        content += '      </div>';
       }
 
       $("#" + keyframeListItem.id).html(content).addClass("snaplapse_keyframe_list_item");
@@ -1626,10 +1626,10 @@ if (!org.gigapan.timelapse.snaplapse) {
       if (thumbnailUrlList.length > 0) {
         // Pull from list of provided thumbnail URLs
         // Assumes list is in order of how thumbnails will be displayed
-        loadThumbnailFromUrl(keyframe, insertionIndex);
+        loadThumbnailFromKeyframe(keyframe, insertionIndex);
       } else if (useThumbnailServer) {
         // Call thumbnail server to generate URL
-        loadThumbnailFromUrl(keyframe);
+        loadThumbnailFromKeyframe(keyframe);
       } else {
         setTimeout(function() {
           // Grab the current video frame and store it as the thumbnail in the canvas
@@ -1711,16 +1711,39 @@ if (!org.gigapan.timelapse.snaplapse) {
     };
     this.selectAndGo = selectAndGo;
 
-    var loadThumbnailFromUrl = function(keyframe, listIndex) {
+    var loadThumbnailFromKeyframe = function(keyframe, listIndex) {
       var $img = $("#" + timeMachineDivId + "_snaplapse_keyframe_" + keyframe['id'] + "_thumbnail");
       var thumbnailURL = thumbnailUrlList[listIndex];
-      if (!thumbnailUrlList[listIndex])
-        thumbnailURL = generateThumbnailURL(thumbnailServerRootTileUrl, keyframe.bounds, $img.width(), $img.height(), keyframe.time);
+      if (!thumbnailUrlList[listIndex]) {
+        thumbnailURL = generateThumbnailURL(thumbnailServerRootTileUrl, keyframe.originalView, Math.floor($img.width()), Math.floor($img.height()), keyframe.time, keyframe.layers).url;
+      }
       $img.attr("src", thumbnailURL);
     };
 
-    var generateThumbnailURL = function(root, bounds, width, height, time) {
-      var serverURL = "http://thumbnails.cmucreatelab.org/thumbnail?";
+    var generateThumbnailURL = function(root, bounds, width, height, time, layers) {
+      // Need to use original center view before it was ever modified by the aspect ratio of the current viewer
+      if (bounds.center) {
+        if (timelapse.getTmJSON()['projection-bounds']) {
+          bounds = timelapse.pixelCenterToPixelBoundingBoxView(timelapse.latLngCenterViewToPixelCenter(bounds, true), {width: 1920, height: 1080}).bbox;
+        } else {
+          bounds = timelapse.pixelCenterToPixelBoundingBoxView(bounds, {width: 1920, height: 1080}).bbox;
+        }
+      }
+      var urlSettings = {
+        ps: 0,
+        bt: time,
+        et: time,
+        t: time,
+        l: (typeof(layers) == "string") ? layers : layers.join(','),
+        width: width,
+        height: height,
+        bound: bounds,
+        format: "png"
+      };
+
+      return timelapse.getThumbnailTool().getURL(urlSettings)
+
+      /*var serverURL = "http://thumbnails.cmucreatelab.org/thumbnail?";
       var rootFlag = "root=" + root + "&";
       var boundsFlag = "boundsLTRB=" + bounds.xmin + "," + bounds.ymin + "," + bounds.xmax + "," + bounds.ymax + "&";
       var sizeFlag = "width=" + width + "&height=" + height + "&";
@@ -1729,7 +1752,7 @@ if (!org.gigapan.timelapse.snaplapse) {
       var mediaType = (typeof (settings["mediaType"]) == "undefined") ? null : settings["mediaType"];
       if (mediaType)
         thumbnailURL += "&tileFormat=" + mediaType.split(".")[1];
-      return thumbnailURL;
+      return thumbnailURL;*/
     };
     this.generateThumbnailURL = generateThumbnailURL;
 

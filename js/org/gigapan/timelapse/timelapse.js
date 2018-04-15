@@ -1239,22 +1239,30 @@ if (!window['$']) {
     };
     this.getProjectionType = getProjectionType;
 
-    var getViewStrAsProjection = function() {
-      var latlng = _getProjection().pointToLatlng(view);
-      return Math.round(1e5 * latlng.lat) / 1e5 + "," + Math.round(1e5 * latlng.lng) / 1e5 + "," + Math.round(1e3 * Math.log(view.scale / panoView.scale) / Math.log(2)) / 1e3 + "," + "latLng";
-    };
+    var getViewStrAsProjection = function(desiredView, ignoreCurrentPanoViewScale) {
 
-    var getViewStrAsPoints = function(desiredView) {
+      // If ignored is true, default to 1920x1080 scale
+      var panoViewScale = ignoreCurrentPanoViewScale ? 0.0005 : panoView.scale;
+
       desiredView = ( typeof (desiredView) == "undefined") ? view : desiredView;
-      return Math.round(1e5 * desiredView.x) / 1e5 + "," + Math.round(1e5 * desiredView.y) / 1e5 + "," + Math.round(1e3 * Math.log(desiredView.scale / panoView.scale) / Math.log(2)) / 1e3 + "," + "pts";
+      var latlng = _getProjection().pointToLatlng(view);
+      return Math.round(1e5 * latlng.lat) / 1e5 + "," + Math.round(1e5 * latlng.lng) / 1e5 + "," + Math.round(1e3 * Math.log(desiredView.scale / panoViewScale) / Math.log(2)) / 1e3 + "," + "latLng";
     };
 
-    var _getViewStr = function(desiredView) {
+    var getViewStrAsPoints = function(desiredView, ignoreCurrentPanoViewScale) {
+      // If ignored is true, default to 1920x1080 scale
+      var panoViewScale = ignoreCurrentPanoViewScale ? 0.0005 : panoView.scale;
+
+      desiredView = ( typeof (desiredView) == "undefined") ? view : desiredView;
+      return Math.round(1e5 * desiredView.x) / 1e5 + "," + Math.round(1e5 * desiredView.y) / 1e5 + "," + Math.round(1e3 * Math.log(desiredView.scale / panoViewScale) / Math.log(2)) / 1e3 + "," + "pts";
+    };
+
+    var _getViewStr = function(desiredView, ignoreCurrentPanoViewScale) {
       // TODO: let the user choose lat/lng or points for a dataset with projection info
       if (typeof (tmJSON['projection-bounds']) != 'undefined') {
-        return getViewStrAsProjection();
+        return getViewStrAsProjection(desiredView, ignoreCurrentPanoViewScale);
       } else {
-        return getViewStrAsPoints(desiredView);
+        return getViewStrAsPoints(desiredView, ignoreCurrentPanoViewScale);
       }
     };
     this.getViewStr = _getViewStr;
@@ -1350,7 +1358,7 @@ if (!window['$']) {
     this.normalizeView = _normalizeView;
 
     var getShareView = function(sharedTimestamp, desiredView, options) {
-      sharedTimestamp = sharedTimestamp || thisObj.getCurrentTime().toFixed(2);
+      sharedTimestamp = typeof(sharedTimestamp) != "undefined" ? sharedTimestamp : thisObj.getCurrentTime().toFixed(2);
       var hashparams = org.gigapan.Util.getUnsafeHashVars();
       // View is already in string format
       if (desiredView && typeof(desiredView) === "string" && desiredView.indexOf(",")) {
@@ -1363,29 +1371,6 @@ if (!window['$']) {
       }
       hashparams.t = sharedTimestamp;
       hashparams.ps = (thisObj.getPlaybackRate() / thisObj.getMaxPlaybackRate()) * 100;
-
-      if (options && typeof(options) === "object") {
-        $.extend(hashparams, options);
-      }
-
-      if (!hashparams.bt) {
-        var isStartTimeADate = (timelapse.sanitizedParseTimeGMT(timelapse.getCaptureTimes()[0]) != -1)
-        if (isStartTimeADate) {
-          hashparams.bt = new Date(timelapse.getFrameEpochTime(0)).toISOString().substr(0,10).replace(/-/g, "");
-        } else {
-          hashparams.bt = 0;
-        }
-      }
-
-      if (!hashparams.et) {
-        var lastFrameIdx = timelapse.getNumFrames() - 1;
-        var isEndTimeADate = (timelapse.sanitizedParseTimeGMT(timelapse.getCaptureTimes()[lastFrameIdx]) != -1)
-        if (isEndTimeADate) {
-          hashparams.et = new Date(timelapse.getFrameEpochTime(lastFrameIdx)).toISOString().substr(0,10).replace(/-/g, "").replace(/0101/g, "1231");
-        } else {
-          hashparams.et = parseFloat(timelapse.getDuration().toFixed(3));
-        }
-      }
 
       if (datasetType == "modis" && customUI.getLocker() != "none")
         hashparams.lk + customUI.getLocker();
@@ -1400,6 +1385,30 @@ if (!window['$']) {
         });
         hashparams.l = String(layers);
       }
+
+      if (options && typeof(options) === "object") {
+        $.extend(hashparams, options);
+      }
+
+      if (typeof(hashparams.bt) == "undefined") {
+        var isStartTimeADate = (timelapse.sanitizedParseTimeGMT(timelapse.getCaptureTimes()[0]) != -1)
+        if (isStartTimeADate) {
+          hashparams.bt = new Date(timelapse.getFrameEpochTime(0)).toISOString().substr(0,10).replace(/-/g, "");
+        } else {
+          hashparams.bt = 0;
+        }
+      }
+
+      if (typeof(hashparams.et) == "undefined") {
+        var lastFrameIdx = timelapse.getNumFrames() - 1;
+        var isEndTimeADate = (timelapse.sanitizedParseTimeGMT(timelapse.getCaptureTimes()[lastFrameIdx]) != -1)
+        if (isEndTimeADate) {
+          hashparams.et = new Date(timelapse.getFrameEpochTime(lastFrameIdx)).toISOString().substr(0,10).replace(/-/g, "").replace(/0101/g, "1231");
+        } else {
+          hashparams.et = parseFloat(timelapse.getDuration().toFixed(3));
+        }
+      }
+
       var shareStr;
       for (var prop in hashparams) {
         if (hashparams.hasOwnProperty(prop)) {
@@ -1518,17 +1527,36 @@ if (!window['$']) {
     //
     // Public methods
     //
+    this.getThumbnailOfShareView = function(shareView, width, height) {
+      if (!shareView || !width || !height) {
+        return "";
+      }
+      var snaplapse = thisObj.getSnaplapse() || thisObj.getSnaplapseForPresentationSlider();
+      if (snaplapse) {
+        var snaplapseViewer = snaplapse.getSnaplapseViewer();
+        var shareViewHashParams = org.gigapan.Util.unpackVars(shareView);
+        var centerView = thisObj.unsafeViewToView(shareViewHashParams.v);
+        var bboxView = thisObj.pixelCenterToPixelBoundingBoxView(thisObj.latLngCenterViewToPixelCenter(centerView, true), {width: 1920, height: 1080});
+        if (!bboxView) {
+          return "";
+        }
+        var bbox = bboxView.bbox;
+        return snaplapseViewer.generateThumbnailURL(null, bbox, width, height, shareViewHashParams.t, shareViewHashParams.l).url;
+      }
+    }
+
     this.getThumbnailOfCurrentView = function(width, height) {
-      var snaplapse = thisObj.getSnaplapse();
+      var snaplapse = thisObj.getSnaplapse() || thisObj.getSnaplapseForPresentationSlider();
+      var currentLayers = org.gigapan.Util.unpackVars(thisObj.getShareView()).l;
       if (snaplapse) {
         var snaplapseViewer = snaplapse.getSnaplapseViewer();
         if (!snaplapseViewer)
-          return null;
+          return "";
         if (!width)
           width = 126;
         if (!height)
           height = 73;
-        return snaplapseViewer.generateThumbnailURL(thumbnailServerRootTileUrl, thisObj.getBoundingBoxForCurrentView(), width, height, thisObj.getCurrentTime().toFixed(2));
+        return snaplapseViewer.generateThumbnailURL(thumbnailServerRootTileUrl, thisObj.getBoundingBoxForCurrentView(), width, height, thisObj.getCurrentTime().toFixed(2), currentLayers).url;
       }
     };
 
@@ -2470,7 +2498,7 @@ if (!window['$']) {
     this.pixelBoundingBoxToPixelCenter = pixelBoundingBoxToPixelCenter;
 
     // Convert {bbox:{ne:{lat:val,lng:val},sw:{lat:val,lng:val}}} OR {ne:{lat:val,lng:val},sw:{lat:val,lng:val}} to {x, y, scale}
-    var latLngBoundingBoxToPixelCenter = function(bbox) {
+    var latLngBoundingBoxToPixelCenter = function(bbox, viewportDimensions) {
       if (!bbox)
         return null;
 
@@ -2496,7 +2524,15 @@ if (!window['$']) {
       var ymax = Math.max(a.y, b.y);
       var ymin = Math.min(a.y, b.y);
 
-      var scale = Math.min(viewportWidth / (xmax - xmin), viewportHeight / (ymax - ymin));
+      var vWidth = viewportWidth;
+      var vHeight = viewportHeight;
+
+      if (viewportDimensions) {
+        vWidth = viewportDimensions.width;
+        vHeight = viewportDimensions.height;
+      }
+
+      var scale = Math.min(vWidth / (xmax - xmin), vHeight / (ymax - ymin));
 
       return {
         x: 0.5 * (xmin + xmax),
@@ -2507,22 +2543,28 @@ if (!window['$']) {
     this.latLngBoundingBoxToPixelCenter = latLngBoundingBoxToPixelCenter;
 
     // Convert {center:{x:val, y:val}, zoom:val} to {x, y, scale}
-    var pixelCenterViewToPixelCenter = function(theView) {
+    var pixelCenterViewToPixelCenter = function(theView, ignoreCurrentPanoViewScale) {
       if (!theView)
         return null;
+
+      // If ignored is true, default to 1920x1080 scale
+      var panoViewScale = ignoreCurrentPanoViewScale ? 0.0005 : panoView.scale;
 
       return {
         x: theView.center.x,
         y: theView.center.y,
-        scale: Math.pow(2, theView.zoom) * panoView.scale
+        scale: Math.pow(2, theView.zoom) * panoViewScale
       };
     };
     this.pixelCenterViewToPixelCenter = pixelCenterViewToPixelCenter;
 
     // Convert {center:{lat:val, lng:val}, zoom:val} to {x, y, scale}
-    var latLngCenterViewToPixelCenter = function(theView) {
+    var latLngCenterViewToPixelCenter = function(theView, ignoreCurrentPanoViewScale) {
       if (!theView)
         return null;
+
+      // If ignored is true, default to 1920x1080 scale
+      var panoViewScale = ignoreCurrentPanoViewScale ? 0.0005 : panoView.scale;
 
       var point = _getProjection().latlngToPoint({
         lat: theView.center.lat,
@@ -2531,7 +2573,7 @@ if (!window['$']) {
       return {
         x: point.x,
         y: point.y,
-        scale: Math.pow(2, theView.zoom) * panoView.scale
+        scale: Math.pow(2, theView.zoom) * panoViewScale
       };
     };
     this.latLngCenterViewToPixelCenter = latLngCenterViewToPixelCenter;
@@ -2601,14 +2643,22 @@ if (!window['$']) {
     this.pixelBoundingBoxToPixelCenterView = pixelBoundingBoxToPixelCenterView;
 
     // Convert {x, y, scale} OR {center:{x:val, y:val}, zoom:val} to {bbox:{xmin:val,xmax:val,ymin:val,ymax:val}}
-    var pixelCenterToPixelBoundingBoxView = function(theView) {
+    var pixelCenterToPixelBoundingBoxView = function(theView, viewportDimensions) {
       if (!theView)
         return null;
-      if (!theView.scale)
+      if (typeof(theView.scale) == "undefined")
         theView = _normalizeView(theView);
 
-      var halfWidth = 0.5 * viewportWidth / theView.scale;
-      var halfHeight = 0.5 * viewportHeight / theView.scale;
+      var vWidth = viewportWidth;
+      var vHeight = viewportHeight;
+
+      if (viewportDimensions) {
+        vWidth = viewportDimensions.width;
+        vHeight = viewportDimensions.height;
+      }
+
+      var halfWidth = 0.5 * vWidth / theView.scale;
+      var halfHeight = 0.5 * vHeight / theView.scale;
       return {
         bbox: {
           xmin: theView.x - halfWidth,
@@ -3206,9 +3256,7 @@ if (!window['$']) {
         snaplapseForPresentationSlider = new org.gigapan.timelapse.Snaplapse(thisObj, settings, "presentation");
       if (annotatorEnabled)
         annotator = new org.gigapan.timelapse.Annotator(thisObj);
-      if (useThumbnailServer && settings["showThumbnailTool"]) {
-        var view = thisObj.getView();
-        var scaleOffset = 40 / view.scale;
+      if (useThumbnailServer) {
         var thumbnailToolOptions = {};
         thumbnailTool = new ThumbnailTool(thisObj, thumbnailToolOptions);
       }
@@ -3500,20 +3548,20 @@ if (!window['$']) {
     var playbackTimeFromShareDate = function(sharedate) {
       // Might be an old-style # of seconds
       if (sharedate - 0 < 1000) {
-	console.log('DEPRECATED: Old-style share link using playback seconds: "' + sharedate + '"');
-	return sharedate - 0;
+        console.log('DEPRECATED: Old-style share link using playback seconds: "' + sharedate + '"');
+        return sharedate - 0;
       }
 
       var parsed;
       if (sharedate.length == 8 && sharedate.match(/^\d+$/)) {
-	parsed = sharedate.substr(0, 4) + '-' + sharedate.substr(4, 2) + '-' + sharedate.substr(6, 2);
+        parsed = sharedate.substr(0, 4) + '-' + sharedate.substr(4, 2) + '-' + sharedate.substr(6, 2);
       } else if (sharedate.length == 8+6 && sharedate.match(/^\d+$/)) {
-	parsed = sharedate.substr(0, 4) + '-' + sharedate.substr(4, 2) + '-' + sharedate.substr(6, 2) + ' ' +
-	  sharedate.substr(8, 2) + ':' + sharedate.substr(10, 2) + ':' + sharedate.substr(12, 2);
+        parsed = sharedate.substr(0, 4) + '-' + sharedate.substr(4, 2) + '-' + sharedate.substr(6, 2) + ' ' +
+        sharedate.substr(8, 2) + ':' + sharedate.substr(10, 2) + ':' + sharedate.substr(12, 2);
       } else {
-	// Error parsing;  return beginning of playback
-	console.log('Error parsing share date ' + sharedate + '; returning playbackTime = 0');
-	return 0;
+        // Error parsing;  return beginning of playback
+        console.log('Error parsing share date ' + sharedate + '; returning playbackTime = 0');
+        return 0;
       }
       return playbackTimeFromDate(parsed);
     }
