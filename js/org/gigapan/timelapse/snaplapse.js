@@ -718,7 +718,7 @@ if (!Math.uuid) {
       var previousMainThemeShareView = "";
       for (var i = 0; i < csvArray.length; i++) {
         var csvRow = csvArray[i];
-        var waypointTitle = csvRow['Waypoint Title'].trim();
+        var waypointTitle = csvRow['Waypoint Title'] ? csvRow['Waypoint Title'].trim() : "";
         // Edge case where first line after headings is blank
         if (i == 1 && waypointTitle == "") continue;
 
