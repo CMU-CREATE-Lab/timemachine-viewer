@@ -1714,13 +1714,14 @@ if (!org.gigapan.timelapse.snaplapse) {
     var loadThumbnailFromKeyframe = function(keyframe, listIndex) {
       var $img = $("#" + timeMachineDivId + "_snaplapse_keyframe_" + keyframe['id'] + "_thumbnail");
       var thumbnailURL = thumbnailUrlList[listIndex];
+      var options = {'baseMapsNoLabels' : true};
       if (!thumbnailUrlList[listIndex]) {
-        thumbnailURL = generateThumbnailURL(thumbnailServerRootTileUrl, keyframe.originalView, Math.floor($img.width()), Math.floor($img.height()), keyframe.time, keyframe.layers).url;
+        thumbnailURL = generateThumbnailURL(thumbnailServerRootTileUrl, keyframe.originalView, Math.floor($img.width()), Math.floor($img.height()), keyframe.time, keyframe.layers, options).url;
       }
       $img.attr("src", thumbnailURL);
     };
 
-    var generateThumbnailURL = function(root, bounds, width, height, time, layers) {
+    var generateThumbnailURL = function(root, bounds, width, height, time, layers, options) {
       // Need to use original center view before it was ever modified by the aspect ratio of the current viewer
       if (bounds.center) {
         if (timelapse.getTmJSON()['projection-bounds']) {
@@ -1740,6 +1741,10 @@ if (!org.gigapan.timelapse.snaplapse) {
         bound: bounds,
         format: "png"
       };
+
+      if (options && typeof(options) === "object") {
+        $.extend(urlSettings, options);
+      }
 
       return timelapse.getThumbnailTool().getURL(urlSettings)
 
