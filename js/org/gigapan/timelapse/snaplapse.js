@@ -698,34 +698,89 @@ if (!Math.uuid) {
       return true;
     };
 
-    // Create multiple presentation JSON strings based on themes
-    var CSVToJSONList = function(csvData) {
+    // Create multiple presentation JSON strings based on stories categoried by themes
+    var CSVToJSONList = function(csvArray) {
+      // V1: No themes were given, just waypoints
+      // V2: Themes (#) were given, with waypoints assoicated with them
+      // V3: Themes (#) are given, with associated designated stories (##) that then have accompanying waypoints
+      // V4: Data is read by column heading and not by index
       var jsonList = {};
-      var csvArray = csvData.split("\n");
+      var stories = {};
       var themeTitle;
       var themeId;
-      var rowString = "\n";
+      var storyTitle;
+      var storyId;
+      var waypointCSVCollection = [];
       var rowCount = 0;
-      // First row contains headings
-      for (var i = 1; i < csvArray.length; i++) {
-        var csvLineAsArray = csvArray[i].split("\t");
-        var waypointTitle = csvLineAsArray[0].trim();
-        // Themes in a spreadsheet are designated by a hash symbol
-        if (waypointTitle.charAt(0) == "#") {
+      var mainShareView = "";
+      var previousMainShareView = "";
+      var mainThemeShareView = "";
+      var previousMainThemeShareView = "";
+      for (var i = 0; i < csvArray.length; i++) {
+        var csvRow = csvArray[i];
+        var waypointTitle = csvRow['Waypoint Title'].trim();
+        // Edge case where first line after headings is blank
+        if (i == 1 && waypointTitle == "") continue;
+
+        // Themes in a spreadsheet are designated by a single hash symbol
+        if (waypointTitle.charAt(0) == "#" && waypointTitle.charAt(1) != "#") {
+          //console.log('found theme');
+          if (mainThemeShareView) {
+            previousMainThemeShareView = mainThemeShareView;
+          }
+          mainThemeShareView = csvRow['Share View'].trim();
           if (rowCount > 0) {
+            //console.log('adding theme to data struct', themeId);
+            // It is possible that we have no designated stories and instead we are treating every story like a theme (old way of doing this)
+            if (!storyTitle) {
+              storyTitle = "Default";
+              storyId = "default";
+            }
+            // Add the last found story to the current theme if it is not already in there
+            if (!stories[storyId]) {
+              stories[storyId] = {
+                storyTitle: storyTitle,
+                mainShareView: mainShareView,
+                waypoints : CSVToJSON(waypointCSVCollection)
+              }
+            }
+            // Add the theme to the main list
             jsonList[themeId] = {
               themeTitle : themeTitle,
-              waypoints : CSVToJSON(rowString.replace(/\n$/, ""))
+              mainThemeShareView : previousMainThemeShareView,
+              stories : stories
             }
-            rowString = "\n";
+            waypointCSVCollection = [];
             rowCount = 0;
           }
           themeTitle = waypointTitle.slice(1);
           // Sanitize
           themeId = themeTitle.replace(/ /g,"_").replace(/[^a-zA-Z0-9-_]/g, '').toLowerCase();
+          stories = {};
+          storyTitle = "";
+        // Stories in a spreadsheet are designated by a double hash symbol
+        } else if (waypointTitle.substring(0,2) == "##") {
+          if (mainShareView) {
+            previousMainShareView = mainShareView
+          }
+          mainShareView = csvRow['Share View'].trim();
+          if (rowCount > 0) {
+            //console.log('adding story to data struct', storyId);
+            stories[storyId] = {
+              storyTitle: storyTitle,
+              mainShareView: previousMainShareView,
+              waypoints : CSVToJSON(waypointCSVCollection)
+            }
+            waypointCSVCollection = [];
+            rowCount = 0;
+          }
+          storyTitle = waypointTitle.slice(2);
+          // Sanitize
+          storyId = storyTitle.replace(/ /g,"_").replace(/[^a-zA-Z0-9-_]/g, '').toLowerCase();
         } else {
+          //console.log('found waypoint for story');
           rowCount++;
-          rowString += csvArray[i] + "\n";
+          waypointCSVCollection.push(csvRow);
         }
       }
       // Legacy case where we may not have a theme set
@@ -734,17 +789,32 @@ if (!Math.uuid) {
         themeId = "default";
       }
 
+      // It is possible that we have no designated stories and instead we are treating every story like a theme (old way of doing this)
+      if (!storyTitle) {
+        storyTitle = "Default";
+        storyId = "default";
+      }
+
+      // Add the last found story to the current theme if it is not already in there
+      if (!stories[storyId]) {
+        stories[storyId] = {
+          storyTitle : storyTitle,
+          mainShareView : mainShareView,
+          waypoints : CSVToJSON(waypointCSVCollection)
+        }
+      }
       // Last theme found
       jsonList[themeId] = {
         themeTitle : themeTitle,
-        waypoints: CSVToJSON(rowString.replace(/\n$/, ""))
+        mainThemeShareView : mainThemeShareView,
+        stories: stories
       }
 
       return jsonList;
     };
     this.CSVToJSONList = CSVToJSONList;
 
-    var CSVToJSON = function(csvData) {
+    var CSVToJSON = function(csvArray) {
       // The csv format assumes the following columns:
       // Waypoint Title, Annotation Title, Annotation Text, Share View
       try {
@@ -769,12 +839,9 @@ if (!Math.uuid) {
         snaplapseJSON['snaplapse']['fps'] = fps;
         var keyframes = [];
 
-        var csvArray = csvData.split("\n");
-
-        // First row contains headings
-        for (var i = 1; i < csvArray.length; i++) {
-          var csvLineAsArray = csvArray[i].split("\t");
-          var unsafe_matchURL = csvLineAsArray[3].match(/#(.+)/);
+        for (var i = 0; i < csvArray.length; i++) {
+          var csvRow = csvArray[i];
+          var unsafe_matchURL = csvRow['Share View'].match(/#(.+)/);
           // Ignore the entry if there is no share view
           if (!unsafe_matchURL) continue;
           var unsafeHashObj = UTIL.unpackVars(unsafe_matchURL[1]);
@@ -787,6 +854,7 @@ if (!Math.uuid) {
           frame["waitStart"] = timelapse.getStartDwell();
           frame["waitEnd"] = timelapse.getEndDwell();
           frame["time"] = unsafeHashObj.hasOwnProperty("t") ? parseFloat(unsafeHashObj.t) : 0;
+          frame["bt"] = unsafeHashObj.hasOwnProperty("bt") ? parseFloat(unsafeHashObj.bt) : 0;
           frame["endTime"] = unsafeHashObj.et ? parseFloat(unsafeHashObj.et) : "";
           var frameNumber = Math.floor(frame["time"] * timelapse.getFps());
           frame["captureTime"] = captureTimes[frameNumber];
@@ -808,12 +876,12 @@ if (!Math.uuid) {
           frame["bounds"]["xmax"] = bbox.xmax;
           frame["bounds"]["ymax"] = bbox.ymax;
           frame["originalView"] = view;
-          frame["unsafe_string_description"] = csvLineAsArray[2] ? csvLineAsArray[2].trim() : "";
-          frame["unsafe_string_frameTitle"] = csvLineAsArray[0] ? csvLineAsArray[0].trim() : "";
-          frame["unsafe_string_annotationBoxTitle"] = csvLineAsArray[1] ? csvLineAsArray[1].trim() : "";
+          frame["unsafe_string_description"] = csvRow['Annotation Text'] ? csvRow['Annotation Text'].trim() : "";
+          frame["unsafe_string_frameTitle"] = csvRow['Waypoint Title'] ? csvRow['Waypoint Title'].trim() : "";
+          frame["unsafe_string_annotationBoxTitle"] = csvRow['Annotation Title'] ? csvRow['Annotation Title'].trim() : "";
           frame["layers"] = unsafeHashObj.l ? unsafeHashObj.l.split(",") : [""];
           frame["is-description-visible"] = (frame["unsafe_string_description"] || frame["unsafe_string_frameTitle"]) ? true : false;
-          var annotationPicturePath = csvLineAsArray[4] ? csvLineAsArray[4].trim() : "";
+          var annotationPicturePath = csvRow['Annotation Picture Path'] ? csvRow['Annotation Picture Path'].trim() : "";
           // TODO: Revisit how we check if this column actually contains an image
           if (annotationPicturePath.lastIndexOf('.jpg', annotationPicturePath.length - 4) === annotationPicturePath.length - 4 || annotationPicturePath.lastIndexOf('.png', annotationPicturePath.length - 4) === annotationPicturePath.length - 4)
             frame["unsafe_string_annotationPicPath"] = annotationPicturePath;
