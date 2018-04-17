@@ -715,7 +715,9 @@ if (!Math.uuid) {
       var mainShareView = "";
       var previousMainShareView = "";
       var mainThemeShareView = "";
+      var mainThemeDescription = "";
       var previousMainThemeShareView = "";
+      var previousMainThemeDescription = "";
       for (var i = 0; i < csvArray.length; i++) {
         var csvRow = csvArray[i];
         var waypointTitle = csvRow['Waypoint Title'] ? csvRow['Waypoint Title'].trim() : "";
@@ -728,7 +730,11 @@ if (!Math.uuid) {
           if (mainThemeShareView) {
             previousMainThemeShareView = mainThemeShareView;
           }
+          if (mainThemeDescription) {
+            previousMainThemeDescription = mainThemeDescription;
+          }
           mainThemeShareView = csvRow['Share View'].trim();
+          mainThemeDescription = csvRow['Annotation Text'] ? csvRow['Annotation Text'].trim() : "";
           if (rowCount > 0) {
             //console.log('adding theme to data struct', themeId);
             // It is possible that we have no designated stories and instead we are treating every story like a theme (old way of doing this)
@@ -748,6 +754,7 @@ if (!Math.uuid) {
             jsonList[themeId] = {
               themeTitle : themeTitle,
               mainThemeShareView : previousMainThemeShareView,
+              mainThemeDescription : previousMainThemeDescription,
               stories : stories
             }
             waypointCSVCollection = [];
@@ -807,6 +814,7 @@ if (!Math.uuid) {
       jsonList[themeId] = {
         themeTitle : themeTitle,
         mainThemeShareView : mainThemeShareView,
+        mainThemeDescription : mainThemeDescription,
         stories: stories
       }
 
