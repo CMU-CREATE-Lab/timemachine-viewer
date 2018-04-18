@@ -1409,9 +1409,17 @@ if (!window['$']) {
         }
       }
 
+      // EarthTime specific
+      var filterParamsForEarthTimeStoryMode = false;
+      if (typeof(hashparams.theme) != "undefined" && typeof(hashparams.forThumbnail) == "undefined") {
+        filterParamsForEarthTimeStoryMode = true;
+      }
+
       var shareStr;
       for (var prop in hashparams) {
         if (hashparams.hasOwnProperty(prop)) {
+          // EarthTIme specific
+          if (prop == "forThumbnail" || (filterParamsForEarthTimeStoryMode && prop != "theme" && prop != "story")) continue;
           if (shareStr) {
             shareStr += '&';
           } else {

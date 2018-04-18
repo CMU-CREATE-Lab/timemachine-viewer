@@ -710,6 +710,7 @@ if (!Math.uuid) {
       var themeId;
       var storyTitle;
       var storyId;
+      var storyDescription;
       var waypointCSVCollection = [];
       var rowCount = 0;
       var mainShareView = "";
@@ -721,6 +722,7 @@ if (!Math.uuid) {
       for (var i = 0; i < csvArray.length; i++) {
         var csvRow = csvArray[i];
         var waypointTitle = csvRow['Waypoint Title'] ? csvRow['Waypoint Title'].trim() : "";
+        var waypointText = csvRow['Annotation Text'] ? csvRow['Annotation Text'].trim() : "";
         // Edge case where first line after headings is blank
         if (i == 1 && waypointTitle == "") continue;
 
@@ -746,6 +748,7 @@ if (!Math.uuid) {
             if (!stories[storyId]) {
               stories[storyId] = {
                 storyTitle: storyTitle,
+                storyDescription: storyDescription,
                 mainShareView: mainShareView,
                 waypoints : CSVToJSON(waypointCSVCollection)
               }
@@ -765,6 +768,7 @@ if (!Math.uuid) {
           themeId = themeTitle.replace(/ /g,"_").replace(/[^a-zA-Z0-9-_]/g, '').toLowerCase();
           stories = {};
           storyTitle = "";
+          storyDescription = "";
         // Stories in a spreadsheet are designated by a double hash symbol
         } else if (waypointTitle.substring(0,2) == "##") {
           if (mainShareView) {
@@ -775,6 +779,7 @@ if (!Math.uuid) {
             //console.log('adding story to data struct', storyId);
             stories[storyId] = {
               storyTitle: storyTitle,
+              storyDescription: storyDescription,
               mainShareView: previousMainShareView,
               waypoints : CSVToJSON(waypointCSVCollection)
             }
@@ -782,6 +787,7 @@ if (!Math.uuid) {
             rowCount = 0;
           }
           storyTitle = waypointTitle.slice(2);
+          storyDescription = waypointText.trim();
           // Sanitize
           storyId = storyTitle.replace(/ /g,"_").replace(/[^a-zA-Z0-9-_]/g, '').toLowerCase();
         } else {
@@ -806,6 +812,7 @@ if (!Math.uuid) {
       if (!stories[storyId]) {
         stories[storyId] = {
           storyTitle : storyTitle,
+          storyDescription: storyDescription,
           mainShareView : mainShareView,
           waypoints : CSVToJSON(waypointCSVCollection)
         }
