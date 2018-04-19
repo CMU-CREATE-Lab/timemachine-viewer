@@ -790,6 +790,12 @@ if (!Math.uuid) {
           storyDescription = waypointText.trim();
           // Sanitize
           storyId = storyTitle.replace(/ /g,"_").replace(/[^a-zA-Z0-9-_]/g, '').toLowerCase();
+
+          if (storyDescription && mainShareView) {
+            rowCount++;
+            csvRow['Waypoint Title'] = csvRow['Waypoint Title'].replace('#', '');
+            waypointCSVCollection.push(csvRow);
+          }
         } else {
           //console.log('found waypoint for story');
           rowCount++;
