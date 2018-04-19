@@ -1411,7 +1411,7 @@ if (!window['$']) {
 
       // EarthTime specific
       var filterParamsForEarthTimeStoryMode = false;
-      if (typeof(hashparams.theme) != "undefined" && typeof(hashparams.forThumbnail) == "undefined") {
+      if (typeof(hashparams.theme) != "undefined" && typeof(hashparams.forThumbnail) == "undefined" && window.location.href.indexOf("/stories") == -1 && window.location.href.indexOf("/themes") == -1) {
         filterParamsForEarthTimeStoryMode = true;
       }
 
