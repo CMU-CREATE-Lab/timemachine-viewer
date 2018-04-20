@@ -1714,7 +1714,19 @@ if (!org.gigapan.timelapse.snaplapse) {
     var loadThumbnailFromKeyframe = function(keyframe, listIndex) {
       var $img = $("#" + timeMachineDivId + "_snaplapse_keyframe_" + keyframe['id'] + "_thumbnail");
       var thumbnailURL = thumbnailUrlList[listIndex];
-      var options = {'baseMapsNoLabels' : true};
+      var shareView;
+      if (keyframe.originalView.center.lat) {
+        shareView = "v=" + keyframe.originalView.center.lat + "," + keyframe.originalView.center.lng + "," + keyframe.originalView.zoom + ",latLng";
+      } else {
+        shareView = "v=" + keyframe.originalView.center.x + "," + keyframe.originalView.center.y + "," + keyframe.originalView.zoom + ",pts";
+      }
+      if (keyframe.time) {
+        shareView += "&t=" + keyframe.time;
+      }
+      if (keyframe.layers) {
+        shareView += "&l=" + String(keyframe.layers);
+      }
+      var options = {'baseMapsNoLabels' : true, 'shareView' : shareView};
       if (!thumbnailUrlList[listIndex]) {
         thumbnailURL = generateThumbnailURL(thumbnailServerRootTileUrl, keyframe.originalView, Math.floor($img.width()), Math.floor($img.height()), keyframe.time, keyframe.layers, options).url;
       }

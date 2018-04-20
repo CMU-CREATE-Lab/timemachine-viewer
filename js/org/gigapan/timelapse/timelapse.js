@@ -1549,7 +1549,8 @@ if (!window['$']) {
           return "";
         }
         var bbox = bboxView.bbox;
-        return snaplapseViewer.generateThumbnailURL(null, bbox, width, height, shareViewHashParams.t, shareViewHashParams.l).url;
+        var shareView = "v=" + shareViewHashParams.v + "&t=" + shareViewHashParams.t + "&l=" + String(shareViewHashParams.l);
+        return snaplapseViewer.generateThumbnailURL(null, bbox, width, height, shareViewHashParams.t, shareViewHashParams.l, {shareView: shareView}).url;
       }
     }
 
