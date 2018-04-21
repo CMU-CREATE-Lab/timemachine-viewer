@@ -1716,9 +1716,9 @@ if (!org.gigapan.timelapse.snaplapse) {
       var thumbnailURL = thumbnailUrlList[listIndex];
       var shareView;
       if (keyframe.originalView.center.lat) {
-        shareView = "v=" + keyframe.originalView.center.lat + "," + keyframe.originalView.center.lng + "," + keyframe.originalView.zoom + ",latLng";
+        shareView = "v=" + parseFloat(keyframe.originalView.center.lat).toFixed(6) + "," + parseFloat(keyframe.originalView.center.lng).toFixed(6) + "," + parseFloat(keyframe.originalView.zoom).toFixed(2) + ",latLng";
       } else {
-        shareView = "v=" + keyframe.originalView.center.x + "," + keyframe.originalView.center.y + "," + keyframe.originalView.zoom + ",pts";
+        shareView = "v=" + parseFloat(keyframe.originalView.center.x).toFixed(6) + "," + parseFloat(keyframe.originalView.center.y).toFixed(6) + "," + parseFloat(keyframe.originalView.zoom).toFixed(2) + ",pts";
       }
       if (keyframe.time) {
         shareView += "&t=" + keyframe.time;
