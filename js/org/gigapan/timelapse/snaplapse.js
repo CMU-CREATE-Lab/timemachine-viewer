@@ -719,6 +719,9 @@ if (!Math.uuid) {
       var mainThemeDescription = "";
       var previousMainThemeShareView = "";
       var previousMainThemeDescription = "";
+      var storyAuthor = "";
+      var previousStoryAuthor = "";
+
       for (var i = 0; i < csvArray.length; i++) {
         var csvRow = csvArray[i];
         var waypointTitle = csvRow['Waypoint Title'] ? csvRow['Waypoint Title'].trim() : "";
@@ -774,12 +777,18 @@ if (!Math.uuid) {
           if (mainShareView) {
             previousMainShareView = mainShareView
           }
+          if (storyAuthor) {
+            previousStoryAuthor = storyAuthor
+          }
           mainShareView = csvRow['Share View'].trim();
+          storyAuthor = csvRow['Author'] ? csvRow['Author'].trim() : "";
+
           if (rowCount > 0) {
             //console.log('adding story to data struct', storyId);
             stories[storyId] = {
               storyTitle: storyTitle,
               storyDescription: storyDescription,
+              storyAuthor: previousStoryAuthor,
               mainShareView: previousMainShareView,
               waypoints : CSVToJSON(waypointCSVCollection)
             }
@@ -819,6 +828,7 @@ if (!Math.uuid) {
         stories[storyId] = {
           storyTitle : storyTitle,
           storyDescription: storyDescription,
+          storyAuthor : storyAuthor,
           mainShareView : mainShareView,
           waypoints : CSVToJSON(waypointCSVCollection)
         }
