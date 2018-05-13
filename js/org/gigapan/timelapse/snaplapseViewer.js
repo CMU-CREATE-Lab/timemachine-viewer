@@ -1742,6 +1742,10 @@ if (!org.gigapan.timelapse.snaplapse) {
           bounds = timelapse.pixelCenterToPixelBoundingBoxView(bounds, {width: 1920, height: 1080}).bbox;
         }
       }
+      // Legacy links may have no layers encoded in it. If so, set to empty string.
+      if (!layers) {
+        layers = "";
+      }
       var urlSettings = {
         ps: 0,
         bt: time,
