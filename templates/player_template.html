@@ -123,8 +123,16 @@
       <h3>Share an image or video</h3>
       <div class="share-thumbnail">
         <table class="share-thumbnail-tool">
+          <tr colspans="3">
+            <td>Output dimensions</td>
+            <td><input id="thumbnail-width" type="number" min="64" value="440">&nbsp;x&nbsp;<input id="thumbnail-height" type="number" min="64" value="440"></td>
+          </tr>
+          <tr colspans="3">
+            <td>Force aspect ratio?</td>
+            <td><input type="checkbox" class="force-aspect-ratio"></td>
+          </tr>
           <tr>
-            <td>Set bounds:</td>
+            <td>Set capture bounds:</td>
             <td><div class="reset-viewport customDialogButton selected">Viewport</div><div class="reset-custom customDialogButton">Custom</div></td>
           </tr>
           <tr>
@@ -134,6 +142,13 @@
           <tr>
             <td>Ending time:</td>
             <td><input class="endingTimeSpinner" name="spinner" value=""></td>
+          </tr>
+          <tr>
+            <td>Type:</td>
+            <td>
+              <div class="customDialogButton thumbnail-type-image selected">Image</div>
+              <div class="customDialogButton thumbnail-type-video">Video</div>
+            </td>
           </tr>
           <tr>
             <td>Playback rate:</td>
@@ -154,17 +169,6 @@
           <tr>
             <td>Embed time?</td>
             <td><input type="checkbox" class="embed-capture-time" checked></td>
-          </tr>
-          <tr colspans="3">
-            <td>Output dimensions</td>
-            <td><input id="thumbnail-width" type="number" min="64" value="440">&nbsp;x&nbsp;<input id="thumbnail-height" type="number" min="64" value="440"></td>
-          </tr>
-          <tr>
-            <td>Type:</td>
-            <td>
-              <div class="customDialogButton thumbnail-type-image selected">Image</div>
-              <div class="customDialogButton thumbnail-type-video">Video</div>
-            </td>
           </tr>
           <tr>
             <td colspan="2"><div class="generate-thumbnail customDialogButton customHighlightDialogButton">Generate Image</div></td>

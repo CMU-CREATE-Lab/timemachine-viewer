@@ -121,6 +121,7 @@ if (!org.gigapan.timelapse.Timelapse) {
     var $thumbnailImageSelector = $("#" + viewerDivId + " .thumbnail-type-image");
     var $thumbnailCustomBoundsSelector = $("#" + viewerDivId + " .reset-custom");
     var $thumbnailViewportBoundsSelector = $("#" + viewerDivId + " .reset-viewport");
+    var $thumbnailForceAspectRatioCheckbox = $("#" + viewerDivId + " .force-aspect-ratio");
     var $thumbnailPreviewCopyTextContainer = $("#" + viewerDivId + " .thumbnail-preview-copy-text-container");
     var $thumbnailPreviewContainer = $("#" + viewerDivId + " .thumbnail-preview-container");
     var $thumbnailPreviewLink = $("#" + viewerDivId + " .thumbnail-preview-link");
@@ -793,6 +794,7 @@ if (!org.gigapan.timelapse.Timelapse) {
           $('.custom-thumbnail-playback-rate').remove();
         }
       });
+
       // Hide preview areas
       $thumbnailPreviewContainer.hide();
       $thumbnailPreviewCopyTextContainer.hide();
@@ -800,7 +802,7 @@ if (!org.gigapan.timelapse.Timelapse) {
       $("#" + viewerDivId + " .generate-thumbnail").button().click(function(event) {
         $(this).button("disable");
         handleThumbnailDurationChange();
-        $thumbnailPreviewCopyTextButton.button("disable");
+        //$thumbnailPreviewCopyTextButton.button("disable");
         $thumbnailPreviewCopyDataButton.button("disable");
         $thumbnailPreviewCopyDownloadButton.button("disable");
 
@@ -917,6 +919,12 @@ if (!org.gigapan.timelapse.Timelapse) {
         thumbnailTool.centerAndDrawCropBox("medium");
         $thumbnailViewportBoundsSelector.removeClass('selected');
         $(this).addClass('selected');
+      });
+
+      $thumbnailForceAspectRatioCheckbox.on("click", function() {
+        if ($thumbnailCustomBoundsSelector.hasClass("selected")) {
+          timelapse.getThumbnailTool().redrawCropBox();
+        }
       });
 
       $thumbnailPreviewCopyTextButton.button().click(function(event) {
@@ -1039,6 +1047,7 @@ if (!org.gigapan.timelapse.Timelapse) {
     };
 
     var setThumbnailPreviewArea = function(response) {
+      $(".thumbnail-preview-error").remove();
       $thumbnailPreviewContainer.show();
       $thumbnailPreviewCopyTextContainer.show();
       // This code block is used to solve a problem related to scrollbar overflowing
@@ -1075,16 +1084,13 @@ if (!org.gigapan.timelapse.Timelapse) {
 
       if (response_is_image || response_is_gif) {
         $thumbnailPreview = $("<img class='thumbnail-preview' src='" + response.url + "'>");
-        $thumbnailPreview.on("load", function() {
-          $thumbnailPreview.show();
-          $thumbnailPreviewLink.show();
-        });
       } else if (response_is_video) {
         $thumbnailPreview = $("<video class='thumbnail-preview' src='" + response.url + "' controls autoplay preload='auto'></video>");
-        $thumbnailPreview.on("loadedmetadata", function() {
-          $thumbnailPreview.show();
-          $thumbnailPreviewLink.show();
-        });
+      } else {
+        $thumbnailPreview = $("<div class='thumbnail-preview-error'>Sorry, something went wrong. Invalid output format.</div>");
+        $thumbnailPreviewContainer.empty().prepend($thumbnailPreview);
+        $("#" + viewerDivId + " .generate-thumbnail").button("enable");
+        return;
       }
       $thumbnailPreviewContainer.prepend($thumbnailPreview);
       $thumbnailPreview.hide();
@@ -1114,13 +1120,19 @@ if (!org.gigapan.timelapse.Timelapse) {
         $thumbnailPreviewCopyDataButton.children().text("Copy Video");
       }
 
-      $(".thumbnail-preview").on("load loadeddata", function() {
+      $thumbnailPreview.on("load loadeddata", function() {
         $("#" + viewerDivId + " .generate-thumbnail").button("enable");
         if (response_is_image || response_is_gif) {
           $thumbnailPreviewCopyDataButton.button("enable");
         }
-        $thumbnailPreviewCopyTextButton.button("enable");
+        //$thumbnailPreviewCopyTextButton.button("enable");
         $thumbnailPreviewCopyDownloadButton.button("enable");
+        $thumbnailPreview.show();
+        $thumbnailPreviewLink.show();
+      }).on("error", function() {
+        $thumbnailPreview = $("<div class='thumbnail-preview-error'>Sorry, something went wrong. Try and decrease the time span to a shorter range and/or make sure your other settings are valid.</div>");
+        $thumbnailPreviewContainer.empty().prepend($thumbnailPreview);
+        $("#" + viewerDivId + " .generate-thumbnail").button("enable");
       });
     };
 
