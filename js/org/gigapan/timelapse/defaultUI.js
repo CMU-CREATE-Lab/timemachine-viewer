@@ -949,7 +949,9 @@ if (!org.gigapan.timelapse.Timelapse) {
         var previousHeight = $thumbnailCustomBoundsHeight.val();
         $thumbnailCustomBoundsWidth.val(previousHeight);
         $thumbnailCustomBoundsHeight.val(previousWidth);
-        timelapse.getThumbnailTool().redrawCropBox();
+        if ($thumbnailCustomBoundsSelector.hasClass("selected")) {
+          timelapse.getThumbnailTool().redrawCropBox();
+        }
       });
 
       $thumbnailPreviewCopyTextButton.button().click(function(event) {
