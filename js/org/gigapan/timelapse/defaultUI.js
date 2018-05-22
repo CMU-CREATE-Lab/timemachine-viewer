@@ -924,6 +924,8 @@ if (!org.gigapan.timelapse.Timelapse) {
       $thumbnailForceAspectRatioCheckbox.on("click", function() {
         if ($thumbnailCustomBoundsSelector.hasClass("selected")) {
           timelapse.getThumbnailTool().redrawCropBox();
+        } else {
+          $thumbnailCustomBoundsSelector.click();
         }
       });
 
