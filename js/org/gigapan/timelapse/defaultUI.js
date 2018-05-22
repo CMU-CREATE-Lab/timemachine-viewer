@@ -123,8 +123,11 @@ if (!org.gigapan.timelapse.Timelapse) {
     var $thumbnailViewportBoundsSelector = $("#" + viewerDivId + " .reset-viewport");
     var $thumbnailForceAspectRatioCheckbox = $("#" + viewerDivId + " .force-aspect-ratio");
     var $thumbnailPreviewCopyTextContainer = $("#" + viewerDivId + " .thumbnail-preview-copy-text-container");
+    var $thumbnailSwapSelectionDimensions = $("#" + viewerDivId + " .thumbnail-swap-selection-dimensions");
     var $thumbnailPreviewContainer = $("#" + viewerDivId + " .thumbnail-preview-container");
     var $thumbnailPreviewLink = $("#" + viewerDivId + " .thumbnail-preview-link");
+    var $thumbnailCustomBoundsWidth = $("#" + viewerDivId + " #thumbnail-width");
+    var $thumbnailCustomBoundsHeight = $("#" + viewerDivId + " #thumbnail-height");
     var $captureTime = $("#" + viewerDivId + " .captureTime");
     var $startingTimeSpinner = $("#" + viewerDivId + " .startingTimeSpinner");
     var $endingTimeSpinner = $("#" + viewerDivId + " .endingTimeSpinner");
@@ -860,8 +863,8 @@ if (!org.gigapan.timelapse.Timelapse) {
           smoothPlayback: $("#" + viewerDivId + " .smooth-playback").prop('checked'),
           startDwell: $("#" + viewerDivId + " .thumbnail-start-delay").val(),
           endDwell: $("#" + viewerDivId + " .thumbnail-end-delay").val(),
-          width: $("#" + viewerDivId + " #thumbnail-width").val(),
-          height: $("#" + viewerDivId + "  #thumbnail-height").val(),
+          width: $thumbnailCustomBoundsWidth.val(),
+          height: $thumbnailCustomBoundsHeight.val(),
           bound: $thumbnailViewportBoundsSelector.hasClass("selected") ? timelapse.getBoundingBoxForCurrentView() : undefined,
           format: format
         };
@@ -927,6 +930,26 @@ if (!org.gigapan.timelapse.Timelapse) {
         } else {
           $thumbnailCustomBoundsSelector.click();
         }
+      });
+
+      $thumbnailCustomBoundsWidth.on("change", function() {
+        if ($thumbnailForceAspectRatioCheckbox.is(":checked")) {
+          timelapse.getThumbnailTool().redrawCropBox();
+        }
+      });
+
+      $thumbnailCustomBoundsHeight.on("change", function() {
+        if ($thumbnailForceAspectRatioCheckbox.is(":checked")) {
+          timelapse.getThumbnailTool().redrawCropBox();
+        }
+      });
+
+      $thumbnailSwapSelectionDimensions.on("click", function() {
+        var previousWidth = $thumbnailCustomBoundsWidth.val();
+        var previousHeight = $thumbnailCustomBoundsHeight.val();
+        $thumbnailCustomBoundsWidth.val(previousHeight);
+        $thumbnailCustomBoundsHeight.val(previousWidth);
+        timelapse.getThumbnailTool().redrawCropBox();
       });
 
       $thumbnailPreviewCopyTextButton.button().click(function(event) {

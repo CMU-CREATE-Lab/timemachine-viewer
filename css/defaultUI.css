@@ -1088,6 +1088,23 @@ _:-moz-tree-row(hover), .customDialog .customDialogButton .ui-button-text {
   width: 112px;
 }
 
+.thumbnail-swap-selection-dimensions {
+  background: url(../images/swap.png) #fff center no-repeat;
+  background-position: center;
+  background-size: cover;
+  width: 22px;
+  height: 22px;
+  display: inline-block;
+  position: absolute;
+  margin-left: 4px;
+  opacity: 0.60;
+  cursor: pointer;
+}
+
+.thumbnail-swap-selection-dimensions:hover {
+  opacity: 0.8
+}
+
 .thumbnail-preview-copy-data-button, .thumbnail-preview-copy-download-button {
   width: 100px;
 }
