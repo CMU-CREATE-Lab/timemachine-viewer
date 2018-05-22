@@ -1078,6 +1078,8 @@ _:-moz-tree-row(hover), .customDialog .customDialogButton .ui-button-text {
 .thumbnail-preview-error {
   padding: 10px;
   padding-top: 8px;
+  height: calc(100% - 20px);
+  background: white;
 }
 
 .thumbnail-preview-copy-text-button {

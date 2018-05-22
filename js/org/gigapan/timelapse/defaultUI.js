@@ -1132,7 +1132,7 @@ if (!org.gigapan.timelapse.Timelapse) {
         $thumbnailPreview.show();
         $thumbnailPreviewLink.show();
       }).on("error", function() {
-        $thumbnailPreview = $("<div class='thumbnail-preview-error'>Sorry, something went wrong. Try and decrease the time span to a shorter range and/or make sure your other settings are valid.</div>");
+        $thumbnailPreview = $("<div class='thumbnail-preview-error'>Sorry, something went wrong. Try again after decreasing the time span to a shorter range and/or making sure your other settings are valid.</div>");
         $thumbnailPreviewContainer.empty().prepend($thumbnailPreview);
         $("#" + viewerDivId + " .generate-thumbnail").button("enable");
       });
