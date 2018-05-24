@@ -992,7 +992,7 @@ if (!org.gigapan.timelapse.Timelapse) {
       });
 
       $thumbnailPreviewCopyDownloadButton.button().click(function(event) {
-        download($(this).data("download-url"), null, null, "earthtime-export." + $(this).data("download-type"));
+        download($(this).data("download-url"), null, null, "export." + $(this).data("download-type"));
         setButtonTooltip("Downloading", $thumbnailPreviewCopyDownloadButton);
       }).hover(function() {
         setButtonTooltip("Download to your computer", $thumbnailPreviewCopyDownloadButton);
