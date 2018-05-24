@@ -1666,7 +1666,9 @@ if (!window['$']) {
       var newRate = parseFloat(rate);
       if (!isNaN(newRate)) {
         defaultUI.setMaxPlaybackRate(newRate);
-        customUI.setMaxPlaybackRate(newRate);
+        if (customUI) {
+          customUI.setMaxPlaybackRate(newRate);
+        }
       }
     };
 
@@ -3490,15 +3492,15 @@ if (!window['$']) {
       var lowCompare = sanitizedParseTimeGMT(captureTimes[low]);
       var highCompare = sanitizedParseTimeGMT(captureTimes[high]);
       if (Math.abs(lowCompare - sanitized_timeToFind) > Math.abs(highCompare - sanitized_timeToFind)) {
-	return high;
+        return high;
       } else {
-	return low;
+        return low;
       }
     };
     this.findExactOrClosestCaptureTime = findExactOrClosestCaptureTime;
 
     var sanitizedParseTimeGMT = function(time) {
-      if (!time || parseInt(time) < 1000) {
+      if (!time) {
         return -1;
       }
 
@@ -3516,8 +3518,8 @@ if (!window['$']) {
 
       // If form HH:MM or HH:MM:SS, add date from capture array
       if (time.match(/^\d\d:\d\d(:\d\d)?$/)) {
-	lastCapture = new Date(sanitizedParseTimeGMT(captureTimes[Math.max(0, frames - 1)]));
-	time = lastCapture.getFullYear() + "/" + (1e2 + (lastCapture.getMonth() + 1) + '').substr(1) + "/" + (1e2 + (lastCapture.getDate()) + '').substr(1) + " " + time;
+        var lastCapture = new Date(sanitizedParseTimeGMT(captureTimes[Math.max(0, frames - 1)]));
+        time = lastCapture.getFullYear() + "/" + (1e2 + (lastCapture.getMonth() + 1) + '').substr(1) + "/" + (1e2 + (lastCapture.getDate()) + '').substr(1) + " " + time;
       }
 
       time += ' GMT';
@@ -3532,16 +3534,16 @@ if (!window['$']) {
       var e = findExactOrClosestCaptureTime(time, 'up');
       var frameno;
       if (b == e) {
-	frameno = b;
+        frameno = b;
       } else {
-	var b_epoch = getFrameEpochTime(b);
-	var e_epoch = getFrameEpochTime(e);
-	var time_epoch = sanitizedParseTimeGMT(time);
-	if (Math.abs(b_epoch - e_epoch) < 1e-10) {
-	  frameno = b;
-	} else {
-	  frameno = b + (time_epoch - b_epoch) / (e_epoch - b_epoch);
-	}
+        var b_epoch = getFrameEpochTime(b);
+        var e_epoch = getFrameEpochTime(e);
+        var time_epoch = sanitizedParseTimeGMT(time);
+        if (Math.abs(b_epoch - e_epoch) < 1e-10) {
+          frameno = b;
+        } else {
+          frameno = b + (time_epoch - b_epoch) / (e_epoch - b_epoch);
+        }
       }
       return frameno / _getFps();
     };

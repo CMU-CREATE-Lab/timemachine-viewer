@@ -1023,7 +1023,9 @@ if (!org.gigapan.timelapse.Timelapse) {
           $(".thumbnail-start-delay, .thumbnail-end-delay, .thumbnail-fps").prop('disabled', true);
           $thumbnailPlaybackRate.button("disable");
           $thumbnailVideoSelector.addClass("disabled");
-          $thumbnailImageSelector.trigger("click");
+          if (!$thumbnailImageSelector.hasClass("selected")) {
+            $thumbnailImageSelector.trigger("click");
+          }
         }
         //$(".smooth-playback").prop("disabled", true);
 
