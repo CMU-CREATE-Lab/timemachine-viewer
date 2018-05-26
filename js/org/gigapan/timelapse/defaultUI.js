@@ -587,10 +587,12 @@ if (!org.gigapan.timelapse.Timelapse) {
           }
         } else {
           $("#" + viewerDivId + " [aria-controls='share-link-container']").show();
-          $("#" + viewerDivId + " .shareView .accordion").accordion("option", "active", 0);
           $shareViewDialog.dialog("open");
           updateShareViewTextbox();
           UTIL.addGoogleAnalyticEvent('button', 'click', 'viewer-show-share-dialog');
+          if ($thumbnailCustomBoundsSelector.hasClass("selected")) {
+            $thumbnailCustomBoundsSelector.click();
+          }
         }
       });
       $shareUrl.focus(function() {
@@ -917,7 +919,9 @@ if (!org.gigapan.timelapse.Timelapse) {
         thumbnailTool.hideCropBox();
         $thumbnailCustomBoundsSelector.removeClass('selected');
         $(this).addClass('selected');
+        $thumbnailForceAspectRatioCheckbox.prop('checked', false);
       });
+
       $thumbnailCustomBoundsSelector.button().click(function(event) {
         thumbnailTool.centerAndDrawCropBox("medium");
         $thumbnailViewportBoundsSelector.removeClass('selected');

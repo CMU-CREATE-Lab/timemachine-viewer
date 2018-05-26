@@ -880,6 +880,10 @@ _:-moz-tree-row(hover), .customDialog .customDialogButton .ui-button-text {
   width: 350px;
 }
 
+.share-thumbnail-tool td:first-child {
+  width: 140px;
+}
+
 .share-thumbnail-tool td {
   height: 25px;
   white-space: nowrap;
@@ -1065,6 +1069,10 @@ _:-moz-tree-row(hover), .customDialog .customDialogButton .ui-button-text {
   z-index: 1;
 }
 
+.thumbnail-preview {
+  width: 318px;
+}
+
 .thumbnail-preview-copy-text-container {
   margin-top: 30px;
   margin-bottom: 0px;
@@ -1233,6 +1241,10 @@ input:disabled, .thumbnail-speed.ui-state-disabled, .thumbnail-playback-rate.ui-
 
 .thumbnail-type-image.disabled {
   cursor: not-allowed !important;
+}
+
+.wrap-cell-contents {
+  white-space: normal !important;
 }
 
 .customDropdownButton {

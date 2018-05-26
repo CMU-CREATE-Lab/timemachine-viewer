@@ -125,15 +125,15 @@
         <table class="share-thumbnail-tool">
           <tr colspans="3">
             <td>Output dimensions</td>
-            <td><input id="thumbnail-width" type="number" min="64" value="440">&nbsp;x&nbsp;<input id="thumbnail-height" type="number" min="64" value="440"><span title="Swap width and height" class="thumbnail-swap-selection-dimensions"></span></td>
-          </tr>
-          <tr colspans="3">
-            <td>Force aspect ratio?</td>
-            <td><input type="checkbox" class="force-aspect-ratio"></td>
+            <td><input id="thumbnail-width" type="number" min="64" value="1280">&nbsp;x&nbsp;<input id="thumbnail-height" type="number" min="64" value="720"><span title="Swap width and height" class="thumbnail-swap-selection-dimensions"></span></td>
           </tr>
           <tr>
             <td>Set capture bounds:</td>
             <td><div class="reset-viewport customDialogButton selected">Viewport</div><div class="reset-custom customDialogButton">Custom</div></td>
+          </tr>
+          <tr colspans="3">
+            <td class="wrap-cell-contents">Force aspect ratio of capture bounds?</td>
+            <td><input type="checkbox" class="force-aspect-ratio"></td>
           </tr>
           <tr>
             <td>Starting time:</td>
@@ -160,11 +160,11 @@
           </tr>
           <tr>
             <td>Delay at start (sec):</td>
-            <td><input class="thumbnail-start-delay" type="number" step="0.1" min="0" value="1.5"></td>
+            <td><input class="thumbnail-start-delay" type="number" step="0.1" min="0" value="0"></td>
           </tr>
           <tr>
             <td>Delay at end (sec):</td>
-            <td><input class="thumbnail-end-delay" type="number" step="0.1" min="0" value="1.5"></td>
+            <td><input class="thumbnail-end-delay" type="number" step="0.1" min="0" value="0"></td>
           </tr>
           <tr>
             <td>Embed time?</td>
