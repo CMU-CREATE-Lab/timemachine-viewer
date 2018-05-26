@@ -483,13 +483,13 @@ if (!window['$']) {
       if (isMobileSupported) {
         $("#" + currentVideoId).one('loadedmetadata', function() {
           if (video.readyState == 1) {
-            video.load();
+            _handleVideoPromise(video, "load");
             if (_isPaused()) {
               if (!video.playPromise) {
                 video.playPromise = video.play();
               }
               setTimeout(function() {
-                _handlePlayPausePromise(video);
+                _handleVideoPromise(video, "pause");
               }, 1);
             }
           }
@@ -498,7 +498,7 @@ if (!window['$']) {
       if (viewerType != "video") {
         video.addEventListener('playing', function() {
           if (video.handleSeekStuck && !advancing) {
-            _handlePlayPausePromise(video);
+            _handleVideoPromise(video, "pause");
             video.handleSeekStuck = null;
           }
           if (video.drawIntervalId == null)
@@ -524,13 +524,13 @@ if (!window['$']) {
         }, false);
       }
       if (isMobileSupported) {
-        video.load();
+        _handleVideoPromise(video, "load");
         if (_isPaused()) {
           if (!video.playPromise) {
             video.playPromise = video.play();
           }
           setTimeout(function() {
-            _handlePlayPausePromise(video);
+            _handleVideoPromise(video, "pause");
           }, 1);
         }
       }
@@ -592,7 +592,8 @@ if (!window['$']) {
       } catch(e) {
         UTIL.error("User has disabled local file storage of cookies: " + e);
       }
-      video.src = "";
+      window.clearInterval(video.clearStreamInterval);
+      video.clearStreamInterval = window.setInterval(_handleVideoPromise(video, "delete"), 50);
     };
 
     var clearOutVideoLocalStore = function(checkTimestamps) {
@@ -663,7 +664,7 @@ if (!window['$']) {
       video.ready = false;
       video.setCurrentTime = null;
       try {
-        _handlePlayPausePromise(video);
+        _handleVideoPromise(video, "pause");
       } catch(e) {
         UTIL.error(e.name + " while pausing " + video + " in deleteVideo(). Most likely you are running IE 9.");
       }
@@ -734,7 +735,7 @@ if (!window['$']) {
         for (videoId in activeVideos) {
           UTIL.log("video(" + videoId + ") pause");
           try {
-            _handlePlayPausePromise(activeVideos[videoId]);
+            _handleVideoPromise(activeVideos[videoId], "pause");
           } catch(e) {
             UTIL.error(e.name + " while pausing " + activeVideos[videoId] + " in updateVideoAdvance(). Most likely you are running IE 9.");
           }
@@ -745,20 +746,22 @@ if (!window['$']) {
       }
     };
 
-    var _handlePlayPausePromise = function(video) {
+    var _handleVideoPromise = function(video, actionType) {
       if (video.playPromise !== undefined) {
         video.playPromise.then(function (_) {
           if (!video) return;
-          if (!video.paused) {
+          if (actionType == "pause" && !video.paused) {
             video.pause();
+          } else if (actionType == "load") {
+            video.load();
+          } else if (actionType == "delete") {
+            video.src = "";
+            window.clearInterval(video.clearStreamInterval);
           }
+          video.playPromise = undefined;
         }).catch(function (error) {
           UTIL.error(error);
         });
-      } else {
-        if (!video.paused) {
-          video.pause();
-        }
       }
     };
 
@@ -1130,7 +1133,7 @@ if (!window['$']) {
       videoIsSeekingIntervalCheck = window.setInterval(function() {
         UTIL.error("We're still seeking after 250ms, so let's reload the video. This is an Opera <= 12 and IE Edge only workaround.");
         var targetVideo = event.target;
-        targetVideo.load();
+        _handleVideoPromise(targetVideo, "load");
         targetVideo.handleSeekStuck = true;
         if (!targetVideo.playPromise) {
           targetVideo.playPromise = targetVideo.play();
