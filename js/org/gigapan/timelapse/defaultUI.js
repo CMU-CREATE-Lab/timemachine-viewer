@@ -713,6 +713,7 @@ if (!org.gigapan.timelapse.Timelapse) {
           if (ui.value > $endingTimeSpinner.captureTimeSpinner("value")) {
             return false;
           }
+          timelapse.seekToFrame(ui.value);
         }
       }).on("mousedown", function(event) {
         // Update the text field after a user input event
@@ -742,6 +743,7 @@ if (!org.gigapan.timelapse.Timelapse) {
           if (ui.value < $startingTimeSpinner.captureTimeSpinner("value")) {
             return false;
           }
+          timelapse.seekToFrame(ui.value);
         }
       }).on("mousedown", function(event) {
         // Update the text field after an user input event
