@@ -590,7 +590,9 @@ if (!org.gigapan.timelapse.Timelapse) {
           $shareViewDialog.dialog("open");
           updateShareViewTextbox();
           UTIL.addGoogleAnalyticEvent('button', 'click', 'viewer-show-share-dialog');
-          if ($thumbnailCustomBoundsSelector.hasClass("selected")) {
+          var activeIdx = $shareAccordion.accordion("option", "active");
+          var $activePanel = $($shareAccordion.accordion("instance").panels[activeIdx]);
+          if ($activePanel.hasClass("share-thumbnail") && $thumbnailCustomBoundsSelector.hasClass("selected")) {
             $thumbnailCustomBoundsSelector.click();
           }
         }
@@ -624,6 +626,9 @@ if (!org.gigapan.timelapse.Timelapse) {
           }
           if (ui.newPanel.hasClass("share-thumbnail")) {
             enableShareThumbnail();
+            if ($thumbnailCustomBoundsSelector.hasClass("selected")) {
+              timelapse.getThumbnailTool().redrawCropBox();
+            }
           }
         }
       });
