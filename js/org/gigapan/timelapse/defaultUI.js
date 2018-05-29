@@ -777,8 +777,8 @@ if (!org.gigapan.timelapse.Timelapse) {
           $thumbnailPlaybackRateMenu.hide();
         } else {
           $thumbnailPlaybackRateMenu.show().position({
-            my: "center top",
-            at: "center bottom",
+            my: "left top",
+            at: "left bottom",
             of: $(this)
           });
           $(document).one("mouseup", function(e) {
@@ -790,7 +790,7 @@ if (!org.gigapan.timelapse.Timelapse) {
       });
       $thumbnailPlaybackRateMenu.menu();
       $thumbnailPlaybackRateMenu.find("li").click(function() {
-        $thumbnailPlaybackRate.find("span").first().text($(this).text());
+        $thumbnailPlaybackRate.find("span").first().text($(this).data("title"));
         $thumbnailPlaybackRate.data("rate", $(this).data("rate"));
         if ($thumbnailPlaybackRate.find("span").text() == "Custom" && $(".custom-thumbnail-playback-rate").length) return;
         if ($(this).data("rate") == 0 && $(".custom-thumbnail-playback-rate").length == 0){
@@ -846,13 +846,16 @@ if (!org.gigapan.timelapse.Timelapse) {
         thumbnailEndTime = new Date(Date.UTC(endYear, (endMonth - 1), endDay, endHour, endMinute, endSecond)).toISOString().substr(0,10).replace(/-/g, "");
         thumbnailPlaybackSpeed = (parseFloat($("#" + viewerDivId + " .custom-thumbnail-playback-rate").val()) * 100) || ($thumbnailPlaybackRate.data("rate") * 100);
 
-        //var desiredFps = Math.max(1,$("#" + viewerDivId + " .custom-thumbnail-playback-rate").val() || timelapse.getFps() * Math.max(1,timelapse.getMaxPlaybackRate()) * $thumbnailPlaybackRate.data("rate"));
-        var desiredFps = $("#" + viewerDivId + " .thumbnail-fps").val();
-
+        var desiredFps;
+        if (isWebglViewer) {
+          desiredFps = $("#" + viewerDivId + " .thumbnail-fps").val();
+        } else {
+          desiredFps = Math.max(1, ($("#" + viewerDivId + " .custom-thumbnail-playback-rate").val() || (Math.max(1, timelapse.getMaxPlaybackRate()) * $thumbnailPlaybackRate.data("rate"))) * timelapse.getFps());
+        }
         // For browser compatibility, we force a max of 16fps when making gifs.
-        // Info from 2012 says that Safari and IE begin to skip frames and playing faster than this.
+        // Info from 2012 says that Safari and IE begin to skip frames when playing faster than this.
         if (format == "gif") {
-          desiredFps = 16;
+          desiredFps = Math.min(16, desiredFps);
         }
 
         urlSettings = {
@@ -1006,6 +1009,19 @@ if (!org.gigapan.timelapse.Timelapse) {
 
       timelapse.addViewEndChangeListener(function() {
         updateShareViewTextbox();
+      });
+
+      if (typeof(EARTH_TIMELAPSE_CONFIG) === "undefined") {
+        $("#thumbnail-fps-overlay").closest("tr").hide();
+      }
+      timelapse.addMasterPlaybackRateChangeListener(function() {
+        $(".thumbnail-playback-rate-menu .ui-menu-item").each(function() {
+          $(this).text($(this).data("title"));
+          if ($(this).data('rate')) {
+            var playbackRate = parseFloat($(this).data('rate')) * timelapse.getMaxPlaybackRate();
+            $(this).text($(this).text() + " (" + playbackRate + "X)");
+          }
+        });
       });
     };
 

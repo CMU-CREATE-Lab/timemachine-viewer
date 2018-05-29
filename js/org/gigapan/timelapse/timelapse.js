@@ -240,6 +240,7 @@ if (!window['$']) {
     var resizeListeners = [];
     var viewEndChangeListeners = [];
     var playbackRateChangeListeners = [];
+    var masterPlaybackRateChangeListeners = [];
     var zoomChangeListeners = [];
     var fullScreenChangeListeners = [];
     var datasetLoadedListeners = [];
@@ -1170,6 +1171,31 @@ if (!window['$']) {
     };
     this.addPlaybackRateChangeListener = _addPlaybackRateChangeListener;
 
+    var _removePlaybackRateChangeListener = function(listener) {
+      for (var i = 0; i < playbackRateChangeListeners.length; i++) {
+        if (playbackRateChangeListeners[i] == listener) {
+          playbackRateChangeListeners.splice(i, 1);
+          break;
+        }
+      }
+    };
+    this.removePlaybackRateChangeListener = _removePlaybackRateChangeListener;
+
+    var _addMasterPlaybackRateChangeListener = function(listener) {
+      masterPlaybackRateChangeListeners.push(listener);
+    };
+    this.addMasterPlaybackRateChangeListener = _addMasterPlaybackRateChangeListener;
+
+    var _removeMasterPlaybackRateChangeListener = function(listener) {
+      for (var i = 0; i < masterPlaybackRateChangeListeners.length; i++) {
+        if (masterPlaybackRateChangeListeners[i] == listener) {
+          masterPlaybackRateChangeListeners.splice(i, 1);
+          break;
+        }
+      }
+    };
+    this.removeMasterPlaybackRateChangeListener = _removeMasterPlaybackRateChangeListener;
+
     var _addVideoDrawListener = function(listener) {
       videoset.addEventListener('videoset-draw', listener);
     };
@@ -1668,6 +1694,9 @@ if (!window['$']) {
         defaultUI.setMaxPlaybackRate(newRate);
         if (customUI) {
           customUI.setMaxPlaybackRate(newRate);
+        }
+        for (var i = 0; i < masterPlaybackRateChangeListeners.length; i++) {
+          masterPlaybackRateChangeListeners[i](newRate);
         }
       }
     };

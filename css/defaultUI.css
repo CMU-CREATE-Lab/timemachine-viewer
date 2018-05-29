@@ -1276,7 +1276,7 @@ _:-moz-tree-row(hover), .customDropdownButton .ui-button-text {
 
 .customDropdownMenu {
   display: none;
-  width: 76px;
+  width: auto;
   position: absolute;
   z-index: 115;
 }
