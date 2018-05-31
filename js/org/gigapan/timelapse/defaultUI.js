@@ -604,8 +604,14 @@ if (!org.gigapan.timelapse.Timelapse) {
         if ($("#" + timeMachineDivId + ' .shareView').is(":visible")) {
           if (timelapse.isFullScreen()) {
             $("#" + viewerDivId).removeClass("right-panel-active");
+            if ($thumbnailCustomBoundsSelector.hasClass("selected")) {
+              disableShareThumbnail();
+            }
           } else {
             $("#" + viewerDivId).addClass("right-panel-active");
+            if ($thumbnailCustomBoundsSelector.hasClass("selected")) {
+              timelapse.getThumbnailTool().redrawCropBox();
+            }
           }
           timelapse.onresize();
         }
