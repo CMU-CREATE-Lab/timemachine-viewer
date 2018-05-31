@@ -117,41 +117,42 @@ if (!org.gigapan.timelapse.Timelapse) {
     var $timelineSelector = $("#" + viewerDivId + " .timelineSelector");
     var $timelineSliderFiller = $("#" + viewerDivId + " .timelineSliderFiller");
     var $timelineSelectorFiller = $("#" + viewerDivId + " .timelineSelectorFiller");
-    var $thumbnailVideoSelector = $("#" + viewerDivId + " .thumbnail-type-video");
-    var $thumbnailImageSelector = $("#" + viewerDivId + " .thumbnail-type-image");
-    var $thumbnailCustomBoundsSelector = $("#" + viewerDivId + " .reset-custom");
-    var $thumbnailViewportBoundsSelector = $("#" + viewerDivId + " .reset-viewport");
-    var $thumbnailForceAspectRatioCheckbox = $("#" + viewerDivId + " .force-aspect-ratio");
-    var $thumbnailPreviewCopyTextContainer = $("#" + viewerDivId + " .thumbnail-preview-copy-text-container");
-    var $thumbnailSwapSelectionDimensions = $("#" + viewerDivId + " .thumbnail-swap-selection-dimensions");
-    var $thumbnailPreviewContainer = $("#" + viewerDivId + " .thumbnail-preview-container");
-    var $thumbnailPreviewLink = $("#" + viewerDivId + " .thumbnail-preview-link");
-    var $thumbnailCustomBoundsWidth = $("#" + viewerDivId + " #thumbnail-width");
-    var $thumbnailCustomBoundsHeight = $("#" + viewerDivId + " #thumbnail-height");
-    var $captureTime = $("#" + viewerDivId + " .captureTime");
-    var $startingTimeSpinner = $("#" + viewerDivId + " .startingTimeSpinner");
-    var $endingTimeSpinner = $("#" + viewerDivId + " .endingTimeSpinner");
-    var $endingTime = $("#" + viewerDivId + " .endingTime");
-    var $thumbnailPlaybackRate = $("#" + viewerDivId + " .thumbnail-playback-rate");
-    var $thumbnailFps = $("#" + viewerDivId + " .thumbnail-fps");
-    var $thumbnailPlaybackRateMenu = $("#" + viewerDivId + " .thumbnail-playback-rate-menu");
-    var $thumbnailPreviewCopyTextButtonTooltip = $("#" + viewerDivId + " .thumbnail-preview-copy-text-button-tooltip");
-    var $thumbnailPreviewCopyTextButtonTooltipContent = $("#" + viewerDivId + " .thumbnail-preview-copy-text-button-tooltip").find("p");
-    var $thumbnailPreviewCopyTextButton = $("#" + viewerDivId + " .thumbnail-preview-copy-text-button");
-    var $thumbnailPreviewCopyDataButton = $("#" + viewerDivId + " .thumbnail-preview-copy-data-button");
-    var $thumbnailPreviewCopyDownloadButton = $("#" + viewerDivId + " .thumbnail-preview-copy-download-button");
-    var $shareViewDialog = $("#" + viewerDivId + " .shareView");
-    var $shareUrl = $("#" + viewerDivId + " .shareurl");
-    var $shareUrlCopyTextButton = $("#" + viewerDivId + " .shareurl-copy-text-button");
-    var $thumbnailDurationSlider = $("#" + viewerDivId + " .thumbnail-duration-slider");
-    var $shareAccordion = $("#" + viewerDivId + " .shareView .accordion");
-    var $editorCheckboxContainer = $("#" + viewerDivId + " .toolDialog .customCheckboxContainer[data-mode='editor']")
-    var $annotatorCheckboxContainer = $("#" + viewerDivId + " .toolDialog .customCheckboxContainer[data-mode='annotator']");
-    var $changeDetectionCheckboxContainer = $("#" + viewerDivId + " .toolDialog .customCheckboxContainer[data-mode='change-detection']");
-    var $editorCheckbox = $("#" + viewerDivId + " .toolDialog .customCheckbox[value='editor']")
-    var $annotatorCheckbox = $("#" + viewerDivId + " .toolDialog .customCheckbox[value='annotator']");
-    var $changeDetectionCheckbox = $("#" + viewerDivId + " .toolDialog .customCheckbox[value='change-detection']");
-    var $changeDetectionControl = $("#" + viewerDivId + " .toolDialog .changeDetectionControl");
+    var $thumbnailVideoSelector = $("#" + timeMachineDivId + " .thumbnail-type-video");
+    var $thumbnailImageSelector = $("#" + timeMachineDivId + " .thumbnail-type-image");
+    var $thumbnailCustomBoundsSelector = $("#" + timeMachineDivId + " .reset-custom");
+    var $thumbnailViewportBoundsSelector = $("#" + timeMachineDivId + " .reset-viewport");
+    var $thumbnailForceAspectRatioCheckbox = $("#" + timeMachineDivId + " .force-aspect-ratio");
+    var $thumbnailPreviewCopyTextContainer = $("#" + timeMachineDivId + " .thumbnail-preview-copy-text-container");
+    var $thumbnailSwapSelectionDimensions = $("#" + timeMachineDivId + " .thumbnail-swap-selection-dimensions");
+    var $thumbnailPreviewContainer = $("#" + timeMachineDivId + " .thumbnail-preview-container");
+    var $thumbnailPreviewLink = $("#" + timeMachineDivId + " .thumbnail-preview-link");
+    var $thumbnailCustomBoundsWidth = $("#" + timeMachineDivId + " #thumbnail-width");
+    var $thumbnailCustomBoundsHeight = $("#" + timeMachineDivId + " #thumbnail-height");
+    var $captureTime = $("#" + timeMachineDivId + " .captureTime");
+    var $startingTimeSpinner = $("#" + timeMachineDivId + " .startingTimeSpinner");
+    var $endingTimeSpinner = $("#" + timeMachineDivId + " .endingTimeSpinner");
+    var $endingTime = $("#" + timeMachineDivId + " .endingTime");
+    var $thumbnailPlaybackRate = $("#" + timeMachineDivId + " .thumbnail-playback-rate");
+    var $thumbnailFps = $("#" + timeMachineDivId + " .thumbnail-fps");
+    var $thumbnailPlaybackRateMenu = $("#" + timeMachineDivId + " .thumbnail-playback-rate-menu");
+    var $thumbnailPreviewCopyTextButtonTooltip = $("#" + timeMachineDivId + " .thumbnail-preview-copy-text-button-tooltip");
+    var $thumbnailPreviewCopyTextButtonTooltipContent = $("#" + timeMachineDivId + " .thumbnail-preview-copy-text-button-tooltip").find("p");
+    var $thumbnailPreviewCopyTextButton = $("#" + timeMachineDivId + " .thumbnail-preview-copy-text-button");
+    var $thumbnailPreviewCopyDataButton = $("#" + timeMachineDivId + " .thumbnail-preview-copy-data-button");
+    var $thumbnailPreviewCopyDownloadButton = $("#" + timeMachineDivId + " .thumbnail-preview-copy-download-button");
+    var $shareViewDialog = $("#" + timeMachineDivId + " .shareView");
+    var $shareViewDialogClose = $("#" + timeMachineDivId + " .ui-dialog-titlebar-close");
+    var $shareUrl = $("#" + timeMachineDivId + " .shareurl");
+    var $shareUrlCopyTextButton = $("#" + timeMachineDivId + " .shareurl-copy-text-button");
+    var $thumbnailDurationSlider = $("#" + timeMachineDivId + " .thumbnail-duration-slider");
+    var $shareAccordion = $("#" + timeMachineDivId + " .shareView .accordion");
+    var $editorCheckboxContainer = $("#" + timeMachineDivId + " .toolDialog .customCheckboxContainer[data-mode='editor']")
+    var $annotatorCheckboxContainer = $("#" + timeMachineDivId + " .toolDialog .customCheckboxContainer[data-mode='annotator']");
+    var $changeDetectionCheckboxContainer = $("#" + timeMachineDivId + " .toolDialog .customCheckboxContainer[data-mode='change-detection']");
+    var $editorCheckbox = $("#" + timeMachineDivId + " .toolDialog .customCheckbox[value='editor']")
+    var $annotatorCheckbox = $("#" + timeMachineDivId + " .toolDialog .customCheckbox[value='annotator']");
+    var $changeDetectionCheckbox = $("#" + timeMachineDivId + " .toolDialog .customCheckbox[value='change-detection']");
+    var $changeDetectionControl = $("#" + timeMachineDivId + " .toolDialog .changeDetectionControl");
 
     // Settings
     var useCustomUI = timelapse.useCustomUI();
@@ -552,10 +553,9 @@ if (!org.gigapan.timelapse.Timelapse) {
     this.resetShareThumbnailUI = resetShareThumbnailUI;
 
     var showThumbnailToolWindow = function() {
-      $("#" + viewerDivId + " [aria-controls='share-link-container']").hide();
-      $("#" + viewerDivId + " .shareView .accordion").accordion("option", "active", 1);
-      enableShareThumbnail();
-      $shareViewDialog.dialog("open");
+      if (!$("#" + timeMachineDivId + ' .shareView').is(":visible")) {
+        $("#" + viewerDivId + " .share").trigger("click");
+      }
     };
     this.showThumbnailToolWindow = showThumbnailToolWindow;
 
@@ -579,15 +579,13 @@ if (!org.gigapan.timelapse.Timelapse) {
         },
         text: true
       }).click(function() {
-        if ($shareViewDialog.dialog("isOpen")) {
-          if ($("#dialog-extend-fixed-container").children().length != 0) {
-            $shareViewDialog.dialogExtend("restore");
-          } else {
-            $shareViewDialog.dialogExtend("minimize");
-          }
+        if (timelapse.isFullScreen()) {
+          return;
+        }
+        $("#" + timeMachineDivId + ' .shareView').toggle("slide", { direction: "right" }, 1);
+        if ($("#" + viewerDivId).hasClass("right-panel-active")) {
+          disableShareThumbnail();
         } else {
-          $("#" + viewerDivId + " [aria-controls='share-link-container']").show();
-          $shareViewDialog.dialog("open");
           updateShareViewTextbox();
           UTIL.addGoogleAnalyticEvent('button', 'click', 'viewer-show-share-dialog');
           var activeIdx = $shareAccordion.accordion("option", "active");
@@ -596,7 +594,23 @@ if (!org.gigapan.timelapse.Timelapse) {
             $thumbnailCustomBoundsSelector.click();
           }
         }
+        $("#" + viewerDivId).toggleClass("right-panel-active");
+        timelapse.onresize();
       });
+      $shareViewDialogClose.on("click", function() {
+        $("#" + viewerDivId + " .share").trigger("click");
+      });
+      timelapse.addFullScreenChangeListener(function() {
+        if ($("#" + timeMachineDivId + ' .shareView').is(":visible")) {
+          if (timelapse.isFullScreen()) {
+            $("#" + viewerDivId).removeClass("right-panel-active");
+          } else {
+            $("#" + viewerDivId).addClass("right-panel-active");
+          }
+          timelapse.onresize();
+        }
+      });
+      $shareViewDialog.addClass("customDialog");
       $shareUrl.focus(function() {
         $(this).select();
       }).click(function() {
@@ -632,45 +646,6 @@ if (!org.gigapan.timelapse.Timelapse) {
           }
         }
       });
-      // Share view dialog
-      var dialogExtendOptions = {
-        "closable" : true,
-        "maximizable" : false,
-        "minimizable" : true,
-        "minimizeLocation" : "right",
-        "collapsable" : false,
-        "dblclick" : false,
-        "titlebar" : false
-      };
-
-      try {
-        $("#" + viewerDivId + " .shareView").dialog({
-          resizable: false,
-          autoOpen: false,
-          dialogClass: "customDialog",
-          appendTo: "#" + viewerDivId,
-          width: 446,
-          minHeight: 50,
-          beforeClose: function(event, ui) {
-            var activeIdx = $shareAccordion.accordion("option", "active");
-            var $activePanel = $($shareAccordion.accordion("instance").panels[activeIdx]);
-            if ($activePanel.hasClass("share-thumbnail")) {
-              disableShareThumbnail();
-              $thumbnailPreviewContainer.hide();
-              $thumbnailPreviewCopyTextContainer.hide();
-            }
-          },
-          open: function(event, ui) {
-            var activeIdx = $shareAccordion.accordion("option", "active");
-            var $activePanel = $($shareAccordion.accordion("instance").panels[activeIdx]);
-            if ($activePanel.hasClass("share-thumbnail")) {
-              enableShareThumbnail();
-            }
-          }
-        }).dialogExtend(dialogExtendOptions);
-      } catch(e) {
-        console.log("Missing library! Need to include jquery.dialogextend.min.js to use the extra dialog features.");
-      }
       // Create spinners
       $.widget("ui.captureTimeSpinner", $.ui.spinner, {
         options: {
@@ -811,7 +786,7 @@ if (!org.gigapan.timelapse.Timelapse) {
       $thumbnailPreviewContainer.hide();
       $thumbnailPreviewCopyTextContainer.hide();
       // Add events
-      $("#" + viewerDivId + " .generate-thumbnail").button().click(function(event) {
+      $("#" + timeMachineDivId + " .generate-thumbnail").button().click(function(event) {
         $(this).button("disable");
         handleThumbnailDurationChange();
         //$thumbnailPreviewCopyTextButton.button("disable");
@@ -851,13 +826,13 @@ if (!org.gigapan.timelapse.Timelapse) {
 
         thumbnailBeginTime = new Date(Date.UTC(startYear, (startMonth - 1), startDay, startHour, startMinute, startSecond)).toISOString().substr(0,10).replace(/-/g, "");
         thumbnailEndTime = new Date(Date.UTC(endYear, (endMonth - 1), endDay, endHour, endMinute, endSecond)).toISOString().substr(0,10).replace(/-/g, "");
-        thumbnailPlaybackSpeed = (parseFloat($("#" + viewerDivId + " .custom-thumbnail-playback-rate").val()) * 100) || ($thumbnailPlaybackRate.data("rate") * 100);
+        thumbnailPlaybackSpeed = (parseFloat($("#" + timeMachineDivId + " .custom-thumbnail-playback-rate").val()) * 100) || ($thumbnailPlaybackRate.data("rate") * 100);
 
         var desiredFps;
         if (isWebglViewer) {
-          desiredFps = $("#" + viewerDivId + " .thumbnail-fps").val();
+          desiredFps = $("#" + timeMachineDivId + " .thumbnail-fps").val();
         } else {
-          desiredFps = Math.max(1, ($("#" + viewerDivId + " .custom-thumbnail-playback-rate").val() || (Math.max(1, timelapse.getMaxPlaybackRate()) * $thumbnailPlaybackRate.data("rate"))) * timelapse.getFps());
+          desiredFps = Math.max(1, ($("#" + timeMachineDivId + " .custom-thumbnail-playback-rate").val() || (Math.max(1, timelapse.getMaxPlaybackRate()) * $thumbnailPlaybackRate.data("rate"))) * timelapse.getFps());
         }
         // For browser compatibility, we force a max of 16fps when making gifs.
         // Info from 2012 says that Safari and IE begin to skip frames when playing faster than this.
@@ -871,10 +846,10 @@ if (!org.gigapan.timelapse.Timelapse) {
           bt: thumbnailBeginTime,
           et: thumbnailEndTime,
           fps: desiredFps,
-          embedTime: $("#" + viewerDivId + " .embed-capture-time").prop('checked'),
-          smoothPlayback: $("#" + viewerDivId + " .smooth-playback").prop('checked'),
-          startDwell: $("#" + viewerDivId + " .thumbnail-start-delay").val(),
-          endDwell: $("#" + viewerDivId + " .thumbnail-end-delay").val(),
+          embedTime: $("#" + timeMachineDivId + " .embed-capture-time").prop('checked'),
+          smoothPlayback: $("#" + timeMachineDivId + " .smooth-playback").prop('checked'),
+          startDwell: $("#" + timeMachineDivId + " .thumbnail-start-delay").val(),
+          endDwell: $("#" + timeMachineDivId + " .thumbnail-end-delay").val(),
           width: $thumbnailCustomBoundsWidth.val(),
           height: $thumbnailCustomBoundsHeight.val(),
           bound: $thumbnailViewportBoundsSelector.hasClass("selected") ? timelapse.getBoundingBoxForCurrentView() : undefined,
@@ -1106,27 +1081,6 @@ if (!org.gigapan.timelapse.Timelapse) {
       $(".thumbnail-preview-error").remove();
       $thumbnailPreviewContainer.show();
       $thumbnailPreviewCopyTextContainer.show();
-      // This code block is used to solve a problem related to scrollbar overflowing
-      var linkHeight = 40;
-      var maxContainerWidth = parseInt($thumbnailPreviewContainer.css("max-width"));
-      var maxContainerHeight = parseInt($thumbnailPreviewContainer.css("max-height"));
-      var width = parseInt(response.args.width);
-      var height = parseInt(response.args.height) + linkHeight;
-      var $thumbnailPreview;
-      if (width > maxContainerWidth) {
-        $thumbnailPreviewContainer.css("overflow-x", "auto");
-        height += scrollBarWidth;
-      } else {
-        $thumbnailPreviewContainer.css("overflow-x", "hidden");
-      }
-      if (height > maxContainerHeight) {
-        $thumbnailPreviewContainer.css("overflow-y", "auto");
-        width += scrollBarWidth;
-      } else {
-        $thumbnailPreviewContainer.css("overflow-y", "hidden");
-      }
-      $thumbnailPreviewContainer.width(width);
-      $thumbnailPreviewContainer.height(height);
 
       // Remove old preview
       if ($(".thumbnail-preview").length) {
@@ -1138,6 +1092,7 @@ if (!org.gigapan.timelapse.Timelapse) {
       var response_is_gif = response.args.format == "gif";
       var response_is_video = (response.args.format == "mp4" || response.args.format == "webm");
 
+      var $thumbnailPreview;
       if (response_is_image || response_is_gif) {
         $thumbnailPreview = $("<img class='thumbnail-preview' src='" + response.url + "'>");
       } else if (response_is_video) {
@@ -1145,7 +1100,7 @@ if (!org.gigapan.timelapse.Timelapse) {
       } else {
         $thumbnailPreview = $("<div class='thumbnail-preview-error'>Sorry, something went wrong. Invalid output format.</div>");
         $thumbnailPreviewContainer.empty().prepend($thumbnailPreview);
-        $("#" + viewerDivId + " .generate-thumbnail").button("enable");
+        $("#" + timeMachineDivId + " .generate-thumbnail").button("enable");
         return;
       }
       $thumbnailPreviewContainer.prepend($thumbnailPreview);
@@ -1177,7 +1132,7 @@ if (!org.gigapan.timelapse.Timelapse) {
       }
 
       $thumbnailPreview.on("load loadeddata", function() {
-        $("#" + viewerDivId + " .generate-thumbnail").button("enable");
+        $("#" + timeMachineDivId + " .generate-thumbnail").button("enable");
         if (response_is_image || response_is_gif) {
           $thumbnailPreviewCopyDataButton.button("enable");
         }
@@ -1188,7 +1143,7 @@ if (!org.gigapan.timelapse.Timelapse) {
       }).on("error", function() {
         $thumbnailPreview = $("<div class='thumbnail-preview-error'>Sorry, something went wrong. Try again after decreasing the time span to a shorter range and/or making sure your other settings are valid.</div>");
         $thumbnailPreviewContainer.empty().prepend($thumbnailPreview);
-        $("#" + viewerDivId + " .generate-thumbnail").button("enable");
+        $("#" + timeMachineDivId + " .generate-thumbnail").button("enable");
       });
     };
 

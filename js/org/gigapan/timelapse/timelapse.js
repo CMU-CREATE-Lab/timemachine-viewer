@@ -2011,12 +2011,6 @@ if (!window['$']) {
       if (changeDetectionTool)
         changeDetectionTool.resizeUI();
       updateLocationContextUI();
-      // Auto-center any viewer jQuery dialogs so they do not go off screen.
-      $("#" + viewerDivId + " .ui-dialog-content").dialog("option", "position", {
-        my: "center",
-        at: "center",
-        of: window
-      });
       // Run listeners
       for (var i = 0; i < resizeListeners.length; i++)
         resizeListeners[i](viewportWidth, viewportHeight);

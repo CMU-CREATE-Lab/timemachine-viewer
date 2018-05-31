@@ -819,22 +819,26 @@ _:-moz-tree-row(hover), .customDialog .customDialogButton .ui-button-text {
   margin-left: 10px;
   margin-right: 10px;
   margin-bottom: 15px;
-  margin-top: 12px;
+  margin-top: 42px;
 }
 
 .customDialog .accordion .ui-accordion-header {
   border: 0px;
   border-radius: 2px;
   background-image: none;
+  font-size: 14px;
+  background: #dcdcdc;
 }
 
 .customDialog .accordion .ui-accordion-header-active {
   font-weight: bold;
+  background: #c2c2c2;
 }
 
 .customDialog .accordion .ui-accordion-content {
   border: 0px;
   border-radius: 2px;
+  overflow-x: hidden;
 }
 
 .customDialog .accordion .ui-state-active.ui-accordion-header:hover {
@@ -845,10 +849,26 @@ _:-moz-tree-row(hover), .customDialog .customDialogButton .ui-button-text {
   outline: none;
 }
 
+.customDialog .ui-dialog-title {
+  position: absolute;
+  top: 6px;
+  -webkit-user-select: none;
+  -khtml-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  -o-user-select: none;
+  user-select: none;
+}
+
 .customDialog .ui-dialog-titlebar-close {
   border: 0px;
   border-radius: 2px;
   background-image: none;
+  position: absolute;
+  right: 0px;
+  top: 3px;
+  width: 23px;
+  height: 23px;
 }
 
 .customDialog .ui-dialog-titlebar-close:focus {
@@ -925,10 +945,18 @@ _:-moz-tree-row(hover), .customDialog .customDialogButton .ui-button-text {
   background-image: url('../images/error.png');
 }
 
-.ui-dialog-titlebar {
+.customDialog .ui-dialog-titlebar {
   background: #959595;
   border: 0;
   color: white;
+  height: 29px;
+  border-radius: 0px;
+  padding-left: 10px;
+  position: fixed;
+  top: 0px;
+  box-shadow: 0px 0px 10px rgba(0,0,0,0.5);
+  z-index: 9000;
+  width: 408px;
 }
 
 .toggleSpeed.ui-button {
@@ -1070,7 +1098,7 @@ _:-moz-tree-row(hover), .customDialog .customDialogButton .ui-button-text {
 }
 
 .thumbnail-preview {
-  width: 318px;
+  width: 335px;
 }
 
 .thumbnail-preview-copy-text-container {
@@ -1129,7 +1157,8 @@ _:-moz-tree-row(hover), .customDialog .customDialogButton .ui-button-text {
 .thumbnail-preview-container {
   position: relative;
   max-width: 335px;
-  max-height: 200px;
+  height: auto;
+  min-height: 200px;
   border: 1px solid #656565;
   overflow-x: hidden;
   overflow-y: hidden;
@@ -1305,6 +1334,22 @@ input::-ms-clear {
 
 .shareView {
   display: none;
+  background: #f3f3f3;
+  position: absolute;
+  right: 0px;
+  top: 0px;
+  height: 100% !important;
+  z-index: 100;
+  overflow-y: auto;
+  width: 418px;
+}
+
+.shareView .ui-widget-content {
+  background: #f3f3f3;
+}
+
+.right-panel-active {
+  right: 418px !important;
 }
 
 #vector-layers input, #vector-layers label {
@@ -1363,4 +1408,38 @@ input::-ms-clear {
 
 .hidden {
   display: none;
+}
+
+.shareView::-webkit-scrollbar {
+  -webkit-appearance: none;
+  background: transparent;
+  overflow: visible;
+  width: 14px;
+  z-index: -1 !important;
+}
+
+.shareView::-webkit-scrollbar:vertical {
+  border-width: 6px 4px;
+  min-height: 40px;
+  margin-top: 30px;
+}
+
+.shareView::-webkit-scrollbar-track-piece {
+  background-color: #f1f1f1;
+  margin-top: 30px;
+}
+
+.shareView::-webkit-scrollbar-corner {
+  background: transparent;
+  margin-top: 30px;
+}
+
+.shareView::-webkit-scrollbar-thumb {
+  background-color: #ADADAD;
+  -webkit-box-shadow: inset 1px 1px 0 rgba(0,0,0,0.10),inset 0 -1px 0 rgba(0,0,0,0.07);
+  margin-top: 30px;
+}
+
+.shareView::-webkit-scrollbar-thumb:hover {
+  background-color: #999;
 }
