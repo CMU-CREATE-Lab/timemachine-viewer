@@ -153,7 +153,7 @@ body, html {
 
 .customButton {
   width: 60px;
-  height: 19px;
+  height: 30px;
   background: white !important;
   border: 1px solid #656565 !important;
   border-radius: 2px !important;
@@ -179,7 +179,7 @@ _:-moz-tree-row(hover), .customButton .ui-button-text {
 
 .share {
   position: absolute;
-  bottom: 20px;
+  bottom: 9px;
   right: 89px;
 }
 
@@ -199,8 +199,8 @@ _:-moz-tree-row(hover), .customButton .ui-button-text {
 
 .helpPlayerLabel.ui-button {
   position: absolute;
-  height: 17px;
-  bottom: 20px;
+  height: 28px;
+  bottom: 9px;
   width: 58px;
   right: 20px;
   background: white;
@@ -218,8 +218,8 @@ _:-moz-tree-row(hover), .customButton .ui-button-text {
 }
 
 .helpPlayerLabel .ui-button-text {
-  margin-top: -1px;
-  margin-left: 3px;
+  margin-top: 4px;
+  margin-left: -2px;
 }
 
 /* FireFox specific CSS */
@@ -689,6 +689,7 @@ _:-moz-tree-row(hover), .helpPlayerLabel .ui-button-text {
   border-radius: 1px;
   width: 155px;
   height: 20px;
+  background: white !important;
 }
 
 .customDialog .ui-spinner-input {
@@ -962,8 +963,8 @@ _:-moz-tree-row(hover), .customDialog .customDialogButton .ui-button-text {
 .toggleSpeed.ui-button {
   position: absolute;
   width: 55px;
-  height: 19px;
-  bottom: 20px;
+  height: 23px;
+  bottom: 16px;
   left: 89px;
   background: white;
   border: 1px solid #656565;
