@@ -119,9 +119,6 @@ if (!org.gigapan.timelapse.Timelapse) {
     var $timelineSelectorFiller = $("#" + viewerDivId + " .timelineSelectorFiller");
     var $thumbnailVideoSelector = $("#" + timeMachineDivId + " .thumbnail-type-video");
     var $thumbnailImageSelector = $("#" + timeMachineDivId + " .thumbnail-type-image");
-    var $thumbnailCustomBoundsSelector = $("#" + timeMachineDivId + " .reset-custom");
-    var $thumbnailViewportBoundsSelector = $("#" + timeMachineDivId + " .reset-viewport");
-    var $thumbnailForceAspectRatioCheckbox = $("#" + timeMachineDivId + " .force-aspect-ratio");
     var $thumbnailPreviewCopyTextContainer = $("#" + timeMachineDivId + " .thumbnail-preview-copy-text-container");
     var $thumbnailSwapSelectionDimensions = $("#" + timeMachineDivId + " .thumbnail-swap-selection-dimensions");
     var $thumbnailPreviewContainer = $("#" + timeMachineDivId + " .thumbnail-preview-container");
@@ -583,19 +580,19 @@ if (!org.gigapan.timelapse.Timelapse) {
           return;
         }
         $("#" + timeMachineDivId + ' .shareView').toggle("slide", { direction: "right" }, 1);
+        $("#" + viewerDivId).toggleClass("right-panel-active");
+        timelapse.onresize();
         if ($("#" + viewerDivId).hasClass("right-panel-active")) {
-          disableShareThumbnail();
-        } else {
           updateShareViewTextbox();
           UTIL.addGoogleAnalyticEvent('button', 'click', 'viewer-show-share-dialog');
           var activeIdx = $shareAccordion.accordion("option", "active");
           var $activePanel = $($shareAccordion.accordion("instance").panels[activeIdx]);
-          if ($activePanel.hasClass("share-thumbnail") && $thumbnailCustomBoundsSelector.hasClass("selected")) {
-            $thumbnailCustomBoundsSelector.click();
+          if ($activePanel.hasClass("share-thumbnail")) {
+            timelapse.getThumbnailTool().showCropBox();
           }
+        } else {
+          disableShareThumbnail();
         }
-        $("#" + viewerDivId).toggleClass("right-panel-active");
-        timelapse.onresize();
       });
       $shareViewDialogClose.on("click", function() {
         $("#" + viewerDivId + " .share").trigger("click");
@@ -604,14 +601,10 @@ if (!org.gigapan.timelapse.Timelapse) {
         if ($("#" + timeMachineDivId + ' .shareView').is(":visible")) {
           if (timelapse.isFullScreen()) {
             $("#" + viewerDivId).removeClass("right-panel-active");
-            if ($thumbnailCustomBoundsSelector.hasClass("selected")) {
-              disableShareThumbnail();
-            }
+            disableShareThumbnail();
           } else {
             $("#" + viewerDivId).addClass("right-panel-active");
-            if ($thumbnailCustomBoundsSelector.hasClass("selected")) {
-              timelapse.getThumbnailTool().redrawCropBox();
-            }
+            timelapse.getThumbnailTool().redrawCropBox();
           }
           timelapse.onresize();
         }
@@ -646,9 +639,7 @@ if (!org.gigapan.timelapse.Timelapse) {
           }
           if (ui.newPanel.hasClass("share-thumbnail")) {
             enableShareThumbnail();
-            if ($thumbnailCustomBoundsSelector.hasClass("selected")) {
-              timelapse.getThumbnailTool().redrawCropBox();
-            }
+            timelapse.getThumbnailTool().showCropBox();
           }
         }
       });
@@ -858,7 +849,7 @@ if (!org.gigapan.timelapse.Timelapse) {
           endDwell: $("#" + timeMachineDivId + " .thumbnail-end-delay").val(),
           width: $thumbnailCustomBoundsWidth.val(),
           height: $thumbnailCustomBoundsHeight.val(),
-          bound: $thumbnailViewportBoundsSelector.hasClass("selected") ? timelapse.getBoundingBoxForCurrentView() : undefined,
+          bound: undefined,
           format: format
         };
 
@@ -906,37 +897,12 @@ if (!org.gigapan.timelapse.Timelapse) {
         setButtonTooltip("", $(this));
       });
 
-      $thumbnailViewportBoundsSelector.button().click(function(event) {
-        thumbnailTool.hideCropBox();
-        $thumbnailCustomBoundsSelector.removeClass('selected');
-        $(this).addClass('selected');
-        $thumbnailForceAspectRatioCheckbox.prop('checked', false);
-      });
-
-      $thumbnailCustomBoundsSelector.button().click(function(event) {
-        thumbnailTool.centerAndDrawCropBox("medium");
-        $thumbnailViewportBoundsSelector.removeClass('selected');
-        $(this).addClass('selected');
-      });
-
-      $thumbnailForceAspectRatioCheckbox.on("click", function() {
-        if ($thumbnailCustomBoundsSelector.hasClass("selected")) {
-          timelapse.getThumbnailTool().redrawCropBox();
-        } else {
-          $thumbnailCustomBoundsSelector.click();
-        }
-      });
-
       $thumbnailCustomBoundsWidth.on("change", function() {
-        if ($thumbnailForceAspectRatioCheckbox.is(":checked")) {
-          timelapse.getThumbnailTool().redrawCropBox();
-        }
+        timelapse.getThumbnailTool().redrawCropBox();
       });
 
       $thumbnailCustomBoundsHeight.on("change", function() {
-        if ($thumbnailForceAspectRatioCheckbox.is(":checked")) {
-          timelapse.getThumbnailTool().redrawCropBox();
-        }
+        timelapse.getThumbnailTool().redrawCropBox();
       });
 
       $thumbnailSwapSelectionDimensions.on("click", function() {
@@ -944,9 +910,7 @@ if (!org.gigapan.timelapse.Timelapse) {
         var previousHeight = $thumbnailCustomBoundsHeight.val();
         $thumbnailCustomBoundsWidth.val(previousHeight);
         $thumbnailCustomBoundsHeight.val(previousWidth);
-        if ($thumbnailCustomBoundsSelector.hasClass("selected")) {
-          timelapse.getThumbnailTool().redrawCropBox();
-        }
+        timelapse.getThumbnailTool().redrawCropBox();
       });
 
       $thumbnailPreviewCopyTextButton.button().click(function(event) {
