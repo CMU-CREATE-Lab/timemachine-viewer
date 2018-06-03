@@ -1166,6 +1166,7 @@ if (!org.gigapan.timelapse.Timelapse) {
               'menubar=no,toolbar=no,resizable=yes,scrollbars=yes,height=300,width=600');
               return false;
           });
+        }
       }).on("error", function() {
         $thumbnailPreview = $("<div class='thumbnail-preview-error'>Sorry, something went wrong. Try again after decreasing the time span to a shorter range and/or making sure your other settings are valid.</div>");
         $thumbnailPreviewContainer.empty().prepend($thumbnailPreview);
