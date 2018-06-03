@@ -165,6 +165,7 @@ if (!org.gigapan.timelapse.Timelapse) {
     var annotatorEnabled = timelapse.isAnnotatorEnabled();
     var changeDetectionEnabled = timelapse.isChangeDetectionEnabled();
     var showChangeDetectionOnLoad = ( typeof (settings["showChangeDetectionOnLoad"]) == "undefined") ? false : settings["showChangeDetectionOnLoad"];
+    var socialMediaSettings = settings["socialMedia"] || {};
 
     // Flags
     var isSafari = UTIL.isSafari();
@@ -785,10 +786,13 @@ if (!org.gigapan.timelapse.Timelapse) {
       // Add events
       $("#" + timeMachineDivId + " .generate-thumbnail").button().click(function(event) {
         $(this).button("disable");
+        $(".thumbnail-preview-container").addClass("loading");
         handleThumbnailDurationChange();
         //$thumbnailPreviewCopyTextButton.button("disable");
         $thumbnailPreviewCopyDataButton.button("disable");
         $thumbnailPreviewCopyDownloadButton.button("disable");
+
+        $(".social-media").empty();
 
         var urlSettings;
         var format;
@@ -1066,7 +1070,7 @@ if (!org.gigapan.timelapse.Timelapse) {
       if (response_is_image || response_is_gif) {
         $thumbnailPreview = $("<img class='thumbnail-preview' src='" + response.url + "'>");
       } else if (response_is_video) {
-        $thumbnailPreview = $("<video class='thumbnail-preview' src='" + response.url + "' controls autoplay preload='auto'></video>");
+        $thumbnailPreview = $("<video class='thumbnail-preview' src='" + response.url + "' controls autoplay muted preload='auto'></video>");
       } else {
         $thumbnailPreview = $("<div class='thumbnail-preview-error'>Sorry, something went wrong. Invalid output format.</div>");
         $thumbnailPreviewContainer.empty().prepend($thumbnailPreview);
@@ -1088,6 +1092,7 @@ if (!org.gigapan.timelapse.Timelapse) {
       shareViewOptions.et = thumbnailEndTime;
       shareViewOptions.ps = thumbnailPlaybackSpeed;
 
+      var shareView = UTIL.getParentURL() + timelapse.getShareView(desiredTime, desiredView, shareViewOptions);
       $thumbnailPreviewLink.attr("href", UTIL.getParentURL() + timelapse.getShareView(desiredTime, desiredView, shareViewOptions));
       $(".thumbnail-preview-copy-download-button").data('download-url', response.url);
       $(".thumbnail-preview-copy-download-button").data('download-type', response.args.format);
@@ -1110,6 +1115,57 @@ if (!org.gigapan.timelapse.Timelapse) {
         $thumbnailPreviewCopyDownloadButton.button("enable");
         $thumbnailPreview.show();
         $thumbnailPreviewLink.show();
+        $(".thumbnail-preview-container").removeClass('loading');
+
+        // Social Media
+        if (socialMediaSettings) {
+          var socialMediaShareLink;
+          var hashTags = [];
+          var shareTitle = document.title;
+          var shareDescription = " ";
+          if (socialMediaSettings.hashTags) {
+            hashTags = socialMediaSettings.hashTags;
+          }
+          if (timelapse.getDatasetType() == "breathecam") {
+            if (shareView.indexOf("clairton") >= 0) {
+              hashTags = hashTags.concat("CleanUpClairton");
+            } else if (shareView.indexOf("braddock") >= 0 || shareView.indexOf("westmifflin") >= 0 || shareView.indexOf("walnuttowers2") >= 0) {
+              hashTags = hashTags.concat("CleanUpBraddock");
+            }
+            if (typeof(locationMap) !== "undefined") {
+              shareTitle = locationMap[timelapse.getTmJSON().id];
+            }
+          }
+          hashTags = hashTags.join(",");
+          if (response_is_image) {
+            socialMediaShareLink = "https://share.createlab.org/image?site=" + encodeURIComponent(shareView) + "&title=" + encodeURIComponent(shareTitle) + "&description=" + encodeURIComponent(shareDescription) + "&site_name=" + encodeURIComponent(document.title) + "&fb_app_id=" + socialMediaSettings.facebookAppId + "&handle=" + encodeURIComponent(socialMediaSettings.twitterHandle) + "&image=" + encodeURIComponent(response.url);
+          } else if (response_is_video || response_is_gif) {
+            var aspectRatio = $thumbnailCustomBoundsWidth.val() / $thumbnailCustomBoundsHeight.val();
+            var previewWidth = 640;
+            var previewHeight = Math.round(previewWidth / aspectRatio);
+            var previewImage = response.url.replace("format=mp4", "format=png");
+            previewImage = previewImage.replace("format=webm", "format=png");
+            previewImage = previewImage.replace("width=" + $thumbnailCustomBoundsWidth.val(), "width=" + previewWidth);
+            previewImage = previewImage.replace("height=" + $thumbnailCustomBoundsHeight.val(), "height=" + previewHeight);
+            previewImage = previewImage.replace("nframes=" + response.args.nframes, "nframes=1");
+            previewImage = previewImage.replace("&labelsFromDataset", "&preview");
+            // We treat gifs as videos because we make use of the poster attribute in the video tag to get a gif to play on social media, specifically twitter.
+            socialMediaShareLink = "https://share.createlab.org/video?site=" + encodeURIComponent(shareView) + "&title=" + encodeURIComponent(shareTitle) + "&description=" + encodeURIComponent(shareDescription) + "&site_name=" + encodeURIComponent(document.title) + "&fb_app_id=" + socialMediaSettings.facebookAppId + "&handle=" + encodeURIComponent(socialMediaSettings.twitterHandle) + "&image=" + encodeURIComponent(previewImage) + "&video=" + encodeURIComponent(response.url);
+          }
+          $('<td colspan="3"><a class="twitter-sharelink" data-shareurl="" title="Share on Twitter"></a><a class="fb-sharelink" data-shareurl="" title="Share on Facebook"></a></td>').appendTo(".social-media");
+          $(".fb-sharelink, .twitter-sharelink").off("click");
+          $(".fb-sharelink").on("click", function() {
+              var shareurl = $(this).data('shareurl');
+              window.open('https://www.facebook.com/sharer.php?s=100&p[url]='+escape(socialMediaShareLink)+'&p[title]='+document.title, '',
+              'menubar=no,toolbar=no,resizable=yes,scrollbars=yes,height=300,width=600');
+              return false;
+          });
+          $(".twitter-sharelink").on("click", function() {
+              var shareurl = $(this).data('shareurl');
+              window.open('https://twitter.com/intent/tweet?url='+escape(socialMediaShareLink)+'&text='+escape("Look at this")+'&hashtags='+escape(hashTags)+'&via='+escape(socialMediaSettings.twitterHandle), '',
+              'menubar=no,toolbar=no,resizable=yes,scrollbars=yes,height=300,width=600');
+              return false;
+          });
       }).on("error", function() {
         $thumbnailPreview = $("<div class='thumbnail-preview-error'>Sorry, something went wrong. Try again after decreasing the time span to a shorter range and/or making sure your other settings are valid.</div>");
         $thumbnailPreviewContainer.empty().prepend($thumbnailPreview);

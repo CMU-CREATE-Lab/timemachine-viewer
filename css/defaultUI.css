@@ -224,7 +224,7 @@ _:-moz-tree-row(hover), .customButton .ui-button-text {
 
 /* FireFox specific CSS */
 _:-moz-tree-row(hover), .helpPlayerLabel .ui-button-text {
-  margin-top: -2px;
+  margin-top: 2px;
 }
 
 .instructions {
@@ -1163,6 +1163,10 @@ _:-moz-tree-row(hover), .customDialog .customDialogButton .ui-button-text {
   border: 1px solid #656565;
   overflow-x: hidden;
   overflow-y: hidden;
+  background: none;
+}
+
+.thumbnail-preview-container.loading {
   background: url('../images/loading.gif') #fff center no-repeat;
 }
 
@@ -1443,4 +1447,29 @@ input::-ms-clear {
 
 .shareView::-webkit-scrollbar-thumb:hover {
   background-color: #999;
+}
+
+.twitter-sharelink {
+  cursor: pointer;
+  background-image: url(../images/twitter.png);
+  width: 84px;
+  height: 28px;
+  display: block;
+  float: left;
+  margin-top: 5px;
+}
+
+.fb-sharelink {
+  cursor: pointer;
+  background-image: url(../images/fb.png);
+  width: 72px;
+  height: 28px;
+  display: block;
+  margin-left: 29px;
+  float: left;
+  margin-top: 5px;
+}
+
+.twitter-sharelink:hover, .fb-sharelink:hover {
+  opacity: 0.9;
 }
