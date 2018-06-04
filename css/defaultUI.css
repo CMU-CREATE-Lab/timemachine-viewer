@@ -1452,22 +1452,28 @@ input::-ms-clear {
 .twitter-sharelink {
   cursor: pointer;
   background-image: url(../images/twitter.png);
-  width: 84px;
-  height: 28px;
+  background-repeat: no-repeat;
+  background-size: contain;
+  width: 72px;
+  height: 24px;
   display: block;
   float: left;
   margin-top: 5px;
+  padding-bottom: 10px;
 }
 
 .fb-sharelink {
   cursor: pointer;
   background-image: url(../images/fb.png);
-  width: 72px;
-  height: 28px;
+  background-repeat: no-repeat;
+  background-size: contain;
+  width: 62px;
+  height: 24px;
   display: block;
   margin-left: 29px;
   float: left;
   margin-top: 5px;
+  padding-bottom: 10px;
 }
 
 .twitter-sharelink:hover, .fb-sharelink:hover {
