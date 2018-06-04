@@ -1127,11 +1127,6 @@ if (!org.gigapan.timelapse.Timelapse) {
             hashTags = socialMediaSettings.hashTags;
           }
           if (timelapse.getDatasetType() == "breathecam") {
-            if (shareView.indexOf("clairton") >= 0) {
-              hashTags = hashTags.concat("CleanUpClairton");
-            } else if (shareView.indexOf("braddock") >= 0 || shareView.indexOf("westmifflin") >= 0 || shareView.indexOf("walnuttowers2") >= 0) {
-              hashTags = hashTags.concat("CleanUpBraddock");
-            }
             if (typeof(locationMap) !== "undefined") {
               shareTitle = locationMap[timelapse.getTmJSON().id];
             }
