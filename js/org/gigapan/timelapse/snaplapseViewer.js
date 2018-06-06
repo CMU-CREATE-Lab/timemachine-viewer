@@ -1408,7 +1408,8 @@ if (!org.gigapan.timelapse.snaplapse) {
         }
 
         if (usePresentationSlider) {
-          selectAndGo($("#" + keyframeListItem.id), keyframeId);
+          // Holding down the shift key when a waypoint is clicked will not change the view but still do everything else related to a waypoint change.
+          selectAndGo($("#" + keyframeListItem.id), keyframeId, undefined, event.shiftKey, undefined, undefined);
         } else {
           selectAndGo($("#" + keyframeListItem.id), keyframeId, null, null, null, false);
         }
@@ -1693,16 +1694,16 @@ if (!org.gigapan.timelapse.snaplapse) {
           } else {
             timelapse.setNewView(newView, true, false, setViewCallback);
           }
-          if (usePresentationSlider && doNotFireListener != true) {
-            var listeners = eventListeners["slide-changed"];
-            if (listeners) {
-              var waypoint = {index: $select.index(), title: keyframe.unsafe_string_frameTitle, annotationBoxTitle: keyframe.unsafe_string_annotationBoxTitle, description: keyframe.unsafe_string_description, bounds: keyframe.bounds, layers: keyframe.layers, time: keyframe.time, endTime: keyframe.endTime, speed: keyframe.speed};
-              for (var i = 0; i < listeners.length; i++) {
-                try {
-                  listeners[i](waypoint);
-                } catch(e) {
-                  UTIL.error(e.name + " while calling presentationSlider slide-changed event listener: " + e.message, e);
-                }
+        }
+        if (usePresentationSlider && doNotFireListener != true) {
+          var listeners = eventListeners["slide-changed"];
+          if (listeners) {
+            var waypoint = {index: $select.index(), title: keyframe.unsafe_string_frameTitle, annotationBoxTitle: keyframe.unsafe_string_annotationBoxTitle, description: keyframe.unsafe_string_description, bounds: keyframe.bounds, layers: keyframe.layers, time: keyframe.time, endTime: keyframe.endTime, speed: keyframe.speed};
+            for (var i = 0; i < listeners.length; i++) {
+              try {
+                listeners[i](waypoint);
+              } catch(e) {
+                UTIL.error(e.name + " while calling presentationSlider slide-changed event listener: " + e.message, e);
               }
             }
           }
