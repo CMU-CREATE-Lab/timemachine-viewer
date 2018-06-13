@@ -1312,7 +1312,7 @@ _:-moz-tree-row(hover), .customDropdownButton .ui-button-text {
   display: none;
   width: auto;
   position: absolute;
-  z-index: 115;
+  z-index: 100001;
 }
 
 input[type=number]{
