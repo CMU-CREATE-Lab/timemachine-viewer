@@ -104,6 +104,7 @@ if (!org.gigapan.timelapse.Timelapse) {
     var thumbnailTool = timelapse.getThumbnailTool();
     var changeDetectionTool = timelapse.getChangeDetectionTool();
     var panInterval;
+    var eventListeners = {};
 
     // DOM elements
     var timeMachineDivId = timelapse.getTimeMachineDivId();
@@ -808,8 +809,8 @@ if (!org.gigapan.timelapse.Timelapse) {
           }
         }
 
-        var startCaptureTime = timelapse.getCaptureTimes()[$startingTimeSpinner.captureTimeSpinner("value")].replace("UTC", "").replace("T","-").replace(" ", "-").replace(/:/g,"-").split("-");
-        var endCaptureTime = timelapse.getCaptureTimes()[$endingTimeSpinner.captureTimeSpinner("value")].replace("UTC", "").replace("T","-").replace(" ", "-").replace(/:/g,"-").split("-");
+        var startCaptureTime = timelapse.getCaptureTimes()[$startingTimeSpinner.captureTimeSpinner("value")].replace("UTC", "").replace(/[ T:]/g, "-").split("-");
+        var endCaptureTime = timelapse.getCaptureTimes()[$endingTimeSpinner.captureTimeSpinner("value")].replace("UTC", "").replace(/[ T:]/g, "-").split("-");
 
         var startYear = parseInt(startCaptureTime[0]);
         var startMonth = parseInt(startCaptureTime[1]) || 1;
@@ -825,8 +826,13 @@ if (!org.gigapan.timelapse.Timelapse) {
         var endMinute = parseInt(endCaptureTime[4]) || 0;
         var endSecond = parseInt(endCaptureTime[5]) || 0;
 
-        thumbnailBeginTime = new Date(Date.UTC(startYear, (startMonth - 1), startDay, startHour, startMinute, startSecond)).toISOString().substr(0,10).replace(/-/g, "");
-        thumbnailEndTime = new Date(Date.UTC(endYear, (endMonth - 1), endDay, endHour, endMinute, endSecond)).toISOString().substr(0,10).replace(/-/g, "");
+        var initialISOStringLength = 19;
+        if (startHour == 0 && startMinute == 0 && startSecond == 0 && endHour == 0 && endMinute == 0 && endSecond == 0) {
+          initialISOStringLength = 10;
+        }
+
+        thumbnailBeginTime = new Date(Date.UTC(startYear, (startMonth - 1), startDay, startHour, startMinute, startSecond)).toISOString().substr(0, initialISOStringLength).replace(/[-T:]/g, "");
+        thumbnailEndTime = new Date(Date.UTC(endYear, (endMonth - 1), endDay, endHour, endMinute, endSecond)).toISOString().substr(0, initialISOStringLength).replace(/[-T:]/g, "");
         thumbnailPlaybackSpeed = (parseFloat($("#" + timeMachineDivId + " .custom-thumbnail-playback-rate").val()) * 100) || ($thumbnailPlaybackRate.data("rate") * 100);
 
         var desiredFps;
@@ -861,7 +867,16 @@ if (!org.gigapan.timelapse.Timelapse) {
           urlSettings.nframes = thumbnailDurationInFrames;
         }
 
-        setThumbnailPreviewArea(thumbnailTool.getURL(urlSettings));
+        var thumbnailParams = thumbnailTool.getURL(urlSettings);
+
+        var listeners = eventListeners["thumbnail-generated-from-ui"];
+        if (listeners) {
+          for (var i = 0; i < listeners.length; i++) {
+            listeners[i]($.extend({}, {url : thumbnailParams.url, timemachineId : timelapse.getTmJSON().id, beginTime : thumbnailBeginTime, endTime : thumbnailEndTime}, thumbnailParams.args));
+          }
+        }
+
+        setThumbnailPreviewArea(thumbnailParams);
       });
 
       $thumbnailImageSelector.button().on("click", function() {
@@ -1562,6 +1577,26 @@ if (!org.gigapan.timelapse.Timelapse) {
     //
     // Public methods
     //
+    this.addEventListener = function(eventName, listener) {
+      if (eventName && listener && typeof(listener) == "function") {
+        if (!eventListeners[eventName]) {
+          eventListeners[eventName] = [];
+        }
+        eventListeners[eventName].push(listener);
+      }
+    };
+
+    this.removeEventListener = function(eventName, listener) {
+      if (eventName && eventListeners[eventName] && listener && typeof(listener) == "function") {
+        for (var i = 0; i < eventListeners[eventName].length; i++) {
+          if (listener == eventListeners[eventName][i]) {
+            eventListeners[eventName].splice(i, 1);
+            return;
+          }
+        }
+      }
+    };
+
     this.getMode = function() {
       return mode;
     };
