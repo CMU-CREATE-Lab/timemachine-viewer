@@ -3542,10 +3542,13 @@ if (!window['$']) {
       // If form HH:MM or HH:MM:SS, add date from capture array
       if (time.match(/^\d\d:\d\d(:\d\d)?$/)) {
         var lastCapture = new Date(sanitizedParseTimeGMT(captureTimes[Math.max(0, frames - 1)]));
-        time = lastCapture.getFullYear() + "/" + (1e2 + (lastCapture.getMonth() + 1) + '').substr(1) + "/" + (1e2 + (lastCapture.getDate()) + '').substr(1) + " " + time;
+        time = lastCapture.getFullYear() + "-" + (1e2 + (lastCapture.getMonth() + 1) + '').substr(1) + "-" + (1e2 + (lastCapture.getDate()) + '').substr(1) + " " + time;
       }
 
-      time += ' GMT';
+      // If HH:MM:SS at the end of string, add GMT timezone in proper format for Date.parse()
+      if (time.match(/\d\d:\d\d:\d\d$/)) {
+        time += '.000Z';
+      }
       var epoch = Date.parse(time);
       if (epoch != 0 && (!epoch || isNaN(epoch))) return -1;
       return epoch;
