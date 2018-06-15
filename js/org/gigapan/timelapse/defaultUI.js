@@ -122,6 +122,7 @@ if (!org.gigapan.timelapse.Timelapse) {
     var $thumbnailImageSelector = $("#" + timeMachineDivId + " .thumbnail-type-image");
     var $thumbnailPreviewCopyTextContainer = $("#" + timeMachineDivId + " .thumbnail-preview-copy-text-container");
     var $thumbnailSwapSelectionDimensions = $("#" + timeMachineDivId + " .thumbnail-swap-selection-dimensions");
+    var $thumbnailSetCurrentTimeForTimeSpinner = $("#" + timeMachineDivId + " .thumbnail-set-current-time");
     var $thumbnailPreviewContainer = $("#" + timeMachineDivId + " .thumbnail-preview-container");
     var $thumbnailPreviewLink = $("#" + timeMachineDivId + " .thumbnail-preview-link");
     var $thumbnailCustomBoundsWidth = $("#" + timeMachineDivId + " #thumbnail-width");
@@ -688,8 +689,18 @@ if (!org.gigapan.timelapse.Timelapse) {
         }
       });
       $startingTimeSpinner.captureTimeSpinner({
+        change: function(event, ui) {
+          setButtonTooltip("", $(this));
+          var endingTime = $(".endingTimeSpinner.ui-spinner-input").val();
+          if (endingTime && event.target.value > endingTime) {
+            event.target.value = endingTime;
+            setButtonTooltip("Starting time cannot be greater than ending time", $(this), 4000);
+          }
+        },
         spin: function(event, ui) {
+          setButtonTooltip("", $(this));
           if (ui.value > $endingTimeSpinner.captureTimeSpinner("value")) {
+            setButtonTooltip("Starting time cannot be greater than ending time", $(this), 4000);
             return false;
           }
           timelapse.seekToFrame(ui.value);
@@ -704,12 +715,10 @@ if (!org.gigapan.timelapse.Timelapse) {
             var closestStartingIdx = timelapse.findExactOrClosestCaptureTime(String(event.target.value));
             if (closestStartingIdx != -1) {
               event.target.value = timelapse.getCaptureTimes()[closestStartingIdx];
+              timelapse.seekToFrame(closestStartingIdx);
             } else if (timelapse.getCaptureTimes().indexOf(event.target.value) == -1) {
               event.target.value = timelapse.getCaptureTimes()[currentStartingIdx];
-            }
-            var endingTime = $(".endingTimeSpinner.ui-spinner-input").val();
-            if (event.target.value > endingTime) {
-              event.target.value = endingTime;
+              timelapse.seekToFrame(currentStartingIdx);
             }
           });
         }
@@ -718,8 +727,18 @@ if (!org.gigapan.timelapse.Timelapse) {
         handleThumbnailDurationChange();
       });
       $endingTimeSpinner.captureTimeSpinner({
+        change: function(event, ui) {
+          setButtonTooltip("", $(this));
+          var startingTime = $(".startingTimeSpinner.ui-spinner-input").val();
+          if (startingTime && event.target.value < startingTime) {
+            event.target.value = startingTime;
+            setButtonTooltip("Ending time cannot be less than starting time", $(this), 4000);
+          };
+        },
         spin: function(event, ui) {
+          setButtonTooltip("", $(this));
           if (ui.value < $startingTimeSpinner.captureTimeSpinner("value")) {
+            setButtonTooltip("Ending time cannot be less than starting time", $(this), 4000);
             return false;
           }
           timelapse.seekToFrame(ui.value);
@@ -734,12 +753,10 @@ if (!org.gigapan.timelapse.Timelapse) {
             var closestEndingIdx = timelapse.findExactOrClosestCaptureTime(String(event.target.value));
             if (closestEndingIdx != -1) {
               event.target.value = timelapse.getCaptureTimes()[closestEndingIdx];
+              timelapse.seekToFrame(closestEndingIdx);
             } else if (timelapse.getCaptureTimes().indexOf(event.target.value) == -1) {
               event.target.value = timelapse.getCaptureTimes()[currentEndingIdx];
-            }
-            var startingTime = $(".startingTimeSpinner.ui-spinner-input").val();
-            if (event.target.value < startingTime) {
-              event.target.value = startingTime;
+              timelapse.seekToFrame(currentEndingIdx);
             }
           });
         }
@@ -747,6 +764,16 @@ if (!org.gigapan.timelapse.Timelapse) {
       $endingTimeSpinner.parent().on("mouseleave", function() {
         handleThumbnailDurationChange();
       });
+
+      $thumbnailSetCurrentTimeForTimeSpinner.on("click", function() {
+        setButtonTooltip("", $(this));
+        if ($(this).hasClass("thumbnail-set-start-time-from-timeline")) {
+          $startingTimeSpinner.captureTimeSpinner("value", timelapse.getCurrentFrameNumber());
+        } else if ($(this).hasClass("thumbnail-set-end-time-from-timeline")) {
+          $endingTimeSpinner.captureTimeSpinner("value", timelapse.getCurrentFrameNumber());
+        }
+      });
+
       // Create dropdown menu
       $thumbnailPlaybackRate.button({
         icons: {
@@ -1043,7 +1070,7 @@ if (!org.gigapan.timelapse.Timelapse) {
     };
     this.resetcaptureTimeSpinnerRange = resetcaptureTimeSpinnerRange;
 
-    var setButtonTooltip = function(text, $target) {
+    var setButtonTooltip = function(text, $target, duration) {
 
       if ($target && ($target.hasClass("ui-button") && $target.button("option", "disabled"))) {
         return;
@@ -1064,6 +1091,14 @@ if (!org.gigapan.timelapse.Timelapse) {
       } else {
         $thumbnailPreviewCopyTextButtonTooltip.hide();
       }
+
+      if (duration) {
+        clearTimeout($thumbnailPreviewCopyTextButtonTooltipContent.hideTimer);
+        $thumbnailPreviewCopyTextButtonTooltipContent.hideTimer = setTimeout(function() {
+          $thumbnailPreviewCopyTextButtonTooltip.hide();
+        }, duration);
+      }
+
     };
 
     var setThumbnailPreviewArea = function(response) {

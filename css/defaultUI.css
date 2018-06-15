@@ -1126,7 +1126,7 @@ _:-moz-tree-row(hover), .customDialog .customDialogButton .ui-button-text {
 }
 
 .thumbnail-swap-selection-dimensions {
-  background: url(../images/swap.png) #fff center no-repeat;
+  background: url(../images/swap.png) rgba(255, 255, 255, 0) center no-repeat;
   background-position: center;
   background-size: cover;
   width: 22px;
@@ -1138,7 +1138,20 @@ _:-moz-tree-row(hover), .customDialog .customDialogButton .ui-button-text {
   cursor: pointer;
 }
 
-.thumbnail-swap-selection-dimensions:hover {
+.thumbnail-set-current-time {
+  background: url(../images/clock.png) rgba(255, 255, 255, 0) center no-repeat;
+  background-position: center;
+  background-size: cover;
+  width: 22px;
+  height: 22px;
+  display: inline-block;
+  position: absolute;
+  margin-left: 46px;
+  opacity: 0.60;
+  cursor: pointer;
+}
+
+.thumbnail-swap-selection-dimensions:hover, .thumbnail-set-current-time:hover {
   opacity: 0.8
 }
 
@@ -1171,7 +1184,7 @@ _:-moz-tree-row(hover), .customDialog .customDialogButton .ui-button-text {
 }
 
 .thumbnail-preview-copy-text-button-tooltip {
-  z-index: 1100;
+  z-index: 100001;
   position: absolute;
   line-height: 18px;
   background-color: #3a3a3a;
