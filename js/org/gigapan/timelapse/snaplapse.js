@@ -472,6 +472,9 @@ if (!Math.uuid) {
           encoder.write_string(desiredKeyframes[i]['unsafe_string_annotationBoxTitle']);
           // Layers asssoicated with a keyfram
           encoder.write_string(String(desiredKeyframes[i]['layers']));
+          // Begin Time
+          var beginTime = desiredKeyframes[i]['beginTime'] !== "" ? String(desiredKeyframes[i]['beginTime']) : "";
+          encoder.write_string(beginTime);
           // End Time
           var endTime = desiredKeyframes[i]['endTime'] !== "" ? String(desiredKeyframes[i]['endTime']) : "";
           encoder.write_string(endTime);
@@ -606,9 +609,18 @@ if (!Math.uuid) {
             frame["layers"] = encoder.read_unsafe_string().split(",");
           }
           if (version >= 6) {
-            // Decode end frame number
+            // Decode start frame time
+            //
+            // Note that technically the 'time' param should have dealt with this, but it is never
+            // encoded and instead we derive it from the frame number, which is always an integer.
+            // However, we may want to be inbetween frames and that's not possible without this
+            // beginTime param. Plus, 'time' was strictly video time and beginTime can be a date.
+            var beginTime = parseFloat(encoder.read_unsafe_string());
+            frame["beginTime"] = isNaN(beginTime) ? -1 : String(beginTime);
+
+            // Decode end frame time
             var endTime = parseFloat(encoder.read_unsafe_string());
-            frame["endTime"] = isNaN(endTime) ? -1 : endTime;
+            frame["endTime"] = isNaN(endTime) ? -1 : String(endTime);
           }
           keyframes.push(frame);
         }
@@ -679,7 +691,7 @@ if (!Math.uuid) {
           if (keyframe && typeof keyframe['time'] != 'undefined' && typeof keyframe['bounds'] != 'undefined' && typeof keyframe['bounds']['xmin'] != 'undefined' && typeof keyframe['bounds']['ymin'] != 'undefined' && typeof keyframe['bounds']['xmax'] != 'undefined' && typeof keyframe['bounds']['ymax'] != 'undefined') {
             // NOTE: if is-description-visible is undefined, then we define it as *true* in order to maintain
             // backward compatibility with older time warps which don't have this property.
-            this.recordKeyframe(null, keyframe['time'], keyframe['bounds'], keyframe['unsafe_string_description'], ( typeof keyframe['is-description-visible'] == 'undefined') ? true : keyframe['is-description-visible'], keyframe['duration'], true, keyframe['buildConstraint'], keyframe['speed'], keyframe['loopTimes'], loadKeyframesLength, keyframe['unsafe_string_frameTitle'], keyframe['originalView'], keyframe['layers'], keyframe['unsafe_string_annotationBoxTitle'], keyframe['endTime']);
+            this.recordKeyframe(null, keyframe['time'], keyframe['bounds'], keyframe['unsafe_string_description'], ( typeof keyframe['is-description-visible'] == 'undefined') ? true : keyframe['is-description-visible'], keyframe['duration'], true, keyframe['buildConstraint'], keyframe['speed'], keyframe['loopTimes'], loadKeyframesLength, keyframe['unsafe_string_frameTitle'], keyframe['originalView'], keyframe['layers'], keyframe['unsafe_string_annotationBoxTitle'], keyframe['beginTime'], keyframe['endTime']);
           } else {
             UTIL.error("Ignoring invalid keyframe during snaplapse load.");
           }
@@ -885,8 +897,8 @@ if (!Math.uuid) {
           frame["waitStart"] = timelapse.getStartDwell();
           frame["waitEnd"] = timelapse.getEndDwell();
           frame["time"] = unsafeHashObj.hasOwnProperty("t") ? parseFloat(unsafeHashObj.t) : 0;
-          frame["bt"] = unsafeHashObj.hasOwnProperty("bt") ? parseFloat(unsafeHashObj.bt) : 0;
-          frame["endTime"] = unsafeHashObj.et ? parseFloat(unsafeHashObj.et) : "";
+          frame["beginTime"] = unsafeHashObj.hasOwnProperty("bt") ? parseFloat(unsafeHashObj.bt) : "";
+          frame["endTime"] = unsafeHashObj.hasOwnProperty("et") ? parseFloat(unsafeHashObj.et) : "";
           var frameNumber = Math.floor(frame["time"] * timelapse.getFps());
           frame["captureTime"] = captureTimes[frameNumber];
 
@@ -943,10 +955,10 @@ if (!Math.uuid) {
 
     this.duplicateKeyframe = function(idOfSourceKeyframe) {
       var keyframeCopy = cloneFrame(keyframesById[idOfSourceKeyframe]);
-      this.recordKeyframe(idOfSourceKeyframe, keyframeCopy['time'], keyframeCopy['bounds'], keyframeCopy['unsafe_string_description'], keyframeCopy['is-description-visible'], keyframeCopy['duration'], false, keyframeCopy['buildConstraint'], keyframeCopy['speed'], keyframeCopy['loopTimes'], undefined, keyframeCopy['unsafe_string_frameTitle'], undefined, keyframeCopy['layers'], keyframeCopy['unsafe_string_annotationBoxTitle'], keyframeCopy['endTime']);
+      this.recordKeyframe(idOfSourceKeyframe, keyframeCopy['time'], keyframeCopy['bounds'], keyframeCopy['unsafe_string_description'], keyframeCopy['is-description-visible'], keyframeCopy['duration'], false, keyframeCopy['buildConstraint'], keyframeCopy['speed'], keyframeCopy['loopTimes'], undefined, keyframeCopy['unsafe_string_frameTitle'], undefined, keyframeCopy['layers'], keyframeCopy['unsafe_string_annotationBoxTitle'], keyframeCopy['beginTime'], keyframeCopy['endTime']);
     };
 
-    this.recordKeyframe = function(idOfKeyframeToAppendAfter, time, bounds, description, isDescriptionVisible, duration, isFromLoad, buildConstraint, speed, loopTimes, loadKeyframesLength, frameTitle, originalView, layers, frameAnnotationBoxTitle, endTime) {
+    this.recordKeyframe = function(idOfKeyframeToAppendAfter, time, bounds, description, isDescriptionVisible, duration, isFromLoad, buildConstraint, speed, loopTimes, loadKeyframesLength, frameTitle, originalView, layers, frameAnnotationBoxTitle, beginTime, endTime) {
       if (typeof bounds == 'undefined') {
         bounds = timelapse.getBoundingBoxForCurrentView();
       }
@@ -960,6 +972,7 @@ if (!Math.uuid) {
       keyframe['loopTimes'] = loopTimes;
       keyframe['speed'] = speed;
       keyframe['time'] = org.gigapan.timelapse.Snaplapse.normalizeTime(( typeof time == 'undefined') ? timelapse.getCurrentTime() : time);
+      keyframe['beginTime'] = beginTime;
       keyframe['endTime'] = endTime;
       var frameNumber = Math.floor(keyframe['time'] * timelapse.getFps());
       keyframe['captureTime'] = captureTimes[frameNumber];

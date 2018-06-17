@@ -1397,7 +1397,7 @@ if (!org.gigapan.timelapse.snaplapse) {
 
         var listeners = eventListeners["slide-before-changed"];
         if (listeners) {
-          var waypoint = {index: $("#" + keyframeListItem.id).index(), title: keyframe.unsafe_string_frameTitle, annotationBoxTitle: keyframe.unsafe_string_annotationBoxTitle, description: keyframe.unsafe_string_description, bounds: keyframe.bounds, layers: keyframe.layers, time: keyframe.time, endTime: keyframe.endTime, speed: keyframe.speed};
+          var waypoint = {index: $("#" + keyframeListItem.id).index(), title: keyframe.unsafe_string_frameTitle, annotationBoxTitle: keyframe.unsafe_string_annotationBoxTitle, description: keyframe.unsafe_string_description, bounds: keyframe.bounds, layers: keyframe.layers, time: keyframe.time, beginTime: keyframe.beginTime, endTime: keyframe.endTime, speed: keyframe.speed};
           for (var i = 0; i < listeners.length; i++) {
             try {
               listeners[i](waypoint);
@@ -1409,7 +1409,7 @@ if (!org.gigapan.timelapse.snaplapse) {
 
         if (usePresentationSlider) {
           // Holding down the shift key when a waypoint is clicked will not change the view but still do everything else related to a waypoint change.
-          selectAndGo($("#" + keyframeListItem.id), keyframeId, undefined, event.shiftKey, undefined, undefined);
+          selectAndGo($("#" + keyframeListItem.id), keyframeId, null, event.shiftKey, null, null);
         } else {
           selectAndGo($("#" + keyframeListItem.id), keyframeId, null, null, null, false);
         }
@@ -1665,7 +1665,8 @@ if (!org.gigapan.timelapse.snaplapse) {
           }
         });
         setViewCallback = function() {
-          timelapse.seek(keyframe['time']);
+          var seekTime = timelapse.playbackTimeFromShareDate(keyframe['beginTime']) || keyframe['time'];
+          timelapse.seek(seekTime);
           if (doAutoMode) {
             if (wayPointClickedByAutoMode) {
               startAutoModeWaypointTimeout();
@@ -1698,7 +1699,7 @@ if (!org.gigapan.timelapse.snaplapse) {
         if (usePresentationSlider && doNotFireListener != true) {
           var listeners = eventListeners["slide-changed"];
           if (listeners) {
-            var waypoint = {index: $select.index(), title: keyframe.unsafe_string_frameTitle, annotationBoxTitle: keyframe.unsafe_string_annotationBoxTitle, description: keyframe.unsafe_string_description, bounds: keyframe.bounds, layers: keyframe.layers, time: keyframe.time, endTime: keyframe.endTime, speed: keyframe.speed};
+            var waypoint = {index: $select.index(), title: keyframe.unsafe_string_frameTitle, annotationBoxTitle: keyframe.unsafe_string_annotationBoxTitle, description: keyframe.unsafe_string_description, bounds: keyframe.bounds, layers: keyframe.layers, time: keyframe.time, beginTime: keyframe.beginTime, endTime: keyframe.endTime, speed: keyframe.speed};
             for (var i = 0; i < listeners.length; i++) {
               try {
                 listeners[i](waypoint);

@@ -3550,7 +3550,9 @@ if (!window['$']) {
         time += '.000Z';
       }
       var epoch = Date.parse(time);
-      if (epoch != 0 && (!epoch || isNaN(epoch))) return -1;
+      if (epoch != 0 && (!epoch || isNaN(epoch))) {
+        return -1;
+      }
       return epoch;
     }
     this.sanitizedParseTimeGMT = sanitizedParseTimeGMT;
@@ -3583,9 +3585,12 @@ if (!window['$']) {
     // in units of seconds in playback time
 
     var playbackTimeFromShareDate = function(sharedate) {
+      if (!sharedate) {
+        return 0;
+      }
       // Might be an old-style # of seconds
       if (sharedate - 0 < 1000) {
-        console.log('DEPRECATED: Old-style share link using playback seconds: "' + sharedate + '"');
+        UTIL.log('DEPRECATED: Old-style share link using playback seconds: "' + sharedate + '"', 2);
         return sharedate - 0;
       }
 
@@ -3597,7 +3602,7 @@ if (!window['$']) {
         sharedate.substr(8, 2) + ':' + sharedate.substr(10, 2) + ':' + sharedate.substr(12, 2);
       } else {
         // Error parsing;  return beginning of playback
-        console.log('Error parsing share date ' + sharedate + '; returning playbackTime = 0');
+        UTIL.log('Error parsing share date ' + sharedate + '; returning playbackTime = 0');
         return 0;
       }
       return playbackTimeFromDate(parsed);
