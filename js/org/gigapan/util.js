@@ -443,7 +443,7 @@ if (!org.gigapan) {
   org.gigapan.Util.unpackVars = function(str) {
     var vars = {};
     if (str) {
-      var keyvals = str.split('&');
+      var keyvals = str.split(/[#?&]/);
       for (var i = 0; i < keyvals.length; i++) {
         var keyval = keyvals[i].split('=');
         vars[keyval[0]] = keyval[1];
