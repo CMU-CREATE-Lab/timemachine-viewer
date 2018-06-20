@@ -1575,8 +1575,8 @@ if (!window['$']) {
           return "";
         }
         var bbox = bboxView.bbox;
-        var shareView = "v=" + shareViewHashParams.v + "&t=" + shareViewHashParams.t + "&l=" + String(shareViewHashParams.l);
-        return snaplapseViewer.generateThumbnailURL(null, bbox, width, height, shareViewHashParams.t, shareViewHashParams.l, {shareView: shareView}).url;
+        var shareView = "v=" + shareViewHashParams.v + "&t=" + shareViewHashParams.t + "&l=" + String(shareViewHashParams.l)+ "&bt=" + shareViewHashParams.t + "&et=" + shareViewHashParams.t;
+        return snaplapseViewer.generateThumbnailURL(null, bbox, width, height, shareViewHashParams.t, shareViewHashParams.l, {shareView: shareView, bt: shareViewHashParams.bt, et: shareViewHashParams.et}).url;
       }
     }
 

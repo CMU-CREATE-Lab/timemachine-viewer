@@ -1728,6 +1728,12 @@ if (!org.gigapan.timelapse.snaplapse) {
       if (keyframe.layers) {
         shareView += "&l=" + String(keyframe.layers);
       }
+      if (keyframe.beginTime) {
+        shareView += "&bt=" + keyframe.beginTime;
+      }
+      if (keyframe.endTime) {
+        shareView += "&et=" + keyframe.endTime;
+      }
       var options = {'baseMapsNoLabels' : true, 'shareView' : shareView};
       if (!thumbnailUrlList[listIndex]) {
         thumbnailURL = generateThumbnailURL(thumbnailServerRootTileUrl, keyframe.originalView, Math.floor($img.width()), Math.floor($img.height()), keyframe.time, keyframe.layers, options).url;
@@ -1750,8 +1756,8 @@ if (!org.gigapan.timelapse.snaplapse) {
       }
       var urlSettings = {
         ps: 0,
-        bt: time,
-        et: time,
+        bt: options.bt || time,
+        et: options.et || time,
         t: time,
         l: (typeof(layers) == "string") ? layers : layers.join(','),
         width: width,
