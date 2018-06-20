@@ -774,6 +774,10 @@ if (!org.gigapan.timelapse.Timelapse) {
         }
       });
 
+      timelapse.addTimelineUIChangeListener(function() {
+        resetShareThumbnailUI();
+      });
+
       // Create dropdown menu
       $thumbnailPlaybackRate.button({
         icons: {
