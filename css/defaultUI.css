@@ -787,6 +787,10 @@ _:-moz-tree-row(hover), .ui-spinner-input {
   border: 1px solid #a9a9a9;
 }
 
+.share-thumbnail.ui-accordion-content {
+  padding: 1em 1.6em !important;
+}
+
 /* FireFox specific CSS */
 _:-moz-tree-row(hover), .customDialog .customDialogButton .ui-button-text {
   margin-top: -5px;

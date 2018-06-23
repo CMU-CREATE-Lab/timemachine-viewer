@@ -675,19 +675,12 @@ if (!org.gigapan.timelapse.Timelapse) {
       });
       $startingTimeSpinner.captureTimeSpinner({
         change: function(event, ui) {
-          setButtonTooltip("", $(this));
           var endingTime = $(".endingTimeSpinner.ui-spinner-input").val();
           if (endingTime && event.target.value > endingTime) {
-            event.target.value = endingTime;
-            setButtonTooltip("Starting time cannot be greater than ending time", $(this), 4000);
+            $endingTimeSpinner.captureTimeSpinner("value", $startingTimeSpinner.captureTimeSpinner("value"));
           }
         },
         spin: function(event, ui) {
-          setButtonTooltip("", $(this));
-          if (ui.value > $endingTimeSpinner.captureTimeSpinner("value")) {
-            setButtonTooltip("Starting time cannot be greater than ending time", $(this), 4000);
-            return false;
-          }
           timelapse.seekToFrame(ui.value);
         }
       }).on("mousedown", function(event) {
@@ -701,6 +694,7 @@ if (!org.gigapan.timelapse.Timelapse) {
             if (closestStartingIdx != -1) {
               event.target.value = timelapse.getCaptureTimes()[closestStartingIdx];
               timelapse.seekToFrame(closestStartingIdx);
+              $startingTimeSpinner.trigger("blur");
             } else if (timelapse.getCaptureTimes().indexOf(event.target.value) == -1) {
               event.target.value = timelapse.getCaptureTimes()[currentStartingIdx];
               timelapse.seekToFrame(currentStartingIdx);
@@ -713,19 +707,12 @@ if (!org.gigapan.timelapse.Timelapse) {
       });
       $endingTimeSpinner.captureTimeSpinner({
         change: function(event, ui) {
-          setButtonTooltip("", $(this));
           var startingTime = $(".startingTimeSpinner.ui-spinner-input").val();
           if (startingTime && event.target.value < startingTime) {
-            event.target.value = startingTime;
-            setButtonTooltip("Ending time cannot be less than starting time", $(this), 4000);
-          };
+            $startingTimeSpinner.captureTimeSpinner("value", $endingTimeSpinner.captureTimeSpinner("value"));
+          }
         },
         spin: function(event, ui) {
-          setButtonTooltip("", $(this));
-          if (ui.value < $startingTimeSpinner.captureTimeSpinner("value")) {
-            setButtonTooltip("Ending time cannot be less than starting time", $(this), 4000);
-            return false;
-          }
           timelapse.seekToFrame(ui.value);
         }
       }).on("mousedown", function(event) {
@@ -739,6 +726,7 @@ if (!org.gigapan.timelapse.Timelapse) {
             if (closestEndingIdx != -1) {
               event.target.value = timelapse.getCaptureTimes()[closestEndingIdx];
               timelapse.seekToFrame(closestEndingIdx);
+              $endingTimeSpinner.trigger("blur");
             } else if (timelapse.getCaptureTimes().indexOf(event.target.value) == -1) {
               event.target.value = timelapse.getCaptureTimes()[currentEndingIdx];
               timelapse.seekToFrame(currentEndingIdx);
