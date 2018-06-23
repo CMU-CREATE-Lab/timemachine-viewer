@@ -3486,7 +3486,7 @@ if (!window['$']) {
     // 16:30
     // Wed Apr 08 2015 16:30:25 GMT-0400 (Eastern Daylight Time)
     // Wed Apr 08 2015, 16:30:25.000
-    var findExactOrClosestCaptureTime = function(timeToFind, direction) {
+    var findExactOrClosestCaptureTime = function(timeToFind, direction, exactOnly) {
       var low = 0, high = captureTimes.length - 1, i, newCompare;
       if (!timeToFind)
         return null;
@@ -3503,6 +3503,9 @@ if (!window['$']) {
         }
         // Exact match
         return i;
+      }
+      if (exactOnly) {
+        return -1;
       }
       if (low >= captureTimes.length)
         return (captureTimes.length - 1);

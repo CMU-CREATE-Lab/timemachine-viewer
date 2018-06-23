@@ -690,7 +690,7 @@ if (!org.gigapan.timelapse.Timelapse) {
           currentStartingIdx = timelapse.getCaptureTimes().indexOf(event.target.value);
           $startingTimeSpinner.one("blur", function() {
             isStartingTimeSpinnerBlurAdded = false;
-            var closestStartingIdx = timelapse.findExactOrClosestCaptureTime(String(event.target.value));
+            var closestStartingIdx = timelapse.findExactOrClosestCaptureTime(String(event.target.value), null, true);
             if (closestStartingIdx != -1) {
               event.target.value = timelapse.getCaptureTimes()[closestStartingIdx];
               timelapse.seekToFrame(closestStartingIdx);
@@ -722,7 +722,7 @@ if (!org.gigapan.timelapse.Timelapse) {
           currentEndingIdx = timelapse.getCaptureTimes().indexOf(event.target.value);
           $endingTimeSpinner.one("blur", function() {
             isEndingTimeSpinnerBlurAdded = false;
-            var closestEndingIdx = timelapse.findExactOrClosestCaptureTime(String(event.target.value));
+            var closestEndingIdx = timelapse.findExactOrClosestCaptureTime(String(event.target.value), null, true);
             if (closestEndingIdx != -1) {
               event.target.value = timelapse.getCaptureTimes()[closestEndingIdx];
               timelapse.seekToFrame(closestEndingIdx);
