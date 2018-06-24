@@ -675,9 +675,10 @@ if (!org.gigapan.timelapse.Timelapse) {
       });
       $startingTimeSpinner.captureTimeSpinner({
         change: function(event, ui) {
-          var endingTime = $(".endingTimeSpinner.ui-spinner-input").val();
-          if (endingTime && event.target.value > endingTime) {
-            $endingTimeSpinner.captureTimeSpinner("value", $startingTimeSpinner.captureTimeSpinner("value"));
+          var endingVal = $endingTimeSpinner.captureTimeSpinner("value");
+          var startingVal = $startingTimeSpinner.captureTimeSpinner("value");
+          if (startingVal > endingVal) {
+            $endingTimeSpinner.captureTimeSpinner("value", startingVal);
           }
         },
         spin: function(event, ui) {
@@ -690,7 +691,23 @@ if (!org.gigapan.timelapse.Timelapse) {
           currentStartingIdx = timelapse.getCaptureTimes().indexOf(event.target.value);
           $startingTimeSpinner.one("blur", function() {
             isStartingTimeSpinnerBlurAdded = false;
-            var closestStartingIdx = timelapse.findExactOrClosestCaptureTime(String(event.target.value), null, true);
+            var closestStartingIdx = timelapse.findExactOrClosestCaptureTime(String(event.target.value));
+            var minStartSpinnerIdx = 0;
+            var maxStartSpinnerIdx = $startingTimeSpinner.captureTimeSpinner("option", "max");
+            if (closestStartingIdx == minStartSpinnerIdx || closestStartingIdx == maxStartSpinnerIdx) {
+              var captureTimes = timelapse.getCaptureTimes();
+              var dateObj = new Date(event.target.value.replace(/-/g, "/"));
+              var minTime = new Date(captureTimes[0].replace(/-/g, "/")).getTime();
+              var maxTime = new Date(captureTimes[maxStartSpinnerIdx].replace(/-/g, "/")).getTime();
+              var dateObjTime = dateObj.getTime();
+              if (dateObj == "Invalid Date") {
+                closestStartingIdx = -1;
+              } else if (dateObjTime > maxTime) {
+                closestStartingIdx = maxStartSpinnerIdx;
+              } else if (dateObjTime < minTime) {
+                closestStartingIdx = minStartSpinnerIdx;
+              }
+            }
             if (closestStartingIdx != -1) {
               event.target.value = timelapse.getCaptureTimes()[closestStartingIdx];
               timelapse.seekToFrame(closestStartingIdx);
@@ -707,9 +724,10 @@ if (!org.gigapan.timelapse.Timelapse) {
       });
       $endingTimeSpinner.captureTimeSpinner({
         change: function(event, ui) {
-          var startingTime = $(".startingTimeSpinner.ui-spinner-input").val();
-          if (startingTime && event.target.value < startingTime) {
-            $startingTimeSpinner.captureTimeSpinner("value", $endingTimeSpinner.captureTimeSpinner("value"));
+          var endingVal = $endingTimeSpinner.captureTimeSpinner("value");
+          var startingVal = $startingTimeSpinner.captureTimeSpinner("value");
+          if (endingVal < startingVal) {
+            $startingTimeSpinner.captureTimeSpinner("value", endingVal);
           }
         },
         spin: function(event, ui) {
@@ -722,7 +740,23 @@ if (!org.gigapan.timelapse.Timelapse) {
           currentEndingIdx = timelapse.getCaptureTimes().indexOf(event.target.value);
           $endingTimeSpinner.one("blur", function() {
             isEndingTimeSpinnerBlurAdded = false;
-            var closestEndingIdx = timelapse.findExactOrClosestCaptureTime(String(event.target.value), null, true);
+            var closestEndingIdx = timelapse.findExactOrClosestCaptureTime(String(event.target.value));
+            var minEndSpinnerIdx = 0;
+            var maxEndSpinnerIdx = $endingTimeSpinner.captureTimeSpinner("option", "max");
+            if (closestEndingIdx == minEndSpinnerIdx || closestEndingIdx == maxEndSpinnerIdx) {
+              var captureTimes = timelapse.getCaptureTimes();
+              var dateObj = new Date(event.target.value.replace(/-/g, "/"));
+              var minTime = new Date(captureTimes[0].replace(/-/g, "/")).getTime();
+              var maxTime = new Date(captureTimes[maxEndSpinnerIdx].replace(/-/g, "/")).getTime();
+              var dateObjTime = dateObj.getTime();
+              if (dateObj == "Invalid Date") {
+                closestEndingIdx = -1;
+              } else if (dateObjTime > maxTime) {
+                closestEndingIdx = maxEndSpinnerIdx;
+              } else if (dateObjTime < minTime) {
+                closestEndingIdx = minEndSpinnerIdx;
+              }
+            }
             if (closestEndingIdx != -1) {
               event.target.value = timelapse.getCaptureTimes()[closestEndingIdx];
               timelapse.seekToFrame(closestEndingIdx);
