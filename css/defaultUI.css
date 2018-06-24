@@ -711,6 +711,11 @@ _:-moz-tree-row(hover), .helpPlayerLabel .ui-button-text {
   margin-top: 5px;
 }
 
+.thumbnail-processing-time-warning-container {
+  display: none;
+  color: purple;
+}
+
 .customDialog .customDialogButton.generate-thumbnail .ui-button-text {
   margin-top: 2px;
   font-size: 13px;
