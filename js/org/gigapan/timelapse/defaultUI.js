@@ -1062,7 +1062,7 @@ if (!org.gigapan.timelapse.Timelapse) {
 
       } else {
         if (thumbnailDurationInFrames > 1500) {
-          $(".thumbnail-processing-time-warning-container").show().find("div").html("A large number of frames were selected, this may take <br> awhile to process. Always check start/end times to ensure <br> the right time range was chosen before you click generate.");
+          $(".thumbnail-processing-time-warning-container").show().find("div").html("A large number of frames were selected, which may take <br> awhile to process. Always check start/end times to ensure <br> the right time range was chosen before you click generate.");
         } else {
           $(".thumbnail-processing-time-warning-container").hide();
         }
