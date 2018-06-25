@@ -3531,16 +3531,16 @@ if (!window['$']) {
       }
 
       // Remove milliseconds "Thu Apr 09 2015, 08:52:35.000" (FireFox/IE)
-      time = time.replace(/(\d\d)\.\d+/, '$1')
+      time = time.replace(/(\d\d)\.\d+/, '$1');
 
       // Remove leading whitespace
-      time = time.replace(/^\s+/, '')
+      time = time.replace(/^\s+/, '');
 
       // Remove trailing whitespace
-      time = time.replace(/\s+$/, '')
+      time = time.replace(/\s+$/, '');
 
       // Remove timezone
-      time = time.replace(/\s+[A-Z]+([-+]\d+)?$/, '')
+      time = time.replace(/\s+[A-Z]+([-+]\d+).*$/, '');
 
       // If form HH:MM or HH:MM:SS, add date from capture array
       if (time.match(/^\d\d:\d\d(:\d\d)?$/)) {
@@ -3548,8 +3548,15 @@ if (!window['$']) {
         time = lastCapture.getFullYear() + "-" + (1e2 + (lastCapture.getMonth() + 1) + '').substr(1) + "-" + (1e2 + (lastCapture.getDate()) + '').substr(1) + " " + time;
       }
 
-      // If HH:MM:SS at the end of string, add GMT timezone in proper format for Date.parse()
-      if (time.match(/\d\d:\d\d:\d\d$/)) {
+      // Handle case where our capture times are assumed to be Eastern Time but it is not indicated as such.
+      // Only when we are not showing local time did we actually indicate this in the capture time string, so append
+      // the timezone info if we encouter this.
+      if (captureTimes[0].match(/\d\d:\d\d(:\d\d)?\s*(PM|AM)?$/)) {
+        // Firefox (and maybe others) needs to have the date use slashes if we are appending the following time zone string.
+        time = time.replace(/-/g,"\/");
+        time += " " + new Date().toString().match(/([A-Z]+[\+-][0-9]+.*)/)[1];
+      } else if (time.match(/\d\d:\d\d:\d\d$/)) {
+        // If HH:MM:SS at the end of string, add GMT timezone in proper format for Date.parse()
         time += '.000Z';
       }
       var epoch = Date.parse(time);
