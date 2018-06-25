@@ -486,7 +486,7 @@ if (!window['$']) {
             _handleVideoPromise(video, "load");
             if (_isPaused()) {
               if (!video.playPromise) {
-                video.playPromise = video.play();
+                _handleVideoPromise(video, "play");
               }
               setTimeout(function() {
                 _handleVideoPromise(video, "pause");
@@ -527,7 +527,7 @@ if (!window['$']) {
         _handleVideoPromise(video, "load");
         if (_isPaused()) {
           if (!video.playPromise) {
-            video.playPromise = video.play();
+            _handleVideoPromise(video, "play");
           }
           setTimeout(function() {
             _handleVideoPromise(video, "pause");
@@ -722,7 +722,7 @@ if (!window['$']) {
           UTIL.log("video(" + videoId + ") play");
           var activeVideo = activeVideos[videoId];
           if (!activeVideo.playPromise) {
-            activeVideo.playPromise = activeVideo.play();
+            _handleVideoPromise(activeVideo, "play");
           }
         }
       } else if (advancing && (paused || stalled)) {
@@ -747,9 +747,12 @@ if (!window['$']) {
     };
 
     var _handleVideoPromise = function(video, actionType) {
+      if (!video) return;
+      if (actionType == "play" && video.paused) {
+        video.playPromise = video.play();
+      }
       if (video.playPromise !== undefined) {
         video.playPromise.then(function (_) {
-          if (!video) return;
           if (actionType == "pause" && !video.paused) {
             video.pause();
           } else if (actionType == "load") {
@@ -758,7 +761,9 @@ if (!window['$']) {
             video.src = "";
             window.clearInterval(video.clearStreamInterval);
           }
-          video.playPromise = undefined;
+          if (actionType != "play") {
+            video.playPromise = undefined;
+          }
         }).catch(function (error) {
           UTIL.error(error);
         });
@@ -945,7 +950,7 @@ if (!window['$']) {
       _setVideoToCurrentTime(video);
       if (advancing) {
         if (!video.playPromise) {
-          video.playPromise = video.play();
+          _handleVideoPromise(video, "play");
         }
       }
     };
@@ -1136,7 +1141,7 @@ if (!window['$']) {
         _handleVideoPromise(targetVideo, "load");
         targetVideo.handleSeekStuck = true;
         if (!targetVideo.playPromise) {
-          targetVideo.playPromise = targetVideo.play();
+          _handleVideoPromise(targetVideo, "play");
         }
       }, 250);
     };
