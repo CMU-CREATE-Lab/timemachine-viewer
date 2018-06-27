@@ -833,8 +833,8 @@ if (!org.gigapan.timelapse.snaplapse) {
         rootURL = parentUrl + "#tour=";
         rootEmbedURL = sourceUrl + "#tour=";
         if (datasetType == "landsat") {
-          rootURL = "http://earthengine.google.org/#timelapse/tour=";
-          rootEmbedURL = "http://earthengine.google.org/timelapse/player?c=http%3A%2F%2Fearthengine.google.org%2Ftimelapse%2Fdata#tour=";
+          rootURL = "https://earthengine.google.org/#timelapse/tour=";
+          rootEmbedURL = "https://earthengine.google.org/timelapse/player?c=http%3A%2F%2Fearthengine.google.org%2Ftimelapse%2Fdata#tour=";
         }
       }
     };
