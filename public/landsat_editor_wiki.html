@@ -44,7 +44,7 @@
     <script src="../libs/change-detect/js/ChangeDetectionTool.js" type="text/javascript"></script>
 
     <script src="../template_includes.js" type="text/javascript"></script>
-    <script src="http://earthengine.google.org/timelapse/data/20130507/ajax_includes.js" type="text/javascript"></script>
+    <script src="https://storage.googleapis.com/earthengine-timelapse/herwig/earthtime_annual_1984_2016/v05/ajax_includes.js" type="text/javascript"></script>
 
     <style>
       #timeMachine {
@@ -57,19 +57,14 @@
     <script type="text/javascript">
       jQuery.support.cors = true;
 
-      // Landsat ("https" will casue the thumbnail loading from the server to fail)
-      var url = "http://earthengine.google.org/timelapse/data/20130507/"
+      var url = "https://storage.googleapis.com/earthengine-timelapse/herwig/earthtime_annual_1984_2016/v05/";
 
       function init() {
-        myHomeView = {
-          x: 677982.255550633,
-          y: 521801.7016044302,
-          scale: 0.0005840897249061237
-        };
         var settings = {
           url: url,
           enableEditor: true,
           enablePresentationSlider: true,
+          mediaType: ".mp4",
           datasetType: "landsat",
           onTimeMachinePlayerReady: function(viewerDivId) {
             setupPostMessageHandlers();
@@ -85,7 +80,6 @@
             contextMapDiv: "contextMap1"
           },
           showAddressLookup: true,
-          newHomeView: myHomeView,
           isGoogleAnalyticEventTrackingEnabled: true
         };
         timelapse = new org.gigapan.timelapse.Timelapse("timeMachine", settings);
