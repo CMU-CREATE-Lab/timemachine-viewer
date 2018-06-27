@@ -810,7 +810,7 @@ if (!Math.uuid) {
           storyTitle = csvRow['Annotation Title'] ? csvRow['Annotation Title'].trim() : waypointTitle.slice(2);
           storyDescription = waypointText.trim();
           // Sanitize
-          storyId = storyTitle.replace(/ /g,"_").replace(/[^a-zA-Z0-9-_]/g, '').toLowerCase();
+          storyId = waypointTitle.slice(2).replace(/[^a-zA-Z0-9-_]/g, '').toLowerCase();
 
           if (storyDescription && mainShareView) {
             rowCount++;
