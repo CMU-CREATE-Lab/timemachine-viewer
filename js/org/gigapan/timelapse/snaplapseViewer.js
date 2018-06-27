@@ -1734,7 +1734,7 @@ if (!org.gigapan.timelapse.snaplapse) {
       if (keyframe.endTime) {
         shareView += "&et=" + keyframe.endTime;
       }
-      var options = {'baseMapsNoLabels' : true, 'shareView' : shareView};
+      var options = {'baseMapsNoLabels' : true, 'shareView' : shareView, 'nframes' : 1};
       if (!thumbnailUrlList[listIndex]) {
         thumbnailURL = generateThumbnailURL(thumbnailServerRootTileUrl, keyframe.originalView, Math.floor($img.width()), Math.floor($img.height()), keyframe.time, keyframe.layers, options).url;
       }
