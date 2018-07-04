@@ -439,9 +439,13 @@ if (!org.gigapan.timelapse.snaplapse) {
       }).click(function() {
         var fullURL = $("#" + composerDivId + " .loadTimewarpWindow_JSON").val();
         var match = fullURL.match(/(tour|presentation)=([^#?&]*)/);
-        if (match) {
-          var tour = match[2];
-          loadSnaplapse(snaplapse.urlStringToJSON(tour));
+        if (match.length >= 3) {
+          if (match[1] == "presentation") {
+            $("#" + composerDivId + " .toolbar .toggleMode .ui-button-text").text(getEditorModeText("presentation"));
+            setPresentationMode(true);
+          }
+          var urlString = match[2];
+          loadSnaplapse(snaplapse.urlStringToJSON(urlString));
           UTIL.addGoogleAnalyticEvent('button', 'click', 'editor-load-keyframes');
         } else {
           alert("Error: Invalid tour");
