@@ -564,6 +564,7 @@ _:-moz-tree-row(hover), .helpPlayerLabel .ui-button-text {
 }
 
 .zoomSlider {
+  display: none;
   width: 4px;
   height: 70px;
   background: #ffffff;
@@ -574,6 +575,7 @@ _:-moz-tree-row(hover), .helpPlayerLabel .ui-button-text {
 }
 
 .zoomSlider .ui-slider-handle {
+  display: none;
   width: 20px;
   height: 8px;
   overflow: hidden;
@@ -587,7 +589,7 @@ _:-moz-tree-row(hover), .helpPlayerLabel .ui-button-text {
 }
 
 .pan {
-  display: block;
+  display: none;
   width: 50px;
   height: 50px;
   margin-bottom: 10px;
@@ -598,6 +600,7 @@ _:-moz-tree-row(hover), .helpPlayerLabel .ui-button-text {
 }
 
 .pan .ui-button {
+  display: none;
   position: absolute;
   width: 20px;
   height: 20px;
@@ -614,26 +617,61 @@ _:-moz-tree-row(hover), .helpPlayerLabel .ui-button-text {
 }
 
 .zoom .ui-button {
+  margin-top: 0px;
   display: block;
-  width: 20px;
-  height: 20px;
-  margin: 0 auto;
+  width: 40px;
+  height: 40px;
   background: white;
-  border: 1px solid #656565;
-  border-radius: 2px !important;
+  border-bottom-right-radius: 2px !important;
+  border-top-right-radius: 2px !important;
+  -webkit-box-shadow: 2px 2px 3px rgba(0, 0, 0, 0.3);
   box-shadow: 2px 2px 3px rgba(0, 0, 0, 0.3);
   outline: none;
+  position: relative;
+  border-radius: 0px;
 }
 
-.zoom-touchFriendly .ui-button {
-  width: 50px;
-  height: 50px;
-  margin: 0px 0px 18px 0px;
-  border-radius: 35px !important;
+.ui-icon.ui-icon-plus, .ui-button .ui-icon.ui-icon-custom-plus {
+  background: url(../../images/plus.png);
+  width: 18px;
+  height: 18px;
+  opacity: 0.7;
+  -webkit-background-size: contain;
+          background-size: contain;
+  margin-left: -8px;
+  margin-top: -8px;
+}
+
+.zoomout .ui-icon.ui-icon-minus, .zoomout .ui-button .ui-icon.ui-icon-custom-minus {
+  background: url(../../images/minus.png);
+  width: 18px;
+  height: 18px;
+  opacity: 0.7;
+  -webkit-background-size: contain;
+          background-size: contain;
+  margin-left: -8px;
+  margin-top: -9px;
+}
+
+.zoomall.ui-button {
+  margin-top: 20px !important;
+}
+
+.zoomall .ui-icon {
+  background: url(../../images/home.png);
+  width: 18px;
+  height: 18px;
+  opacity: 0.7;
+  -webkit-background-size: contain;
+          background-size: contain;
 }
 
 .zoom .ui-icon {
   margin-top: -9px;
+}
+
+.sideToolBar .ui-button:hover > .ui-icon{
+  opacity: 1;
 }
 
 .controls {

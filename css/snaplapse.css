@@ -893,17 +893,16 @@
 
 #addressLookupContainer {
   position: absolute;
-  top: 21px;
-  left: 50%;
-  margin-left: -92px;
+  top: 20px;
+  left: 83px;
   z-index: 99;
 }
 
 #addressLookup {
   z-index: 136;
-  height: 23px;
+  height: 35px;
   padding-left: 8px;
-  width: 140px;
+  width: 200px;
   box-shadow: 2px 2px 3px rgba(0,0,0,0.3);
   border-top-left-radius: 1px;
   border-bottom-left-radius: 1px;
@@ -926,7 +925,7 @@
   -moz-border-radius: 2px;
   -ms-border-radius: 2px;
   margin-right: 16px;
-  height: 25px;
+  height: 37px;
   min-width: 18px;
   outline: 0px;
   padding: 0 8px;
@@ -959,7 +958,7 @@
   height: 30px;
   width: 30px;
   position: absolute;
-  top: -3px;
+  top: 3px;
   left: 1px;
 }
 
