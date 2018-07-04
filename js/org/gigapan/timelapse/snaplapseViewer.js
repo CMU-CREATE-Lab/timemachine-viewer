@@ -407,7 +407,7 @@ if (!org.gigapan.timelapse.snaplapse) {
       }).blur(function() {
         if ($(this).val() == "")
           $(this).val("Untitled");
-        var tourUrl = snaplapse.getAsUrlString();
+        var tourUrl = snaplapse.getAsUrlString() + "&ignoreThumbnailUrlList=1";
         $("#" + composerDivId + " .saveTimewarpWindow_JSON").val(rootURL + tourUrl);
         $("#" + composerDivId + " .saveTimewarpWindow_JSON2").val('<iframe width="' + embedWidth + '" height="' + embedHeight + '" src="' + rootEmbedURL + tourUrl + '" frameborder="0"></iframe>');
         $("#" + composerDivId + " .saveTimewarpWindow_JSON2_sizes").trigger("change");
@@ -865,6 +865,8 @@ if (!org.gigapan.timelapse.snaplapse) {
       snaplapse.clearSnaplapse();
       timelapse.stopParabolicMotion();
       if (!didOnce) {
+        didOnce = true;
+
         if (usePresentationSlider) {
           setToPresentationViewOnlyMode();
           $("#" + timeMachineDivId).on("mousedown", clearAutoModeTimeout).on("mouseup", startAutoModeIdleTimeout);
@@ -873,6 +875,11 @@ if (!org.gigapan.timelapse.snaplapse) {
         var $playbackButton = $("#" + viewerDivId + ' .playbackButton');
         var $controls = $("#" + viewerDivId + ' .controls');
         var $sideToolbar = $("#" + viewerDivId + ' .sideToolBar');
+
+        var unsafeHashObj = UTIL.getUnsafeHashVars();
+        if (unsafeHashObj.ignoreThumbnailUrlList) {
+          thumbnailUrlList = [];
+        }
 
         snaplapse.addEventListener('play', function() {
           timelapse.stopParabolicMotion();
@@ -1040,7 +1047,7 @@ if (!org.gigapan.timelapse.snaplapse) {
                       } else if (presentationSliderLoadAnimation == "warp") {
                         timelapse.setNewView(newView, true, presentationSliderPlayAfterAnimation);
                       }
-                      selectAndGo($("#" + timeMachineDivId + "_snaplapse_keyframe_" + keyframeId), keyframeId, true, true, true);
+                      selectAndGo($("#" + timeMachineDivId + "_snaplapse_keyframe_" + keyframeId), keyframeId, true, false, true);
                     }
                   } else {
                     if (currentAutoModeWaypointIdx != -1) currentAutoModeWaypointIdx--;
@@ -1114,7 +1121,6 @@ if (!org.gigapan.timelapse.snaplapse) {
 
         // TODO: add videoset listener which listens for the stall event so we can disable the recordKeyframeButton
         // (if not already disabled due to playback)
-        didOnce = true;
       }
       if ($sortable)
         $sortable.empty();
@@ -1627,7 +1633,6 @@ if (!org.gigapan.timelapse.snaplapse) {
       if (timelapse.getVisualizer() && !usePresentationSlider && uiEnabled && !useCustomUI)
         timelapse.getVisualizer().addTimeTag(keyframes, insertionIndex, isKeyframeFromLoad);
 
-
       if (thumbnailUrlList.length > 0) {
         // Pull from list of provided thumbnail URLs
         // Assumes list is in order of how thumbnails will be displayed
@@ -1886,7 +1891,7 @@ if (!org.gigapan.timelapse.snaplapse) {
 
     var saveSnaplapse = function() {
       if (snaplapse && (snaplapse.getNumKeyframes() >= 1)) {
-        var tourUrl = snaplapse.getAsUrlString();
+        var tourUrl = snaplapse.getAsUrlString() + "&ignoreThumbnailUrlList=1";
         $("#" + composerDivId + " .saveTimewarpWindow").dialog("open");
         $("#" + composerDivId + " .saveTimewarpWindow_JSON").val(rootURL + tourUrl).focus().select().click(function() {
           $(this).focus().select();
