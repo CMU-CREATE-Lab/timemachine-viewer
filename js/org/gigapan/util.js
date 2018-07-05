@@ -197,6 +197,10 @@ if (!org.gigapan) {
     return isChromeUserAgent;
   };
 
+  org.gigapan.Util.isChromeOS = function() {
+    return isChromeOS;
+  };
+
   org.gigapan.Util.isSafari = function() {
     return isSafariUserAgent;
   };

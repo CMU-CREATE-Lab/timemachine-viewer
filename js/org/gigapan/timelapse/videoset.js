@@ -173,6 +173,7 @@ if (!window['$']) {
     var isIEEdge = UTIL.isIEEdge();
     var isOperaLegacy = UTIL.isOperaLegacy();
     var isChrome = UTIL.isChrome();
+    var isChromeOS = UTIL.isChromeOS();
     var isSafari = UTIL.isSafari();
     var isFirefox = UTIL.isFirefox();
     var isMobileSupported = UTIL.isMobileSupported();
@@ -436,7 +437,7 @@ if (!window['$']) {
       _deleteUnneededVideos();
 
       // TODO: Check if still needed for Edge
-      if (isIEEdge || isOperaLegacy) {
+      if (isIEEdge || isOperaLegacy || isChromeOS) {
         // Videos in Opera <= 12 and IE Edge often seem to get stuck in a state of always seeking.
         // This will ensure that if we are stuck, we reload the video.
         video.addEventListener('seeking', videoSeeking, false);
@@ -583,6 +584,7 @@ if (!window['$']) {
     this.repositionVideo = _repositionVideo;
 
     var stopStreaming = function(video) {
+      _handleVideoPromise(video, "pause");
       try {
         if (isChrome && doChromeCacheBreaker) {
           delete activeVideoSrcList[video.src];
@@ -592,8 +594,9 @@ if (!window['$']) {
       } catch(e) {
         UTIL.error("User has disabled local file storage of cookies: " + e);
       }
-      window.clearInterval(video.clearStreamInterval);
-      video.clearStreamInterval = window.setInterval(_handleVideoPromise(video, "delete"), 50);
+      video.src = "";
+      //window.clearInterval(video.clearStreamInterval);
+      //video.clearStreamInterval = window.setInterval(_handleVideoPromise(video, "delete"), 50);
     };
 
     var clearOutVideoLocalStore = function(checkTimestamps) {
@@ -757,10 +760,10 @@ if (!window['$']) {
             video.pause();
           } else if (actionType == "load") {
             video.load();
-          } else if (actionType == "delete") {
+          }/* else if (actionType == "delete") {
             video.src = "";
             window.clearInterval(video.clearStreamInterval);
-          }
+          }*/
           if (actionType != "play") {
             video.playPromise = undefined;
           }
@@ -1136,14 +1139,16 @@ if (!window['$']) {
     var videoSeeking = function(event) {
       window.clearInterval(videoIsSeekingIntervalCheck);
       videoIsSeekingIntervalCheck = window.setInterval(function() {
-        UTIL.error("We're still seeking after 250ms, so let's reload the video. This is an Opera <= 12 and IE Edge only workaround.");
-        var targetVideo = event.target;
-        _handleVideoPromise(targetVideo, "load");
-        targetVideo.handleSeekStuck = true;
-        if (!targetVideo.playPromise) {
-          _handleVideoPromise(targetVideo, "play");
+        UTIL.error("We're still seeking after 1000ms, so let's reload the video.");
+        for (var videoId in activeVideos) {
+          if (videoId != currentVideoId) {
+            stopStreaming(activeVideos[videoId]);
+          }
         }
-      }, 250);
+        var activeVideo = activeVideos[currentVideoId];
+        if (!activeVideo || !activeVideo.seeking) return;
+        activeVideo.load();
+      }, 1000);
     };
 
     var videoSeeked = function(event) {
