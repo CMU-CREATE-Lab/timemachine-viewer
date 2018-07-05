@@ -576,13 +576,15 @@ if (!org.gigapan.timelapse.Timelapse) {
 
     var setContextMap = function(latlngCenter) {
       if (isMapMinimized === false) {
-        if (zoomOffset === undefined)
+        if (!latlngCenter || latlngCenter.lat === undefined || latlngCenter.lng === undefined || zoomOffset === undefined) {
           return;
-        var extendRatio = (mapGeometry.width + mapGeometry.height) / (startHeight + startWidth);
-        if (extendRatio >= 1)
+        }
+        var extendRatio = ((mapGeometry.width + mapGeometry.height) / (startHeight + startWidth) || 0);
+        if (extendRatio >= 1) {
           extendRatio *= 0.6;
-        else
+        } else {
           extendRatio *= -0.5;
+        }
         var newZoom = Math.floor((timelapse.getCurrentZoom() + zoomOffset) + extendRatio);
         if (oldMapZoom != newZoom) {
           oldMapZoom = newZoom;
