@@ -1699,10 +1699,11 @@ if (!org.gigapan.timelapse.snaplapse) {
               newView = timelapse.pixelBoundingBoxToPixelCenterView(keyframe['bounds']);
             }
           }
+          var doPlay = !timelapse.isPaused() || timelapse.isDoingLoopingDwell();
           if (usePresentationSlider && useCustomUI) {
-            timelapse.setNewView(newView, false, false, setViewCallback);
+            timelapse.setNewView(newView, false, doPlay, setViewCallback);
           } else {
-            timelapse.setNewView(newView, true, false, setViewCallback);
+            timelapse.setNewView(newView, true, doPlay, setViewCallback);
           }
         }
         if (usePresentationSlider && doNotFireListener != true) {
