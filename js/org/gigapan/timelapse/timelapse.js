@@ -1437,17 +1437,17 @@ if (!window['$']) {
         }
       }
 
-      var shareStr;
+      var shareStr = "";
 
       // EarthTime specific
       var filterParamsForEarthTimeStoryMode = false;
-      if (typeof(hashparams.theme) != "undefined" && typeof(hashparams.forThumbnail) == "undefined" && window.location.href.indexOf("/stories") == -1 && window.location.href.indexOf("/themes") == -1) {
-        if ($shareViewWaypointOnlyCheckbox.prop("checked")) {
+      if ((typeof(hashparams.theme) != "undefined" || window.location.href.indexOf("/stories") != -1 || window.location.href.indexOf("/themes") != -1) && typeof(hashparams.forThumbnail) == "undefined") {
+        if ($shareViewWaypointOnlyCheckbox.is(":visible") && $shareViewWaypointOnlyCheckbox.prop("checked")) {
           delete hashparams['story'];
           delete hashparams['theme'];
         } else {
           filterParamsForEarthTimeStoryMode = true;
-          if ($shareViewWaypointIndexCheckbox.prop("checked")) {
+          if ($shareViewWaypointIndexCheckbox.is(":visible") && $shareViewWaypointIndexCheckbox.prop("checked")) {
             var currentWaypointIndex = snaplapseForPresentationSlider.getSnaplapseViewer().getCurrentWaypointIndex();
             shareStr = "#waypointIdx=" + currentWaypointIndex;
           }

@@ -599,6 +599,7 @@ if (!org.gigapan.timelapse.Timelapse) {
           }
         } else {
           disableShareThumbnail();
+          $("#" + timeMachineDivId + " .shareView .waypoint-index, #" + timeMachineDivId + " .shareView .waypoint-only").prop("checked", false);
         }
       });
       $shareViewDialogClose.on("click", function() {
@@ -1165,7 +1166,7 @@ if (!org.gigapan.timelapse.Timelapse) {
         response.args.nframes = 1;
       }
       var desiredTime = timelapse.frameNumberToTime(response.args.startFrame);
-      var desiredView = response.args.boundsLTRB + ",pts";
+      var desiredView = response.args.boundsLTRB ? response.args.boundsLTRB + ",pts" : response.args.root.split("/#v")[1];
 
       var shareViewOptions = {}
       shareViewOptions.bt = thumbnailBeginTime;
@@ -1606,6 +1607,11 @@ if (!org.gigapan.timelapse.Timelapse) {
 
     var updateShareViewTextbox = function() {
       var parentUrl = UTIL.getParentURL();
+      // EarthTime specific
+      var $shareViewWaypointOnlyCheckbox = $("#" + viewerDivId + " .waypoint-only");
+      if ($shareViewWaypointOnlyCheckbox.is(":visible") && $shareViewWaypointOnlyCheckbox.prop("checked")) {
+        parentUrl = parentUrl.substring(0, parentUrl.indexOf('/stories')) + "/explore";
+      }
       $shareUrl.val(parentUrl + timelapse.getShareView());
     };
     this.updateShareViewTextbox = updateShareViewTextbox;
