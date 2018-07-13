@@ -584,6 +584,13 @@ if (!org.gigapan.timelapse.Timelapse) {
         timelapse.onresize();
         if ($("#" + viewerDivId).hasClass("right-panel-active")) {
           updateShareViewTextbox();
+          var snaplapse = timelapse.getSnaplapseForPresentationSlider();
+          var snaplapseViewer = snaplapse.getSnaplapseViewer();
+          if (snaplapseViewer.getCurrentWaypointIndex() == -1 || typeof(EARTH_TIMELAPSE_CONFIG) === "undefined") {
+            $("#" + viewerDivId + " .presentation-mode-share-input").hide();
+          } else  {
+            $("#" + viewerDivId + " .presentation-mode-share-input").show();
+          }
           UTIL.addGoogleAnalyticEvent('button', 'click', 'viewer-show-share-dialog');
           var activeIdx = $shareAccordion.accordion("option", "active");
           var $activePanel = $($shareAccordion.accordion("instance").panels[activeIdx]);
@@ -917,6 +924,11 @@ if (!org.gigapan.timelapse.Timelapse) {
         }
 
         setThumbnailPreviewArea(thumbnailParams);
+      });
+
+      $("#" + timeMachineDivId + " .shareView").on("click", ".waypoint-index, .waypoint-only", function(e) {
+        $("#" + timeMachineDivId + " .shareView .waypoint-index, #" + timeMachineDivId + " .shareView .waypoint-only").not($(e.currentTarget)).prop("checked", false);
+        updateShareViewTextbox();
       });
 
       $thumbnailImageSelector.button().on("click", function() {

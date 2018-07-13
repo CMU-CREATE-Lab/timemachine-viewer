@@ -181,6 +181,8 @@ if (!window['$']) {
     // DOM elements
     var dataPanesId;
     var $previousCustomUIElements;
+    var $shareViewWaypointIndexCheckbox;
+    var $shareViewWaypointOnlyCheckbox;
 
     // Canvas version
     var canvas;
@@ -1435,17 +1437,27 @@ if (!window['$']) {
         }
       }
 
+      var shareStr;
+
       // EarthTime specific
       var filterParamsForEarthTimeStoryMode = false;
       if (typeof(hashparams.theme) != "undefined" && typeof(hashparams.forThumbnail) == "undefined" && window.location.href.indexOf("/stories") == -1 && window.location.href.indexOf("/themes") == -1) {
-        filterParamsForEarthTimeStoryMode = true;
+        if ($shareViewWaypointOnlyCheckbox.prop("checked")) {
+          delete hashparams['story'];
+          delete hashparams['theme'];
+        } else {
+          filterParamsForEarthTimeStoryMode = true;
+          if ($shareViewWaypointIndexCheckbox.prop("checked")) {
+            var currentWaypointIndex = snaplapseForPresentationSlider.getSnaplapseViewer().getCurrentWaypointIndex();
+            shareStr = "#waypointIdx=" + currentWaypointIndex;
+          }
+        }
       }
 
-      var shareStr;
       for (var prop in hashparams) {
         if (hashparams.hasOwnProperty(prop)) {
-          // EarthTIme specific
-          if (prop == "forThumbnail" || (filterParamsForEarthTimeStoryMode && prop != "theme" && prop != "story")) continue;
+          // EarthTime specific
+          if (prop == "forThumbnail" || (filterParamsForEarthTimeStoryMode && prop != "theme" && prop != "story" && prop != "waypointIdx")) continue;
           if (shareStr) {
             shareStr += '&';
           } else {
@@ -3736,6 +3748,9 @@ if (!window['$']) {
       // So we have a choice: Do multiple paths in the css file, getting a 404 in Chrome for invalid relative paths OR we do the style in the document itself,
       // which in any browser will reslove relative paths correctly. We choose the latter to keep the message console clean.
       $('<style type="text/css">.closedHand {cursor: url("' + rootAppURL + 'css/cursors/closedhand.cur"), move !important;} .openHand {cursor: url("' + rootAppURL + 'css/cursors/openhand.cur"), move !important;} .tiledContentHolder {cursor: url("' + rootAppURL + 'css/cursors/openhand.cur"), move;}</style>').appendTo($('head'));
+
+      $shareViewWaypointIndexCheckbox = $("#" + viewerDivId + " .waypoint-index");
+      $shareViewWaypointOnlyCheckbox = $("#" + viewerDivId + " .waypoint-only");
 
       loadTimelapse(settings["url"], settings["initialView"], settings["initialTime"]);
     }

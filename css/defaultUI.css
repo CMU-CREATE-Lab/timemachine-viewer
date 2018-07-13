@@ -684,10 +684,6 @@ _:-moz-tree-row(hover), .helpPlayerLabel .ui-button-text {
   overflow: visible;
 }
 
-.customDialog {
-  height: auto !important;
-}
-
 .customDialog a {
   color: #a40e0e;
 }
@@ -1268,11 +1264,15 @@ _:-moz-tree-row(hover), .customDialog .customDialogButton .ui-button-text {
   color: white;
 }
 
-.embed-capture-time, .smooth-playback, .force-aspect-ratio {
+.embed-capture-time, .smooth-playback, .force-aspect-ratio, .waypoint-only, .waypoint-index {
   margin-left: 0px;
   width: 15px;
   height: 15px;
   cursor: pointer;
+}
+
+.presentation-mode-share-input {
+  display: none;
 }
 
 input:disabled, .thumbnail-speed.ui-state-disabled, .thumbnail-playback-rate.ui-state-disabled {
@@ -1403,7 +1403,7 @@ input::-ms-clear {
   position: absolute;
   right: 0px;
   top: 0px;
-  height: 100% !important;
+  height: 100%;
   z-index: 100000;
   overflow-y: auto;
   width: 418px;

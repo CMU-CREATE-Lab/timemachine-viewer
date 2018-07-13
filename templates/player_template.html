@@ -118,16 +118,24 @@
       </button>
     </div>
     <div class="accordion">
-      <h3>Share a link</h3>
+      <h3>Share as link</h3>
       <div id="share-link-container">
         <table class="share-link">
           <tr>
             <td><input type="text" class="shareurl"></td>
             <td><div class="shareurl-copy-text-button customDialogButton">Copy</div></td>
           </tr>
+          <tr class="presentation-mode-share-input">
+            <td>Start from current waypoint</td>
+            <td><input type="checkbox" class="waypoint-index"></td>
+          </tr>
+          <tr class="presentation-mode-share-input">
+            <td>Share only current view</td>
+            <td><input type="checkbox" class="waypoint-only"></td>
+          </tr>
         </table>
       </div>
-      <h3>Share an image or video</h3>
+      <h3>Share as image or video</h3>
       <div class="share-thumbnail">
         <table class="share-thumbnail-tool">
           <tr colspans="3">
@@ -166,7 +174,7 @@
             <td><input class="thumbnail-end-delay" type="number" step="0.1" min="0" value="0"></td>
           </tr>
           <tr>
-            <td>Embed time?</td>
+            <td>Embed time</td>
             <td><input type="checkbox" class="embed-capture-time" checked></td>
           </tr>
           <tr class="thumbnail-processing-time-warning-container">
