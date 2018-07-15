@@ -585,11 +585,13 @@ if (!org.gigapan.timelapse.Timelapse) {
         if ($("#" + viewerDivId).hasClass("right-panel-active")) {
           updateShareViewTextbox();
           var snaplapse = timelapse.getSnaplapseForPresentationSlider();
-          var snaplapseViewer = snaplapse.getSnaplapseViewer();
-          if (snaplapseViewer.getCurrentWaypointIndex() == -1 || typeof(EARTH_TIMELAPSE_CONFIG) === "undefined") {
-            $("#" + viewerDivId + " .presentation-mode-share-input").hide();
-          } else  {
-            $("#" + viewerDivId + " .presentation-mode-share-input").show();
+          if (snaplapse) {
+            var snaplapseViewer = snaplapse.getSnaplapseViewer();
+            if (snaplapseViewer.getCurrentWaypointIndex() == -1 || typeof(EARTH_TIMELAPSE_CONFIG) === "undefined") {
+              $("#" + viewerDivId + " .presentation-mode-share-input").hide();
+            } else  {
+              $("#" + viewerDivId + " .presentation-mode-share-input").show();
+            }
           }
           UTIL.addGoogleAnalyticEvent('button', 'click', 'viewer-show-share-dialog');
           var activeIdx = $shareAccordion.accordion("option", "active");
