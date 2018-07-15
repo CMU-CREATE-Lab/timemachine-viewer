@@ -857,22 +857,35 @@ if (!org.gigapan.timelapse.Timelapse) {
           }
         }
 
-        var startCaptureTime = timelapse.getCaptureTimes()[$startingTimeSpinner.captureTimeSpinner("value")].replace("UTC", "").replace(/[ T:]/g, "-").split("-");
-        var endCaptureTime = timelapse.getCaptureTimes()[$endingTimeSpinner.captureTimeSpinner("value")].replace("UTC", "").replace(/[ T:]/g, "-").split("-");
+        var captureTimes = timelapse.getCaptureTimes();
+        var startCaptureTime = captureTimes[$startingTimeSpinner.captureTimeSpinner("value")];
+        var endCaptureTime = captureTimes[$endingTimeSpinner.captureTimeSpinner("value")];
 
-        var startYear = parseInt(startCaptureTime[0]);
-        var startMonth = parseInt(startCaptureTime[1]) || 1;
-        var startDay = parseInt(startCaptureTime[2]) || 1;
-        var startHour = parseInt(startCaptureTime[3]) || 0;
-        var startMinute = parseInt(startCaptureTime[4]) || 0;
-        var startSecond = parseInt(startCaptureTime[5]) || 0;
+        if (captureTimes[0].match(/PM|AM/)) {
+          var startEpochTime = timelapse.sanitizedParseTimeGMT(startCaptureTime);
+          var startTimeDate = new Date(startEpochTime);
+          startCaptureTime = startTimeDate.getFullYear() + "-" + ("0" + (startTimeDate.getMonth() + 1)).slice(-2) + "-" + (("0" + startTimeDate.getDate()).slice(-2)) + " " + ("0" + startTimeDate.getHours()).slice(-2) + ":" + ("0" + startTimeDate.getMinutes()).slice(-2) + ":" + ("0" + startTimeDate.getSeconds()).slice(-2);
 
-        var endYear = parseInt(endCaptureTime[0]);
-        var endMonth = parseInt(endCaptureTime[1]) || 12;
-        var endDay = parseInt(endCaptureTime[2]) || 31;
-        var endHour = parseInt(endCaptureTime[3]) || 0;
-        var endMinute = parseInt(endCaptureTime[4]) || 0;
-        var endSecond = parseInt(endCaptureTime[5]) || 0;
+          var endEpochTime = timelapse.sanitizedParseTimeGMT(endCaptureTime);
+          var endTimeDate = new Date(endEpochTime);
+          endCaptureTime = endTimeDate.getFullYear() + "-" + ("0" + (endTimeDate.getMonth() + 1)).slice(-2) + "-" + (("0" + endTimeDate.getDate()).slice(-2)) + " " + ("0" + endTimeDate.getHours()).slice(-2) + ":" + ("0" + endTimeDate.getMinutes()).slice(-2) + ":" + ("0" + endTimeDate.getSeconds()).slice(-2);
+        }
+        var startCaptureTimeArray = startCaptureTime.replace("UTC", "").replace(/[ T:]/g, "-").replace(".00Z", "").split("-");
+        var endCaptureTimeArray = endCaptureTime.replace("UTC", "").replace(/[ T:]/g, "-").replace(".00Z", "").split("-");
+
+        var startYear = parseInt(startCaptureTimeArray[0]);
+        var startMonth = parseInt(startCaptureTimeArray[1]) || 1;
+        var startDay = parseInt(startCaptureTimeArray[2]) || 1;
+        var startHour = parseInt(startCaptureTimeArray[3]) || 0;
+        var startMinute = parseInt(startCaptureTimeArray[4]) || 0;
+        var startSecond = parseInt(startCaptureTimeArray[5]) || 0;
+
+        var endYear = parseInt(endCaptureTimeArray[0]);
+        var endMonth = parseInt(endCaptureTimeArray[1]) || 12;
+        var endDay = parseInt(endCaptureTimeArray[2]) || 31;
+        var endHour = parseInt(endCaptureTimeArray[3]) || 0;
+        var endMinute = parseInt(endCaptureTimeArray[4]) || 0;
+        var endSecond = parseInt(endCaptureTimeArray[5]) || 0;
 
         var initialISOStringLength = 19;
         if (startHour == 0 && startMinute == 0 && startSecond == 0 && endHour == 0 && endMinute == 0 && endSecond == 0) {
