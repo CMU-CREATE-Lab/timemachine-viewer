@@ -2342,9 +2342,11 @@ if (!window['$']) {
         targetView.scale = tempView.scale;
       } else {
         // Rather than specifying a new view, it is easier to just specify the offset for translating
-        if (offset) {
+        if (offset && !isNaN(offset.x) && !isNaN(offset.y)) {
           targetView.x += offset.x / view.scale;
           targetView.y += offset.y / view.scale;
+        } else {
+          return;
         }
       }
 
@@ -2359,12 +2361,14 @@ if (!window['$']) {
       refresh();
 
       if (newView.scale != view.scale) {
-        for (var i = 0; i < zoomChangeListeners.length; i++)
+        for (var i = 0; i < zoomChangeListeners.length; i++) {
           zoomChangeListeners[i](targetView);
+        }
       }
 
-      for (var i = 0; i < targetViewChangeListeners.length; i++)
+      for (var i = 0; i < targetViewChangeListeners.length; i++) {
         targetViewChangeListeners[i](targetView);
+      }
     };
     this.setTargetView = setTargetView;
 
