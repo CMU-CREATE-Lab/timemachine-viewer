@@ -2327,7 +2327,7 @@ if (!window['$']) {
     };
 
     var setTargetView = function(newView, offset) {
-      if (newView) {
+      if (newView && !isNaN(newView.x) && !isNaN(newView.y) && !isNaN(newView.scale)) {
         var tempView = {};
         tempView.scale = limitScale(newView.scale);
         if (isHyperwall) {
