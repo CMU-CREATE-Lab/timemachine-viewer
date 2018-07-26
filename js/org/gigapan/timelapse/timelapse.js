@@ -334,6 +334,7 @@ if (!window['$']) {
 
     // Touch support
     var hasTouchSupport = UTIL.isTouchDevice();
+    var hasPointerSupport = UTIL.isPointerDevice();
     var tappedTimer = null;
     var lastDist = null;
     var lastLocation;
@@ -923,11 +924,10 @@ if (!window['$']) {
           lastDist = null;
           // Take into account a slight epsilon due to a finger potentially moving just a few pixels when touching the screen
           var notRealTouchMove = isTouchMoving && touchStartTargetElement && Math.abs(touchStartTargetElement.clientX - theTouch.clientX) < 10 && Math.abs(touchStartTargetElement.clientY - theTouch.clientY) < 10;
-
-          if ((!isTouchMoving || notRealTouchMove) && touchStartTargetElement && touchStartTargetElement.target == document.elementFromPoint(theTouch.clientX, theTouch.clientY)) {
-              theMouse = document.createEvent("MouseEvent");
-              theMouse.initMouseEvent('click', true, true, window, 1, theTouch.screenX, theTouch.screenY, theTouch.clientX, theTouch.clientY, false, false, false, false, 0, null);
-              theTouch.target.dispatchEvent(theMouse);
+          if (hasTouchSupport && (!isTouchMoving || notRealTouchMove) && touchStartTargetElement && touchStartTargetElement.target == document.elementFromPoint(theTouch.clientX, theTouch.clientY)) {
+            theMouse = document.createEvent("MouseEvent");
+            theMouse.initMouseEvent('click', true, true, window, 1, theTouch.screenX, theTouch.screenY, theTouch.clientX, theTouch.clientY, false, false, false, false, 0, null);
+            theTouch.target.dispatchEvent(theMouse);
           }
 
           isTouchMoving = false;
@@ -3732,7 +3732,7 @@ if (!window['$']) {
       // In addition, scrolling breaks horribly for Opera <= 12 when this is enabled.
       $.event.special.mousewheel.settings.adjustOldDeltas = false;
 
-      if (hasTouchSupport) {
+      if (hasTouchSupport || hasPointerSupport) {
         document.addEventListener("touchstart", touch2Mouse, {capture: true, passive: false});
         document.addEventListener("touchmove", touch2Mouse, {capture: true, passive: false});
         document.addEventListener("touchend", touch2Mouse, {capture: true, passive: false});

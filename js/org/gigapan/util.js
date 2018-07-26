@@ -136,11 +136,19 @@ if (!org.gigapan) {
     return isMobileDevice && (isSupportedIOSVersion || (isSupportedChromeMobileVersion && !isOperaUserAgent && !isMobileIEEdgeUserAgent && !isSamsungInternetUserAgent) || (isFirefoxUserAgent && isSupportedFirefoxMobileAndroid));
   };
 
+  org.gigapan.Util.isPointerDevice = function() {
+    try {
+      document.createEvent("PointerEvent");
+      return true;
+    } catch(e) {
+      return false;
+    }
+  }
   org.gigapan.Util.isTouchDevice = function() {
-    try{
+    try {
       document.createEvent("TouchEvent");
       return true;
-    }catch(e){
+    } catch(e) {
       return false;
     }
   };
