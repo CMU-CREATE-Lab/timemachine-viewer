@@ -266,7 +266,7 @@ _:-moz-tree-row(hover), .helpPlayerLabel .ui-button-text {
 .instructions span.zoomhelp {
   background-color: white;
   border: 1px solid #656565;
-  top: 85px;
+  top: 20px;
   left: 67px;
   overflow: visible;
   border-radius: 2px;
@@ -275,7 +275,7 @@ _:-moz-tree-row(hover), .helpPlayerLabel .ui-button-text {
 .instructions span.zoomallhelp {
   background-color: white;
   border: 1px solid #656565;
-  top: 185px;
+  top: 118px;
   left: 67px;
   overflow: visible;
   border-radius: 2px;
