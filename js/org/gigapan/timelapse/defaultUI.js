@@ -572,6 +572,12 @@ if (!org.gigapan.timelapse.Timelapse) {
       return time * timelapse.getFps() - timePadding;
     };
 
+    var setThumbnailToolAspectRatio = function() {
+      var w = $thumbnailCustomBoundsWidth.val();
+      var h = $thumbnailCustomBoundsHeight.val();
+      timelapse.getThumbnailTool().forceAspectRatio(w, h);
+    };
+
     var createShareButton = function() {
       $("#" + viewerDivId + " .share").button({
         icons: {
@@ -597,6 +603,7 @@ if (!org.gigapan.timelapse.Timelapse) {
           var activeIdx = $shareAccordion.accordion("option", "active");
           var $activePanel = $($shareAccordion.accordion("instance").panels[activeIdx]);
           if ($activePanel.hasClass("share-thumbnail")) {
+            setThumbnailToolAspectRatio();
             timelapse.getThumbnailTool().showCropBox();
           }
         } else {
@@ -637,6 +644,7 @@ if (!org.gigapan.timelapse.Timelapse) {
           }
           if (ui.newPanel.hasClass("share-thumbnail")) {
             enableShareThumbnail();
+            setThumbnailToolAspectRatio();
             timelapse.getThumbnailTool().showCropBox();
           }
         }
@@ -985,18 +993,21 @@ if (!org.gigapan.timelapse.Timelapse) {
       });
 
       $thumbnailCustomBoundsWidth.on("change", function() {
+        setThumbnailToolAspectRatio();
         timelapse.getThumbnailTool().redrawCropBox();
       });
 
       $thumbnailCustomBoundsHeight.on("change", function() {
+        setThumbnailToolAspectRatio();
         timelapse.getThumbnailTool().redrawCropBox();
       });
 
       $thumbnailSwapSelectionDimensions.on("click", function() {
-        var previousWidth = $thumbnailCustomBoundsWidth.val();
-        var previousHeight = $thumbnailCustomBoundsHeight.val();
-        $thumbnailCustomBoundsWidth.val(previousHeight);
-        $thumbnailCustomBoundsHeight.val(previousWidth);
+        var w = $thumbnailCustomBoundsWidth.val();
+        var h = $thumbnailCustomBoundsHeight.val();
+        $thumbnailCustomBoundsWidth.val(h);
+        $thumbnailCustomBoundsHeight.val(w);
+        setThumbnailToolAspectRatio();
         timelapse.getThumbnailTool().redrawCropBox();
       });
 
