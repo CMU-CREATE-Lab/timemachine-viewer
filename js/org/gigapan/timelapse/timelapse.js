@@ -1457,7 +1457,7 @@ if (!window['$']) {
       for (var prop in hashparams) {
         if (hashparams.hasOwnProperty(prop)) {
           // EarthTime specific
-          if (prop == "forThumbnail" || (filterParamsForEarthTimeStoryMode && prop != "theme" && prop != "story" && prop != "waypointIdx")) continue;
+          if (prop == "forThumbnail" || (filterParamsForEarthTimeStoryMode && prop != "theme" && prop != "story" && prop != "waypointIdx" && prop != "waypoints" && prop != "csvlayers" && prop != "dotlayers")) continue;
           if (shareStr) {
             shareStr += '&';
           } else {
