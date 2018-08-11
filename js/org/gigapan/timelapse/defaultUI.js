@@ -176,6 +176,8 @@ if (!org.gigapan.timelapse.Timelapse) {
     var isStartingTimeSpinnerBlurAdded = false;
     var isEndingTimeSpinnerBlurAdded = false;
     var isWebglViewer = UTIL.getViewerType() == "webgl";
+    var thumbnailLengthWarningMsg = "A large number of frames were selected, which may take <br> awhile to process. Always check start/end times to ensure <br> the right time range was chosen before you click generate.";
+    var maxThumbnailLength = 1500;
 
     // Parameters
     var mode = "player";
@@ -798,6 +800,12 @@ if (!org.gigapan.timelapse.Timelapse) {
         } else if ($(this).hasClass("thumbnail-set-end-time-from-timeline")) {
           $endingTimeSpinner.captureTimeSpinner("value", timelapse.getCurrentFrameNumber());
         }
+        thumbnailDurationInFrames = Math.max(1, $endingTimeSpinner.captureTimeSpinner("value") - $startingTimeSpinner.captureTimeSpinner("value") + 1)
+        if (thumbnailDurationInFrames > maxThumbnailLength) {
+          $(".thumbnail-processing-time-warning-container").show().find("div").html(thumbnailLengthWarningMsg);
+        } else {
+          $(".thumbnail-processing-time-warning-container").hide();
+        }
       });
 
       timelapse.addTimelineUIChangeListener(function() {
@@ -1096,11 +1104,12 @@ if (!org.gigapan.timelapse.Timelapse) {
             $thumbnailImageSelector.trigger("click");
           }
         }
+        $(".thumbnail-processing-time-warning-container").hide();
         //$(".smooth-playback").prop("disabled", true);
 
       } else {
-        if (thumbnailDurationInFrames > 1500) {
-          $(".thumbnail-processing-time-warning-container").show().find("div").html("A large number of frames were selected, which may take <br> awhile to process. Always check start/end times to ensure <br> the right time range was chosen before you click generate.");
+        if (thumbnailDurationInFrames > maxThumbnailLength) {
+          $(".thumbnail-processing-time-warning-container").show().find("div").html(thumbnailLengthWarningMsg);
         } else {
           $(".thumbnail-processing-time-warning-container").hide();
         }
