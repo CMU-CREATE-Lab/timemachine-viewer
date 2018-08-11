@@ -1257,14 +1257,20 @@ if (!org.gigapan.timelapse.Timelapse) {
           $(".fb-sharelink, .twitter-sharelink").off("click");
           $(".fb-sharelink").on("click", function() {
               var shareurl = $(this).data('shareurl');
-              window.open('https://www.facebook.com/sharer.php?s=100&p[url]='+escape(socialMediaShareLink)+'&p[title]='+document.title, '',
+              window.open('https://www.facebook.com/sharer.php?s=100&p[url]=' + escape(socialMediaShareLink) + '&p[title]=' + document.title, '',
               'menubar=no,toolbar=no,resizable=yes,scrollbars=yes,height=300,width=600');
               return false;
           });
           $(".twitter-sharelink").on("click", function() {
               var shareurl = $(this).data('shareurl');
-              window.open('https://twitter.com/intent/tweet?url='+escape(socialMediaShareLink)+'&text='+escape("Look at this")+'&hashtags='+escape(hashTags)+'&via='+escape(socialMediaSettings.twitterHandle), '',
-              'menubar=no,toolbar=no,resizable=yes,scrollbars=yes,height=300,width=600');
+              var urlToLoad = 'https://twitter.com/intent/tweet?url=' + escape(socialMediaShareLink) + '&text=' + escape("Look at this");
+              if (hashTags) {
+                urlToLoad += '&hashtags=' + escape(hashTags);
+              }
+              if (socialMediaSettings.twitterHandle) {
+                urlToLoad += '&via=' + escape(socialMediaSettings.twitterHandle);
+              }
+              window.open(urlToLoad, '', 'menubar=no,toolbar=no,resizable=yes,scrollbars=yes,height=300,width=600');
               return false;
           });
         }
