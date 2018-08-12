@@ -293,14 +293,7 @@ if (!org.gigapan.timelapse.Timelapse) {
               if (isPlaying) {
                 timelapse.seekToFrame(yearLockMinPlaybackFrame);
                 timelapse.play();
-                $customPlay.button({
-                  icons: {
-                    primary: "ui-icon-custom-pause"
-                  },
-                  text: false
-                }).attr({
-                  "title": "Pause"
-                });
+                setPlaybackButtonIcon("play");
                 return;
               }
             } else if (currentFrame >= yearLockMaxPlaybackFrame) {
@@ -698,12 +691,13 @@ if (!org.gigapan.timelapse.Timelapse) {
       // Play and stop button
       $customControl.append('<button class="customPlay" title="Play"></button>');
 
+      $customPlay = $("#" + viewerDivId + " .customPlay");
+
       if (useTouchFriendlyUI) {
-        $(".customPlay").addClass("customPlay-touchFriendly");
+        $customPlay.addClass("customPlay-touchFriendly");
         $(".customInstructions").addClass("customInstructions-touchFriendly");
       }
 
-      $customPlay = $("#" + viewerDivId + " .customPlay");
       $customPlay.button({
         icons: {
           primary: "ui-icon-custom-play"
@@ -918,8 +912,26 @@ if (!org.gigapan.timelapse.Timelapse) {
       $("#" + viewerDivId + " .customTimeline").remove();
       $("#" + viewerDivId + " .timeText").remove();
       createCustomTimeline();
-      if (!timelapse.isPaused()) {
-        $("#" + viewerDivId + " .customPlay").button({
+      $customPlay = $("#" + viewerDivId + " .customPlay");
+      if (!timelapse.isPaused() && !timelapse.isDoingLoopingDwell()) {
+        setPlaybackButtonIcon("play");
+      }
+      timelapse.setPlaybackRate(timelapse.getPlaybackRate());
+    };
+    this.resetCustomTimeline = resetCustomTimeline;
+
+    var setPlaybackButtonIcon = function(type) {
+      if (type == "pause") {
+        $customPlay.button({
+          icons: {
+            primary: "ui-icon-custom-play"
+          },
+          text: false
+        }).attr({
+          "title": "Play"
+        });
+      } else if (type == "play") {
+        $customPlay.button({
           icons: {
             primary: "ui-icon-custom-pause"
           },
@@ -928,9 +940,8 @@ if (!org.gigapan.timelapse.Timelapse) {
           "title": "Pause"
         });
       }
-      timelapse.setPlaybackRate(timelapse.getPlaybackRate());
     };
-    this.resetCustomTimeline = resetCustomTimeline;
+    this.setPlaybackButtonIcon = setPlaybackButtonIcon;
 
     var handleEndTimeDotMousedown = function(event) {
       originalIsPaused = timelapse.isPaused();
@@ -1230,11 +1241,7 @@ if (!org.gigapan.timelapse.Timelapse) {
 
     var playMonthLockFrames = function() {
       updateMonthLockPlaybackInterval();
-      $customPlay.button({
-        icons: {
-          primary: "ui-icon-custom-pause"
-        }
-      });
+      setPlaybackButtonIcon("play");
     };
 
     var setMonthLockPlaybackSpeed = function() {
@@ -1268,11 +1275,7 @@ if (!org.gigapan.timelapse.Timelapse) {
     var stopMonthLockFrames = function() {
       clearTimeout(monthLockPlaybackInterval);
       monthLockPlaybackInterval = null;
-      $customPlay.button({
-        icons: {
-          primary: "ui-icon-custom-play"
-        }
-      });
+      setPlaybackButtonIcon("pause");
     };
 
     var handleMonthLockFramesPlayPause = function() {
@@ -1345,15 +1348,6 @@ if (!org.gigapan.timelapse.Timelapse) {
     //
 
     createCustomControl();
-
-    if (timelapse.getPlayOnLoad()) {
-      $customPlay.click();
-      $customPlay.button({
-        icons: {
-          primary: "ui-icon-custom-pause"
-        }
-      });
-    }
   };
   //end of org.gigapan.timelapse.CustomUI
 })();

@@ -613,19 +613,10 @@ if (!window['$']) {
         doingLoopingDwell = false;
         _pause();
         // Need to manually do this because of the looping dwell code
-        var playPauseBtn;
-        if (customUI)
-          playPauseBtn = " .customPlay";
-        else
-          playPauseBtn = " .playbackButton";
-        $("#" + timeMachineDivId + playPauseBtn).button({
-          icons: {
-            primary: "ui-icon-custom-play"
-          },
-          text: false
-        }).attr({
-          "title": "Play"
-        });
+        if (customUI) {
+          customUI.setPlaybackButtonIcon("pause");
+        }
+        defaultUI.setPlaybackButtonIcon("pause");
         return;
       }
       if (_isPaused()) {
@@ -1419,21 +1410,21 @@ if (!window['$']) {
       }
 
       if (typeof(hashparams.bt) == "undefined") {
-        var isStartTimeADate = (timelapse.sanitizedParseTimeGMT(timelapse.getCaptureTimes()[0]) != -1)
+        var isStartTimeADate = (thisObj.sanitizedParseTimeGMT(thisObj.getCaptureTimes()[0]) != -1)
         if (isStartTimeADate) {
-          hashparams.bt = new Date(timelapse.getFrameEpochTime(0)).toISOString().substr(0,10).replace(/-/g, "");
+          hashparams.bt = new Date(thisObj.getFrameEpochTime(0)).toISOString().substr(0,10).replace(/-/g, "");
         } else {
           hashparams.bt = 0;
         }
       }
 
       if (typeof(hashparams.et) == "undefined") {
-        var lastFrameIdx = timelapse.getNumFrames() - 1;
-        var isEndTimeADate = (timelapse.sanitizedParseTimeGMT(timelapse.getCaptureTimes()[lastFrameIdx]) != -1)
+        var lastFrameIdx = thisObj.getNumFrames() - 1;
+        var isEndTimeADate = (thisObj.sanitizedParseTimeGMT(thisObj.getCaptureTimes()[lastFrameIdx]) != -1)
         if (isEndTimeADate) {
-          hashparams.et = new Date(timelapse.getFrameEpochTime(lastFrameIdx)).toISOString().substr(0,10).replace(/-/g, "").replace(/0101/g, "1231");
+          hashparams.et = new Date(thisObj.getFrameEpochTime(lastFrameIdx)).toISOString().substr(0,10).replace(/-/g, "").replace(/0101/g, "1231");
         } else {
-          hashparams.et = parseFloat(timelapse.getDuration().toFixed(3));
+          hashparams.et = parseFloat(thisObj.getDuration().toFixed(3));
         }
       }
 
@@ -3166,70 +3157,20 @@ if (!window['$']) {
         // so we need to make sure the play button is updated.
         if (doingLoopingDwell)
           return;
-        // TODO: UI Class should handle this
         if (customUI) {
-          $("#" + timeMachineDivId + " .customPlay").button({
-            icons: {
-              primary: "ui-icon-custom-play"
-            },
-            text: false
-          }).attr({
-            "title": "Play"
-          });
-          if (customUI.getLocker() != "month") {
-            // The UI when the month locker is enabled is handled in customUI.js
-            $("#" + timeMachineDivId + " .modisCustomPlay").button({
-              icons: {
-                primary: "ui-icon-custom-play"
-              },
-              text: false
-            }).attr({
-              "title": "Play"
-            });
-          }
+          customUI.setPlaybackButtonIcon("pause");
         }
-        // TODO: UI Class should handle this
-        $("#" + timeMachineDivId + " .playbackButton").button({
-          icons: {
-            secondary: "ui-icon-custom-play"
-          }
-        }).attr('title', 'Play');
-        $("#" + timeMachineDivId + " .playbackButton").removeClass("pause").addClass("play").attr('title', 'Play');
+        defaultUI.setPlaybackButtonIcon("pause");
       });
 
       _addVideoPlayListener(function() {
         // Always make sure that when we are playing, the button status is updated
         if (doingLoopingDwell)
           return;
-        // TODO: UI Class should handle this
         if (customUI) {
-          $("#" + timeMachineDivId + " .customPlay").button({
-            icons: {
-              primary: "ui-icon-custom-pause"
-            },
-            text: false
-          }).attr({
-            "title": "Pause"
-          });
-          if (customUI.getLocker() != "month") {
-            // The UI when the month locker is enabled is handled in customUI.js
-            $("#" + timeMachineDivId + " .modisCustomPlay").button({
-              icons: {
-                primary: "ui-icon-custom-pause"
-              },
-              text: false
-            }).attr({
-              "title": "Pause"
-            });
-          }
+          customUI.setPlaybackButtonIcon("play");
         }
-        // TODO: UI Class should handle this
-        $("#" + timeMachineDivId + " .playbackButton").button({
-          icons: {
-            secondary: "ui-icon-custom-pause"
-          }
-        }).attr('title', 'Pause');
-        $("#" + timeMachineDivId + " .playbackButton").removeClass("play").addClass("pause").attr('title', 'Pause');
+        defaultUI.setPlaybackButtonIcon("play");
       });
 
       _makeVideoVisibleListener(function(videoId) {
@@ -3371,8 +3312,8 @@ if (!window['$']) {
       if (layerNum == datasetLayer) return;
       showSpinner(viewerDivId);
       datasetLayer = layerNum;
-      initialTime = timelapse.getCurrentTime();
-      initialView = timelapse.getView();
+      initialTime = thisObj.getCurrentTime();
+      initialView = thisObj.getView();
       settings["initialView"] = initialView;
       settings["initialTime"] = initialTime;
       loadTimelapseCallback(tmJSON);
@@ -3438,15 +3379,15 @@ if (!window['$']) {
 
       if (preserveViewAndTime) {
         // TODO: Assumes dates of the form yyyy-mm-dd hh:mm:ss
-        desiredDate = timelapse.getCurrentCaptureTime().substr(11, 8);
-        desiredView = timelapse.getView();
+        desiredDate = thisObj.getCurrentCaptureTime().substr(11, 8);
+        desiredView = thisObj.getView();
       }
 
       if (didFirstTimeOnLoad && desiredDate && url && settings["url"].indexOf(url) >= 0) {
         var newFrame = findExactOrClosestCaptureTime(String(desiredDate));
-        timelapse.seekToFrame(newFrame);
+        thisObj.seekToFrame(newFrame);
         if (desiredView)
-          timelapse.warpTo(desiredView);
+          thisObj.warpTo(desiredView);
         return;
       }
 
@@ -3670,6 +3611,9 @@ if (!window['$']) {
       } else {
         initializeUI();
         setupTimelapse();
+        if (playOnLoad) {
+          thisObj.play();
+        }
       }
 
       if (visualizer) {

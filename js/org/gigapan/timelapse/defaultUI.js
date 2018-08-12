@@ -202,7 +202,7 @@ if (!org.gigapan.timelapse.Timelapse) {
       // Create play button
       $playbackButton.button({
         icons: {
-          secondary: "ui-icon-custom-play"
+          primary: "ui-icon-custom-play"
         },
         text: false
       }).on("click", function() {
@@ -1809,9 +1809,25 @@ if (!org.gigapan.timelapse.Timelapse) {
         resetShareThumbnailUI();
       }
 
-      // TODO: Double check why sometimes we get the wrong icon for the play button
+      $playbackButton = $("#" + viewerDivId + " .playbackButton");
       if (!timelapse.isPaused() && !timelapse.isDoingLoopingDwell()) {
-        $("#" + viewerDivId + " .playbackButton").button({
+        setPlaybackButtonIcon("play");
+      }
+    };
+    this.resetTimelineSlider = resetTimelineSlider;
+
+    var setPlaybackButtonIcon = function(type) {
+      if (type == "pause") {
+        $playbackButton.button({
+          icons: {
+            primary: "ui-icon-custom-play"
+          },
+          text: false
+        }).attr({
+          "title": "Play"
+        });
+      } else if (type == "play") {
+        $playbackButton.button({
           icons: {
             primary: "ui-icon-custom-pause"
           },
@@ -1821,7 +1837,7 @@ if (!org.gigapan.timelapse.Timelapse) {
         });
       }
     };
-    this.resetTimelineSlider = resetTimelineSlider;
+    this.setPlaybackButtonIcon = setPlaybackButtonIcon;
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////
     //
@@ -1829,17 +1845,9 @@ if (!org.gigapan.timelapse.Timelapse) {
     //
     createSideToolBar();
     createMainUI();
-    if (!useCustomUI) {
-      if (timelapse.getPlayOnLoad())
-        timelapse.play();
-    } else {// custom UI is being used, alter main UI accordingly
+    if (useCustomUI) { // custom UI is being used, alter main UI accordingly
       // Create share button
-      if (showShareBtn) {
-        //createShareButton();
-        //var shareButton = $("#" + viewerDivId + " .share");
-        //$controls.children().not(shareButton).hide();
-        //shareButton.css("bottom", "110px");
-      } else {
+      if (!showShareBtn) {
         $("#" + viewerDivId + " .controls").hide();
         $("#" + viewerDivId + " .shareView").hide();
       }

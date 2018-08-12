@@ -1678,7 +1678,10 @@ if (!org.gigapan.timelapse.snaplapse) {
           }
         });
         setViewCallback = function() {
-          var seekTime = timelapse.playbackTimeFromShareDate(keyframe['beginTime']) || keyframe['time'];
+          var seekTime = timelapse.playbackTimeFromShareDate(keyframe['beginTime']);
+          if (typeof(seekTime) === "undefined") {
+            seekTime = keyframe['time'];
+          }
           timelapse.seek(seekTime);
           if (doAutoMode) {
             if (wayPointClickedByAutoMode) {
@@ -1703,7 +1706,10 @@ if (!org.gigapan.timelapse.snaplapse) {
               newView = timelapse.pixelBoundingBoxToPixelCenterView(keyframe['bounds']);
             }
           }
-          var doPlay = !timelapse.isPaused() || timelapse.isDoingLoopingDwell();
+          // TODO: Even if the user has paused before clicking a waypoint, we are forcing playback
+          // to begin again. The only exception is if the waypoint is set to be paused.
+          // Perhaps we want an option to not force this playback in the other cases?
+          var doPlay = keyframe['speed'] > 0;
           if (usePresentationSlider && useCustomUI) {
             timelapse.setNewView(newView, false, doPlay, setViewCallback);
           } else {
