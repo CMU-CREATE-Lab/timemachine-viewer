@@ -431,7 +431,7 @@ if (!Math.uuid) {
           // Bounds & Zoom
           if (desiredKeyframes[i].originalView.center) {
             viewCenter = desiredKeyframes[i].originalView.center;
-            if (desiredKeyframes[i].originalView.center.lat) {
+            if (typeof desiredKeyframes[i].originalView.center.lat !== "undefined") {
               // Lat/Lng center view
               encoder.write_lat(viewCenter.lat);
               encoder.write_lon(viewCenter.lng);
