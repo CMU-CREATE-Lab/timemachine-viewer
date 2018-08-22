@@ -346,6 +346,10 @@ if (!window['$']) {
     //
     // Public methods
     //
+    this.getUtil = function () {
+      return UTIL;
+    };
+
     this.showThumbnailToolWindow = function() {
       if (defaultUI && settings["showThumbnailTool"])
         defaultUI.showThumbnailToolWindow();
