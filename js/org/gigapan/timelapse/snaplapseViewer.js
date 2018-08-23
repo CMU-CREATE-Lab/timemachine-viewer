@@ -1762,7 +1762,8 @@ if (!org.gigapan.timelapse.snaplapse) {
     };
 
     var generateThumbnailURL = function(root, bounds, width, height, time, layers, options) {
-      // Need to use original center view before it was ever modified by the aspect ratio of the current viewer
+      options = (typeof options === "undefined") {} : options;
+      // Need to use original center view before i t was ever modified by the aspect ratio of the current viewer
       if (bounds.center) {
         if (timelapse.getTmJSON()['projection-bounds']) {
           bounds = timelapse.pixelCenterToPixelBoundingBoxView(timelapse.latLngCenterViewToPixelCenter(bounds, true), {width: 1920, height: 1080}).bbox;
