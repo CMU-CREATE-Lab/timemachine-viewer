@@ -662,13 +662,12 @@ if (!org.gigapan) {
   }
 
   // Compute the root URL for where all the Time Machine files exist.
-  // Note: Need to be run when loading a Time Machine file or the returned
-  // path will not useful. For example, if we call this after everything is loaded
+  // Note: Needs to be run when loading this file or the returned path
+  // will not useful. For example, if we call this after everything is loaded
   // and the last include is of say external Google Maps, then we get an
   // external path and not one that points to the Time Machine source directory.
   function computeRootAppURL() {
-    var jsFiles = $("script");
-    var pathOfCurrentScript = $(jsFiles[jsFiles.length - 1]).attr("src");
+    var pathOfCurrentScript = document.currentScript ? document.currentScript.src : document.querySelector('script[src*="util.js"]').src;
     var isAbsoluteURL = pathOfCurrentScript.indexOf('://');
     if (isAbsoluteURL > 0) {
       // Include is an absolute URL "http(s)://..."
