@@ -668,23 +668,9 @@ if (!org.gigapan) {
   // external path and not one that points to the Time Machine source directory.
   function computeRootAppURL() {
     var pathOfCurrentScript = document.currentScript ? document.currentScript.src : document.querySelector('script[src*="util.js"]').src;
-    var isAbsoluteURL = pathOfCurrentScript.indexOf('://');
-    if (isAbsoluteURL > 0) {
-      // Include is an absolute URL "http(s)://..."
-      var absoluteURLIndex = pathOfCurrentScript.indexOf('/', pathOfCurrentScript.indexOf('://') + 3);
-      var absoluteURLName = pathOfCurrentScript.substring(0, absoluteURLIndex) + '/';
-      var absoluteURLFolderIndex = pathOfCurrentScript.indexOf('/', pathOfCurrentScript.indexOf(absoluteURLName) + absoluteURLName.length);
-      if (absoluteURLFolderIndex < 0) {
-        return absoluteURLName;
-      } else {
-        return pathOfCurrentScript.substring(0, absoluteURLFolderIndex) + "/";
-      }
-    } else {
-      // Include is a relative URL
-      var relativeURL = pathOfCurrentScript.substr(0, pathOfCurrentScript.indexOf('/js/'));
-      if (relativeURL !== "") relativeURL += "/"
-      return relativeURL;
-    }
+    var tmp = pathOfCurrentScript.substr(0, pathOfCurrentScript.indexOf('/js/'));
+    var rootUrl = tmp.substr(0, tmp.lastIndexOf('/') + 1);
+    return rootUrl;
   }
 
   org.gigapan.Util.gdocToJSON = function(gdocUrl, callback) {
