@@ -1746,7 +1746,7 @@ if (!org.gigapan.timelapse.Timelapse) {
       var numFrames = timelapse.getNumFrames();
       var captureTimes = timelapse.getCaptureTimes();
 
-      $("#" + viewerDivId + " .currentTime").html(UTIL.formatTime(timelapse.getTimelapseCurrentTimeInSeconds(), true));
+      $("#" + viewerDivId + " .currentTime").html(UTIL.formatTime(timelapse.getCurrentTime(), true));
       $("#" + viewerDivId + " .totalTime").html(UTIL.formatTime(timelapse.getDuration(), true));
       $("#" + viewerDivId + " .currentCaptureTime").html(UTIL.htmlForTextWithEmbeddedNewlines(captureTimes[timelapse.getTimelapseCurrentCaptureTimeIndex()]));
 

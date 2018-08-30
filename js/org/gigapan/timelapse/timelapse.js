@@ -2809,11 +2809,6 @@ if (!window['$']) {
       }
     };
 
-    var getTimelapseCurrentTimeInSeconds = function() {
-      return timelapseCurrentTimeInSeconds;
-    };
-    this.getTimelapseCurrentTimeInSeconds = getTimelapseCurrentTimeInSeconds;
-
     var getCurrentFrameNumber = function() {
       return Math.floor(timelapseCurrentTimeInSeconds * _getFps());
     };
