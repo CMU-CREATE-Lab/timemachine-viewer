@@ -690,6 +690,16 @@ if (!window['$']) {
     };
     this.zoomToScale = zoomToScale;
 
+    var getCaptureTimeByTime = function(time) {
+      return captureTimes[timeToFrameNumber(time)];
+    };
+    this.getCaptureTimeByTime = getCaptureTimeByTime;
+
+    var getCaptureTimeByFrameNumber = function(idx) {
+      return captureTimes[idx];
+    };
+    this.getCaptureTimeByFrameNumber = getCaptureTimeByFrameNumber;
+
     var getZoomFromBoundingBoxView = function(bboxView) {
       var newView;
       if (!bboxView || !bboxView['bbox'])
