@@ -764,6 +764,7 @@ if (!Math.uuid) {
               stories[storyId] = {
                 storyTitle: storyTitle,
                 storyDescription: storyDescription,
+                storyAuthor: storyAuthor,
                 mainShareView: mainShareView,
                 waypoints : CSVToJSON(waypointCSVCollection)
               }
@@ -835,7 +836,7 @@ if (!Math.uuid) {
         storyId = "default";
       }
 
-      // Add the last found story to the current theme if it is not already in there
+      // Add the last found story to the last theme if it is not already in there
       if (!stories[storyId]) {
         stories[storyId] = {
           storyTitle : storyTitle,
