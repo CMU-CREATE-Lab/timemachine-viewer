@@ -1678,6 +1678,18 @@ if (!org.gigapan.timelapse.snaplapse) {
           }
         });
         setViewCallback = function() {
+          // Set playbackrate
+          if (keyframe['speed'] > 0) {
+            var playbackRate = timelapse.getMaxPlaybackRate() * (keyframe['speed'] / 100.0);
+            timelapse.setPlaybackRate(playbackRate);
+          } else {
+            if (timelapse.isDoingLoopingDwell()) {
+              timelapse.handlePlayPause();
+            } else {
+              timelapse.pause();
+            }
+          }
+          // beginTime takes precedence and fallback to time if needed
           var seekTime = timelapse.playbackTimeFromShareDate(keyframe['beginTime']);
           if (typeof(seekTime) === "undefined") {
             seekTime = keyframe['time'];
@@ -1690,6 +1702,7 @@ if (!org.gigapan.timelapse.snaplapse) {
               startAutoModeIdleTimeout();
             }
           }
+          timelapse.handleShareViewTimeLoop(keyframe['beginTime'], keyframe['endTime'], keyframe['startDwell'], keyframe['endDwell']);
         };
         if (skipAnnotation != true) {
           displaySnaplapseFrameAnnotation(keyframe);
@@ -1710,6 +1723,7 @@ if (!org.gigapan.timelapse.snaplapse) {
           // to begin again. The only exception is if the waypoint is set to be paused.
           // Perhaps we want an option to not force this playback in the other cases?
           var doPlay = keyframe['speed'] > 0;
+          // TODO: Why do we warp when not using customUI?
           if (usePresentationSlider && useCustomUI) {
             timelapse.setNewView(newView, false, doPlay, setViewCallback);
           } else {

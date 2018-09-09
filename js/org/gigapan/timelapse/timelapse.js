@@ -277,6 +277,7 @@ if (!window['$']) {
     var currentTimelineStyle;
     var customMaxScale;
     var keysDown = [];
+    var shareViewLoopInterval;
 
     var timePadding = isIE ? 0.3 : 0.0;
     // animateRate in milliseconds, 40 means 25 FPS
@@ -634,6 +635,48 @@ if (!window['$']) {
         _pause();
       }
     };
+
+    var clearShareViewTimeLoop = function() {
+      clearInterval(shareViewLoopInterval);
+      shareViewLoopInterval = null;
+    };
+    this.clearShareViewTimeLoop = clearShareViewTimeLoop;
+
+    var handleShareViewTimeLoop = function(beginTime, endTime, startDwell, endDwell) {
+      clearShareViewTimeLoop();
+      var maxDuration = timelapse.getDuration();
+      var waypointStartTime = timelapse.playbackTimeFromShareDate(beginTime);
+      if (typeof(waypointStartTime) === "undefined") {
+        waypointStartTime = 0;
+      }
+      var waypointEndTime = timelapse.playbackTimeFromShareDate(endTime);
+      if (typeof(waypointEndTime) === "undefined" || waypointEndTime == ((timelapse.getNumFrames() - 1) / _getFps().toFixed(1))) {
+        waypointEndTime = maxDuration;
+      }
+      // If we are full time range or paused, don't do anything
+      if ((waypointStartTime == 0 && waypointEndTime == maxDuration) || waypointStartTime == waypointEndTime || timelapse.isPaused()) {
+        return;
+      }
+      startDwell = parseFloat(startDwell) || 0;
+      endDwell = parseFloat(endDwell) || 0;
+      shareViewLoopInterval = setInterval(function() {
+        if (timelapse.isPaused()) return;
+        var t = timelapse.getCurrentTime();
+        if (t > waypointEndTime) {
+          doingLoopingDwell = true;
+          timelapse.pause();
+          setTimeout(function() {
+            // Seek back to the desired 'begin time'
+            timelapse.seek(waypointStartTime);
+            setTimeout(function() {
+              timelapse.play();
+              doingLoopingDwell = false;
+            }, startDwell * 1000)
+          }, endDwell * 1000);
+        }
+      }, 0);
+    };
+    this.handleShareViewTimeLoop = handleShareViewTimeLoop;
 
     var stopParabolicMotion = function(opts) {
       if (parabolicMotionController) {
@@ -3125,6 +3168,9 @@ if (!window['$']) {
             if (snaplapse != null && snaplapse.isPlaying())
               return;
             if (loopPlayback) {
+              if (shareViewLoopInterval) {
+                return;
+              }
               if (loopDwell) {
                 if (doingLoopingDwell)
                   return;

@@ -141,7 +141,7 @@ if (!Math.uuid) {
 
     // Because the viewer on Google Earth Engine is not updated yet,
     // we need to use disableKeyframeTitle flag for backward compatibility.
-    var TOUR_SHARING_VERSION = 6;
+    var TOUR_SHARING_VERSION = 7;
 
     // Loop Dwell
     var doLoopDwellTimeout;
@@ -478,6 +478,11 @@ if (!Math.uuid) {
           // End Time
           var endTime = desiredKeyframes[i]['endTime'] !== "" ? String(desiredKeyframes[i]['endTime']) : "";
           encoder.write_string(endTime);
+          // Dwell Times
+          var startDwell = desiredKeyframes[i]['startDwell'];
+          encoder.write_udecimal(startDwell, 2);
+          var endDwell = desiredKeyframes[i]['endDwell'];
+          encoder.write_udecimal(endDwell, 2);
         }
         // Tour title
         var title = $("#" + composerDivId + " .saveTimewarpWindow_tourTitleInput").val();
@@ -543,15 +548,6 @@ if (!Math.uuid) {
             frame["speed"] = encoder.read_uint();
             frame["duration"] = null;
           }
-          // TODO:
-          // If the embed from which the tour was created has a different dwell time
-          // than the embed the tour is being run on, then playback may look slightly different.
-          // These waitStart/waitEnd properties below are not used anymore and are here as legacy
-          // code for rendering tours to videos. While these have been refactored, dwell time is still
-          // used during tour playback, but we always use the value set by the current embed, not what
-          // embed the tour may have come from.
-          frame["waitStart"] = timelapse.getStartDwell();
-          frame["waitEnd"] = timelapse.getEndDwell();
           // Decode frame number
           var frameNumber = encoder.read_uint();
           frame["time"] = (frameNumber + timelapse.getTimePadding()) / fps;
@@ -622,6 +618,10 @@ if (!Math.uuid) {
             var endTime = parseFloat(encoder.read_unsafe_string());
             frame["endTime"] = isNaN(endTime) ? -1 : String(endTime);
           }
+          if (version >= 7) {
+            frame["startDwell"] = encoder.read_udecimal(2);
+            frame["endDwell"] = encoder.read_udecimal(2);
+          }
           keyframes.push(frame);
         }
         var checksum;
@@ -665,8 +665,8 @@ if (!Math.uuid) {
       snaplapseJSON['snaplapse']['fps'] = timelapse.getFps();
       snaplapseJSON['snaplapse']['keyframes'] = keyframes;
       for (var i = 0; i < keyframes.length; i++) {
-        snaplapseJSON['snaplapse']['keyframes'][i]['waitStart'] = timelapse.getStartDwell();
-        snaplapseJSON['snaplapse']['keyframes'][i]['waitEnd'] = timelapse.getEndDwell();
+        snaplapseJSON['snaplapse']['keyframes'][i]['startDwell'] = timelapse.getStartDwell();
+        snaplapseJSON['snaplapse']['keyframes'][i]['endDwell'] = timelapse.getEndDwell();
       }
       return JSON.stringify(snaplapseJSON, null, 3);
     };
@@ -691,7 +691,7 @@ if (!Math.uuid) {
           if (keyframe && typeof keyframe['time'] != 'undefined' && typeof keyframe['bounds'] != 'undefined' && typeof keyframe['bounds']['xmin'] != 'undefined' && typeof keyframe['bounds']['ymin'] != 'undefined' && typeof keyframe['bounds']['xmax'] != 'undefined' && typeof keyframe['bounds']['ymax'] != 'undefined') {
             // NOTE: if is-description-visible is undefined, then we define it as *true* in order to maintain
             // backward compatibility with older time warps which don't have this property.
-            this.recordKeyframe(null, keyframe['time'], keyframe['bounds'], keyframe['unsafe_string_description'], ( typeof keyframe['is-description-visible'] == 'undefined') ? true : keyframe['is-description-visible'], keyframe['duration'], true, keyframe['buildConstraint'], keyframe['speed'], keyframe['loopTimes'], loadKeyframesLength, keyframe['unsafe_string_frameTitle'], keyframe['originalView'], keyframe['layers'], keyframe['unsafe_string_annotationBoxTitle'], keyframe['beginTime'], keyframe['endTime']);
+            this.recordKeyframe(null, keyframe['time'], keyframe['bounds'], keyframe['unsafe_string_description'], ( typeof keyframe['is-description-visible'] == 'undefined') ? true : keyframe['is-description-visible'], keyframe['duration'], true, keyframe['buildConstraint'], keyframe['speed'], keyframe['loopTimes'], loadKeyframesLength, keyframe['unsafe_string_frameTitle'], keyframe['originalView'], keyframe['layers'], keyframe['unsafe_string_annotationBoxTitle'], keyframe['beginTime'], keyframe['endTime'], keyframe['startDwell'], keyframe['endDwell']);
           } else {
             UTIL.error("Ignoring invalid keyframe during snaplapse load.");
           }
@@ -895,8 +895,8 @@ if (!Math.uuid) {
           frame["loopTimes"] = 2;
           frame["duration"] = null;
           frame["speed"] = unsafeHashObj.hasOwnProperty("ps") ? parseFloat(unsafeHashObj.ps) : 50;
-          frame["waitStart"] = timelapse.getStartDwell();
-          frame["waitEnd"] = timelapse.getEndDwell();
+          frame["startDwell"] = unsafeHashObj.hasOwnProperty("startDwell") ? parseFloat(unsafeHashObj.startDwell) : 0;
+          frame["endDwell"] = unsafeHashObj.hasOwnProperty("endDwell") ? parseFloat(unsafeHashObj.endDwell) : 0;
           frame["time"] = unsafeHashObj.hasOwnProperty("t") ? parseFloat(unsafeHashObj.t) : 0;
           frame["beginTime"] = unsafeHashObj.hasOwnProperty("bt") ? parseFloat(unsafeHashObj.bt) : "";
           frame["endTime"] = unsafeHashObj.hasOwnProperty("et") ? parseFloat(unsafeHashObj.et) : "";
@@ -948,7 +948,6 @@ if (!Math.uuid) {
         $("#" + composerDivId + " .snaplapse_keyframe_list_item_title").hide();
       } else {
         disableKeyframeTitle = false;
-        TOUR_SHARING_VERSION = 6;
         $("#" + composerDivId + " .keyframe_title_container").show();
         $("#" + composerDivId + " .snaplapse_keyframe_list_item_title").show();
       }
@@ -956,15 +955,14 @@ if (!Math.uuid) {
 
     this.duplicateKeyframe = function(idOfSourceKeyframe) {
       var keyframeCopy = cloneFrame(keyframesById[idOfSourceKeyframe]);
-      this.recordKeyframe(idOfSourceKeyframe, keyframeCopy['time'], keyframeCopy['bounds'], keyframeCopy['unsafe_string_description'], keyframeCopy['is-description-visible'], keyframeCopy['duration'], false, keyframeCopy['buildConstraint'], keyframeCopy['speed'], keyframeCopy['loopTimes'], undefined, keyframeCopy['unsafe_string_frameTitle'], undefined, keyframeCopy['layers'], keyframeCopy['unsafe_string_annotationBoxTitle'], keyframeCopy['beginTime'], keyframeCopy['endTime']);
+      this.recordKeyframe(idOfSourceKeyframe, keyframeCopy['time'], keyframeCopy['bounds'], keyframeCopy['unsafe_string_description'], keyframeCopy['is-description-visible'], keyframeCopy['duration'], false, keyframeCopy['buildConstraint'], keyframeCopy['speed'], keyframeCopy['loopTimes'], undefined, keyframeCopy['unsafe_string_frameTitle'], undefined, keyframeCopy['layers'], keyframeCopy['unsafe_string_annotationBoxTitle'], keyframeCopy['beginTime'], keyframeCopy['endTime'], keyframe['startDwell'], keyframe['endDwell']);
     };
 
-    this.recordKeyframe = function(idOfKeyframeToAppendAfter, time, bounds, description, isDescriptionVisible, duration, isFromLoad, buildConstraint, speed, loopTimes, loadKeyframesLength, frameTitle, originalView, layers, frameAnnotationBoxTitle, beginTime, endTime) {
+    this.recordKeyframe = function(idOfKeyframeToAppendAfter, time, bounds, description, isDescriptionVisible, duration, isFromLoad, buildConstraint, speed, loopTimes, loadKeyframesLength, frameTitle, originalView, layers, frameAnnotationBoxTitle, beginTime, endTime, startDwell, endDwell) {
       if (typeof bounds == 'undefined') {
         bounds = timelapse.getBoundingBoxForCurrentView();
       }
       var isKeyframeFromLoad = ( typeof isFromLoad == 'undefined') ? false : isFromLoad;
-
       // Create the new keyframe
       var keyframeId = Math.uuid(20);
       var keyframe = {};
@@ -975,6 +973,8 @@ if (!Math.uuid) {
       keyframe['time'] = org.gigapan.timelapse.Snaplapse.normalizeTime(( typeof time == 'undefined') ? timelapse.getCurrentTime() : time);
       keyframe['beginTime'] = beginTime;
       keyframe['endTime'] = endTime;
+      keyframe['startDwell'] = startDwell;
+      keyframe['endDwell'] = endDwell;
       var frameNumber = Math.floor(keyframe['time'] * timelapse.getFps());
       keyframe['captureTime'] = captureTimes[frameNumber];
       keyframe['bounds'] = {};
