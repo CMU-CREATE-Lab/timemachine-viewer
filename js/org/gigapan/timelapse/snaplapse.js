@@ -894,12 +894,13 @@ if (!Math.uuid) {
           frame["buildConstraint"] = "speed";
           frame["loopTimes"] = 2;
           frame["duration"] = null;
-          frame["speed"] = unsafeHashObj.hasOwnProperty("ps") ? parseFloat(unsafeHashObj.ps) : 50;
           frame["startDwell"] = unsafeHashObj.hasOwnProperty("startDwell") ? parseFloat(unsafeHashObj.startDwell) : 0;
           frame["endDwell"] = unsafeHashObj.hasOwnProperty("endDwell") ? parseFloat(unsafeHashObj.endDwell) : 0;
           frame["time"] = unsafeHashObj.hasOwnProperty("t") ? parseFloat(unsafeHashObj.t) : 0;
           frame["beginTime"] = unsafeHashObj.hasOwnProperty("bt") ? parseFloat(unsafeHashObj.bt) : "";
           frame["endTime"] = unsafeHashObj.hasOwnProperty("et") ? parseFloat(unsafeHashObj.et) : "";
+          frame["speed"] = unsafeHashObj.hasOwnProperty("ps") ? parseFloat(unsafeHashObj.ps) : ((frame["beginTime"] == frame["endTime"] && frame["beginTime"] != "") ? 0 : 50);
+
           var frameNumber = Math.floor(frame["time"] * timelapse.getFps());
           frame["captureTime"] = captureTimes[frameNumber];
 
