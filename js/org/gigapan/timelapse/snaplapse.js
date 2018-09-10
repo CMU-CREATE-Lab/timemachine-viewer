@@ -740,7 +740,6 @@ if (!Math.uuid) {
         var waypointText = csvRow['Annotation Text'] ? csvRow['Annotation Text'].trim() : "";
         // Edge case where first line after headings is blank
         if (i == 1 && waypointTitle == "") continue;
-
         // Themes in a spreadsheet are designated by a single hash symbol
         if (waypointTitle.charAt(0) == "#" && waypointTitle.charAt(1) != "#") {
           //console.log('found theme');
@@ -987,9 +986,7 @@ if (!Math.uuid) {
       keyframe['unsafe_string_description'] = ( typeof description == 'undefined') ? '' : description;
       keyframe['unsafe_string_frameTitle'] = ( typeof frameTitle == 'undefined') ? '' : frameTitle;
       keyframe['is-description-visible'] = ( typeof isDescriptionVisible == 'undefined') ? false : isDescriptionVisible;
-      if (originalView) {
-        keyframe['originalView'] = originalView;
-      } else {
+      if (!originalView) {
         if (timelapse.getTmJSON()['projection-bounds']) {
           var projection = timelapse.getProjection();
           var viewCenter = timelapse.pixelBoundingBoxToPixelCenter(keyframe['bounds']);

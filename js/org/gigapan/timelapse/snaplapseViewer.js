@@ -1756,17 +1756,20 @@ if (!org.gigapan.timelapse.snaplapse) {
       } else {
         shareView = "v=" + parseFloat(keyframe.originalView.center.x).toFixed(6) + "," + parseFloat(keyframe.originalView.center.y).toFixed(6) + "," + parseFloat(keyframe.originalView.zoom).toFixed(2) + ",pts";
       }
-      if (keyframe.time) {
+      if (typeof(keyframe.time) != "undefined") {
         shareView += "&t=" + keyframe.time;
       }
       if (keyframe.layers) {
         shareView += "&l=" + String(keyframe.layers);
       }
-      if (keyframe.beginTime) {
+      if (typeof(keyframe.beginTime) != "undefined") {
         shareView += "&bt=" + keyframe.beginTime;
       }
-      if (keyframe.endTime) {
+      if (typeof(keyframe.endTime) != "undefined") {
         shareView += "&et=" + keyframe.endTime;
+      }
+      if (typeof(keyframe.speed) != "undefined") {
+        shareView += "&ps=" + keyframe.speed;
       }
       var options = {'baseMapsNoLabels' : true, 'shareView' : shareView, 'nframes' : 1};
       if (!thumbnailUrlList[listIndex]) {
@@ -1777,12 +1780,12 @@ if (!org.gigapan.timelapse.snaplapse) {
 
     var generateThumbnailURL = function(root, bounds, width, height, time, layers, options) {
       options = (typeof options === "undefined") ? {} : options;
-      // Need to use original center view before it was ever modified by the aspect ratio of the current viewer
-      if (bounds.center) {
+      // If we have a share view, it takes precedence over any other bounds being passed in.
+      if (bounds.center && !options.shareView) {
         if (timelapse.getTmJSON()['projection-bounds']) {
-          bounds = timelapse.pixelCenterToPixelBoundingBoxView(timelapse.latLngCenterViewToPixelCenter(bounds, true), {width: 1920, height: 1080}).bbox;
+          bounds = timelapse.pixelCenterToPixelBoundingBoxView(timelapse.latLngCenterViewToPixelCenter(bounds)).bbox;
         } else {
-          bounds = timelapse.pixelCenterToPixelBoundingBoxView(bounds, {width: 1920, height: 1080}).bbox;
+          bounds = timelapse.pixelCenterToPixelBoundingBoxView(bounds).bbox;
         }
       }
       // Legacy links may have no layers encoded in it. If so, set to empty string.
@@ -1790,7 +1793,6 @@ if (!org.gigapan.timelapse.snaplapse) {
         layers = "";
       }
       var urlSettings = {
-        ps: 0,
         bt: options.bt || time,
         et: options.et || time,
         t: time,
@@ -1800,23 +1802,13 @@ if (!org.gigapan.timelapse.snaplapse) {
         bound: bounds,
         format: "png"
       };
-
+      if (!options.shareView) {
+        urlSettings.ps = 0;
+      }
       if (options && typeof(options) === "object") {
         $.extend(urlSettings, options);
       }
-
       return timelapse.getThumbnailTool().getURL(urlSettings)
-
-      /*var serverURL = "http://thumbnails.cmucreatelab.org/thumbnail?";
-      var rootFlag = "root=" + root + "&";
-      var boundsFlag = "boundsLTRB=" + bounds.xmin + "," + bounds.ymin + "," + bounds.xmax + "," + bounds.ymax + "&";
-      var sizeFlag = "width=" + width + "&height=" + height + "&";
-      var timeFlag = "frameTime=" + time;
-      var thumbnailURL = serverURL + rootFlag + boundsFlag + sizeFlag + timeFlag;
-      var mediaType = (typeof (settings["mediaType"]) == "undefined") ? null : settings["mediaType"];
-      if (mediaType)
-        thumbnailURL += "&tileFormat=" + mediaType.split(".")[1];
-      return thumbnailURL;*/
     };
     this.generateThumbnailURL = generateThumbnailURL;
 
