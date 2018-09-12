@@ -644,6 +644,12 @@ if (!window['$']) {
 
     var handleShareViewTimeLoop = function(beginTime, endTime, startDwell, endDwell) {
       clearShareViewTimeLoop();
+      if (timelapse.isLoading()) {
+        setTimeout(function() {
+          handleShareViewTimeLoop(beginTime, endTime, startDwell, endDwell);
+        }, 100);
+        return;
+      }
       var maxDuration = timelapse.getDuration();
       var waypointStartTime = timelapse.playbackTimeFromShareDate(beginTime);
       if (typeof(waypointStartTime) === "undefined") {
@@ -653,8 +659,7 @@ if (!window['$']) {
       if (typeof(waypointEndTime) === "undefined" || waypointEndTime == ((timelapse.getNumFrames() - 1) / _getFps().toFixed(1))) {
         waypointEndTime = maxDuration;
       }
-      // If we are full time range or paused, don't do anything
-      if ((waypointStartTime == 0 && waypointEndTime == maxDuration) || waypointStartTime == waypointEndTime || timelapse.isPaused()) {
+      if ((waypointStartTime == 0 && waypointEndTime == maxDuration) || beginTime == endTime || timelapse.isPaused()) {
         return;
       }
       startDwell = parseFloat(startDwell) || 0;
@@ -1316,14 +1321,14 @@ if (!window['$']) {
     this.getProjectionType = getProjectionType;
 
     var getViewStrAsProjection = function(desiredView) {
-      desiredView = ( typeof (desiredView) == "undefined") ? view : desiredView;
+      desiredView = (typeof(desiredView) == "undefined") ? view : desiredView;
       var latlng = _getProjection().pointToLatlng(view);
-      return Math.round(1e5 * latlng.lat) / 1e5 + "," + Math.round(1e5 * latlng.lng) / 1e5 + "," + Math.round(1e3 * Math.log(desiredView.scale / panoView.scale) / Math.log(2)) / 1e3 + "," + "latLng";
+      return UTIL.truncate(latlng.lat, 5) + "," + UTIL.truncate(latlng.lng, 5) + "," + UTIL.truncate(Math.log(desiredView.scale / panoView.scale) / Math.log(2), 3) + "," + "latLng";
     };
 
     var getViewStrAsPoints = function(desiredView) {
-      desiredView = ( typeof (desiredView) == "undefined") ? view : desiredView;
-      return Math.round(1e5 * desiredView.x) / 1e5 + "," + Math.round(1e5 * desiredView.y) / 1e5 + "," + Math.round(1e3 * Math.log(desiredView.scale / panoView.scale) / Math.log(2)) / 1e3 + "," + "pts";
+      desiredView = (typeof(desiredView) == "undefined") ? view : desiredView;
+      return UTIL.truncate(desiredView.x, 5) + "," + UTIL.truncate(desiredView.y, 5) + "," + UTIL.truncate(Math.log(desiredView.scale / panoView.scale) / Math.log(2), 3) + "," + "pts";
     };
 
     var _getViewStr = function(desiredView) {
@@ -3578,9 +3583,7 @@ if (!window['$']) {
     // YYYYMMDD
     // YYYYMMDDHHMM
     //
-    // DEPRECATED:  This function also supports, for now, old-style share link time
-    // in units of seconds in playback time
-
+    // This function also supports old-style share link time in units of seconds in playback time
     var playbackTimeFromShareDate = function(sharedate) {
       if (!sharedate) {
         return 0;
@@ -3776,6 +3779,11 @@ if (!window['$']) {
       $("#" + viewerDivId + " .spinnerOverlay").hide();
     };
     this.hideSpinner = hideSpinner;
+
+    var isLoading = function() {
+      return $("#" + viewerDivId + " .spinnerOverlay").is(":visible");
+    };
+    this.isLoading = isLoading;
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////
     //

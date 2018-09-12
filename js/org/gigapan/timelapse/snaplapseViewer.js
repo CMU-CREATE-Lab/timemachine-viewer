@@ -1702,7 +1702,11 @@ if (!org.gigapan.timelapse.snaplapse) {
               startAutoModeIdleTimeout();
             }
           }
-          timelapse.handleShareViewTimeLoop(keyframe['beginTime'], keyframe['endTime'], keyframe['startDwell'], keyframe['endDwell']);
+          // It takes up to 300ms before a loading spinner may come up. Wait a bit longer to check bt/et values
+          // We then check if we are still loading inside handleShareViewTimeLoop
+          setTimeout(function() {
+            timelapse.handleShareViewTimeLoop(keyframe['beginTime'], keyframe['endTime'], keyframe['startDwell'], keyframe['endDwell']);
+          }, 400);
         };
         if (skipAnnotation != true) {
           displaySnaplapseFrameAnnotation(keyframe);
@@ -1752,9 +1756,9 @@ if (!org.gigapan.timelapse.snaplapse) {
       var thumbnailURL = thumbnailUrlList[listIndex];
       var shareView;
       if (keyframe.originalView.center.lat) {
-        shareView = "v=" + parseFloat(keyframe.originalView.center.lat).toFixed(6) + "," + parseFloat(keyframe.originalView.center.lng).toFixed(6) + "," + parseFloat(keyframe.originalView.zoom).toFixed(2) + ",latLng";
+        shareView = "v=" + parseFloat(keyframe.originalView.center.lat).toFixed(5) + "," + parseFloat(keyframe.originalView.center.lng).toFixed(5) + "," + parseFloat(keyframe.originalView.zoom).toFixed(3) + ",latLng";
       } else {
-        shareView = "v=" + parseFloat(keyframe.originalView.center.x).toFixed(6) + "," + parseFloat(keyframe.originalView.center.y).toFixed(6) + "," + parseFloat(keyframe.originalView.zoom).toFixed(2) + ",pts";
+        shareView = "v=" + parseFloat(keyframe.originalView.center.x).toFixed(5) + "," + parseFloat(keyframe.originalView.center.y).toFixed(5) + "," + parseFloat(keyframe.originalView.zoom).toFixed(3) + ",pts";
       }
       if (typeof(keyframe.time) != "undefined") {
         shareView += "&t=" + keyframe.time;

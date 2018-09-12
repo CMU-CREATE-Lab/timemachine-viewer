@@ -736,4 +736,10 @@ if (!org.gigapan) {
       e.preventDefault();
     }, false);
   }
+
+  org.gigapan.Util.truncate = function(number, digits) {
+    var re = new RegExp("([-+]?\\d+\\.\\d{" + digits + "})(\\d)");
+    var reMatch = number.toString().match(re);
+    return reMatch ? parseFloat(reMatch[1]) : parseFloat(number);
+  }
 })();
