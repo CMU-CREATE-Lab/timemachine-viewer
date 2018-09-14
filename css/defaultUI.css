@@ -1001,6 +1001,7 @@ _:-moz-tree-row(hover), .customDialog .customDialogButton .ui-button-text {
   box-shadow: 0px 0px 10px rgba(0,0,0,0.5);
   z-index: 9000;
   width: 408px;
+  margin-left: -1px;
 }
 
 .toggleSpeed.ui-button {
@@ -1548,6 +1549,7 @@ input::-ms-clear {
   height: 49px;
   box-shadow: none;
   border-bottom: 1px solid black;
+  border-left: 1px solid black;
 }
 
 .shareView.customDialog .accordion {
@@ -1563,4 +1565,8 @@ input::-ms-clear {
 .shareView.customDialog .ui-dialog-titlebar-close {
   right: 12px;
   top: 26px !important;
+}
+
+.shareView.customDialog {
+  border-left: 1px solid black;
 }
