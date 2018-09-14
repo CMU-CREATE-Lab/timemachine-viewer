@@ -849,7 +849,7 @@ _:-moz-tree-row(hover), .customDialog .customDialogButton .ui-button-text {
   margin-left: 0px;
   margin-right: 4px;
   margin-bottom: 4px;
-  width: 280px;
+  width: 270px;
   height: 16px;
   resize: none;
 }
@@ -945,7 +945,7 @@ _:-moz-tree-row(hover), .customDialog .customDialogButton .ui-button-text {
 }
 
 .share-thumbnail-tool td:first-child {
-  width: 140px;
+  width: 130px;
 }
 
 .share-thumbnail-tool td {
@@ -1542,4 +1542,25 @@ input::-ms-clear {
 
 .twitter-sharelink:hover, .fb-sharelink:hover {
   opacity: 0.9;
+}
+
+.shareView.customDialog .ui-dialog-titlebar {
+  height: 49px;
+  box-shadow: none;
+  border-bottom: 1px solid black;
+}
+
+.shareView.customDialog .accordion {
+  margin: 20px;
+}
+
+.shareView.customDialog .ui-dialog-title {
+  top: 14px;
+  left: 22px;
+  font-size: 18px;
+}
+
+.shareView.customDialog .ui-dialog-titlebar-close {
+  right: 12px;
+  top: 26px !important;
 }
