@@ -644,37 +644,37 @@ if (!window['$']) {
 
     var handleShareViewTimeLoop = function(beginTime, endTime, startDwell, endDwell) {
       clearShareViewTimeLoop();
-      if (timelapse.isLoading()) {
+      if (thisObj.isLoading()) {
         setTimeout(function() {
           handleShareViewTimeLoop(beginTime, endTime, startDwell, endDwell);
         }, 100);
         return;
       }
-      var maxDuration = timelapse.getDuration();
-      var waypointStartTime = timelapse.playbackTimeFromShareDate(beginTime);
+      var maxDuration = thisObj.getDuration();
+      var waypointStartTime = thisObj.playbackTimeFromShareDate(beginTime);
       if (typeof(waypointStartTime) === "undefined") {
         waypointStartTime = 0;
       }
-      var waypointEndTime = timelapse.playbackTimeFromShareDate(endTime);
-      if (typeof(waypointEndTime) === "undefined" || waypointEndTime == ((timelapse.getNumFrames() - 1) / _getFps().toFixed(1))) {
+      var waypointEndTime = thisObj.playbackTimeFromShareDate(endTime);
+      if (typeof(waypointEndTime) === "undefined" || waypointEndTime == ((thisObj.getNumFrames() - 1) / _getFps().toFixed(1))) {
         waypointEndTime = maxDuration;
       }
-      if ((waypointStartTime == 0 && waypointEndTime == maxDuration) || beginTime == endTime || timelapse.isPaused()) {
+      if ((waypointStartTime == 0 && waypointEndTime == maxDuration) || beginTime == endTime || thisObj.isPaused()) {
         return;
       }
       startDwell = parseFloat(startDwell) || 0;
       endDwell = parseFloat(endDwell) || 0;
       shareViewLoopInterval = setInterval(function() {
-        if (timelapse.isPaused()) return;
-        var t = timelapse.getCurrentTime();
+        if (thisObj.isPaused()) return;
+        var t = thisObj.getCurrentTime();
         if (t > waypointEndTime) {
           doingLoopingDwell = true;
-          timelapse.pause();
+          thisObj.pause();
           setTimeout(function() {
             // Seek back to the desired 'begin time'
-            timelapse.seek(waypointStartTime);
+            thisObj.seek(waypointStartTime);
             setTimeout(function() {
-              timelapse.play();
+              thisObj.play();
               doingLoopingDwell = false;
             }, startDwell * 1000)
           }, endDwell * 1000);
@@ -1431,67 +1431,118 @@ if (!window['$']) {
     };
     this.normalizeView = _normalizeView;
 
-    var getShareView = function(sharedTimestamp, desiredView, options) {
-      sharedTimestamp = typeof(sharedTimestamp) != "undefined" ? sharedTimestamp : thisObj.getCurrentTime().toFixed(2);
-      var hashparams = org.gigapan.Util.getUnsafeHashVars();
-      // View is already in string format
+    var getShareView = function(startTime, desiredView, options={}) {
+      // Get current URL params. It may include spreadsheet ids, etc. Or it may just be an empty object.
+      var hashparams = options.forThumbnail ? {} : org.gigapan.Util.getUnsafeHashVars();
+
+      // Keep the following in this order
+      // e.g: #v=6.1411,1.58464,0.629,latLng&t=0.08&ps=50&l=blsat&bt=19840101&et=20161231&startDwell=0&endDwell=0
+
+      // Get the view
       if (desiredView && typeof(desiredView) === "string" && desiredView.indexOf(",")) {
+        // View is already in a seemingly valid string format
         hashparams.v = desiredView;
       } else {
-        //var bbox = timelapse.getBoundingBoxForCurrentView();
-        //var ltrbStr = bbox.xmin + "," + bbox.ymin + "," + bbox.xmax + "," + bbox.ymax + ",pts";
-        //hashparams.v = desiredView ? _getViewStr(desiredView) : ltrbStr;
+        // Turn view into a string
         hashparams.v = _getViewStr(desiredView);
       }
-      hashparams.t = sharedTimestamp;
-      hashparams.ps = (thisObj.getPlaybackRate() / thisObj.getMaxPlaybackRate()) * 100;
 
-      if (datasetType == "modis" && customUI.getLocker() != "none")
+      // Get the initial seek time
+      if (typeof(options.t) == "undefined") {
+        hashparams.t = typeof(startTime) != "undefined" ? parseFloat(startTime) : parseFloat(thisObj.getCurrentTime().toFixed(2));
+      } else {
+        hashparams.t = options.t;
+      }
+
+      // Get the playback speed
+      if (typeof(options.ps) == "undefined") {
+        hashparams.ps = (thisObj.getPlaybackRate() / thisObj.getMaxPlaybackRate()) * 100;
+      } else {
+        hashparams.ps = options.ps
+      }
+
+      // Get the layers
+      if (typeof(options.l) == "undefined") {
+        var selectedLayers = $("#layers-list, .ui-multiselect-checkboxes").find("input:checked");
+        if (selectedLayers.length) {
+          var layers = $.map(selectedLayers, function(obj) {
+            return $(obj).parent("label").attr("name");
+          });
+          hashparams.l = String(layers);
+        }
+      } else {
+        hashparams.l = options.l;
+      }
+
+      if (hashparams.ps == 0) {
+        // Really this should just set 'et' to 'bt' but since we may want an exported video/gif that spans full start to end time, and yet have the
+        // ability to get a frozen frame from somewhere inbetween that range, we make use of 't' to do just that.
+        hashparams.bt = hashparams.t;
+        hashparams.et = hashparams.t;
+      } else {
+        // Get the begin time. Often used for looping purposes, but also for thumbnail generation when in screenshot mode
+        if (typeof(options.bt) == "undefined") {
+          var btFrame = 0;
+          var isStartTimeADate = (thisObj.sanitizedParseTimeGMT(thisObj.getCaptureTimes()[btFrame]) != -1)
+          if (isStartTimeADate) {
+            hashparams.bt = new Date(thisObj.getFrameEpochTime(btFrame)).toISOString().substr(0,10).replace(/-/g, "");
+          } else {
+            hashparams.bt = 0;
+          }
+        } else {
+          hashparams.bt = options.bt;
+        }
+
+        // Get the end time. Often used for looping purposes, but also for thumbnail generation when in screenshot mode
+        if (typeof(options.et) == "undefined") {
+          var etFrame = thisObj.getNumFrames() - 1;
+          var isEndTimeADate = (thisObj.sanitizedParseTimeGMT(thisObj.getCaptureTimes()[etFrame]) != -1)
+          if (isEndTimeADate) {
+            hashparams.et = new Date(thisObj.getFrameEpochTime(etFrame)).toISOString().substr(0,10).replace(/-/g, "").replace(/0101/g, "1231");
+          } else {
+            hashparams.et = parseFloat(thisObj.getDuration().toFixed(3));
+          }
+        } else {
+          hashparams.et = options.et;
+        }
+      }
+
+      // Get the start dwell. Relevant for looping with begin time and end time
+      if (typeof(options.startDwell) == "undefined") {
+        hashparams.startDwell = 0;
+      } else {
+        hashparams.startDwell = options.startDwell;
+      }
+
+      // Get the end dwell. Relevant for looping with begin time and end time
+      if (typeof(options.endDwell) == "undefined") {
+        hashparams.endDwell = 0;
+      } else {
+        hashparams.endDwell = options.endDwell;
+      }
+
+      if (datasetType == "modis" && customUI.getLocker() != "none") {
         hashparams.lk + customUI.getLocker();
+      }
+
       if (datasetType == "breathecam") {
         hashparams.d = settings["url"].match(/\d\d\d\d-\d\d-\d\d/);
         hashparams.s = tmJSON['id'];
       }
-      var selectedLayers = $("#layers-list, .ui-multiselect-checkboxes").find("input:checked");
-      if (selectedLayers.length) {
-        var layers = $.map(selectedLayers, function(obj) {
-          return $(obj).parent("label").attr("name");
-        });
-        hashparams.l = String(layers);
-      }
-      if (options && typeof(options) === "object") {
-        $.extend(hashparams, options);
-      }
 
-      if (typeof(hashparams.bt) == "undefined") {
-        var isStartTimeADate = (thisObj.sanitizedParseTimeGMT(thisObj.getCaptureTimes()[0]) != -1)
-        if (isStartTimeADate) {
-          hashparams.bt = new Date(thisObj.getFrameEpochTime(0)).toISOString().substr(0,10).replace(/-/g, "");
-        } else {
-          hashparams.bt = 0;
-        }
-      }
-
-      if (typeof(hashparams.et) == "undefined") {
-        var lastFrameIdx = thisObj.getNumFrames() - 1;
-        var isEndTimeADate = (thisObj.sanitizedParseTimeGMT(thisObj.getCaptureTimes()[lastFrameIdx]) != -1)
-        if (isEndTimeADate) {
-          hashparams.et = new Date(thisObj.getFrameEpochTime(lastFrameIdx)).toISOString().substr(0,10).replace(/-/g, "").replace(/0101/g, "1231");
-        } else {
-          hashparams.et = parseFloat(thisObj.getDuration().toFixed(3));
-        }
-      }
-
+      // Prepare shareView return string
       var shareStr = "";
 
       // EarthTime specific
       var filterParamsForEarthTimeStoryMode = false;
 
-      if (hashparams.forThumbnail || ($shareViewWaypointOnlyCheckbox.is(":visible") && $shareViewWaypointOnlyCheckbox.prop("checked"))) {
+      if ($shareViewWaypointOnlyCheckbox.is(":visible") && $shareViewWaypointOnlyCheckbox.prop("checked")) {
         delete hashparams['story'];
         delete hashparams['theme'];
+        delete hashparams['waypointIdx'];
       } else if (hashparams.story || window.location.href.indexOf("/stories") != -1) {
         filterParamsForEarthTimeStoryMode = true;
+        delete hashparams['waypointIdx'];
         if ($shareViewWaypointIndexCheckbox.is(":visible") && $shareViewWaypointIndexCheckbox.prop("checked")) {
           var currentWaypointIndex = snaplapseForPresentationSlider.getSnaplapseViewer().getCurrentWaypointIndex();
           shareStr = "#waypointIdx=" + currentWaypointIndex;
@@ -1501,7 +1552,7 @@ if (!window['$']) {
       for (var prop in hashparams) {
         if (hashparams.hasOwnProperty(prop)) {
           // EarthTime specific
-          if (prop == "forThumbnail" || (filterParamsForEarthTimeStoryMode && prop != "theme" && prop != "story" && prop != "waypointIdx" && prop != "waypoints" && prop != "csvlayers" && prop != "dotlayers")) continue;
+          if (filterParamsForEarthTimeStoryMode && prop != "theme" && prop != "story" && prop != "waypointIdx" && prop != "waypoints" && prop != "csvlayers" && prop != "dotlayers") continue;
           if (shareStr) {
             shareStr += '&';
           } else {
@@ -1617,44 +1668,53 @@ if (!window['$']) {
     //
     // Public methods
     //
-    this.getThumbnailOfShareView = function(shareView, width, height) {
-      if (!shareView || !width || !height) {
-        return "";
-      }
+    this.getThumbnailOfView = function(view, width, height) {
       var snaplapse = thisObj.getSnaplapse() || thisObj.getSnaplapseForPresentationSlider();
       if (snaplapse) {
         var snaplapseViewer = snaplapse.getSnaplapseViewer();
-        var shareViewHashParams = org.gigapan.Util.unpackVars(shareView);
-        var centerView = thisObj.unsafeViewToView(shareViewHashParams.v);
-        try {
-          // TODO: this is not a good solution.
-          // Need to inspect why this fails for the stories generated by the story editor
-          var bboxView = thisObj.pixelCenterToPixelBoundingBoxView(thisObj.latLngCenterViewToPixelCenter(centerView));
-        } catch(e) {
-          var bboxView = thisObj.pixelCenterToPixelBoundingBoxView(centerView);
-        }
-        if (!bboxView) {
+        if (!snaplapseViewer) {
           return "";
         }
-        var bbox = bboxView.bbox;
-        var shareView = "v=" + shareViewHashParams.v + "&t=" + shareViewHashParams.t + "&l=" + String(shareViewHashParams.l)+ "&bt=" + shareViewHashParams.t + "&et=" + shareViewHashParams.t;
-        return snaplapseViewer.generateThumbnailURL(null, bbox, width, height, shareViewHashParams.t, shareViewHashParams.l, {shareView: shareView, bt: shareViewHashParams.bt, et: shareViewHashParams.et}).url;
+        if (!width) {
+          width = 126;
+        }
+        if (!height) {
+          height = 73;
+        }
+
+        var urlSettings = {
+          ps : 0,
+          width: width,
+          height: height,
+          format : "png"
+        };
+
+        // If view is a string then it's either a share view or garbage.
+        if (typeof(view) == "string") {
+          var shareViewHashParams = org.gigapan.Util.unpackVars(view);
+          var shareView = shareViewHashParams.v;
+          if (shareView) {
+            view = thisObj.unsafeViewToView(shareView);
+            urlSettings.t  = shareViewHashParams.t;
+            urlSettings.l = shareViewHashParams.l;
+            urlSettings.bt = shareViewHashParams.bt;
+            urlSettings.et = shareViewHashParams.et;
+          } else {
+            // Not a share view, so we are done.
+            return "";
+          }
+        }
+
+        urlSettings.bound = view;
+
+        return thisObj.getThumbnailTool().getURL(urlSettings).url;
+      } else {
+        return "";
       }
     }
 
     this.getThumbnailOfCurrentView = function(width, height) {
-      var snaplapse = thisObj.getSnaplapse() || thisObj.getSnaplapseForPresentationSlider();
-      var currentLayers = org.gigapan.Util.unpackVars(thisObj.getShareView()).l;
-      if (snaplapse) {
-        var snaplapseViewer = snaplapse.getSnaplapseViewer();
-        if (!snaplapseViewer)
-          return "";
-        if (!width)
-          width = 126;
-        if (!height)
-          height = 73;
-        return snaplapseViewer.generateThumbnailURL(thumbnailServerRootTileUrl, thisObj.getBoundingBoxForCurrentView(), width, height, thisObj.getCurrentTime().toFixed(2), currentLayers).url;
-      }
+      return thisObj.getThumbnailOfView(thisObj.getShareView(undefined, undefined, {ps: 0}), width, height);
     };
 
     var _isPaused = function() {
@@ -2248,8 +2308,13 @@ if (!window['$']) {
 
     // Gets a safe time value (Float) from an unsafe object containing key-value pairs from the URL hash.
     var getTimeFromHash = function(unsafeHashObj) {
-      if (unsafeHashObj && unsafeHashObj.hasOwnProperty("t")) {
-        var newTime = parseFloat(unsafeHashObj.t);
+      if (unsafeHashObj) {
+        var newTime = null;
+        if (unsafeHashObj.hasOwnProperty("bt")) {
+          newTime = thisObj.playbackTimeFromShareDate(unsafeHashObj.bt);
+        } else if (unsafeHashObj.hasOwnProperty("t")) {
+          newTime = parseFloat(unsafeHashObj.t);
+        }
         return newTime;
       }
       return null;
@@ -2842,7 +2907,7 @@ if (!window['$']) {
     this.getCurrentFrameNumber = getCurrentFrameNumber;
 
     var frameNumberToTime = function(value) {
-      return (value + timePadding) / _getFps();
+      return parseFloat(((value + timePadding) / _getFps()).toFixed(2));
     };
     this.frameNumberToTime = frameNumberToTime;
 

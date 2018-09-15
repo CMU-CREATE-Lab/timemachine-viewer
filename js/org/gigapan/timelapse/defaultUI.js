@@ -937,7 +937,7 @@ if (!org.gigapan.timelapse.Timelapse) {
           endDwell: $("#" + viewerDivId + " .thumbnail-end-delay").val(),
           width: $thumbnailCustomBoundsWidth.val(),
           height: $thumbnailCustomBoundsHeight.val(),
-          bound: undefined,
+          bound: undefined, /* getURL will compute it from the green box */
           format: format
         };
 
@@ -1650,7 +1650,9 @@ if (!org.gigapan.timelapse.Timelapse) {
       // EarthTime specific
       var $shareViewWaypointOnlyCheckbox = $("#" + viewerDivId + " .waypoint-only");
       if ($shareViewWaypointOnlyCheckbox.is(":visible") && $shareViewWaypointOnlyCheckbox.prop("checked")) {
-        parentUrl = parentUrl.substring(0, parentUrl.indexOf('/stories')) + "/explore";
+        if (parentUrl.indexOf('/stories') >= 0) {
+          parentUrl = parentUrl.substring(0, parentUrl.indexOf('/stories')) + "/explore";
+        }
       }
       $shareUrl.val(parentUrl + timelapse.getShareView());
     };

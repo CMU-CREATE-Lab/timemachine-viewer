@@ -340,7 +340,7 @@ if (!org.gigapan.timelapse.Timelapse) {
         var captureTimes = timelapse.getCaptureTimes();
         var timelapseTitle = ( typeof tmJSON.name == "undefined") ? $("#locationTitle").text() : tmJSON.name;
         var linkText = timelapseTitle + " " + captureTimes[frames_start[i]] + " to " + captureTimes[frames_end[i]].split(" ")[1];
-        var desiredTime = (response.args.frameTime + response.args.nframes / (2 * timelapse.getFps())).toFixed(2);
+        var desiredTime = (timelapse.frameNumberToTime(response.args.startFrame) + response.args.nframes / (2 * timelapse.getFps())).toFixed(2);
         var linkHref = UTIL.getParentURL() + timelapse.getShareView(desiredTime, desiredView);
         var $link = $("<a class='metadataImgLink' target='_self' href='" + linkHref + "'>" + linkText + "</a>");
         $div.append($img).append($link);

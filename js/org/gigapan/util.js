@@ -461,6 +461,10 @@ if (!org.gigapan) {
         vars[keyval[0]] = keyval[1];
       }
     }
+    // Delete null/undefined values
+    Object.keys(vars).forEach(function (key) {
+      return (vars[key] == null || key == "") && delete vars[key];
+    });
     return vars;
   };
 

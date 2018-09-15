@@ -1689,10 +1689,10 @@ if (!org.gigapan.timelapse.snaplapse) {
               timelapse.pause();
             }
           }
-          // beginTime takes precedence and fallback to time if needed
-          var seekTime = timelapse.playbackTimeFromShareDate(keyframe['beginTime']);
-          if (typeof(seekTime) === "undefined") {
-            seekTime = keyframe['time'];
+          var seekTime = keyframe['time'] || 0;
+          // Override with beginTime if present
+          if (typeof(keyframe['beginTime']) !== "undefined") {
+            timelapse.playbackTimeFromShareDate(keyframe['beginTime']);
           }
           timelapse.seek(seekTime);
           if (doAutoMode) {
@@ -1754,67 +1754,24 @@ if (!org.gigapan.timelapse.snaplapse) {
     var loadThumbnailFromKeyframe = function(keyframe, listIndex) {
       var $img = $("#" + timeMachineDivId + "_snaplapse_keyframe_" + keyframe['id'] + "_thumbnail");
       var thumbnailURL = thumbnailUrlList[listIndex];
-      var shareView;
-      if (keyframe.originalView.center.lat) {
-        shareView = "v=" + parseFloat(keyframe.originalView.center.lat).toFixed(5) + "," + parseFloat(keyframe.originalView.center.lng).toFixed(5) + "," + parseFloat(keyframe.originalView.zoom).toFixed(3) + ",latLng";
-      } else {
-        shareView = "v=" + parseFloat(keyframe.originalView.center.x).toFixed(5) + "," + parseFloat(keyframe.originalView.center.y).toFixed(5) + "," + parseFloat(keyframe.originalView.zoom).toFixed(3) + ",pts";
-      }
-      if (typeof(keyframe.time) != "undefined") {
-        shareView += "&t=" + keyframe.time;
-      }
-      if (keyframe.layers) {
-        shareView += "&l=" + String(keyframe.layers);
-      }
-      if (typeof(keyframe.beginTime) != "undefined") {
-        shareView += "&bt=" + keyframe.beginTime;
-      }
-      if (typeof(keyframe.endTime) != "undefined") {
-        shareView += "&et=" + keyframe.endTime;
-      }
-      if (typeof(keyframe.speed) != "undefined") {
-        shareView += "&ps=" + keyframe.speed;
-      }
-      var options = {'baseMapsNoLabels' : true, 'shareView' : shareView, 'nframes' : 1};
-      if (!thumbnailUrlList[listIndex]) {
-        thumbnailURL = generateThumbnailURL(thumbnailServerRootTileUrl, keyframe.originalView, Math.floor($img.width()), Math.floor($img.height()), keyframe.time, keyframe.layers, options).url;
+      // If we are not using a hardcoded set of thumbnails, compute one.
+      if (!thumbnailURL) {
+        var urlSettings = {
+          baseMapsNoLabels : true,
+          bound : keyframe.originalView,
+          t : keyframe.time,
+          l : (typeof(keyframe.layers) == "object") ? keyframe.layers.join(',') : "",
+          bt : keyframe.beginTime,
+          et : keyframe.endTime,
+          ps : 0,
+          width: Math.floor($img.width()),
+          height: Math.floor($img.height()),
+          format : "png"
+        };
+        thumbnailURL = timelapse.getThumbnailTool().getURL(urlSettings).url;
       }
       $img.attr("src", thumbnailURL);
     };
-
-    var generateThumbnailURL = function(root, bounds, width, height, time, layers, options) {
-      options = (typeof options === "undefined") ? {} : options;
-      // If we have a share view, it takes precedence over any other bounds being passed in.
-      if (bounds.center && !options.shareView) {
-        if (timelapse.getTmJSON()['projection-bounds']) {
-          bounds = timelapse.pixelCenterToPixelBoundingBoxView(timelapse.latLngCenterViewToPixelCenter(bounds)).bbox;
-        } else {
-          bounds = timelapse.pixelCenterToPixelBoundingBoxView(bounds).bbox;
-        }
-      }
-      // Legacy links may have no layers encoded in it. If so, set to empty string.
-      if (!layers) {
-        layers = "";
-      }
-      var urlSettings = {
-        bt: options.bt || time,
-        et: options.et || time,
-        t: time,
-        l: (typeof(layers) == "string") ? layers : layers.join(','),
-        width: width,
-        height: height,
-        bound: bounds,
-        format: "png"
-      };
-      if (!options.shareView) {
-        urlSettings.ps = 0;
-      }
-      if (options && typeof(options) === "object") {
-        $.extend(urlSettings, options);
-      }
-      return timelapse.getThumbnailTool().getURL(urlSettings)
-    };
-    this.generateThumbnailURL = generateThumbnailURL;
 
     var resetKeyframeTransitionUI = function(buildConstraint, keyframeElementId) {
       if (buildConstraint == "duration") {
