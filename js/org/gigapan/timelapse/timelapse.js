@@ -1535,17 +1535,18 @@ if (!window['$']) {
 
       // EarthTime specific
       var filterParamsForEarthTimeStoryMode = false;
-
-      if ($shareViewWaypointOnlyCheckbox.is(":visible") && $shareViewWaypointOnlyCheckbox.prop("checked")) {
-        delete hashparams['story'];
-        delete hashparams['theme'];
-        delete hashparams['waypointIdx'];
-      } else if (hashparams.story || window.location.href.indexOf("/stories") != -1) {
-        filterParamsForEarthTimeStoryMode = true;
-        delete hashparams['waypointIdx'];
-        if ($shareViewWaypointIndexCheckbox.is(":visible") && $shareViewWaypointIndexCheckbox.prop("checked")) {
-          var currentWaypointIndex = snaplapseForPresentationSlider.getSnaplapseViewer().getCurrentWaypointIndex();
-          shareStr = "#waypointIdx=" + currentWaypointIndex;
+      if (!options.forThumbnail) {
+        if ($shareViewWaypointOnlyCheckbox.is(":visible") && $shareViewWaypointOnlyCheckbox.prop("checked")) {
+          delete hashparams['story'];
+          delete hashparams['theme'];
+          delete hashparams['waypointIdx'];
+        } else if (hashparams.story || window.location.href.indexOf("/stories") != -1) {
+          filterParamsForEarthTimeStoryMode = true;
+          delete hashparams['waypointIdx'];
+          if ($shareViewWaypointIndexCheckbox.is(":visible") && $shareViewWaypointIndexCheckbox.prop("checked")) {
+            var currentWaypointIndex = snaplapseForPresentationSlider.getSnaplapseViewer().getCurrentWaypointIndex();
+            shareStr = "#waypointIdx=" + currentWaypointIndex;
+          }
         }
       }
 
