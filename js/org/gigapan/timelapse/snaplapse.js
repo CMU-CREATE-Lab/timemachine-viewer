@@ -426,6 +426,11 @@ if (!Math.uuid) {
           }
           // Frame Number
           encoder.write_uint(Math.floor(desiredKeyframes[i]['time'] * timelapse.getFps()));
+          // Playback time
+          // Note: This is redundant in regards to tours if we are keeping track of frame number. However, this code is used for EarthTime,
+          // where it's loaded across datasets with different fps, so when we decode the frame number the time we get can change depending upon
+          // what dataset is up. So we also encode playback time.
+          encoder.write_udecimal(desiredKeyframes[i]['time'], 2);
           var viewCenter;
           var zoom;
           // Bounds & Zoom
@@ -550,7 +555,17 @@ if (!Math.uuid) {
           }
           // Decode frame number
           var frameNumber = encoder.read_uint();
-          frame["time"] = (frameNumber + timelapse.getTimePadding()) / fps;
+          // Decode playback time
+          // Note: This is redundant in regards to tours if we are keeping track of frame number. However, this code is used for EarthTime,
+          // where it's loaded across datasets with different fps, so when we decode the frame number the time we get can change depending upon
+          // what dataset is up. So we use the encoded playback time rather than compute it from frame number and current dataset fps.
+          var time;
+          if (version >= 7) {
+            time = UTIL.truncate(encoder.read_udecimal(2), 2);
+          } else {
+            time = (frameNumber + timelapse.getTimePadding()) / fps;
+          }
+          frame["time"] = time;
           frame["captureTime"] = captureTimes[frameNumber];
           // Decode center
           var pointCenter;
