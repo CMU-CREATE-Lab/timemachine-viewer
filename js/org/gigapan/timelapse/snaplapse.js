@@ -556,20 +556,20 @@ if (!Math.uuid) {
           var pointCenter;
           if (tmJSON['projection-bounds']) {
             var projection = timelapse.getProjection();
-            var latLng = {lat: encoder.read_lat(), lng: encoder.read_lon()};
+            var latLng = {lat: UTIL.truncate(encoder.read_lat(), 5), lng: UTIL.truncate(encoder.read_lon(), 5)};
             pointCenter = projection.latlngToPoint({
               lat: latLng.lat,
               lng: latLng.lng
             });
           } else {
-            var point = {x: encoder.read_udecimal(5), y: encoder.read_udecimal(5)};
+            var point = {x: UTIL.truncate(encoder.read_udecimal(5), 5), y: UTIL.truncate(encoder.read_udecimal(5), 5)};
             pointCenter = {
               x: point.x,
               y: point.y
             };
           }
           // Decode zoom
-          var zoom = encoder.read_udecimal(2);
+          var zoom = UTIL.truncate(encoder.read_udecimal(2), 2);
           // Store original center view for use with waypoint slider
           if (tmJSON['projection-bounds']) {
             var originalView = {center : {lat : latLng.lat, lng : latLng.lng}, zoom : zoom};
