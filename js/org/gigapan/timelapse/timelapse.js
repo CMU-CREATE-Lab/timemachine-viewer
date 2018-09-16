@@ -1431,7 +1431,9 @@ if (!window['$']) {
     };
     this.normalizeView = _normalizeView;
 
-    var getShareView = function(startTime, desiredView, options={}) {
+    var getShareView = function(startTime, desiredView, options) {
+      options = typeof(options) == "undefined" ? {} : options;
+
       // Get current URL params. It may include spreadsheet ids, etc. Or it may just be an empty object.
       var hashparams = options.forThumbnail ? {} : org.gigapan.Util.getUnsafeHashVars();
 
@@ -2714,7 +2716,7 @@ if (!window['$']) {
     this.pixelCenterViewToPixelCenter = pixelCenterViewToPixelCenter;
 
     // Convert {center:{lat:val, lng:val}, zoom:val} to {x, y, scale}
-    var latLngCenterViewToPixelCenter = function(theView, ) {
+    var latLngCenterViewToPixelCenter = function(theView) {
       if (!theView)
         return null;
 
