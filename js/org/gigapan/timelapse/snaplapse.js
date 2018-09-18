@@ -395,8 +395,9 @@ if (!Math.uuid) {
     });
 
     this.getAsUrlString = function(desiredKeyframes) {
-      if (desiredKeyframes == undefined)
+      if (desiredKeyframes == undefined) {
         desiredKeyframes = keyframes;
+      }
       try {
         var encoder = new org.gigapan.timelapse.UrlEncoder();
         var tmJSON = timelapse.getTmJSON();
@@ -431,8 +432,7 @@ if (!Math.uuid) {
           // where it's loaded across datasets with different fps, so when we decode the frame number the time we get can change depending upon
           // what dataset is up. So we also encode playback time.
           encoder.write_udecimal(desiredKeyframes[i]['time'], 2);
-          var viewCenter;
-          var zoom;
+          var viewCenter, zoom;
           // Bounds & Zoom
           if (desiredKeyframes[i].originalView.center) {
             viewCenter = desiredKeyframes[i].originalView.center;
@@ -446,25 +446,33 @@ if (!Math.uuid) {
               encoder.write_udecimal(viewCenter.y.toFixed(5), 5);
             }
             zoom = desiredKeyframes[i].originalView.zoom;
+            encoder.write_udecimal(zoom, 2);
           } else {
-            viewCenter = timelapse.pixelBoundingBoxToPixelCenter(desiredKeyframes[i]['bounds']);
-            if (tmJSON['projection-bounds']) {
-              var projection = timelapse.getProjection();
-              // Lat/Lng center view
-              var latLng = projection.pointToLatlng({
-                x: viewCenter.x,
-                y: viewCenter.y
-              });
-              encoder.write_lat(latLng.lat);
-              encoder.write_lon(latLng.lng);
+            if (TOUR_SHARING_VERSION <= 6) {
+              viewCenter = timelapse.pixelBoundingBoxToPixelCenter(desiredKeyframes[i]['bounds']);
+              if (tmJSON['projection-bounds']) {
+                var projection = timelapse.getProjection();
+                // Lat/Lng center view
+                var latLng = projection.pointToLatlng({
+                  x: viewCenter.x,
+                  y: viewCenter.y
+                });
+                encoder.write_lat(latLng.lat);
+                encoder.write_lon(latLng.lng);
+              } else {
+                // x/y center view
+                encoder.write_udecimal(viewCenter.x.toFixed(5), 5);
+                encoder.write_udecimal(viewCenter.y.toFixed(5), 5);
+              }
+              zoom = timelapse.scaleToZoom(viewCenter.scale);
+              encoder.write_udecimal(zoom, 2);
             } else {
-              // x/y center view
-              encoder.write_udecimal(viewCenter.x.toFixed(5), 5);
-              encoder.write_udecimal(viewCenter.y.toFixed(5), 5);
+              encoder.write_uint(desiredKeyframes[i]['bounds']['xmin']);
+              encoder.write_uint(desiredKeyframes[i]['bounds']['ymin']);
+              encoder.write_uint(desiredKeyframes[i]['bounds']['xmax']);
+              encoder.write_uint(desiredKeyframes[i]['bounds']['ymax']);
             }
-            zoom = timelapse.scaleToZoom(viewCenter.scale);
           }
-          encoder.write_udecimal(zoom, 2);
           // Keyframe description
           encoder.write_string(desiredKeyframes[i]['unsafe_string_description']);
           if (!disableKeyframeTitle) {
@@ -567,44 +575,52 @@ if (!Math.uuid) {
           }
           frame["time"] = time;
           frame["captureTime"] = captureTimes[frameNumber];
-          // Decode center
-          var pointCenter;
-          if (tmJSON['projection-bounds']) {
-            var projection = timelapse.getProjection();
-            var latLng = {lat: UTIL.truncate(encoder.read_lat(), 5), lng: UTIL.truncate(encoder.read_lon(), 5)};
-            pointCenter = projection.latlngToPoint({
-              lat: latLng.lat,
-              lng: latLng.lng
-            });
+          // Decode bounds
+          var bbox, originalView;
+          if (version >= 7) {
+            bbox = {};
+            bbox.xmin = encoder.read_uint();
+            bbox.ymin = encoder.read_uint();
+            bbox.xmax = encoder.read_uint();
+            bbox.ymax = encoder.read_uint();
+            originalView = bbox;
           } else {
-            var point = {x: UTIL.truncate(encoder.read_udecimal(5), 5), y: UTIL.truncate(encoder.read_udecimal(5), 5)};
-            pointCenter = {
-              x: point.x,
-              y: point.y
+            var pointCenter;
+            if (tmJSON['projection-bounds']) {
+              var projection = timelapse.getProjection();
+              var latLng = {lat: UTIL.truncate(encoder.read_lat(), 5), lng: UTIL.truncate(encoder.read_lon(), 5)};
+              pointCenter = projection.latlngToPoint({
+                  lat: latLng.lat,
+                lng: latLng.lng
+              });
+            } else {
+              var point = {x: UTIL.truncate(encoder.read_udecimal(5), 5), y: UTIL.truncate(encoder.read_udecimal(5), 5)};
+              pointCenter = {
+                x: point.x,
+                y: point.y
+              };
+            }
+            // Decode zoom
+            var zoom = UTIL.truncate(encoder.read_udecimal(2), 2);
+            // Store original center view for use with waypoint slider
+            if (tmJSON['projection-bounds']) {
+              originalView = {center : {lat : latLng.lat, lng : latLng.lng}, zoom : zoom};
+            } else {
+              originalView = {center : {x : point.x, y : point.y}, zoom : zoom};
+            }
+            var centerView = {
+              "x": pointCenter.x,
+              "y": pointCenter.y,
+              "scale": timelapse.zoomToScale(zoom)
             };
+            bbox = timelapse.pixelCenterToPixelBoundingBoxView(centerView).bbox;
           }
-          // Decode zoom
-          var zoom = UTIL.truncate(encoder.read_udecimal(2), 2);
-          // Store original center view for use with waypoint slider
-          if (tmJSON['projection-bounds']) {
-            var originalView = {center : {lat : latLng.lat, lng : latLng.lng}, zoom : zoom};
-          } else {
-            var originalView = {center : {x : point.x, y : point.y}, zoom : zoom};
-          }
-          var centerView = {
-            "x": pointCenter.x,
-            "y": pointCenter.y,
-            "scale": timelapse.zoomToScale(zoom)
-          };
-
-          var bbox = timelapse.pixelCenterToPixelBoundingBoxView(centerView).bbox;
           frame["bounds"] = {};
           frame["bounds"]["xmin"] = bbox.xmin;
           frame["bounds"]["ymin"] = bbox.ymin;
           frame["bounds"]["xmax"] = bbox.xmax;
           frame["bounds"]["ymax"] = bbox.ymax;
           frame["originalView"] = originalView;
-
           // Decode keyframe subtitle
           frame["unsafe_string_description"] = encoder.read_unsafe_string();
           if (version >= 4) {
@@ -612,7 +628,6 @@ if (!Math.uuid) {
             frame["unsafe_string_frameTitle"] = encoder.read_unsafe_string();
           }
           frame["is-description-visible"] = (frame["unsafe_string_description"] || frame["unsafe_string_frameTitle"]) ? true : false;
-
           if (version >= 5) {
             // Decode annotation box title
             frame["unsafe_string_annotationBoxTitle"] = encoder.read_unsafe_string();
@@ -923,10 +938,15 @@ if (!Math.uuid) {
             UTIL.error("Invalid view in snaplapse share link at keyframe=[" + (i - 1) + "]. Skipping.");
             continue;
           }
-          if (tmJSON['projection-bounds']) {
-            var bbox = timelapse.pixelCenterToPixelBoundingBoxView(view).bbox;
+          var bbox;
+          if (view.center) {
+            if (tmJSON['projection-bounds']) {
+              bbox = timelapse.pixelCenterToPixelBoundingBoxView(view).bbox;
+            } else {
+              bbox = timelapse.pixelCenterToPixelBoundingBoxView(timelapse.latLngBoundingBoxToPixelCenter(view)).bbox;
+            }
           } else {
-            var bbox = timelapse.pixelCenterToPixelBoundingBoxView(timelapse.latLngBoundingBoxToPixelCenter(view)).bbox;
+            bbox = view.bbox;
           }
 
           frame["bounds"] = {};
