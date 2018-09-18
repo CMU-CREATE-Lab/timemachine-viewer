@@ -1853,6 +1853,8 @@ if (!window['$']) {
         for (var i = 0; i < playbackRateChangeListeners.length; i++) {
           playbackRateChangeListeners[i](newRate, skipUpdateUI);
         }
+
+        thisObj.updateShareViewTextbox();
       }
     };
 
@@ -3240,6 +3242,7 @@ if (!window['$']) {
         $("#" + timeMachineDivId + " .currentTime").html(UTIL.formatTime(timelapseCurrentTimeInSeconds, true));
         $("#" + timeMachineDivId + " .currentCaptureTime").html(UTIL.htmlForTextWithEmbeddedNewlines(captureTimes[timelapseCurrentCaptureTimeIndex]));
         $("#" + timeMachineDivId + " .timelineSlider").slider("value", (timelapseCurrentTimeInSeconds * _getFps() - timePadding));
+        thisObj.updateShareViewTextbox();
       });
 
       _addTargetViewChangeListener(function(view) {
