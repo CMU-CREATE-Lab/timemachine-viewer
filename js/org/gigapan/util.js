@@ -73,7 +73,7 @@ if (!org.gigapan) {
   var navigatorUserAgent = navigator.userAgent;
   var isMSIEUserAgent = navigatorUserAgent.match(/MSIE|Trident|Edge/) != null;
   var matchIEPre11VersionString = navigatorUserAgent.match(/MSIE\s([\d]+)/);
-  var isIEEdgeUserAgent = !!(isMSIEUserAgent && navigatorUserAgent.match(/Edge\/([\d]+)/))
+  var isIEEdgeUserAgent = !!(isMSIEUserAgent && navigatorUserAgent.match(/Edge\/([\d]+)/));
   var isIE9UserAgent = !!(isMSIEUserAgent && matchIEPre11VersionString && parseInt(matchIEPre11VersionString[1]) == 9);
   // The Edge (IE 12+) user agent actually has the word "Chrome" in it.
   var isChromeUserAgent = navigatorUserAgent.match(/Chrome/) != null && !isMSIEUserAgent;
@@ -117,8 +117,7 @@ if (!org.gigapan) {
   //2 == verbose (everything)
   var loggingLevel = 1;
 
-  org.gigapan.Util = function() {
-  };
+  org.gigapan.Util = function() {};
 
   org.gigapan.Util.setLoggingLevel = function(newLevel) {
     if (newLevel < 0 || newLevel > 2)
@@ -143,7 +142,8 @@ if (!org.gigapan) {
     } catch(e) {
       return false;
     }
-  }
+  };
+
   org.gigapan.Util.isTouchDevice = function() {
     try {
       document.createEvent("TouchEvent");
@@ -258,7 +258,6 @@ if (!org.gigapan) {
     var canvas;
     var gl;
     var debugInfo;
-    var vendor;
     var renderer;
 
     try {
@@ -318,10 +317,10 @@ if (!org.gigapan) {
   org.gigapan.Util.fullScreenAPISupported = function() {
     // Older webkits do not support fullscreen across iframes.
     if (document.webkitCancelFullScreen && !document.webkitExitFullscreen) {
-      return (self === top)
+      return (self === top);
     }
     return !!(document.documentElement.requestFullscreen || document.documentElement.msRequestFullscreen || document.documentElement.mozRequestFullScreen || document.documentElement.webkitRequestFullScreen);
-  }
+  };
 
   org.gigapan.Util.isNumber = function(n) {
     // Code taken from http://stackoverflow.com/questions/18082/validate-numbers-in-javascript-isnumeric
@@ -486,7 +485,7 @@ if (!org.gigapan) {
     } else {
       return unsafeHashSource;
     }
-  }
+  };
 
   // Note: Hash variables may contain potentially unsafe user-inputted data.
   // Caution must be taken when working with these values.
@@ -649,7 +648,7 @@ if (!org.gigapan) {
       return styleValue ? styleValue : null;
     }
     return null;
-  }
+  };
 
   // Convert relative paths to absolute ones.
   org.gigapan.Util.relativeToAbsolutePath = function(url) {
@@ -663,7 +662,7 @@ if (!org.gigapan) {
       url = url.substring(numToChop);
     }
     return loc + '/' + url;
-  }
+  };
 
   // Compute the root URL for where all the Time Machine files exist.
   // Note: Needs to be run when loading this file or the returned path
@@ -694,7 +693,7 @@ if (!org.gigapan) {
         }
       }
     });
-  }
+  };
 
   org.gigapan.Util.setDrawState = function(newDoDraw) {
     doDraw = newDoDraw;
@@ -709,11 +708,11 @@ if (!org.gigapan) {
       }
       timelapse.hideSpinner(timelapse.getViewerDivId());
     }
-  }
+  };
 
   org.gigapan.Util.doDraw = function() {
     return doDraw;
-  }
+  };
 
   // Add horizontal scroll touch support to a jQuery HTML element.
   org.gigapan.Util.touchHorizontalScroll = function($elem) {
@@ -725,7 +724,7 @@ if (!org.gigapan) {
       this.scrollLeft = scrollStartPos - e.originalEvent.touches[0].pageX;
       e.preventDefault();
     });
-  }
+  };
 
   // Add vertical scroll touch support to an HTML element
   org.gigapan.Util.verticalTouchScroll = function($elem){
@@ -739,11 +738,11 @@ if (!org.gigapan) {
       this.scrollTop = scrollStartPos - e.touches[0].pageY;
       e.preventDefault();
     }, false);
-  }
+  };
 
   org.gigapan.Util.truncate = function(number, digits) {
     var re = new RegExp("([-+]?\\d+\\.\\d{" + digits + "})(\\d)");
     var reMatch = number.toString().match(re);
     return reMatch ? parseFloat(reMatch[1]) : parseFloat(number);
-  }
+  };
 })();
