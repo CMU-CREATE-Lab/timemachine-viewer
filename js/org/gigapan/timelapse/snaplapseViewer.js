@@ -1717,6 +1717,7 @@ if (!org.gigapan.timelapse.snaplapse) {
           if (keyframe['originalView'] && !editorEnabled) {
             newView = keyframe['originalView'];
           } else {
+            // TODO: Is this used anymore? Check with tour editor
             if (typeof (timelapse.getTmJSON()['projection-bounds']) != "undefined") {
               newView = timelapse.pixelBoundingBoxToLatLngCenterView(keyframe['bounds']);
             } else {

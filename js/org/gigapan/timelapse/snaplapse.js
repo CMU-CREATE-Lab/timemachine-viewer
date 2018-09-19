@@ -594,7 +594,7 @@ if (!Math.uuid) {
             bbox.ymin = encoder.read_uint();
             bbox.xmax = encoder.read_uint();
             bbox.ymax = encoder.read_uint();
-            originalView = bbox;
+            originalView = {bbox : bbox};
           } else {
             var pointCenter;
             if (tmJSON['projection-bounds']) {
