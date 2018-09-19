@@ -435,8 +435,12 @@ if (!Math.uuid) {
           var viewCenter, zoom;
           // Bounds & Zoom
           if (desiredKeyframes[i].originalView.center) {
+            if (TOUR_SHARING_VERSION >= 7) {
+              // Did we encode a bounding box? False
+              encoder.write_uint(0);
+            }
             viewCenter = desiredKeyframes[i].originalView.center;
-            if (typeof desiredKeyframes[i].originalView.center.lat !== "undefined") {
+            if (typeof viewCenter.lat !== "undefined") {
               // Lat/Lng center view
               encoder.write_lat(viewCenter.lat);
               encoder.write_lon(viewCenter.lng);
@@ -448,7 +452,14 @@ if (!Math.uuid) {
             zoom = desiredKeyframes[i].originalView.zoom;
             encoder.write_udecimal(zoom, 2);
           } else {
-            if (TOUR_SHARING_VERSION <= 6) {
+            if (TOUR_SHARING_VERSION >= 7) {
+              // Did we encode a bounding box? True
+              encoder.write_uint(1);
+              encoder.write_uint(desiredKeyframes[i]['bounds']['xmin']);
+              encoder.write_uint(desiredKeyframes[i]['bounds']['ymin']);
+              encoder.write_uint(desiredKeyframes[i]['bounds']['xmax']);
+              encoder.write_uint(desiredKeyframes[i]['bounds']['ymax']);
+            } else {
               viewCenter = timelapse.pixelBoundingBoxToPixelCenter(desiredKeyframes[i]['bounds']);
               if (tmJSON['projection-bounds']) {
                 var projection = timelapse.getProjection();
@@ -466,11 +477,6 @@ if (!Math.uuid) {
               }
               zoom = timelapse.scaleToZoom(viewCenter.scale);
               encoder.write_udecimal(zoom, 2);
-            } else {
-              encoder.write_uint(desiredKeyframes[i]['bounds']['xmin']);
-              encoder.write_uint(desiredKeyframes[i]['bounds']['ymin']);
-              encoder.write_uint(desiredKeyframes[i]['bounds']['xmax']);
-              encoder.write_uint(desiredKeyframes[i]['bounds']['ymax']);
             }
           }
           // Keyframe description
@@ -577,7 +583,12 @@ if (!Math.uuid) {
           frame["captureTime"] = captureTimes[frameNumber];
           // Decode bounds
           var bbox, originalView;
+          var isViewABoundingBox = false;
+          // Decode whether we encoded the view as a bounding box
           if (version >= 7) {
+            isViewABoundingBox = encoder.read_uint();
+          }
+          if (isViewABoundingBox) {
             bbox = {};
             bbox.xmin = encoder.read_uint();
             bbox.ymin = encoder.read_uint();
@@ -590,7 +601,7 @@ if (!Math.uuid) {
               var projection = timelapse.getProjection();
               var latLng = {lat: UTIL.truncate(encoder.read_lat(), 5), lng: UTIL.truncate(encoder.read_lon(), 5)};
               pointCenter = projection.latlngToPoint({
-                  lat: latLng.lat,
+                lat: latLng.lat,
                 lng: latLng.lng
               });
             } else {
