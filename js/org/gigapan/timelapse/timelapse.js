@@ -3247,7 +3247,11 @@ if (!window['$']) {
       });
 
       _addTargetViewChangeListener(function(view) {
-        $("#" + timeMachineDivId + " .zoomSlider").slider("value", _viewScaleToZoomSlider(view.scale));
+        // TODO: Do we still use the zoom slider UI?
+        try {
+          $("#" + timeMachineDivId + " .zoomSlider").slider("value", _viewScaleToZoomSlider(view.scale));
+        } catch(e) {
+        }
       });
 
       _addViewChangeListener(function() {
