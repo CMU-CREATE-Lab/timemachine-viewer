@@ -659,7 +659,8 @@ if (!window['$']) {
       if (typeof(waypointEndTime) === "undefined" || waypointEndTime == ((thisObj.getNumFrames() - 1) / _getFps().toFixed(1))) {
         waypointEndTime = maxDuration;
       }
-      if ((waypointStartTime == 0 && waypointEndTime == maxDuration) || beginTime == endTime || thisObj.isPaused()) {
+
+      if ((waypointStartTime == 0 && waypointEndTime == maxDuration) || beginTime == endTime) {
         return;
       }
       startDwell = parseFloat(startDwell) || 0;
@@ -667,7 +668,7 @@ if (!window['$']) {
       shareViewLoopInterval = setInterval(function() {
         if (thisObj.isPaused()) return;
         var t = thisObj.getCurrentTime();
-        if (t > waypointEndTime) {
+        if (t >= waypointEndTime) {
           doingLoopingDwell = true;
           thisObj.pause();
           setTimeout(function() {

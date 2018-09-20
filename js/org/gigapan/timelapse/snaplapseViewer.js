@@ -1692,7 +1692,7 @@ if (!org.gigapan.timelapse.snaplapse) {
           var seekTime = keyframe['time'] || 0;
           // Override with beginTime if present
           if (typeof(keyframe['beginTime']) !== "undefined") {
-            timelapse.playbackTimeFromShareDate(keyframe['beginTime']);
+            seekTime = timelapse.playbackTimeFromShareDate(keyframe['beginTime']);
           }
           timelapse.seek(seekTime);
           if (doAutoMode) {
@@ -1702,12 +1702,12 @@ if (!org.gigapan.timelapse.snaplapse) {
               startAutoModeIdleTimeout();
             }
           }
-          // It takes up to 300ms before a loading spinner may come up. Wait a bit longer to check bt/et values
-          // We then check if we are still loading inside handleShareViewTimeLoop
-          setTimeout(function() {
-            timelapse.handleShareViewTimeLoop(keyframe['beginTime'], keyframe['endTime'], keyframe['startDwell'], keyframe['endDwell']);
-          }, 400);
         };
+        // It takes up to 300ms before a loading spinner may come up. Wait a bit longer to check bt/et values
+        // We then check if we are still loading inside handleShareViewTimeLoop
+        setTimeout(function() {
+          timelapse.handleShareViewTimeLoop(keyframe['beginTime'], keyframe['endTime'], keyframe['startDwell'], keyframe['endDwell']);
+        }, 400);
         if (skipAnnotation != true) {
           displaySnaplapseFrameAnnotation(keyframe);
           setKeyframeTitleUI(keyframe);
