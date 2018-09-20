@@ -1799,22 +1799,29 @@ if (!org.gigapan.timelapse.Timelapse) {
 
     var resetTimelineSlider = function() {
       // Recreate timeline slider.
+      // 20180919: Does not seem to be a problem anymore?
       // There seems to be an issue with the jQuery UI slider widget, since just changing the max value and refreshing
       // the slider does not proplerly update the available range. So we have to manually recreate it...
       var $timeSlider = $("#" + viewerDivId + " .timelineSlider");
-      $timeSlider.slider("destroy");
-      createTimelineSlider();
-      $timeSlider.slider("option", "value", timelapse.getTimelapseCurrentCaptureTimeIndex());
+      //$timeSlider.slider("destroy");
+      //createTimelineSlider();
+      //$timeSlider.slider("option", "value", timelapse.getTimelapseCurrentCaptureTimeIndex());
+
+      $timeSlider.slider("option", "min", 0 );
+      $timeSlider.slider("option", "max", timelapse.getNumFrames() - 1 );
+      var currentCaptureTimeIndex = timelapse.getTimelapseCurrentCaptureTimeIndex();
+      $timeSlider.slider("option", "value", currentCaptureTimeIndex);
+      $("#" + timeMachineDivId + " .currentCaptureTime").html(UTIL.htmlForTextWithEmbeddedNewlines(timelapse.getCaptureTimes()[currentCaptureTimeIndex]));
 
       if (settings["showThumbnailTool"]) {
         resetcaptureTimeSpinnerRange();
         resetShareThumbnailUI();
       }
 
-      $playbackButton = $("#" + viewerDivId + " .playbackButton");
-      if (!timelapse.isPaused() && !timelapse.isDoingLoopingDwell()) {
-        setPlaybackButtonIcon("play");
-      }
+      //$playbackButton = $("#" + viewerDivId + " .playbackButton");
+      //if (!timelapse.isPaused() && !timelapse.isDoingLoopingDwell()) {
+      //  setPlaybackButtonIcon("play");
+      //}
     };
     this.resetTimelineSlider = resetTimelineSlider;
 
