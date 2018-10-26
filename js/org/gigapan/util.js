@@ -661,7 +661,7 @@ if (!org.gigapan) {
   // external path and not one that points to the Time Machine source directory.
   function computeRootAppURL() {
     var pathOfCurrentScript = document.currentScript ? document.currentScript.src : document.querySelector('script[src*="util.js"]').src;
-    var tmp = pathOfCurrentScript.substr(0, pathOfCurrentScript.indexOf('/js/'));
+    var tmp = pathOfCurrentScript.substr(0, pathOfCurrentScript.indexOf('js/'));
     var rootUrl = tmp.substr(0, tmp.lastIndexOf('/') + 1);
     return rootUrl;
   }
