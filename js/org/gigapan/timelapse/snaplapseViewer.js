@@ -1759,7 +1759,7 @@ if (!org.gigapan.timelapse.snaplapse) {
       if (!thumbnailURL) {
         var urlSettings = {
           baseMapsNoLabels : true,
-          bound : keyframe.originalView,
+          bound : typeof(EARTH_TIMELAPSE_CONFIG) === "undefined" ? keyframe.bounds : keyframe.originalView,
           t : keyframe.time,
           l : (typeof(keyframe.layers) == "object") ? keyframe.layers.join(',') : "",
           bt : keyframe.beginTime,
