@@ -136,21 +136,11 @@ if (!org.gigapan) {
   };
 
   org.gigapan.Util.isPointerDevice = function() {
-    try {
-      document.createEvent("PointerEvent");
-      return true;
-    } catch(e) {
-      return false;
-    }
+    return typeof(PointerEvent) !== "undefined";
   };
 
   org.gigapan.Util.isTouchDevice = function() {
-    try {
-      document.createEvent("TouchEvent");
-      return true;
-    } catch(e) {
-      return false;
-    }
+    return typeof(TouchEvent) !== "undefined";
   };
 
   org.gigapan.Util.getScrollBarWidth = function() {
