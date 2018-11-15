@@ -204,6 +204,7 @@ if (!window['$']) {
     var isIE = UTIL.isIE();
     var isIE9 = UTIL.isIE9();
     var doingLoopingDwell = false;
+    var whichDwell;
     var isFirefox = UTIL.isFirefox();
     var enableContextMap = true;
     var enablePanoVideo = true;
@@ -437,6 +438,14 @@ if (!window['$']) {
       return doingLoopingDwell;
     };
 
+    this.isDuringStartDwell = function() {
+      return doingLoopingDwell && whichDwell == 'start';
+    };
+
+    this.isDuringEndDwell = function() {
+      return doingLoopingDwell && whichDwell == 'end';
+    };
+
     this.isEditorEnabled = function() {
       return editorEnabled;
     };
@@ -642,6 +651,8 @@ if (!window['$']) {
     };
     this.clearShareViewTimeLoop = clearShareViewTimeLoop;
 
+    
+
     var handleShareViewTimeLoop = function(beginTime, endTime, startDwell, endDwell) {
       clearShareViewTimeLoop();
       if (thisObj.isLoading()) {
@@ -670,10 +681,12 @@ if (!window['$']) {
         var t = thisObj.getCurrentTime();
         if (t >= waypointEndTime) {
           doingLoopingDwell = true;
+	  whichDwell = 'end';
           thisObj.pause();
           setTimeout(function() {
             // Seek back to the desired 'begin time'
             thisObj.seek(waypointStartTime);
+	    whichDwell = 'start';
             setTimeout(function() {
               thisObj.play();
               doingLoopingDwell = false;
@@ -3220,9 +3233,11 @@ if (!window['$']) {
                 if (doingLoopingDwell)
                   return;
                 doingLoopingDwell = true;
+                whichDwell = 'end';
                 updateCustomPlayback();
                 _pause();
                 loopStartTimeoutId = window.setTimeout(function() {
+                  whichDwell = 'start';
                   _seek(0);
                   loopEndTimeoutId = window.setTimeout(function() {
                     _play();
