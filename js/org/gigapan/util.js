@@ -441,7 +441,7 @@ if (!org.gigapan) {
     return htmls.join("");
   };
 
-  org.gigapan.Util.unpackVars = function(str) {
+  org.gigapan.Util.unpackVars = function(str, keepNullOrUndefinedVars) {
     var vars = {};
     if (str) {
       var keyvals = str.split(/[#?&]/);
@@ -450,10 +450,12 @@ if (!org.gigapan) {
         vars[keyval[0]] = keyval[1];
       }
     }
-    // Delete null/undefined values
-    Object.keys(vars).forEach(function (key) {
-      return (vars[key] == null || key == "") && delete vars[key];
-    });
+    // Delete keys with null/undefined values
+    if (!keepNullOrUndefinedVars) {
+      Object.keys(vars).forEach(function (key) {
+        return (vars[key] == null || key == "") && delete vars[key];
+      });
+    }
     return vars;
   };
 
@@ -479,11 +481,11 @@ if (!org.gigapan) {
 
   // Note: Hash variables may contain potentially unsafe user-inputted data.
   // Caution must be taken when working with these values.
-  org.gigapan.Util.getUnsafeHashVars = function() {
+  org.gigapan.Util.getUnsafeHashVars = function(keepNullOrUndefinedVars) {
     var unsafeHashString = org.gigapan.Util.getUnsafeHashString();
     if (unsafeHashString.length > 1)
       unsafeHashString = unsafeHashString.slice(1);
-    return org.gigapan.Util.unpackVars(unsafeHashString);
+    return org.gigapan.Util.unpackVars(unsafeHashString, keepNullOrUndefinedVars);
   };
 
   // Select an element in jQuery selectable
