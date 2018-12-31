@@ -679,12 +679,12 @@ if (!window['$']) {
         var t = thisObj.getCurrentTime();
         if (t >= waypointEndTime) {
           doingLoopingDwell = true;
-	  whichDwell = 'end';
+          whichDwell = 'end';
           thisObj.pause();
           setTimeout(function() {
             // Seek back to the desired 'begin time'
             thisObj.seek(waypointStartTime);
-	    whichDwell = 'start';
+            whichDwell = 'start';
             setTimeout(function() {
               thisObj.play();
               doingLoopingDwell = false;
