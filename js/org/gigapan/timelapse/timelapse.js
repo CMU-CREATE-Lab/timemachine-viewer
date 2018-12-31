@@ -651,8 +651,6 @@ if (!window['$']) {
     };
     this.clearShareViewTimeLoop = clearShareViewTimeLoop;
 
-    
-
     var handleShareViewTimeLoop = function(beginTime, endTime, startDwell, endDwell) {
       clearShareViewTimeLoop();
       if (thisObj.isLoading()) {
@@ -1465,7 +1463,7 @@ if (!window['$']) {
 
       // Get the initial seek time
       if (typeof(options.t) == "undefined") {
-        hashparams.t = typeof(startTime) != "undefined" ? parseFloat(startTime) : parseFloat(thisObj.getCurrentTime().toFixed(2));
+        hashparams.t = typeof(startTime) != "undefined" ? parseFloat(startTime) : typeof(options.bt) == "undefined" ? parseFloat(thisObj.getCurrentTime().toFixed(2)) : thisObj.playbackTimeFromShareDate(options.bt);
       } else {
         hashparams.t = options.t;
       }

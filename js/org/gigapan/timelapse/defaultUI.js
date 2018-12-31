@@ -662,30 +662,48 @@ if (!org.gigapan.timelapse.Timelapse) {
         _parse: function(value) {
           var captureTimes = timelapse.getCaptureTimes();
           if (typeof value === "string") {
-            var dateObj = new Date(value.replace(/-/g, "/"));
-            var newIndex = -1;
-            var minTime = new Date(captureTimes[0].replace(/-/g, "/")).getTime();
-            var maxTime = new Date(captureTimes[captureTimes.length - 1].replace(/-/g, "/")).getTime();
-            var dateObjTime = dateObj.getTime();
-            if (dateObj != "Invalid Date" && dateObjTime >= minTime && dateObjTime <= maxTime) {
-              newIndex = captureTimes.indexOf(value);
-              if (newIndex == -1) {
-                newIndex = timelapse.findExactOrClosestCaptureTime(value);
-                if (newIndex < this.options.min) {
-                  newIndex = this.options.min;
-                } else if (newIndex > this.options.max) {
-                  newIndex = this.options.max;
-                }
+            var isNumber = !isNaN(value);
+            if (isNumber) {
+              var decimalPlaceContent = timelapse.getCurrentCaptureTime().split(".");
+              var numDecimalPlaces = typeof(decimalPlaceContent[1]) !== "undefined" ? decimalPlaceContent[1].length : 0;
+              var parsedNumber = parseFloat(value);
+              if (parsedNumber > 0 && numDecimalPlaces > 0) {
+                value = parsedNumber.toFixed(numDecimalPlaces);
               }
             }
-            if (newIndex != -1) {
-              this.options.currentIndex = newIndex;
-              return newIndex;
+            var newIndex = captureTimes.indexOf(value);
+            // TODO: If it's not a number, assume a date. What if our labels are all text or some combintation of text and numbers?
+            if (!isNumber) {
+              var minTime = new Date(captureTimes[0].replace(/-/g, "/")).getTime();
+              var maxTime = new Date(captureTimes[captureTimes.length - 1].replace(/-/g, "/")).getTime();
+              var dateObj = new Date(value.replace(/-/g, "/"));
+              var dateObjTime = dateObj.getTime();
+              if (dateObj != "Invalid Date") {
+                if (dateObjTime > maxTime)  {
+                  newIndex = this.options.max;
+                } else if (dateObjTime < minTime) {
+                  newIndex = this.options.min;
+                } else if (newIndex == -1) {
+                  newIndex = timelapse.findExactOrClosestCaptureTime(value);
+                }
+              }
             } else {
-              return this.options.currentIndex;
+              if (value < captureTimes[this.options.min]) {
+                newIndex = this.options.min;
+              } else if (value > captureTimes[this.options.max]) {
+                newIndex = this.options.max;
+              }
             }
+            if (newIndex == -1) {
+              newIndex = this.options.currentIndex;
+            }
+            this.options.currentIndex = newIndex;
+            return newIndex;
+          } else {
+            // In this case, value is the index.
+            return value;
           }
-          return value;
+
         },
         _format: function(value) {
           var format = timelapse.getCaptureTimes()[value];
@@ -707,34 +725,13 @@ if (!org.gigapan.timelapse.Timelapse) {
         // Update the text field after a user input event
         if (isStartingTimeSpinnerBlurAdded == false) {
           isStartingTimeSpinnerBlurAdded = true;
-          currentStartingIdx = timelapse.getCaptureTimes().indexOf(event.target.value);
+          var spinnerValue = event.target.value;
+          currentStartingIdx = timelapse.getCaptureTimes().indexOf(spinnerValue);
           $startingTimeSpinner.one("blur", function() {
             isStartingTimeSpinnerBlurAdded = false;
-            var closestStartingIdx = timelapse.findExactOrClosestCaptureTime(String(event.target.value));
-            var minStartSpinnerIdx = 0;
-            var maxStartSpinnerIdx = $startingTimeSpinner.captureTimeSpinner("option", "max");
-            if (closestStartingIdx == minStartSpinnerIdx || closestStartingIdx == maxStartSpinnerIdx) {
-              var captureTimes = timelapse.getCaptureTimes();
-              var dateObj = new Date(event.target.value.replace(/-/g, "/"));
-              var minTime = new Date(captureTimes[0].replace(/-/g, "/")).getTime();
-              var maxTime = new Date(captureTimes[maxStartSpinnerIdx].replace(/-/g, "/")).getTime();
-              var dateObjTime = dateObj.getTime();
-              if (dateObj == "Invalid Date") {
-                closestStartingIdx = -1;
-              } else if (dateObjTime > maxTime) {
-                closestStartingIdx = maxStartSpinnerIdx;
-              } else if (dateObjTime < minTime) {
-                closestStartingIdx = minStartSpinnerIdx;
-              }
-            }
-            if (closestStartingIdx != -1) {
-              event.target.value = timelapse.getCaptureTimes()[closestStartingIdx];
-              timelapse.seekToFrame(closestStartingIdx);
-              $startingTimeSpinner.trigger("blur");
-            } else if (timelapse.getCaptureTimes().indexOf(event.target.value) == -1) {
-              event.target.value = timelapse.getCaptureTimes()[currentStartingIdx];
-              timelapse.seekToFrame(currentStartingIdx);
-            }
+            currentStartingIdx = $startingTimeSpinner.captureTimeSpinner("value");
+            event.target.value = timelapse.getCaptureTimes()[currentStartingIdx];
+            timelapse.seekToFrame(currentStartingIdx);
             handleThumbnailDurationChange();
           });
         }
@@ -754,37 +751,16 @@ if (!org.gigapan.timelapse.Timelapse) {
           timelapse.seekToFrame(ui.value);
         }
       }).on("mousedown", function(event) {
-        // Update the text field after an user input event
+        // Update the text field after a user input event
         if (isEndingTimeSpinnerBlurAdded == false) {
           isEndingTimeSpinnerBlurAdded = true;
-          currentEndingIdx = timelapse.getCaptureTimes().indexOf(event.target.value);
+          var spinnerValue = event.target.value;
+          currentEndingIdx = timelapse.getCaptureTimes().indexOf(spinnerValue);
           $endingTimeSpinner.one("blur", function() {
             isEndingTimeSpinnerBlurAdded = false;
-            var closestEndingIdx = timelapse.findExactOrClosestCaptureTime(String(event.target.value));
-            var minEndSpinnerIdx = 0;
-            var maxEndSpinnerIdx = $endingTimeSpinner.captureTimeSpinner("option", "max");
-            if (closestEndingIdx == minEndSpinnerIdx || closestEndingIdx == maxEndSpinnerIdx) {
-              var captureTimes = timelapse.getCaptureTimes();
-              var dateObj = new Date(event.target.value.replace(/-/g, "/"));
-              var minTime = new Date(captureTimes[0].replace(/-/g, "/")).getTime();
-              var maxTime = new Date(captureTimes[maxEndSpinnerIdx].replace(/-/g, "/")).getTime();
-              var dateObjTime = dateObj.getTime();
-              if (dateObj == "Invalid Date") {
-                closestEndingIdx = -1;
-              } else if (dateObjTime > maxTime) {
-                closestEndingIdx = maxEndSpinnerIdx;
-              } else if (dateObjTime < minTime) {
-                closestEndingIdx = minEndSpinnerIdx;
-              }
-            }
-            if (closestEndingIdx != -1) {
-              event.target.value = timelapse.getCaptureTimes()[closestEndingIdx];
-              timelapse.seekToFrame(closestEndingIdx);
-              $endingTimeSpinner.trigger("blur");
-            } else if (timelapse.getCaptureTimes().indexOf(event.target.value) == -1) {
-              event.target.value = timelapse.getCaptureTimes()[currentEndingIdx];
-              timelapse.seekToFrame(currentEndingIdx);
-            }
+            currentEndingIdx = $endingTimeSpinner.captureTimeSpinner("value");
+            event.target.value = timelapse.getCaptureTimes()[currentEndingIdx];
+            timelapse.seekToFrame(currentEndingIdx);
             handleThumbnailDurationChange();
           });
         }
@@ -806,6 +782,7 @@ if (!org.gigapan.timelapse.Timelapse) {
         } else {
           $(".thumbnail-processing-time-warning-container").hide();
         }
+        handleThumbnailDurationChange();
       });
 
       timelapse.addTimelineUIChangeListener(function() {
@@ -878,39 +855,45 @@ if (!org.gigapan.timelapse.Timelapse) {
         var startCaptureTime = captureTimes[$startingTimeSpinner.captureTimeSpinner("value")];
         var endCaptureTime = captureTimes[$endingTimeSpinner.captureTimeSpinner("value")];
 
-        if (captureTimes[0].match(/PM|AM/)) {
-          var startEpochTime = timelapse.sanitizedParseTimeGMT(startCaptureTime);
-          var startTimeDate = new Date(startEpochTime);
-          startCaptureTime = startTimeDate.getFullYear() + "-" + ("0" + (startTimeDate.getMonth() + 1)).slice(-2) + "-" + (("0" + startTimeDate.getDate()).slice(-2)) + " " + ("0" + startTimeDate.getHours()).slice(-2) + ":" + ("0" + startTimeDate.getMinutes()).slice(-2) + ":" + ("0" + startTimeDate.getSeconds()).slice(-2);
+        var isNumber = !isNaN(startCaptureTime);
+        if (!(isNumber && startCaptureTime - 0 < 1000)) {
+          if (captureTimes[0].match(/PM|AM/)) {
+            var startEpochTime = timelapse.sanitizedParseTimeGMT(startCaptureTime);
+            var startTimeDate = new Date(startEpochTime);
+            startCaptureTime = startTimeDate.getFullYear() + "-" + ("0" + (startTimeDate.getMonth() + 1)).slice(-2) + "-" + (("0" + startTimeDate.getDate()).slice(-2)) + " " + ("0" + startTimeDate.getHours()).slice(-2) + ":" + ("0" + startTimeDate.getMinutes()).slice(-2) + ":" + ("0" + startTimeDate.getSeconds()).slice(-2);
 
-          var endEpochTime = timelapse.sanitizedParseTimeGMT(endCaptureTime);
-          var endTimeDate = new Date(endEpochTime);
-          endCaptureTime = endTimeDate.getFullYear() + "-" + ("0" + (endTimeDate.getMonth() + 1)).slice(-2) + "-" + (("0" + endTimeDate.getDate()).slice(-2)) + " " + ("0" + endTimeDate.getHours()).slice(-2) + ":" + ("0" + endTimeDate.getMinutes()).slice(-2) + ":" + ("0" + endTimeDate.getSeconds()).slice(-2);
+            var endEpochTime = timelapse.sanitizedParseTimeGMT(endCaptureTime);
+            var endTimeDate = new Date(endEpochTime);
+            endCaptureTime = endTimeDate.getFullYear() + "-" + ("0" + (endTimeDate.getMonth() + 1)).slice(-2) + "-" + (("0" + endTimeDate.getDate()).slice(-2)) + " " + ("0" + endTimeDate.getHours()).slice(-2) + ":" + ("0" + endTimeDate.getMinutes()).slice(-2) + ":" + ("0" + endTimeDate.getSeconds()).slice(-2);
+          }
+          var startCaptureTimeArray = startCaptureTime.replace("UTC", "").replace(/[ T:]/g, "-").replace(".00Z", "").split("-");
+          var endCaptureTimeArray = endCaptureTime.replace("UTC", "").replace(/[ T:]/g, "-").replace(".00Z", "").split("-");
+
+          var startYear = parseInt(startCaptureTimeArray[0]);
+          var startMonth = parseInt(startCaptureTimeArray[1]) || 1;
+          var startDay = parseInt(startCaptureTimeArray[2]) || 1;
+          var startHour = parseInt(startCaptureTimeArray[3]) || 0;
+          var startMinute = parseInt(startCaptureTimeArray[4]) || 0;
+          var startSecond = parseInt(startCaptureTimeArray[5]) || 0;
+
+          var endYear = parseInt(endCaptureTimeArray[0]);
+          var endMonth = parseInt(endCaptureTimeArray[1]) || 12;
+          var endDay = parseInt(endCaptureTimeArray[2]) || 31;
+          var endHour = parseInt(endCaptureTimeArray[3]) || 0;
+          var endMinute = parseInt(endCaptureTimeArray[4]) || 0;
+          var endSecond = parseInt(endCaptureTimeArray[5]) || 0;
+
+          var initialISOStringLength = 19;
+          if (startHour == 0 && startMinute == 0 && startSecond == 0 && endHour == 0 && endMinute == 0 && endSecond == 0) {
+            initialISOStringLength = 10;
+          }
+
+          thumbnailBeginTime = new Date(Date.UTC(startYear, (startMonth - 1), startDay, startHour, startMinute, startSecond)).toISOString().substr(0, initialISOStringLength).replace(/[-T:]/g, "");
+          thumbnailEndTime = new Date(Date.UTC(endYear, (endMonth - 1), endDay, endHour, endMinute, endSecond)).toISOString().substr(0, initialISOStringLength).replace(/[-T:]/g, "");
+        } else {
+          thumbnailBeginTime = timelapse.frameNumberToTime(captureTimes.indexOf(startCaptureTime));
+          thumbnailEndTime = timelapse.frameNumberToTime(captureTimes.indexOf(endCaptureTime));
         }
-        var startCaptureTimeArray = startCaptureTime.replace("UTC", "").replace(/[ T:]/g, "-").replace(".00Z", "").split("-");
-        var endCaptureTimeArray = endCaptureTime.replace("UTC", "").replace(/[ T:]/g, "-").replace(".00Z", "").split("-");
-
-        var startYear = parseInt(startCaptureTimeArray[0]);
-        var startMonth = parseInt(startCaptureTimeArray[1]) || 1;
-        var startDay = parseInt(startCaptureTimeArray[2]) || 1;
-        var startHour = parseInt(startCaptureTimeArray[3]) || 0;
-        var startMinute = parseInt(startCaptureTimeArray[4]) || 0;
-        var startSecond = parseInt(startCaptureTimeArray[5]) || 0;
-
-        var endYear = parseInt(endCaptureTimeArray[0]);
-        var endMonth = parseInt(endCaptureTimeArray[1]) || 12;
-        var endDay = parseInt(endCaptureTimeArray[2]) || 31;
-        var endHour = parseInt(endCaptureTimeArray[3]) || 0;
-        var endMinute = parseInt(endCaptureTimeArray[4]) || 0;
-        var endSecond = parseInt(endCaptureTimeArray[5]) || 0;
-
-        var initialISOStringLength = 19;
-        if (startHour == 0 && startMinute == 0 && startSecond == 0 && endHour == 0 && endMinute == 0 && endSecond == 0) {
-          initialISOStringLength = 10;
-        }
-
-        thumbnailBeginTime = new Date(Date.UTC(startYear, (startMonth - 1), startDay, startHour, startMinute, startSecond)).toISOString().substr(0, initialISOStringLength).replace(/[-T:]/g, "");
-        thumbnailEndTime = new Date(Date.UTC(endYear, (endMonth - 1), endDay, endHour, endMinute, endSecond)).toISOString().substr(0, initialISOStringLength).replace(/[-T:]/g, "");
         thumbnailPlaybackSpeed = (parseFloat($("#" + viewerDivId + " .custom-thumbnail-playback-rate").val()) * 100) || ($thumbnailPlaybackRate.data("rate") * 100);
 
         var desiredFps;
@@ -1199,7 +1182,7 @@ if (!org.gigapan.timelapse.Timelapse) {
       if (typeof (response.args.nframes) === "undefined") {
         response.args.nframes = 1;
       }
-      var desiredTime = timelapse.frameNumberToTime(response.args.startFrame);
+      var desiredTime = response.args.startFrame ? timelapse.frameNumberToTime(response.args.startFrame) : undefined;
       var desiredView = response.args.boundsLTRB ? response.args.boundsLTRB + ",pts" : response.args.root.split("/#v")[1];
 
       var shareViewOptions = {}

@@ -917,6 +917,11 @@ if (!org.gigapan.timelapse.Timelapse) {
         setPlaybackButtonIcon("play");
       }
       timelapse.setPlaybackRate(timelapse.getPlaybackRate());
+      if (settings["showThumbnailTool"]) {
+        var defaultUI = timelapse.getDefaultUI();
+        defaultUI.resetcaptureTimeSpinnerRange();
+        defaultUI.resetShareThumbnailUI();
+      }
     };
     this.resetCustomTimeline = resetCustomTimeline;
 
