@@ -1353,6 +1353,14 @@ if (!window['$']) {
     };
     this.getViewStr = _getViewStr;
 
+
+    var _debugLogMessages = [];
+    var _debugLog = function(msg) { _debugLogMessages.push(msg); }
+    var _getDebugLog = function() { return _debugLogMessages; }
+    this.getDebugLog = _getDebugLog;
+    var _clearDebugLog = function() { _debugLogMessages = []; }
+    this.clearDebugLog = _clearDebugLog;
+
     var _setNewView = function(newView, doWarp, doPlay, callBack) {
       if (typeof (newView) === 'undefined' || newView == null)
         return;
@@ -1431,6 +1439,7 @@ if (!window['$']) {
         var newViewBbox = newView.bbox;
         var newViewBboxNE = newViewBbox.ne;
         var newViewBboxSW = newViewBbox.sw;
+	
         if (( typeof (tmJSON['projection-bounds']) !== 'undefined') && newViewBboxNE && newViewBboxSW && UTIL.isNumber(newViewBboxNE.lat) && UTIL.isNumber(newViewBboxNE.lng) && UTIL.isNumber(newViewBboxSW.lat) && UTIL.isNumber(newViewBboxSW.lng)) {
           newView = latLngBoundingBoxToPixelCenter(newView);
         } else if (UTIL.isNumber(newViewBbox.xmin) && UTIL.isNumber(newViewBbox.xmax) && UTIL.isNumber(newViewBbox.ymin) && UTIL.isNumber(newViewBbox.ymax)) {
