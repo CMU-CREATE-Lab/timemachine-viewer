@@ -761,9 +761,11 @@ if (!Math.uuid) {
       var stories = {};
       var themeTitle;
       var themeId;
+      var themeEnabled;
       var storyTitle;
       var storyId;
       var storyDescription;
+      var storyEnabled;
       var waypointCSVCollection = [];
       var rowCount = 0;
       var mainShareView = "";
@@ -802,6 +804,7 @@ if (!Math.uuid) {
             // Add the last found story to the current theme if it is not already in there
             if (!stories[storyId]) {
               stories[storyId] = {
+                enabled: storyEnabled,
                 storyTitle: storyTitle,
                 storyDescription: storyDescription,
                 storyAuthor: storyAuthor,
@@ -811,6 +814,7 @@ if (!Math.uuid) {
             }
             // Add the theme to the main list
             jsonList[themeId] = {
+              enabled: themeEnabled,
               themeTitle : themeTitle,
               mainThemeShareView : previousMainThemeShareView,
               mainThemeDescription : previousMainThemeDescription,
@@ -820,6 +824,8 @@ if (!Math.uuid) {
             rowCount = 0;
           }
           themeTitle = waypointTitle.slice(1);
+          themeEnabled = typeof(csvRow['Enabled']) === "undefined" || csvRow['Enabled'].trim() === "TRUE" || csvRow['Enabled'].trim() === "" ? true : false;
+
           // Sanitize
           themeId = themeTitle.replace(/ /g,"_").replace(/[^a-zA-Z0-9-_]/g, '').toLowerCase();
           stories = {};
@@ -839,6 +845,7 @@ if (!Math.uuid) {
           if (rowCount > 0) {
             //console.log('adding story to data struct', storyId);
             stories[storyId] = {
+              enabled: storyEnabled,
               storyTitle: storyTitle,
               storyDescription: storyDescription,
               storyAuthor: previousStoryAuthor,
@@ -850,6 +857,8 @@ if (!Math.uuid) {
           }
           storyTitle = csvRow['Annotation Title'] ? csvRow['Annotation Title'].trim() : waypointTitle.slice(2);
           storyDescription = waypointText.trim();
+          storyEnabled = typeof(csvRow['Enabled']) === "undefined" || csvRow['Enabled'].trim() === "TRUE" || csvRow['Enabled'].trim() === "" ? true : false;
+
           // Sanitize
           storyId = waypointTitle.slice(2).replace(/ /g,"_").replace(/[^a-zA-Z0-9-_]/g, '').toLowerCase();
 
@@ -879,6 +888,7 @@ if (!Math.uuid) {
       // Add the last found story to the last theme if it is not already in there
       if (!stories[storyId]) {
         stories[storyId] = {
+          enabled: storyEnabled,
           storyTitle : storyTitle,
           storyDescription: storyDescription,
           storyAuthor : storyAuthor,
@@ -888,6 +898,7 @@ if (!Math.uuid) {
       }
       // Last theme found
       jsonList[themeId] = {
+        enabled : themeEnabled,
         themeTitle : themeTitle,
         mainThemeShareView : mainThemeShareView,
         mainThemeDescription : mainThemeDescription,
