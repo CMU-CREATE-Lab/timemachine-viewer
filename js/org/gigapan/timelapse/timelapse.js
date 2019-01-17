@@ -3487,7 +3487,7 @@ if (!window['$']) {
           $("#" + timeMachineDivId + " .customPlay").hide();
           $("#" + timeMachineDivId + " .customToggleSpeed").hide();
         }
-      } else {
+      } else if (currentTimelineStyle == "defaultUI") {
         $("#" + timeMachineDivId + " .customControl").hide();
         $("#" + timeMachineDivId + " .controls").show();
         $("#" + timeMachineDivId + " .helpPlayerLabel").hide();
@@ -3495,15 +3495,12 @@ if (!window['$']) {
         $("#" + timeMachineDivId + " .timelineSliderFiller").css("right", "80px").show();
         $("#" + timeMachineDivId + " .captureTime").show();
         $("#" + timeMachineDivId + " .help").hide();
-
         defaultUI.resetTimelineSlider();
-
         if (!timelineVisible) {
           $("#" + timeMachineDivId + " .controls").hide();
           $("#" + timeMachineDivId + " .captureTime").hide();
         }
       }
-
       for (var i = 0; i < timelineUIChangeListeners.length; i++)
         timelineUIChangeListeners[i]();
     };
