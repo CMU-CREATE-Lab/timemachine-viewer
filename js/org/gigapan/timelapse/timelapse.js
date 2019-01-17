@@ -1439,7 +1439,6 @@ if (!window['$']) {
         var newViewBbox = newView.bbox;
         var newViewBboxNE = newViewBbox.ne;
         var newViewBboxSW = newViewBbox.sw;
-	
         if (( typeof (tmJSON['projection-bounds']) !== 'undefined') && newViewBboxNE && newViewBboxSW && UTIL.isNumber(newViewBboxNE.lat) && UTIL.isNumber(newViewBboxNE.lng) && UTIL.isNumber(newViewBboxSW.lat) && UTIL.isNumber(newViewBboxSW.lng)) {
           newView = latLngBoundingBoxToPixelCenter(newView);
         } else if (UTIL.isNumber(newViewBbox.xmin) && UTIL.isNumber(newViewBbox.xmax) && UTIL.isNumber(newViewBbox.ymin) && UTIL.isNumber(newViewBbox.ymax)) {
@@ -2272,6 +2271,14 @@ if (!window['$']) {
     // Private methods
     //
 
+    var setCaptureTimes = function(newCaptureTimes) {
+      captureTimes = newCaptureTimes;
+      frames = captureTimes.length;
+      timelapseDurationInSeconds = (frames - 0.7) / _getFps();
+      videoset.setDuration((1 / _getFps()) * frames);
+      timelapseCurrentCaptureTimeIndex = Math.min(frames - 1, Math.floor(timelapseCurrentTimeInSeconds * _getFps()));
+    };
+
     // Handle any hash variables related to time machines
     var handleHashChange = function() {
       var unsafeHashString = UTIL.getUnsafeHashString();
@@ -2888,26 +2895,23 @@ if (!window['$']) {
       videoset.setFps(data['fps']);
       var framesToSkipAtStart = (data['frames'] < skippedFramesAtStart) ? 0 : skippedFramesAtStart;
       var framesToSkipAtEnd = (data['frames'] < skippedFramesAtEnd) ? 0 : skippedFramesAtEnd;
-      frames = data['frames'] - framesToSkipAtEnd - framesToSkipAtStart;
-      videoset.setDuration((1 / data['fps']) * frames);
       videoset.setLeader((data['leader'] + framesToSkipAtStart) / data['fps']);
       videoset.setIsSplitVideo(isSplitVideo);
       videoset.setSecondsPerFragment(secondsPerFragment);
       maxLevel = data['nlevels'] - 1;
       levelInfo = data['level_info'];
       metadata = data;
-      timelapseDurationInSeconds = (frames - 0.7) / data['fps'];
-
-      // Set capture time
+      // Set capture times
       if (tmJSON["capture-times"]) {
         tmJSON["capture-times"].splice(tmJSON["capture-times"].length - framesToSkipAtEnd, framesToSkipAtEnd);
         tmJSON["capture-times"].splice(0, framesToSkipAtStart);
-        captureTimes = tmJSON["capture-times"];
       } else {
+        tmJSON["capture-times"] = [];
         for (var i = 0; i < frames; i++) {
-          captureTimes.push("--");
+          tmJSON["capture-times"].push("--");
         }
       }
+      setCaptureTimes(tmJSON["capture-times"]);
     };
 
     var refresh = function() {
@@ -3468,11 +3472,7 @@ if (!window['$']) {
     this.loadNewTimelineFromObj = loadNewTimelineFromObj;
 
     var loadNewTimelineCallback = function(json) {
-      captureTimes = json["capture-times"];
-      frames = captureTimes.length;
-      timelapseDurationInSeconds = (frames - 0.7) / _getFps();
-      videoset.setDuration((1 / _getFps()) * frames);
-      timelapseCurrentCaptureTimeIndex = Math.min(frames - 1, Math.floor(timelapseCurrentTimeInSeconds * _getFps()));
+      setCaptureTimes(json["capture-times"]);
       var timelineVisible = $("#" + timeMachineDivId + " .controls").is(":visible") || $("#" + timeMachineDivId + " .customTimeline").is(":visible");
       if (currentTimelineStyle == "customUI") {
         $("#" + timeMachineDivId + " .controls").hide();
