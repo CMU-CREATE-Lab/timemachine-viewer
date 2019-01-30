@@ -110,7 +110,6 @@ if (!org.gigapan.timelapse.snaplapse) {
     var editorEnabled = timelapse.isEditorEnabled();
     var useCustomUI = timelapse.useCustomUI();
     var useThumbnailServer = ( typeof (settings["useThumbnailServer"]) == "undefined") ? true : settings["useThumbnailServer"];
-    var thumbnailServerRootTileUrl = ( typeof (settings["thumbnailServerRootTileUrl"]) == "undefined") ? settings["url"] : settings["thumbnailServerRootTileUrl"];
     var thumbnailUrlList = ( typeof (settings["thumbnailUrlList"]) == "undefined") ? [] : settings["thumbnailUrlList"];
     var showFullScreenBtn = ( typeof (settings["showFullScreenBtn"]) == "undefined") ? true : settings["showFullScreenBtn"];
     var showEditorModeButton = ( typeof (settings["showEditorModeButton"]) == "undefined") ? true : settings["showEditorModeButton"];
@@ -144,7 +143,6 @@ if (!org.gigapan.timelapse.snaplapse) {
     var $videoSizeSelect;
     var $createSubtitle_dialog = $("#" + composerDivId + " .createSubtitle_dialog");
     var $keyframeContainer = $("#" + composerDivId + " .snaplapse_keyframe_container");
-    var $toolbar = $("#" + composerDivId + " .toolbar");
 
     // Parameters
     var rootURL;
@@ -1063,11 +1061,11 @@ if (!org.gigapan.timelapse.snaplapse) {
                     if (currentAutoModeWaypointIdx != -1) currentAutoModeWaypointIdx--;
                   }
                   // Check if there are not enough slides to fit into the slider
-                  var firstFrame = snaplapse.getKeyframes()[0];
-                  var $firstFrameThumbnailButton = $("#" + timeMachineDivId + "_snaplapse_keyframe_" + firstFrame.id).children(".snaplapse_keyframe_list_item_thumbnail_container_presentation");
-                  var slideWidth = $firstFrameThumbnailButton.width() + 2;
-                  var stripWidth = slideWidth * keyframes.length;
-                  var maxWidth = $("#" + timeMachineDivId + " .player").width();
+                  //var firstFrame = snaplapse.getKeyframes()[0];
+                  //var $firstFrameThumbnailButton = $("#" + timeMachineDivId + "_snaplapse_keyframe_" + firstFrame.id).children(".snaplapse_keyframe_list_item_thumbnail_container_presentation");
+                  //var slideWidth = $firstFrameThumbnailButton.width() + 2;
+                  //var stripWidth = slideWidth * keyframes.length;
+                  //var maxWidth = $("#" + timeMachineDivId + " .player").width();
                   //if (stripWidth < maxWidth) {
                     //$("#" + timeMachineDivId + " .presentationSlider .snaplapse_keyframe_container").css("right", "auto");
                     //timelapse.addViewerBottomMargin(80);
@@ -1948,7 +1946,7 @@ if (!org.gigapan.timelapse.snaplapse) {
 
     var setAutoModeEnableState = function(state) {
       doAutoMode = state;
-    }
+    };
     this.setAutoModeEnableState = setAutoModeEnableState;
 
     var initializeAndRunAutoMode = function() {

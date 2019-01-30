@@ -115,7 +115,6 @@ if (!org.gigapan.timelapse.Timelapse) {
     var $mediumSpeed = $("#mediumSpeed");
     var $slowSpeed = $("#slowSpeed");
     var $timelineSlider = $("#" + viewerDivId + " .timelineSlider");
-    var $timelineSelector = $("#" + viewerDivId + " .timelineSelector");
     var $timelineSliderFiller = $("#" + viewerDivId + " .timelineSliderFiller");
     var $timelineSelectorFiller = $("#" + viewerDivId + " .timelineSelectorFiller");
     var $thumbnailVideoSelector = $("#" + viewerDivId + " .thumbnail-type-video");
@@ -130,7 +129,6 @@ if (!org.gigapan.timelapse.Timelapse) {
     var $captureTime = $("#" + viewerDivId + " .captureTime");
     var $startingTimeSpinner = $("#" + viewerDivId + " .startingTimeSpinner");
     var $endingTimeSpinner = $("#" + viewerDivId + " .endingTimeSpinner");
-    var $endingTime = $("#" + viewerDivId + " .endingTime");
     var $thumbnailPlaybackRate = $("#" + viewerDivId + " .thumbnail-playback-rate");
     var $thumbnailFps = $("#" + viewerDivId + " .thumbnail-fps");
     var $thumbnailPlaybackRateMenu = $("#" + viewerDivId + " .thumbnail-playback-rate-menu");
@@ -143,12 +141,11 @@ if (!org.gigapan.timelapse.Timelapse) {
     var $shareViewDialogClose = $("#" + viewerDivId + " .ui-dialog-titlebar-close");
     var $shareUrl = $("#" + viewerDivId + " .shareurl");
     var $shareUrlCopyTextButton = $("#" + viewerDivId + " .shareurl-copy-text-button");
-    var $thumbnailDurationSlider = $("#" + viewerDivId + " .thumbnail-duration-slider");
     var $shareAccordion = $("#" + viewerDivId + " .shareView .accordion");
-    var $editorCheckboxContainer = $("#" + viewerDivId + " .toolDialog .customCheckboxContainer[data-mode='editor']")
+    var $editorCheckboxContainer = $("#" + viewerDivId + " .toolDialog .customCheckboxContainer[data-mode='editor']");
     var $annotatorCheckboxContainer = $("#" + viewerDivId + " .toolDialog .customCheckboxContainer[data-mode='annotator']");
     var $changeDetectionCheckboxContainer = $("#" + viewerDivId + " .toolDialog .customCheckboxContainer[data-mode='change-detection']");
-    var $editorCheckbox = $("#" + viewerDivId + " .toolDialog .customCheckbox[value='editor']")
+    var $editorCheckbox = $("#" + viewerDivId + " .toolDialog .customCheckbox[value='editor']");
     var $annotatorCheckbox = $("#" + viewerDivId + " .toolDialog .customCheckbox[value='annotator']");
     var $changeDetectionCheckbox = $("#" + viewerDivId + " .toolDialog .customCheckbox[value='change-detection']");
     var $changeDetectionControl = $("#" + viewerDivId + " .toolDialog .changeDetectionControl");
@@ -183,11 +180,9 @@ if (!org.gigapan.timelapse.Timelapse) {
     // Parameters
     var mode = "player";
     var translationSpeedConstant = 20;
-    var scrollBarWidth = UTIL.getScrollBarWidth();
     var currentStartingIdx;
     var currentEndingIdx;
     var thumbnailDurationInFrames = 1;
-    var seekFromDurationSlider = false;
     var maxPlaybackRate = 1;
     var thumbnailBeginTime;
     var thumbnailEndTime;
@@ -777,7 +772,7 @@ if (!org.gigapan.timelapse.Timelapse) {
         } else if ($(this).hasClass("thumbnail-set-end-time-from-timeline")) {
           $endingTimeSpinner.captureTimeSpinner("value", timelapse.getCurrentFrameNumber());
         }
-        thumbnailDurationInFrames = Math.max(1, $endingTimeSpinner.captureTimeSpinner("value") - $startingTimeSpinner.captureTimeSpinner("value") + 1)
+        thumbnailDurationInFrames = Math.max(1, $endingTimeSpinner.captureTimeSpinner("value") - $startingTimeSpinner.captureTimeSpinner("value") + 1);
         if (thumbnailDurationInFrames > maxThumbnailLength) {
           $(".thumbnail-processing-time-warning-container").show().find("div").html(thumbnailLengthWarningMsg);
         } else {
@@ -842,7 +837,7 @@ if (!org.gigapan.timelapse.Timelapse) {
         var format;
 
         if ($thumbnailVideoSelector.hasClass('selected')) {
-          format = "mp4"
+          format = "mp4";
         } else if ($thumbnailImageSelector.hasClass('selected')) {
           // Note: This means no single year gif of flows is currently supported
           if (thumbnailDurationInFrames == 1) {
@@ -1067,7 +1062,7 @@ if (!org.gigapan.timelapse.Timelapse) {
     };
 
     var handleThumbnailDurationChange = function() {
-      thumbnailDurationInFrames = Math.max(1, $endingTimeSpinner.captureTimeSpinner("value") - $startingTimeSpinner.captureTimeSpinner("value") + 1)
+      thumbnailDurationInFrames = Math.max(1, $endingTimeSpinner.captureTimeSpinner("value") - $startingTimeSpinner.captureTimeSpinner("value") + 1);
 
       if (thumbnailDurationInFrames == 1) {
         $thumbnailImageSelector.children().text("Image");
@@ -1186,7 +1181,7 @@ if (!org.gigapan.timelapse.Timelapse) {
       var desiredTime = response.args.startFrame ? timelapse.frameNumberToTime(response.args.startFrame) : undefined;
       var desiredView = response.args.boundsLTRB ? response.args.boundsLTRB + ",pts" : response.args.root.split("/#v")[1];
 
-      var shareViewOptions = {}
+      var shareViewOptions = {};
       shareViewOptions.bt = thumbnailBeginTime;
       shareViewOptions.et = thumbnailEndTime;
       shareViewOptions.ps = thumbnailPlaybackSpeed;
@@ -1249,13 +1244,11 @@ if (!org.gigapan.timelapse.Timelapse) {
           $('<td colspan="3"><a class="twitter-sharelink" data-shareurl="" title="Share on Twitter"></a><a class="fb-sharelink" data-shareurl="" title="Share on Facebook"></a></td>').appendTo(".social-media");
           $(".fb-sharelink, .twitter-sharelink").off("click");
           $(".fb-sharelink").on("click", function() {
-              var shareurl = $(this).data('shareurl');
               window.open('https://www.facebook.com/sharer.php?s=100&p[url]=' + escape(socialMediaShareLink) + '&p[title]=' + document.title, '',
               'menubar=no,toolbar=no,resizable=yes,scrollbars=yes,height=300,width=600');
               return false;
           });
           $(".twitter-sharelink").on("click", function() {
-              var shareurl = $(this).data('shareurl');
               var urlToLoad = 'https://twitter.com/intent/tweet?url=' + escape(socialMediaShareLink) + '&text=' + escape("Look at this");
               if (hashTags) {
                 urlToLoad += '&hashtags=' + escape(hashTags);

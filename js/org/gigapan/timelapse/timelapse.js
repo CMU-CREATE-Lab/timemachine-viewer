@@ -144,7 +144,6 @@ if (!window['$']) {
     var datasetType = settings["datasetType"];
     var useCustomUI = ( typeof (settings["useCustomUI"]) == "undefined") ? (settings["datasetType"] == "landsat" || settings["datasetType"] == "modis") : settings["useCustomUI"];
     var useTouchFriendlyUI = ( typeof (settings["useTouchFriendlyUI"]) == "undefined") ? false : settings["useTouchFriendlyUI"];
-    var thumbnailServerRootTileUrl = ( typeof (settings["thumbnailServerRootTileUrl"]) == "undefined") ? settings["url"] : settings["thumbnailServerRootTileUrl"];
     var useThumbnailServer = ( typeof (settings["useThumbnailServer"]) == "undefined") ? true : settings["useThumbnailServer"];
     var showSizePicker = settings["showSizePicker"] || false;
     var visualizerGeometry = {
@@ -184,7 +183,6 @@ if (!window['$']) {
 
     // DOM elements
     var dataPanesId;
-    var $previousCustomUIElements;
     var $shareViewWaypointIndexCheckbox;
     var $shareViewWaypointOnlyCheckbox;
 
@@ -364,7 +362,7 @@ if (!window['$']) {
 
     this.setMaxScale = function(newMaxScale) {
       customMaxScale = newMaxScale;
-    }
+    };
 
     this.setDoDwell = function(state) {
       loopDwell = state;
@@ -693,7 +691,7 @@ if (!window['$']) {
             setTimeout(function() {
               thisObj.play();
               doingLoopingDwell = false;
-            }, startDwell * 1000)
+            }, startDwell * 1000);
           }, endDwell * 1000);
         }
       }, 0);
@@ -705,7 +703,7 @@ if (!window['$']) {
         isMovingToWaypoint = false;
         parabolicMotionController._disableAnimation();
         parabolicMotionController = null;
-        if (!opts || opts & opts.doCallback) {
+        if (!opts || opts && opts.doCallback) {
           for (var i = parabolicMotionStoppedListeners.length - 1; i >= 0; i--) {
             parabolicMotionStoppedListeners[i]();
           }
@@ -1360,10 +1358,10 @@ if (!window['$']) {
 
 
     var _debugLogMessages = [];
-    var _debugLog = function(msg) { _debugLogMessages.push(msg); }
-    var _getDebugLog = function() { return _debugLogMessages; }
+    var _debugLog = function(msg) { _debugLogMessages.push(msg); };
+    var _getDebugLog = function() { return _debugLogMessages; };
     this.getDebugLog = _getDebugLog;
-    var _clearDebugLog = function() { _debugLogMessages = []; }
+    var _clearDebugLog = function() { _debugLogMessages = []; };
     this.clearDebugLog = _clearDebugLog;
 
     var _setNewView = function(newView, doWarp, doPlay, callBack) {
@@ -1390,7 +1388,7 @@ if (!window['$']) {
         for (var i = parabolicMotionStoppedListeners.length - 1; i >= 0; i--) {
           parabolicMotionStoppedListeners[i]();
         }
-      }
+      };
 
       if (doWarp) {
         _addViewEndChangeListener(defaultEndViewCallback);
@@ -1485,7 +1483,7 @@ if (!window['$']) {
       if (typeof(options.ps) == "undefined") {
         hashparams.ps = (thisObj.getPlaybackRate() / thisObj.getMaxPlaybackRate()) * 100;
       } else {
-        hashparams.ps = options.ps
+        hashparams.ps = options.ps;
       }
 
       // Get the layers
@@ -1510,7 +1508,7 @@ if (!window['$']) {
         // Get the begin time. Often used for looping purposes, but also for thumbnail generation when in screenshot mode
         if (typeof(options.bt) == "undefined") {
           var btFrame = 0;
-          var isStartTimeADate = (thisObj.sanitizedParseTimeGMT(thisObj.getCaptureTimes()[btFrame]) != -1)
+          var isStartTimeADate = (thisObj.sanitizedParseTimeGMT(thisObj.getCaptureTimes()[btFrame]) != -1);
           if (isStartTimeADate) {
             hashparams.bt = new Date(thisObj.getFrameEpochTime(btFrame)).toISOString().substr(0,10).replace(/-/g, "");
           } else {
@@ -1523,7 +1521,7 @@ if (!window['$']) {
         // Get the end time. Often used for looping purposes, but also for thumbnail generation when in screenshot mode
         if (typeof(options.et) == "undefined") {
           var etFrame = thisObj.getNumFrames() - 1;
-          var isEndTimeADate = (thisObj.sanitizedParseTimeGMT(thisObj.getCaptureTimes()[etFrame]) != -1)
+          var isEndTimeADate = (thisObj.sanitizedParseTimeGMT(thisObj.getCaptureTimes()[etFrame]) != -1);
           if (isEndTimeADate) {
             hashparams.et = new Date(thisObj.getFrameEpochTime(etFrame)).toISOString().substr(0,10).replace(/-/g, "").replace(/0101/g, "1231");
           } else {
@@ -1739,7 +1737,7 @@ if (!window['$']) {
       } else {
         return "";
       }
-    }
+    };
 
     this.getThumbnailOfCurrentView = function(width, height) {
       return thisObj.getThumbnailOfView(thisObj.getShareView(undefined, undefined, {ps: 0}), width, height);
@@ -2943,7 +2941,7 @@ if (!window['$']) {
       timelapse.lastFrameCompletelyDrawn = true;
       webglTimeMachineLayer.draw(timelapse.getView(), { videoTile: true, vectorTile: false });
       org.gigapan.Util.requestAnimationFrame.call(window, drawToWebgl);
-    }
+    };
 
     var refresh = function() {
       if (viewerType == "webgl" || !isFinite(view.scale))
@@ -3503,7 +3501,7 @@ if (!window['$']) {
 
     var loadNewTimelineFromObj = function(obj, newTimelineStyle) {
       currentTimelineStyle = newTimelineStyle;
-      loadNewTimelineCallback(obj)
+      loadNewTimelineCallback(obj);
     };
     this.loadNewTimelineFromObj = loadNewTimelineFromObj;
 
@@ -3592,12 +3590,12 @@ if (!window['$']) {
           timelapse: thisObj,
           canvas: canvas,
           resolutionScale: window.devicePixelRatio || 1
-        }
+        };
         var webglTimeMachineLayerOptions = {
           mediaType: mediaType,
           metadataLoadedCallback: loadVideoSetCallback,
           rootUrl : tileRootPath,
-        }
+        };
         if (cached_ajax && cached_ajax["./tm.json"]) {
           tmJSON = cached_ajax["./tm.json"];
           var datasetId = tmJSON["datasets"][0].id;
@@ -3721,7 +3719,7 @@ if (!window['$']) {
         return -1;
       }
       return epoch;
-    }
+    };
     this.sanitizedParseTimeGMT = sanitizedParseTimeGMT;
 
     var playbackTimeFromDate = function(time) {
@@ -3771,12 +3769,12 @@ if (!window['$']) {
         return 0;
       }
       return playbackTimeFromDate(parsed);
-    }
+    };
     this.playbackTimeFromShareDate = playbackTimeFromShareDate;
 
     var getFrameEpochTime = function(frame) {
       return Date.parse(new Date(captureTimes[frame].replace(/-/g, "/")));
-    }
+    };
     this.getFrameEpochTime = getFrameEpochTime;
 
     var loadVideoSetCallback = function(data) {

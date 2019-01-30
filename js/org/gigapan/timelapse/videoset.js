@@ -197,11 +197,11 @@ if (!window['$']) {
     //
     this.getCanvasContext = function() {
       return canvasContext;
-    }
+    };
 
     this.getCanvas = function() {
       return canvas;
-    }
+    };
 
     this.getCurrentVideoId = function() {
       return id;
