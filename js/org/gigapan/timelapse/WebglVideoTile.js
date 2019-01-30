@@ -82,7 +82,6 @@ function WebglVideoTile(glb, tileidx, bounds, url, defaultUrl, numFrames, fps, g
   this._textureGreenScreenFaderProgram = glb.programFromSources(WebglVideoTile.textureVertexShader,
                                                 WebglVideoTile.textureGreenScreenFragmentFaderShader);
 
-  var inset = (bounds.max.x - bounds.min.x) * 0.005;
   this._insetRectangle = glb.createBuffer(new Float32Array([0.01, 0.01,
                                                             0.99, 0.01,
                                                             0.99, 0.99,
@@ -156,7 +155,7 @@ WebglVideoTile._init = function() {
         //console.log('WebglVideoTile verbose: ' + WebglVideoTile.verbose);
       }
     });
-}
+};
 
 WebglVideoTile.prototype.
 _createTexture = function() {
@@ -169,7 +168,7 @@ _createTexture = function() {
   gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
   gl.bindTexture(gl.TEXTURE_2D, null);
   return texture;
-}
+};
 
 // Texture pipeline is 4 deep
 // 0: currently being drawn
@@ -196,11 +195,11 @@ WebglVideoTile.stats = function() {
           ', Number of seeks: ' + WebglVideoTile.totalSeekCount +
           ', Average seek duration: ' + r2(WebglVideoTile.averageSeekFrameCount()) + ' frames' +
           ', Missed frames: ' + r2(WebglVideoTile.missedFrameCount * 100 / WebglVideoTile.frameCount) + '%');
-}
+};
 
 WebglVideoTile.averageSeekFrameCount = function() {
   return WebglVideoTile.totalSeekingFrameCount / WebglVideoTile.totalSeekCount;
-}
+};
 
 WebglVideoTile.prototype.
 delete = function() {
@@ -230,7 +229,7 @@ delete = function() {
   WebglVideoTile._frameOffsetUsed[this._frameOffsetIndex] = false;
   this._frameOffsetIndex = null;
   WebglVideoTile.activeTileCount--;
-}
+};
 
 WebglVideoTile.getUnusedFrameOffsetIndex = function() {
   for (var i = 0; i < WebglVideoTile._frameOffsets.length; i++) {
@@ -240,13 +239,13 @@ WebglVideoTile.getUnusedFrameOffsetIndex = function() {
     }
   }
   throw new Error('Out of offsets because we have ' + WebglVideoTile._frameOffsets.length + ' videos');
-}
+};
 
 WebglVideoTile.prototype.
 toString = function() {
   return 'Tile ' + this._tileidx.toString() +
          ', ready: ' + this.isReady() +
-         ', seq: ' + this._frameOffsetIndex + ' (' + this._frameOffset + ')'
+         ', seq: ' + this._frameOffsetIndex + ' (' + this._frameOffset + ')';
 };
 
 WebglVideoTile.prototype.
@@ -263,7 +262,7 @@ WebglVideoTile.prototype.
 _frameIsNeeded = function(frameno, displayFrameDiscrete) {
   var future = (frameno - displayFrameDiscrete + this._nframes) % this._nframes;
   return future <= 2;
-}
+};
 
 // Flush any frames in the pipeline which aren't about to be used
 WebglVideoTile.prototype.
@@ -290,7 +289,7 @@ _flushUnneededFrames = function(displayFrameDiscrete) {
   if (changed && WebglVideoTile.verbose) {
     console.log(this._id + ': flushed frames, now ' + this._pipelineToString() + ' ' + this._computeNextCaptureFrame(displayFrameDiscrete, this._timelapse.isPaused()));
   }
-}
+};
 
 // Advance the pipeline if we're now display a frame that's at element 1
 WebglVideoTile.prototype.
@@ -314,7 +313,7 @@ _tryAdvancePipeline = function(displayFrameDiscrete) {
       console.log(this._id + ': Advancing pipeline, now ' + this._pipelineToString() + ' ' + this._computeNextCaptureFrame(displayFrameDiscrete, this._timelapse.isPaused()));
     }
   }
-}
+};
 
 WebglVideoTile.prototype.
 _frameIsInPipeline = function(frameno) {
@@ -324,7 +323,7 @@ _frameIsInPipeline = function(frameno) {
     }
   }
   return false;
-}
+};
 
 WebglVideoTile.prototype.
 _tryCaptureFrame = function(displayFrameDiscrete, actualVideoFrame, actualVideoFrameDiscrete, isPaused) {
@@ -348,7 +347,7 @@ _tryCaptureFrame = function(displayFrameDiscrete, actualVideoFrame, actualVideoF
       }
     }
   }
-}
+};
 
 WebglVideoTile.prototype.
 _checkForMissedFrame = function(displayFrameDiscrete) {
@@ -361,7 +360,7 @@ _checkForMissedFrame = function(displayFrameDiscrete) {
     this._missedFrameCount++;
   }
   this._lastDisplayFrame = displayFrameDiscrete;
-}
+};
 
 // This should always return one of
 // displayFrameDiscrete +1, +2, +3
@@ -387,13 +386,13 @@ _computeNextCaptureFrame = function(displayFrameDiscrete, isPaused) {
     }
   }
   return (displayFrameDiscrete + future) % this._nframes;
-}
+};
 
 WebglVideoTile.prototype.
 _computeCapturePriority = function(displayFrameDiscrete, actualVideoFrame,
                                    actualVideoFrameDiscrete) {
   return 1;
-}
+};
 
 // First phase of update
 // Cleans up and advances pipelines
@@ -405,7 +404,6 @@ updatePhase1 = function(displayFrame) {
 
   this._uAlpha = displayFrame - displayFrameDiscrete;
 
-  var r2 = WebglVideoTile.r2;
   // Output stats every 5 seconds
   /*if (!WebglVideoTile.lastStatsTime) {
     WebglVideoTile.lastStatsTime = performance.now();
@@ -433,7 +431,7 @@ updatePhase1 = function(displayFrame) {
   if (readyState > 1) {
     this._capturePriority = this._computeCapturePriority(displayFrameDiscrete, actualVideoFrame, actualVideoFrameDiscrete);
   }
-}
+};
 
 // Second phase of update
 // Captures frame, if desirable and time still left
@@ -599,7 +597,7 @@ updatePhase2 = function(displayFrame) {
   if (!this._ready) {
     this._timelapse.lastFrameCompletelyDrawn = false;
   }
-}
+};
 
 WebglVideoTile.prototype.
 _pipelineToString = function() {
@@ -608,9 +606,9 @@ _pipelineToString = function() {
     if (i) str += ', ';
     str += this._pipeline[i].frameno;
   }
-  str += ']'
+  str += ']';
   return str;
-}
+};
 
 WebglVideoTile.prototype.
 _captureFrame = function(captureFrameno, destIndex) {
@@ -654,7 +652,7 @@ _captureFrame = function(captureFrameno, destIndex) {
   //    WebglTimeMachinePerf.instance.recordMissedFrames(advance - 1);
   //  }
   //}
-}
+};
 
 WebglVideoTile.prototype.
 draw = function(transform) {
@@ -785,9 +783,7 @@ WebglVideoTile.update = function(tiles, transform) {
   if (si || tiles.length == 0) return;
   //WebglTimeMachinePerf.instance.startFrame();
 
-  var canvas = document.getElementById('webgl');
-
-  var fps = tiles[0]._fps
+  var fps = tiles[0]._fps;
 
   var displayFrame = this._timelapse.getCurrentTime() * fps;
 
@@ -835,7 +831,7 @@ WebglVideoTile.update = function(tiles, transform) {
     tiles[i].draw(transform);
   }
   //WebglTimeMachinePerf.instance.endFrame();
-}
+};
 
 
 // Phases = 60 / videoFPS
@@ -857,11 +853,11 @@ WebglVideoTile.computeFrameOffsets = function(phases, subbits) {
       WebglVideoTile._frameOffsets.push(0.5 + 0.5 * (p + sfrac / subphases) / phases);
     }
   }
-  WebglVideoTile._frameOffsetUsed = []
+  WebglVideoTile._frameOffsetUsed = [];
   for (var i = 0; i < WebglVideoTile._frameOffsets; i++) {
     WebglVideoTile._frameOffsetUsed.push(false);
   }
-}
+};
 
 // 3x2^4 = 48 available offsets
 // 3x2^5 = 96 available offsets

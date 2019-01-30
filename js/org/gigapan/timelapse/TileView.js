@@ -94,7 +94,7 @@ resetDimensions = function (json) {
   this._destroy();
   this._tiles = {};
   this._computeMaxLevel();
-}
+};
 
 
 TileView.prototype.
@@ -112,17 +112,17 @@ _computeMaxLevel = function() {
   } else {
     this._maxLevelOverride = undefined;
   }
-}
+};
 
 TileView.prototype.
 getWidth = function () {
   return this._panoWidth;
-}
+};
 
 TileView.prototype.
 getHeight = function () {
   return this._panoHeight;
-}
+};
 
 TileView.prototype.
 toString = function() {
@@ -131,7 +131,7 @@ toString = function() {
   msg += 'Tile size: ' + this.tileWidth + 'x' + this.tileHeight + ',  ';
   msg += 'nlevels: ' + (this._maxLevel + 1);
   return msg;
-}
+};
 
 TileView.prototype.
 _tileGeometry = function(tileidx) {
@@ -216,17 +216,17 @@ _computeVisibleTileRange = function(view, level) {
   var tilemin = this._tileidxAt(level, Math.max(0, bbox.xmin), Math.max(0, bbox.ymin));
   var tilemax = this._tileidxAt(level, Math.min(this._panoWidth - 1, bbox.xmax),
                                 Math.min(this._panoHeight - 1, bbox.ymax));
-  var ret = {min: tilemin, max: tilemax}
+  var ret = {min: tilemin, max: tilemax};
 
   return ret;
-}
+};
 
 TileView.prototype.
 _isTileVisible = function(view, tileidx) {
   var visibleRange = this._computeVisibleTileRange(view, tileidx.l);
   return visibleRange.min.r <= tileidx.r && tileidx.r <= visibleRange.max.r &&
          visibleRange.min.c <= tileidx.c && tileidx.c <= visibleRange.max.c;
-}
+};
 
 TileView.prototype.
 _addTileidx = function(tileidx) {
@@ -236,7 +236,7 @@ _addTileidx = function(tileidx) {
     this._tiles[tileidx.key].index = tileidx;
   }
   return this._tiles[tileidx.key];
-}
+};
 
 TileView.prototype.
 _deleteTile = function(tile) {
@@ -244,7 +244,7 @@ _deleteTile = function(tile) {
     tile.delete();
     delete this._tiles[tile.index.key];
   }
-}
+};
 
 TileView.prototype.
 _destroy = function() {
@@ -254,7 +254,7 @@ _destroy = function() {
     this._deleteTile(this._tiles[key]);
     delete this._tiles[key];
   }
-}
+};
 
 TileView.prototype.
 _abort = function() {
@@ -268,7 +268,7 @@ _abort = function() {
       delete this._tiles[key];
     }
   }
-}
+};
 
 TileView.prototype.
 tileInfo = function() {
@@ -278,7 +278,7 @@ tileInfo = function() {
     ret.push(tileidxs[i].toString());
   }
   return 'tileInfo: ' + ret.join(' ');
-}
+};
 
 // Find first ancestor of tileidx that's ready, and mark it as required, for now
 TileView.prototype.
@@ -292,7 +292,7 @@ _findReadyAncestor = function(tileidx) {
       return tileidx;
     }
   }
-}
+};
 
 // Find first ancestor in keys
 TileView.prototype.
@@ -306,7 +306,7 @@ _findFirstAncestorIn = function(tileidx, map) {
       return tileidx;
     }
   }
-}
+};
 
 // Record drawable videos
 // +1,1,1 -2,2,2 +(3,3,3) ^4,4,4 lower higher
@@ -420,8 +420,8 @@ update = function(transform, options) {
     tiles.push(this._tiles[keys[i]]);
   }
   this._updateTileCallback(tiles, transform, options);
-}
+};
 
 TileView.prototype.handleTileLoading = function(options) {
   this._layerDomId = options.layerDomId;
-}
+};

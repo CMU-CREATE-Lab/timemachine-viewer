@@ -63,4 +63,4 @@ TileIdx.prototype.parent = function() {
 
 TileIdx.prototype.toString = function() {
   return this.l + ',' + this.c + ',' + this.r;
-}
+};

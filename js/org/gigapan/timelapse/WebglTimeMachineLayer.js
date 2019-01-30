@@ -80,7 +80,7 @@ function WebglTimeMachineLayer(glb, canvasLayer, options) {
     });
   } else if (!this.rootUrl && this.tileRootUrl) {
     // Assume we've been given all the metadata
-    this.video_width = this.video_width || 1424
+    this.video_width = this.video_width || 1424;
     this.video_height = this.video_height || 800;
     console.assert(this.width && this.height && this.numFrames);
     this.loadMetadata();
@@ -109,7 +109,7 @@ WebglTimeMachineLayer.prototype.loadTm = function(tm) {
     dataType: 'json',
     success: this.loadR.bind(this)
   });
-}
+};
 
 // Load metadata from r.json
 WebglTimeMachineLayer.prototype.loadR = function(r) {
@@ -122,7 +122,7 @@ WebglTimeMachineLayer.prototype.loadR = function(r) {
   this.width = r.width;
   this.height = r.height;
   this.loadMetadata();
-}
+};
 
 WebglTimeMachineLayer.prototype.loadMetadata = function() {
   this.mediaType = this.mediaType || '.mp4';
@@ -205,7 +205,6 @@ WebglTimeMachineLayer.prototype.getHeight = function() {
 
 WebglTimeMachineLayer.prototype.draw = function(view, tileViewVisibility) {
   if (!this._ready) return;
-  var timelapse = this._canvasLayer.timelapse;
   var width = this._canvasLayer.canvas.width / this._canvasLayer.resolutionScale;
   var height = this._canvasLayer.canvas.height / this._canvasLayer.resolutionScale;
 
