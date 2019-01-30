@@ -642,8 +642,8 @@ if (!org.gigapan) {
     return null;
   };
 
-  // Convert relative paths to absolute ones.
-  org.gigapan.Util.relativeToAbsolutePath = function(url) {
+  // Convert relative url to an absolute one
+  org.gigapan.Util.relUrlToAbsUrlLegacy = function(url) {
     var loc = location.href;
     loc = loc.substring(0, loc.lastIndexOf('/'));
     while (/^\.*\//.test(url)) {
@@ -654,6 +654,37 @@ if (!org.gigapan) {
       url = url.substring(numToChop);
     }
     return loc + '/' + url;
+  };
+
+  // Convert relative url to an absolute one; V2
+  org.gigapan.Util.relUrlToAbsUrl = function(url) {
+    var div = document.createElement('div');
+    div.innerHTML = "<a></a>";
+    div.firstChild.href = url; // Ensures that the href is properly escaped
+    div.innerHTML = div.innerHTML; // Run the current innerHTML back through the parser
+    return div.firstChild.href;
+  }
+
+  // WebGL matrix utils for 2D
+  org.gigapan.Util.scaleMatrix = function(matrix, scaleX, scaleY) {
+    // scaling x and y, which is just scaling first two columns of matrix
+    matrix[0] *= scaleX;
+    matrix[1] *= scaleX;
+    matrix[2] *= scaleX;
+    matrix[3] *= scaleX;
+
+    matrix[4] *= scaleY;
+    matrix[5] *= scaleY;
+    matrix[6] *= scaleY;
+    matrix[7] *= scaleY;
+  };
+
+  org.gigapan.Util.translateMatrix = function(matrix, tx, ty) {
+    // translation is in last column of matrix
+    matrix[12] += matrix[0]*tx + matrix[4]*ty;
+    matrix[13] += matrix[1]*tx + matrix[5]*ty;
+    matrix[14] += matrix[2]*tx + matrix[6]*ty;
+    matrix[15] += matrix[3]*tx + matrix[7]*ty;
   };
 
   // Compute the root URL for where all the Time Machine files exist.
@@ -737,4 +768,13 @@ if (!org.gigapan) {
     var reMatch = number.toString().match(re);
     return reMatch ? parseFloat(reMatch[1]) : parseFloat(number);
   };
+
+  org.gigapan.Util.requestAnimationFrame =
+    window.requestAnimationFrame ||
+    window.mozRequestAnimationFrame ||
+    window.webkitRequestAnimationFrame ||
+    window.msRequestAnimationFrame ||
+    function (callback) {
+        setTimeout(function() { callback(Date.now()); },  1000/60);
+    }
 })();

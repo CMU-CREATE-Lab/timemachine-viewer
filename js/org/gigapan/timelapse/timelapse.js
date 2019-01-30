@@ -188,6 +188,11 @@ if (!window['$']) {
     var canvas;
     var blackFrameDetectionCanvas;
 
+    // WebGL version
+    var gl;
+    var glb;
+    var webglTimeMachineLayer;
+
     // Full screen variables
     var fullScreen = false;
     var videoStretchRatio = 1;
@@ -211,6 +216,7 @@ if (!window['$']) {
     var isChrome = UTIL.isChrome();
     var didFirstTimeOnLoad = false;
     var isMovingToWaypoint = false;
+    var isSpinnerShowing = false;
 
     // Viewer
     var viewerDivId = timeMachineDivId + " .player";
@@ -279,20 +285,15 @@ if (!window['$']) {
     var customMaxScale;
     var keysDown = [];
     var shareViewLoopInterval;
-
     var timePadding = isIE ? 0.3 : 0.0;
     // animateRate in milliseconds, 40 means 25 FPS
     var animateRate = 40;
     if (isHyperwall)
-      animateRate = 10;
-    else if (viewerType == "webgl")
-      animateRate = 10;
-    // animationFractionPerSecond, 5 means goes 500% toward goal in 1 sec
-    var animationFractionPerSecond = 5;
-    if (isHyperwall)
       animateRate = 3;
     else if (viewerType == "webgl")
       animateRate = 12;
+    // animationFractionPerSecond, 5 means goes 500% toward goal in 1 sec
+    var animationFractionPerSecond = 5;
     // minTranslateSpeedPixelsPerSecond in pixels
     var minTranslateSpeedPixelsPerSecond = isHyperwall ? 25 : 25;
     // minZoomSpeedPerSecond in log2 scale
@@ -2035,10 +2036,25 @@ if (!window['$']) {
     };
     this.getDatasetJSON = _getDatasetJSON;
 
+    var _setDatasetJSON = function(json) {
+      datasetJSON = json;
+    };
+    this.setDatasetJSON = _setDatasetJSON;
+
     var _getTmJSON = function() {
       return tmJSON;
     };
     this.getTmJSON = _getTmJSON;
+
+    var _setTmJSON = function(json) {
+      tmJSON = json;
+    };
+    this.setTmJSON = _setTmJSON;
+
+    var _isSpinnerShowing = function() {
+      return isSpinnerShowing;
+    };
+    this.isSpinnerShowing = _isSpinnerShowing;
 
     var _fullScreen = function() {
       var viewerDiv = $('#' + viewerDivId)[0];
@@ -2224,6 +2240,10 @@ if (!window['$']) {
       // Rescale the canvas if we are on a screen that has a pixel ratio > 1
       if (pixelRatio > 1 && viewerType != "video")
         canvas.getContext('2d').scale(pixelRatio, pixelRatio);
+
+      if (viewerType == "webgl") {
+        gl.viewport(0, 0, viewportWidth * pixelRatio, viewportHeight * pixelRatio);
+      }
 
       // Stretching the video affects the home view,
       // set home view to undefined so that it gets recomputed
@@ -2914,6 +2934,13 @@ if (!window['$']) {
       setCaptureTimes(tmJSON["capture-times"]);
     };
 
+    var drawToWebgl = function() {
+      gl.clear(gl.COLOR_BUFFER_BIT);
+      timelapse.lastFrameCompletelyDrawn = true;
+      webglTimeMachineLayer.draw(timelapse.getView(), { videoTile: true, vectorTile: false });
+      org.gigapan.Util.requestAnimationFrame.call(window, drawToWebgl);
+    }
+
     var refresh = function() {
       if (viewerType == "webgl" || !isFinite(view.scale))
         return;
@@ -3347,7 +3374,7 @@ if (!window['$']) {
             didFirstTimeOnLoad = true;
             // Fire onTimeMachinePlayerReady the first time the page is loaded.
             if (typeof (settings["onTimeMachinePlayerReady"]) === "function") {
-              settings["onTimeMachinePlayerReady"](timeMachineDivId);
+              settings["onTimeMachinePlayerReady"](timeMachineDivId, thisObj);
             }
           }
           hideSpinner(viewerDivId);
@@ -3427,8 +3454,12 @@ if (!window['$']) {
 
       // The UI is now ready and we can display it
       $("#" + viewerDivId).css("visibility", "visible");
-      if (viewerType == "webgl")
+
+      // There is no _makeVideoVisibleListener callback for webgl, so we have to do this here.
+      // TODO: webglVideoTile should tell us more about ready status besides initial metadata loading.
+      if (viewerType == "webgl") {
         hideSpinner(viewerDivId);
+      }
 
       // Force initial focus on viewer only if we are not inside an iframe
       if (window && (window.self === window.top)) {
@@ -3437,10 +3468,11 @@ if (!window['$']) {
 
       // If webgl, we need to force trigger this since no video tags will fire this.
       if (viewerType == "webgl") {
+        loadSharedDataFromUnsafeURL(UTIL.getUnsafeHashString());
         didFirstTimeOnLoad = true;
         // Fire onTimeMachinePlayerReady the first time the page is loaded.
         if (typeof (settings["onTimeMachinePlayerReady"]) === "function") {
-          settings["onTimeMachinePlayerReady"](timeMachineDivId);
+          settings["onTimeMachinePlayerReady"](timeMachineDivId, thisObj);
         }
       }
     }
@@ -3506,7 +3538,6 @@ if (!window['$']) {
     };
 
     var loadTimelapse = function(url, desiredView, desiredTime, preserveViewAndTime, desiredDate, onLoadCompleteCallBack) {
-
       if (preserveViewAndTime) {
         // TODO: Assumes dates of the form yyyy-mm-dd hh:mm:ss
         desiredDate = thisObj.getCurrentCaptureTime().substr(11, 8);
@@ -3550,17 +3581,52 @@ if (!window['$']) {
       // Set the call back
       onNewTimelapseLoadCompleteCallBack = onLoadCompleteCallBack;
 
-      UTIL.ajax("json", settings["url"], "tm.json" + getMetadataCacheBreaker(), loadTimelapseCallback);
+      tileRootPath = settings["url"];
+
+      if (typeof(EARTH_TIMELAPSE_CONFIG) === "undefined" && viewerType == "webgl") {
+        var canvasLayer = {
+          timelapse: thisObj,
+          canvas: canvas,
+          resolutionScale: window.devicePixelRatio || 1
+        }
+        var webglTimeMachineLayerOptions = {
+          mediaType: mediaType,
+          metadataLoadedCallback: loadVideoSetCallback,
+          rootUrl : tileRootPath,
+        }
+        if (cached_ajax && cached_ajax["./tm.json"]) {
+          tmJSON = cached_ajax["./tm.json"];
+          var datasetId = tmJSON["datasets"][0].id;
+          datasetJSON = cached_ajax["./" + datasetId + "/r.json"];
+          if (datasetJSON) {
+            webglTimeMachineLayerOptions = {
+              numFrames: datasetJSON.frames,
+              fps: datasetJSON.fps,
+              width: datasetJSON.width,
+              height: datasetJSON.height,
+              video_width: datasetJSON.video_width,
+              video_height: datasetJSON.video_height,
+              mediaType: mediaType,
+              metadataLoadedCallback: loadVideoSetCallback,
+              tileRootUrl: tileRootPath + datasetId
+            };
+          }
+        }
+        webglTimeMachineLayer = new WebglTimeMachineLayer(glb, canvasLayer, webglTimeMachineLayerOptions);
+        org.gigapan.Util.requestAnimationFrame.call(window, drawToWebgl);
+      } else {
+        UTIL.ajax("json", settings["url"], "tm.json" + getMetadataCacheBreaker(), loadTimelapseCallback);
+      }
     };
     this.loadTimelapse = loadTimelapse;
 
     var loadTimelapseCallback = function(json) {
-      tmJSON = json;
-      // Assume tiles and json are on same host
-      tileRootPath = settings["url"];
-
+      if (json) {
+        tmJSON = json;
+      }
       validateAndSetDatasetIndex(datasetLayer);
       var path = tmJSON["datasets"][datasetIndex]['id'] + "/";
+      // Assume tiles and json are on same host
       datasetPath = settings["url"] + path;
       UTIL.ajax("json", settings["url"], path + "r.json" + getMetadataCacheBreaker(), loadVideoSetCallback);
     };
@@ -3710,8 +3776,9 @@ if (!window['$']) {
     this.getFrameEpochTime = getFrameEpochTime;
 
     var loadVideoSetCallback = function(data) {
-      datasetJSON = data;
-
+      if (data) {
+        datasetJSON = data;
+      }
       // We are loading a new timelapse and in order for code that should only be run when the
       // first video of a timelapse is displayed, we need to reset the firstVideoId to the next
       // id that the videoset class will use. See _makeVideoVisibleListener() where we check for
@@ -3787,12 +3854,22 @@ if (!window['$']) {
         canvas = document.createElement('canvas');
         canvas.id = videoDivId + "_canvas";
         videoDiv.appendChild(canvas);
-        blackFrameDetectionCanvas = document.createElement('canvas');
-        blackFrameDetectionCanvas.id = videoDivId + "_canvas_blackFrameDetection";
-        blackFrameDetectionCanvas.style.display = "none";
-        if (blackFrameDetection)
+        var blackFrameDetectionCanvasId;
+        if (blackFrameDetection) {
+          blackFrameDetectionCanvas = document.createElement('canvas');
+          blackFrameDetectionCanvas.id = videoDivId + "_canvas_blackFrameDetection";
+          blackFrameDetectionCanvasId = blackFrameDetectionCanvas.id;
+          blackFrameDetectionCanvas.style.display = "none";
           videoDiv.appendChild(blackFrameDetectionCanvas);
-        videoset = new org.gigapan.timelapse.Videoset(viewerDivId, videoDivId, thisObj, canvas.id, blackFrameDetectionCanvas.id);
+        }
+        if (viewerType == "webgl") {
+          // Note: The "experimental" prefix is not necessary these day and is synonymous with the non-prefix.
+          // That said, as of Jan 2017 Edge still required this prefix. Whether this is still the case should
+          // be investigated.
+          gl = canvas.getContext('experimental-webgl');
+          glb = new Glb(gl);
+        }
+        videoset = new org.gigapan.timelapse.Videoset(viewerDivId, videoDivId, thisObj, canvas.id, blackFrameDetectionCanvasId);
       }
 
       // Setup viewport event handlers.
@@ -3865,12 +3942,14 @@ if (!window['$']) {
 
     var showSpinner = function(viewerDivId) {
       UTIL.log("showSpinner");
+      isSpinnerShowing = true;
       $("#" + viewerDivId + " .spinnerOverlay").show();
     };
     this.showSpinner = showSpinner;
 
     var hideSpinner = function(viewerDivId) {
       UTIL.log("hideSpinner");
+      isSpinnerShowing = false;
       $("#" + viewerDivId + " .spinnerOverlay").hide();
     };
     this.hideSpinner = hideSpinner;
@@ -3885,13 +3964,7 @@ if (!window['$']) {
     // Constructor code
     //
 
-    // TODO: This is because of goofy user agent for Google hyperwall
-    if (settings["viewerType"] == "webgl") {
-      UTIL.setMediaType(settings["mediaType"]);
-      browserSupported = true;
-    } else {
-      browserSupported = UTIL.browserSupported(settings["mediaType"]);
-    }
+    browserSupported = UTIL.browserSupported(settings["mediaType"]);
 
     if (!browserSupported) {
       UTIL.ajax("html", rootAppURL, "templates/browser_not_supported_template.html", function(html) {

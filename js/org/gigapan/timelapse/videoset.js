@@ -392,7 +392,7 @@ if (!window['$']) {
           // The src may be a relative path. When we later call video.src we always get an absolute path,
           // so we need to ensure that we always store absolute paths.
           if (src.substring(0, 2) == "./" || src.substring(0, 3) == "../") {
-            src = UTIL.relativeToAbsolutePath(src);
+            src = UTIL.relUrlToAbsUrlLegacy(src);
           }
           if (activeVideoSrcList[src]) {
             UTIL.log("Video found in local storage, adding cache breaker: " + src);
