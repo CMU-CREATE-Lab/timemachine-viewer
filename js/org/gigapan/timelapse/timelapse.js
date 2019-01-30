@@ -2240,10 +2240,9 @@ if (!window['$']) {
       });
 
       // Rescale the canvas if we are on a screen that has a pixel ratio > 1
-      if (pixelRatio > 1 && viewerType != "video")
+      if (pixelRatio > 1 && viewerType == "canvas") {
         canvas.getContext('2d').scale(pixelRatio, pixelRatio);
-
-      if (viewerType == "webgl") {
+      } else if (viewerType == "webgl") {
         gl.viewport(0, 0, viewportWidth * pixelRatio, viewportHeight * pixelRatio);
       }
 
