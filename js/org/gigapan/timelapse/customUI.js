@@ -692,7 +692,7 @@ if (!org.gigapan.timelapse.Timelapse) {
       // Play and stop button
       $customControl.append('<button class="customPlay" title="Play"></button>');
 
-      $customPlay = $("#" + viewerDivId + " .customPlay");
+      $customPlay = $("#" + timeMachineDivId + " .customPlay");
 
       if (useTouchFriendlyUI) {
         $customPlay.addClass("customPlay-touchFriendly");
@@ -910,10 +910,10 @@ if (!org.gigapan.timelapse.Timelapse) {
     this.createCustomTimeline = createCustomTimeline;
 
     var resetCustomTimeline = function() {
-      $("#" + viewerDivId + " .customTimeline").remove();
-      $("#" + viewerDivId + " .timeText").remove();
+      $("#" + timeMachineDivId + " .customTimeline").remove();
+      $("#" + timeMachineDivId + " .timeText").remove();
       createCustomTimeline();
-      $customPlay = $("#" + viewerDivId + " .customPlay");
+      $customPlay = $("#" + timeMachineDivId + " .customPlay");
       if (!timelapse.isPaused() && !timelapse.isDoingLoopingDwell()) {
         setPlaybackButtonIcon("play");
       }
