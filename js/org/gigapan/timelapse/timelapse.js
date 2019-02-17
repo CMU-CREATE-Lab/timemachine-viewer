@@ -3704,7 +3704,7 @@ if (!window['$']) {
 
       // Handle case where our capture times are assumed to be Eastern Time but it is not indicated as such.
       // Only when we are not showing local time did we actually indicate this in the capture time string, so append
-      // the timezone info if we encouter this.
+      // the timezone info if we encounter this.
       if (captureTimes[0].match(/\d\d:\d\d(:\d\d)?\s*(PM|AM)?$/)) {
         // Firefox (and maybe others) needs to have the date use slashes if we are appending the following time zone string.
         time = time.replace(/-/g,"\/");
