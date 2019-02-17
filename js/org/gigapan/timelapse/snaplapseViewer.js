@@ -134,6 +134,8 @@ if (!org.gigapan.timelapse.snaplapse) {
     var useRecordingMode = false;
     var isAutoModeRunning = false;
     var isMobileDevice = UTIL.isMobileDevice();
+    var forceAutoModeStart = false;
+    var isLoadingWaypoints = false;
 
     // DOM elements
     var composerDivId = snaplapse.getComposerDivId();
@@ -1017,6 +1019,7 @@ if (!org.gigapan.timelapse.snaplapse) {
                 addSnaplapseKeyframeListItem(keyframe, insertionIndex, true, keyframes, loadKeyframesLength);
               if (insertionIndex == loadKeyframesLength - 1) {
                 // Loading completed
+                isLoadingWaypoints = false;
                 $(".loadingOverlay").remove();
                 $(document.body).css("cursor", "default");
                 if (usePresentationSlider) {
@@ -1103,6 +1106,7 @@ if (!org.gigapan.timelapse.snaplapse) {
               }
             }, waitTime);
           };
+          isLoadingWaypoints = true;
           // Handle next keyframe loading
           if (uiEnabled && !useThumbnailServer) {
             timelapse.warpToBoundingBox(keyframe['bounds']);
@@ -1406,7 +1410,7 @@ if (!org.gigapan.timelapse.snaplapse) {
 
       $thumbnailButton.click(function(event) {
         clearAutoModeTimeout();
-        wayPointClickedByAutoMode = (event.pageX == 0 && event.pageY == 0) ? true : false;
+        wayPointClickedByAutoMode = (!event.pageX && !event.pageY) ? true : false;
         if (wayPointClickedByAutoMode) isAutoModeRunning = true;
         else isAutoModeRunning = false;
 
@@ -1957,7 +1961,15 @@ if (!org.gigapan.timelapse.snaplapse) {
           listeners[i]();
         }
       }
-      runAutoMode();
+      if (isLoadingWaypoints) {
+        // A set of waypoints should already be loaded by this point, but if not then they
+        // should be in the process of loading if we find ourselves here. The first waypoint
+        // will already have been triggered, so we manually increment to prepare for the next
+        // automode click.
+        currentAutoModeWaypointIdx++;
+      } else {
+        runAutoMode();
+      }
     };
     this.initializeAndRunAutoMode = initializeAndRunAutoMode;
 
@@ -1996,11 +2008,14 @@ if (!org.gigapan.timelapse.snaplapse) {
 
     var triggerAutoModeClick = function() {
       currentAutoModeWaypointIdx++;
-      if (currentAutoModeWaypointIdx >= timelapse.getSnaplapseForPresentationSlider().getNumKeyframes()) {
+      var numKeyframes = timelapse.getSnaplapseForPresentationSlider().getNumKeyframes();
+      if (currentAutoModeWaypointIdx >= numKeyframes && numKeyframes > 0) {
         currentAutoModeWaypointIdx = 0;
       }
       var waypoint = $("#" + timeMachineDivId).parent().find(".snaplapse_keyframe_list").children().eq(currentAutoModeWaypointIdx).children()[0];
-      waypoint.click();
+      if (waypoint) {
+        waypoint.click();
+      }
     };
 
     this.getKeyframeContainer = function() {
