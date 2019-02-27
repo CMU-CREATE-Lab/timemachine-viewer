@@ -1488,12 +1488,8 @@ if (!window['$']) {
 
       // Get the layers
       if (typeof(options.l) == "undefined") {
-        var selectedLayers = $("#layers-list, .ui-multiselect-checkboxes").find("input:checked");
-        if (selectedLayers.length) {
-          var layers = $.map(selectedLayers, function(obj) {
-            return $(obj).parent("label").attr("name");
-          });
-          hashparams.l = String(layers);
+        if (activeEarthTimeLayers) {
+          hashparams.l = activeEarthTimeLayers.join(",");
         }
       } else {
         hashparams.l = options.l;
