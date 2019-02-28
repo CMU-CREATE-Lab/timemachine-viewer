@@ -1487,10 +1487,10 @@ if (!window['$']) {
       }
 
       // Get the layers
-      if (typeof(activeEarthTimeLayers) != "undefined") {
-        hashparams.l = activeEarthTimeLayers.join(",");
-      } else if (typeof(options.l) != "undefined") {
+      if (typeof(options.l) != "undefined") {
         hashparams.l = options.l;
+      } else if (typeof(activeEarthTimeLayers) != "undefined") {
+        hashparams.l = activeEarthTimeLayers.join(",");
       }
 
       if (hashparams.ps == 0) {
