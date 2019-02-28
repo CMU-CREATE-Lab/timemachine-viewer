@@ -1408,9 +1408,16 @@ if (!org.gigapan.timelapse.snaplapse) {
 
       var $thumbnailButton = $("#" + thumbnailButtonId);
 
-      $thumbnailButton.click(function(event) {
+      $thumbnailButton.click(function(event, customData) {
         clearAutoModeTimeout();
-        wayPointClickedByAutoMode = (!event.pageX && !event.pageY) ? true : false;
+        if (customData && customData.fromKeyboard) {
+          wayPointClickedByAutoMode = false;
+        } else if (!event.pageX && !event.pageY) {
+          wayPointClickedByAutoMode = true;
+        } else {
+          wayPointClickedByAutoMode = false;
+        }
+
         if (wayPointClickedByAutoMode) isAutoModeRunning = true;
         else isAutoModeRunning = false;
 
