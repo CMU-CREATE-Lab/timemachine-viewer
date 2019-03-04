@@ -340,6 +340,10 @@ if (!window['$']) {
       video.active = true;
       video.ready = false;
       video.muted = true;
+      video.disableRemotePlayback = true;
+      if (isMobileSupported) {
+        video.autoplay = true;
+      }
       video.playsinline = true;
       // The attribute should be all lowercase per the Apple docs, but apparently it needs to be camelcase.
       // Leaving both in just in case.
@@ -771,7 +775,7 @@ if (!window['$']) {
             video.playPromise = undefined;
           }
         }).catch(function (error) {
-          UTIL.error(error);
+          //UTIL.error(error);
         });
       }
     };

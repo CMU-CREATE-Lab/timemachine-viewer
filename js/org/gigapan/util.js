@@ -78,16 +78,17 @@ if (!org.gigapan) {
   var isMSIEUserAgent = navigatorUserAgent.match(/MSIE|Trident|Edge/) != null;
   var matchIEPre11VersionString = navigatorUserAgent.match(/MSIE\s([\d]+)/);
   var isIEEdgeUserAgent = !!(isMSIEUserAgent && navigatorUserAgent.match(/Edge\/([\d]+)/));
+  var isIE11UserAgent = !!(isMSIEUserAgent && !!window.MSInputMethodContext && !isIEEdgeUserAgent)
   var isIE9UserAgent = !!(isMSIEUserAgent && matchIEPre11VersionString && parseInt(matchIEPre11VersionString[1]) == 9);
-  // The Edge (IE 12+) user agent actually has the word "Chrome" in it.
-  var isChromeUserAgent = navigatorUserAgent.match(/Chrome/) != null && !isMSIEUserAgent;
+  var isOperaLegacyUserAgent = typeof (window.opera) !== "undefined";
+  var isOperaUserAgent = navigatorUserAgent.match(/OPR/) != null;
+  // The string "Chrome" is found in many user agents of browsers that are not truly Chrome
+  var isChromeUserAgent = navigatorUserAgent.match(/Chrome/) != null && !isMSIEUserAgent && !isOperaUserAgent;
   var isMac = navigatorUserAgent.match(/Macintosh/) != null;
   var matchChromeVersionString = navigatorUserAgent.match(/Chrome\/([0-9.]+)/);
   // The Chrome and Edge (IE 12+) user agents actually have the word "Safari" in it.
   var isSafariUserAgent = navigatorUserAgent.match(/Safari/) != null && !isChromeUserAgent && !isMSIEUserAgent;
   var isFirefoxUserAgent = navigatorUserAgent.match(/Firefox/) != null;
-  var isOperaLegacyUserAgent = typeof (window.opera) !== "undefined";
-  var isOperaUserAgent = navigatorUserAgent.match(/OPR/) != null;
   var isSilkUserAgent = navigatorUserAgent.match(/Silk/) != null;
   var isMobileIEEdgeUserAgent = navigatorUserAgent.match(/EdgA/) != null;
   var isChromeOS = navigatorUserAgent.match(/CrOS/) != null;
@@ -100,17 +101,14 @@ if (!org.gigapan) {
   var isSupportedIOSVersion = isIOSDevice && parseInt(matchIOSVersionString[1]) >= 10;
   // Chrome 53 is the first version to support autoplay of videos on mobile.
   // Chrome 54 added background playback of media, which shouldn't be relevant to our needs but it might be.
-  var isSupportedChromeMobileVersion = isChromeUserAgent && parseInt(matchChromeVersionString[1]) >= 54;
+  var isSupportedChromeMobileVersion = matchChromeVersionString && matchChromeVersionString.length > 1 && parseInt(matchChromeVersionString[1]) >= 54;
+  var isAndroidDevice = navigatorUserAgent.match(/Android/) != null;
   var matchAndroidVersionString = navigatorUserAgent.match(/Android (\d+(?:\.\d+){1,2})/);
-  // There's no good way to detect Android devices that have powerful gpus/cpus so look at screen resolution and then combine that with Android version check further below.
-  var minAndroidResolutionInPixelsForCanvasOnOldDevices = 600*1024;
-  var currentDeviceResolutionInPixels = window.screen.width * window.screen.height;
-  var isSupportedFirefoxMobileAndroid = matchAndroidVersionString && parseInt(matchAndroidVersionString[1]) > 4;
+  // 4.4 is technically the minimum version that supports the required video related policies. For technical reasons though, we ask for latest Lollipop or later in the hopes of getting better hardware.
+  var isSupportedAndroidVersion = isAndroidDevice && parseFloat(matchAndroidVersionString[1]) >= 5.1
 
   var mediaType = null;
-  // Force Safari on mobile to use canvas: Strange jitter/zoom with video tag
-  // Force Firefox on mobile to use video tag: Throws an "exception component is not available" error when drawing a video to canvas
-  var viewerType = ((isSafariUserAgent && !isMobileDevice) || (isFirefoxUserAgent && isMobileDevice) || (isChromeOS && parseInt(matchChromeVersionString[1]) < 54) || (matchAndroidVersionString && parseInt(matchAndroidVersionString[1]) < 6 && currentDeviceResolutionInPixels > minAndroidResolutionInPixelsForCanvasOnOldDevices)) ? "video" : "canvas";
+  var viewerType;
   var rootAppURL = computeRootAppURL();
   var supportedMediaTypes = [];
   var scrollBarWidth = null;
@@ -130,13 +128,21 @@ if (!org.gigapan) {
   };
 
   org.gigapan.Util.isMobileSupported = function() {
-    //// The following mobile browsers do not currently support autoplay of videos
-    // Opera Mobile
-    // Samsung Internet
-    //// The following mobile browsers are failing to display the video, though autoplay is supported
-    // Microsoft Edge Mobile
-    // Firefox Mobile on Android <= 4.4
-    return isMobileDevice && (isSupportedIOSVersion || (isSupportedChromeMobileVersion && !isOperaUserAgent && !isMobileIEEdgeUserAgent && !isSamsungInternetUserAgent) || (isFirefoxUserAgent && isSupportedFirefoxMobileAndroid));
+    // Opera Mobile works as of Mar 2019. This wasn't the case before but as of v50 it does work.
+    // MS Edge Mobile is working on Android as of Mar 2019. This wasn't the case before but as of v42 it does work.
+    // Note that MS Edge seems to perform better in video tag mode
+
+    /* The following mobile browsers do not currently support autoplay of videos:
+     *   - Samsung Internet (Last checked Mar 2019)
+     */
+    var isSupported = false;
+    if (isMobileDevice && (isSupportedIOSVersion || isSupportedAndroidVersion)) {
+      isSupported = true;
+      if ((isChromeUserAgent && !isSupportedChromeMobileVersion) || isSamsungInternetUserAgent) {
+        isSupported = false;
+      }
+    }
+    return isSupported;
   };
 
   org.gigapan.Util.isPointerDevice = function() {
@@ -294,6 +300,9 @@ if (!org.gigapan) {
   };
 
   org.gigapan.Util.getViewerType = function() {
+    if (!viewerType) {
+      viewerType = computeViewerType();
+    }
     return viewerType;
   };
 
@@ -690,6 +699,28 @@ if (!org.gigapan) {
     matrix[14] += matrix[2]*tx + matrix[6]*ty;
     matrix[15] += matrix[3]*tx + matrix[7]*ty;
   };
+
+  function computeViewerType() {
+    var computedViewerType;
+    var isWebGLSupported = org.gigapan.Util.isWebGLSupported();
+
+    // Force Safari to use canvas. Strange jitter/zoom with video tag and webgl performance is questionable. (20190303)
+    // Force Firefox on mobile to use video tag: Throws an "exception component is not available" error when drawing a video to canvas. (20190303)
+    // Even with video tag, Firefox mobile still flickers.
+    // Force MS Edge mobile to use video tag. Seems to be less flicker when doing that. (20190303)
+    // Force IE 11 to canvas, despite it having basic webgl support. Because it fails to support CORS with webgl, we cannot make use of it. (20190303)
+
+    if ((isFirefoxUserAgent && isMobileDevice) ||
+        (isMobileIEEdgeUserAgent && isMobileDevice) ||
+        (isChromeOS && parseInt(matchChromeVersionString[1]) < 54)) {
+          computedViewerType = "video";
+        } else if (isWebGLSupported && !isMobileDevice && !isSafariUserAgent && !isIE11UserAgent) {
+          computedViewerType = "canvas";
+        } else {
+          computedViewerType = "canvas";
+        }
+    return computedViewerType;
+  }
 
   // Compute the root URL for where all the Time Machine files exist.
   // Note: Needs to be run when loading this file or the returned path

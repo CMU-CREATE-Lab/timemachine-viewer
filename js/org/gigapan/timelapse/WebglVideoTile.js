@@ -91,23 +91,19 @@ function WebglVideoTile(glb, tileidx, bounds, url, defaultUrl, numFrames, fps, g
                                                        0, 1,
                                                        1, 1]));
 
-  // Mobile uses TimeMachine canvas to render the videos
-  if (this._UTIL.isMobileDevice()) {
-    this._video = {};
-  } else {
-    this._video = document.createElement('video');
-    // If tile 404's, replace with defaultUrl.  This lets us remove e.g. all the
-    // sea tiles and replace with a single default tile.
-    this._video.addEventListener('error', function(event) {
-      if (self._video) {
-        if (self._video.networkState == HTMLVideoElement.NETWORK_NO_SOURCE &&
-            self._video.src != defaultUrl) {
-          self._video.src = defaultUrl;
-        }
+  this._video = document.createElement('video');
+  // If tile 404's, replace with defaultUrl.  This lets us remove e.g. all the
+  // sea tiles and replace with a single default tile.
+  this._video.addEventListener('error', function(event) {
+    if (self._video) {
+      if (self._video.networkState == HTMLVideoElement.NETWORK_NO_SOURCE &&
+          self._video.src != defaultUrl) {
+        self._video.src = defaultUrl;
       }
-    });
-  }
+    }
+  });
   this._video.crossOrigin = "anonymous";
+  this._video.disableRemotePlayback = true;
   this._video.muted = true;
   this._video.playsinline = true;
   // The attribute should be all lowercase per the Apple docs, but apparently it needs to be camelcase.
@@ -203,9 +199,6 @@ WebglVideoTile.averageSeekFrameCount = function() {
 
 WebglVideoTile.prototype.
 delete = function() {
-  // Mobile uses TimeMachine canvas to render the videos
-  if (this._UTIL.isMobileDevice()) return;
-
   // TODO: recycle texture
   if (this._videoPlayPromise !== undefined) {
     var that = this;
