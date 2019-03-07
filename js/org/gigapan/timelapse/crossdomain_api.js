@@ -42,6 +42,11 @@ function setupPostMessageHandlers() {
     post("timemachine-is-supported", org.gigapan.Util.browserSupported());
   });
 
+  // Handles the cross-domain iframe request to see whether the user is on a mobile device
+  pm.bind("timemachine-is-mobile", function() {
+    post("timemachine-is-mobile", org.gigapan.Util.isMobileDevice());
+  });
+
   // Handles the cross-domain iframe request to send the current view of a time machine.
   pm.bind("timemachine-get-current-view", function() {
     if (timelapse)
