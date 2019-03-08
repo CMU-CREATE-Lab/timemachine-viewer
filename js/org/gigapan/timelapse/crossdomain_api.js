@@ -48,9 +48,14 @@ function setupPostMessageHandlers() {
     post("timemachine-is-supported", org.gigapan.Util.browserSupported());
   });
 
-  // Handles the cross-domain iframe request to see whether the user is on a mobile device
+  // Handles the cross-domain iframe request to see whether the user is on a mobile device.
   pm.bind("timemachine-is-mobile", function() {
     post("timemachine-is-mobile", org.gigapan.Util.isMobileDevice());
+  });
+
+  // Handles the cross-domain iframe request to see whether the user browser/OS combo supports webgl.
+  pm.bind("timemachine-is-webgl-supported", function() {
+    post("timemachine-is-webgl-supported", org.gigapan.Util.isWebGLSupported());
   });
 
   // Handles the cross-domain iframe request to send the current view of a time machine.
