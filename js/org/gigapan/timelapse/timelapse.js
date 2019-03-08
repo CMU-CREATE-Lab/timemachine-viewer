@@ -117,7 +117,12 @@ if (!window['$']) {
 (function() {
   var UTIL = org.gigapan.Util;
   org.gigapan.timelapse.Timelapse = function(timeMachineDivId, settings) {
+    // TODO: revist in regards to name spacing, though legacy support still depends upon this global state
     availableTimelapses.push(this);
+    // TODO: revist in regards to name spacing, though legacy support still depends upon this global state
+    if (settings["enablePostMessageAPI"] && typeof(setupPostMessageHandlers) === "function") {
+      setupPostMessageHandlers();
+    }
 
     // Settings
     var isHyperwall = settings["isHyperwall"] || false;

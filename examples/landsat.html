@@ -67,12 +67,14 @@
           mediaType: ".mp4",
           apiKeys: {'googleMaps': ''},
           playOnLoad: true,
-          onTimeMachinePlayerReady: function(viewerDivId) {
-            setupPostMessageHandlers();
-            timelapse.getSnaplapseForPresentationSlider().getSnaplapseViewer().addEventListener("slide-changed", function(waypoint) {
+          enablePostMessageAPI: true,
+          onTimeMachinePlayerReady: function(viewerDivId, timelapseObj) {
+            // Example way to send the waypoint title back to the parent frame when a waypoint is clicked
+            timelapseObj.getSnaplapseForPresentationSlider().getSnaplapseViewer().addEventListener("slide-changed", function(waypoint) {
               post("from-timemachine-slide-changed", waypoint.title);
             });
-            //timelapse.loadSharedDataFromUnsafeURL("#tour=EEDkDAVnCdAw_SiI__DkDAFtUaZ_eRrM__DkDAq6saZGdRlQ__BkDACrDZB9QQxS__Untitled_B", true);
+            // Example way to load a tour
+            //timelapseObj.loadSharedDataFromUnsafeURL("#tour=EEDkDAVnCdAw_SiI__DkDAFtUaZ_eRrM__DkDAq6saZGdRlQ__BkDACrDZB9QQxS__Untitled_B", true);
           },
           scaleBarOptions: {
             scaleBarDiv: "scaleBar1"

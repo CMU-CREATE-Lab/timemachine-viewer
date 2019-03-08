@@ -83,8 +83,9 @@
           startEditorFromPresentationMode: true,
           mediaType: ".mp4",
           showThumbnailTool: true,
-          onTimeMachinePlayerReady: function(viewerDivId) {
-            setupPostMessageHandlers();
+          enablePostMessageAPI: true,
+          onTimeMachinePlayerReady: function(viewerDivId, timelapseObj) {
+            // Add here
           },
           disableTourLooping: true,
           datasetType: "breathecam",

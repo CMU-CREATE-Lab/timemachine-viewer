@@ -74,8 +74,9 @@
           enableEditor: true,
           enablePresentationSlider: true,
           datasetType: "landsat",
-          onTimeMachinePlayerReady: function(viewerDivId) {
-            setupPostMessageHandlers();
+          enablePostMessageAPI: true,
+          onTimeMachinePlayerReady: function(viewerDivId, timelapseObj) {
+            // Add here
           },
           scaleBarOptions: {
             scaleBarDiv: "scaleBar1"

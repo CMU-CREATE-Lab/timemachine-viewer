@@ -78,8 +78,9 @@
           showEditorOnLoad: true,
           useCustomUI: false,
           showThumbnailTool: true,
-          onTimeMachinePlayerReady: function(viewerDivId) {
-            setupPostMessageHandlers();
+          enablePostMessageAPI: true,
+          onTimeMachinePlayerReady: function(viewerDivId, timelapseObj) {
+            // Add here
           },
           scaleBarOptions: {
             scaleBarDiv: "scaleBar1"

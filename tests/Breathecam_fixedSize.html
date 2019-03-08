@@ -65,11 +65,12 @@
         var settings = {
           url: url,
           showFullScreenBtn: false,
-          enableEditor: true,
+          enableEditor: false,
           enablePresentationSlider: true,
           mediaType: ".mp4",
-          onTimeMachinePlayerReady: function(viewerDivId) {
-            setupPostMessageHandlers();
+          enablePostMessageAPI: true,
+          onTimeMachinePlayerReady: function(viewerDivId, timelapseObj) {
+            // Add here
           },
           disableTourLooping: true,
           startEditorFromPresentationMode: true,

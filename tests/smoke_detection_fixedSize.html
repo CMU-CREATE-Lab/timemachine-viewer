@@ -72,8 +72,9 @@
           mediaType: ".mp4",
           showThumbnailTool: true,
           //showEditorOnLoad: true,
-          onTimeMachinePlayerReady: function(viewerDivId) {
-            setupPostMessageHandlers();
+          enablePostMessageAPI: true,
+          onTimeMachinePlayerReady: function(viewerDivId, timelapseObj) {
+            // Load smoke data
             $.getJSON("http://tiles.cmucreatelab.org/ecam/timemachines/smoke_detection/shenango1/smoke-" + date + ".json", function(json) {
               timelapse.getTimelineMetadataVisualizer().loadMetaData(json, true, true, true);
             });

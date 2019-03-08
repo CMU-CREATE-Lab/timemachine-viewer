@@ -87,8 +87,9 @@
           enableEditor: true,
           enablePresentationSlider: true,
           enableAnnotator: true,
-          onTimeMachinePlayerReady: function(viewerDivId) {
-            setupPostMessageHandlers();
+          enablePostMessageAPI: true,
+          onTimeMachinePlayerReady: function(viewerDivId, timelapseObj) {
+            // Add here
           },
           enableContextMapOnDefaultUI: true,
           showEditorOnLoad: true,

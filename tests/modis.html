@@ -73,8 +73,9 @@
           enablePresentationSlider: true,
           playOnLoad: true,
           datasetType: "modis",
-          onTimeMachinePlayerReady: function(viewerDivId) {
-            setupPostMessageHandlers();
+          enablePostMessageAPI: true,
+          onTimeMachinePlayerReady: function(viewerDivId, timelapseObj) {
+            // Add here
           },
           scaleBarOptions: {
             scaleBarDiv: "scaleBar1"

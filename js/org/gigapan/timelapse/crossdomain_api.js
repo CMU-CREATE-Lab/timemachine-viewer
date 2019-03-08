@@ -37,6 +37,12 @@
  */
 
 function setupPostMessageHandlers() {
+  // Ensure handlers are not enabled more than once
+  if (org && org.gigapan && org.gigapan.timelapse) {
+    if (org.gigapan.timelapse.isPostMessageAPIEnabled) return;
+    org.gigapan.timelapse.isPostMessageAPIEnabled = true;
+  }
+
   // Handles the cross-domain iframe request to see whether a time machine is supported by the current user.
   pm.bind("timemachine-is-supported", function() {
     post("timemachine-is-supported", org.gigapan.Util.browserSupported());

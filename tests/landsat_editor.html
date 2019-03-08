@@ -63,9 +63,10 @@
           enablePresentationSlider: true,
           datasetType: "landsat",
           mediaType: ".mp4",
-          onTimeMachinePlayerReady: function(viewerDivId) {
-            setupPostMessageHandlers();
-            //timelapse.loadSharedDataFromUnsafeURL("#tour=EEDkDAVnCdAw_SiI__DkDAFtUaZ_eRrM__DkDAq6saZGdRlQ__BkDACrDZB9QQxS__Untitled_B", true);
+          enablePostMessageAPI: true,
+          onTimeMachinePlayerReady: function(viewerDivId, timelapseObj) {
+            // Example way to load a tour
+            //timelapseObj.loadSharedDataFromUnsafeURL("#tour=EEDkDAVnCdAw_SiI__DkDAFtUaZ_eRrM__DkDAq6saZGdRlQ__BkDACrDZB9QQxS__Untitled_B", true);
           },
           scaleBarOptions: {
             enableVideoQualitySelector: true,

@@ -86,8 +86,9 @@
           showFullScreenBtn: false,
           enableEditor: true,
           enablePresentationSlider: true,
-          onTimeMachinePlayerReady: function(viewerDivId) {
-            setupPostMessageHandlers();
+          enablePostMessageAPI: true,
+          onTimeMachinePlayerReady: function(viewerDivId, timelapseObj) {
+            // Add here
           },
           showEditorOnLoad: true,
           disableTourLooping: true
