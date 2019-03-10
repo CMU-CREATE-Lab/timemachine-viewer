@@ -1014,16 +1014,17 @@ if (!org.gigapan.timelapse.Timelapse) {
 
       $thumbnailPreviewCopyDataButton.button().click(function(event) {
         var element = $thumbnailPreviewContainer.get(0);
+        var range, select;
         if (document.body.createTextRange) {
-          var range = document.body.createTextRange();
+          range = document.body.createTextRange();
           range.moveToElementText(element);
           range.select();
-        } else if (window.getSelection) {
-          var selection = window.getSelection();
-          var range = document.createRange();
-          range.selectNodeContents(element);
-          selection.removeAllRanges();
-          selection.addRange(range);
+        } else if (document.createRange) {
+          range = document.createRange();
+          range.selectNode(element)
+          select = window.getSelection();
+          select.removeAllRanges();
+          select.addRange(range);
         }
         document.execCommand('copy');
         setButtonTooltip("Copied", $thumbnailPreviewCopyDataButton);
