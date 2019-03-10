@@ -237,7 +237,7 @@
   height: 174px;
   padding: 0;
   margin: 0;
-  background-color: black;
+  background-color: transparent;
   overflow-x: scroll;
   overflow-y: hidden;
   -webkit-user-select: none;
@@ -620,7 +620,7 @@
 .snaplapseTourPlayBack {
   position: absolute;
   top: 0px;
-  z-index: 50;
+  z-index: 1000;
   color: white;
   font-size: 22px;
   text-shadow: -1px 0 1px black, 0 1px 1px black, 1px 0 1px black, 0 -1px 1px black;
@@ -628,6 +628,10 @@
   height: 48px;
   visibility: hidden;
   width: 450px;
+}
+
+.snaplapseTourPlayBack.hasSearch {
+  top: 47px;
 }
 
 .tourLoadOverlay {

@@ -265,6 +265,7 @@ if (!org.gigapan.timelapse.snaplapse) {
     var initializeTourOverlyUI = function(tourTitle) {
       timelapse.stopParabolicMotion();
 
+      $("#addressLookupContainer").hide();
       $("#" + viewerDivId + " .snaplapseTourPlayBack").remove();
       $("#" + viewerDivId + " .tourLoadOverlay").remove();
       $("#" + viewerDivId).append('<div class="snaplapseTourPlayBack playTour"></div>');
@@ -296,7 +297,7 @@ if (!org.gigapan.timelapse.snaplapse) {
 
     var animateTourOverlayAndPlay = function(duration) {
       $("#" + viewerDivId + " .snaplapseTourPlayBack").css("visibility", "visible");
-      // Animate tour title]
+      // Animate tour title
       $("#" + viewerDivId + " .tourLoadOverlayTitle").animate({
         "top": "26px",
         "left": "63px",
@@ -945,7 +946,7 @@ if (!org.gigapan.timelapse.snaplapse) {
           $("#" + viewerDivId + " .instructions").removeClass('on');
           $("#" + viewerDivId + ' .timelineSlider').slider("disable");
           $("#" + viewerDivId + " .tourLoadOverlayPlay").attr("src", rootAppURL + "images/tour_stop_outline.png").css("opacity", "1.0");
-          $("#" + viewerDivId + " .snaplapseTourPlayBack").css("left", "0px").toggleClass("playTour stopTour").attr("title", "Click to stop this tour");
+          $("#" + viewerDivId + " .snaplapseTourPlayBack").css("left", "0px").toggleClass("playTour stopTour").removeClass("hasSearch").attr("title", "Click to stop this tour");
           $("#addressLookupContainer").hide();
         });
 
@@ -998,7 +999,7 @@ if (!org.gigapan.timelapse.snaplapse) {
           $("#" + viewerDivId + ' .help').removeClass("disabled").addClass("enabled");
           $("#" + viewerDivId + ' .timelineSlider').slider("enable");
           $("#" + viewerDivId + " .tourLoadOverlayPlay").attr("src", rootAppURL + "images/tour_replay_outline.png").css("opacity", "1.0");
-          $("#" + viewerDivId + " .snaplapseTourPlayBack").css("left", "67px").toggleClass("stopTour playTour").attr("title", "Click to replay this tour");
+          $("#" + viewerDivId + " .snaplapseTourPlayBack").css("left", "60px").toggleClass("stopTour playTour").addClass("hasSearch").attr("title", "Click to replay this tour");
           $("#addressLookupContainer").show();
         });
 

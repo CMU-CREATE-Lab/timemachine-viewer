@@ -236,7 +236,7 @@ _:-moz-tree-row(hover), .helpPlayerLabel .ui-button-text {
   right: 1px;
   width: auto;
   height: auto;
-  z-index: 999;
+  z-index: 9000;
   display: none;
 }
 
@@ -631,7 +631,7 @@ _:-moz-tree-row(hover), .helpPlayerLabel .ui-button-text {
   border-radius: 0px;
 }
 
-.ui-icon.ui-icon-plus, .ui-button .ui-icon.ui-icon-custom-plus {
+.zoomin .ui-icon.ui-icon-plus, .zoomout .ui-button .ui-icon.ui-icon-custom-plus {
   background: url(../images/plus.png);
   width: 18px;
   height: 18px;
