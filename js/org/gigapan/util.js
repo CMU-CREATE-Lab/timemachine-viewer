@@ -715,7 +715,7 @@ if (!org.gigapan) {
         (isChromeOS && parseInt(matchChromeVersionString[1]) < 54)) {
           computedViewerType = "video";
         } else if (isWebGLSupported && !isMobileDevice && !isSafariUserAgent && !isIE11UserAgent) {
-          computedViewerType = "canvas";
+          computedViewerType = "webgl";
         } else {
           computedViewerType = "canvas";
         }
