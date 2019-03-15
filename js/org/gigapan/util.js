@@ -299,9 +299,9 @@ if (!org.gigapan) {
     }
   };
 
-  org.gigapan.Util.getViewerType = function() {
+  org.gigapan.Util.getViewerType = function(settings) {
     if (!viewerType) {
-      viewerType = computeViewerType();
+      viewerType = computeViewerType(settings);
     }
     return viewerType;
   };
@@ -700,9 +700,9 @@ if (!org.gigapan) {
     matrix[15] += matrix[3]*tx + matrix[7]*ty;
   };
 
-  function computeViewerType() {
+  function computeViewerType(settings) {
     var computedViewerType;
-    var isWebGLSupported = org.gigapan.Util.isWebGLSupported();
+    var isWebGLSupported = settings['ignoreWebGLSupport'] ? false : org.gigapan.Util.isWebGLSupported();
 
     // Force Safari to use canvas. Strange jitter/zoom with video tag and webgl performance is questionable. (20190303)
     // Force Firefox on mobile to use video tag: Throws an "exception component is not available" error when drawing a video to canvas. (20190303)

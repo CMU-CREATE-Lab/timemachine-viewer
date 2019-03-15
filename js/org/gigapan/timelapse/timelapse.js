@@ -3468,12 +3468,14 @@ if (!window['$']) {
 
       // If webgl, we need to force trigger this since no video tags will fire this.
       if (viewerType == "webgl") {
-        loadSharedDataFromUnsafeURL(UTIL.getUnsafeHashString());
-        didFirstTimeOnLoad = true;
-        // Fire onTimeMachinePlayerReady the first time the page is loaded.
-        if (typeof (settings["onTimeMachinePlayerReady"]) === "function") {
-          settings["onTimeMachinePlayerReady"](timeMachineDivId, thisObj);
-        }
+        setTimeout(function() {
+          loadSharedDataFromUnsafeURL(UTIL.getUnsafeHashString());
+          didFirstTimeOnLoad = true;
+          // Fire onTimeMachinePlayerReady the first time the page is loaded.
+          if (typeof (settings["onTimeMachinePlayerReady"]) === "function") {
+            settings["onTimeMachinePlayerReady"](timeMachineDivId, thisObj);
+          }
+        }, 50);
       }
     }
 
@@ -3978,7 +3980,7 @@ if (!window['$']) {
     if (settings["viewerType"])
       UTIL.setViewerType(settings["viewerType"]);
 
-    viewerType = UTIL.getViewerType();
+    viewerType = UTIL.getViewerType(settings);
 
     // Set default loop dwell time
     // TODO: This should probably be set not just for landsat, but for all short datasets.
