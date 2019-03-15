@@ -38,6 +38,12 @@
     <script src="../js/org/gigapan/postmessage.js" type="text/javascript"></script>
     <script src="../js/org/gigapan/timelapse/crossdomain_api.js" type="text/javascript"></script>
 
+    <script src="../js/glutils/Glb.js"></script>
+    <script src="../js/org/gigapan/timelapse/TileIdx.js" type="text/javascript"></script>
+    <script src="../js/org/gigapan/timelapse/TileView.js" type="text/javascript"></script>
+    <script src="../js/org/gigapan/timelapse/WebglVideoTile.js" type="text/javascript"></script>
+    <script src="../js/org/gigapan/timelapse/WebglTimeMachineLayer.js" type="text/javascript"></script>
+
     <script src="../libs/change-detect/js/ThumbnailServiceAPI.js" type="text/javascript"></script>
     <script src="../libs/change-detect/js/TimeMachineCanvasLayer.js" type="text/javascript"></script>
     <script src="../libs/change-detect/js/ThumbnailTool.js" type="text/javascript"></script>
@@ -85,6 +91,7 @@
 
       // Modis
       var url = "";
+      var timelapse;
 
       function init() {
         myHomeView = {
@@ -97,9 +104,9 @@
           enablePresentationSlider: true,
           datasetType: "modis",
           playOnLoad: true,
-          onTimeMachinePlayerReady: function(viewerDivId) {
-            setupPostMessageHandlers();
-            timelapse.loadSharedDataFromUnsafeURL("#presentation=ERBAA6FXpl1mkjR_Drying%20of%20Aral%20Sea_BAA9ndHxmNSjRThe%2012000-year-old%20Larsen%20B%20Ice%20Shelf%20disintegrated%20in%20February%2C%202002_Larsen%20B%20Ice%20Shelf_BkDiOI7hYfYhT_TDeforestation%20in%20the%20Amazon%20Rainforest%20south%20of%20Parque%20Estadual%20do%20Xingu_N%20Mato%20Grosso_BkDAX6VTPhJxgTSeasonal%20flooding%20fills%20the%20Cooper%20Creek%20Flood%20Plain%20and%20Lake%20Yamma%20Yamma%20in%20Queensland%2C%20Australia%2E_Lake%20Yamma%20Yamma_BkDuCoSvQN24w_TFires%20in%20Wyperfield%2C%20Murray%20Sunset%2C%20and%20Big%20Desert%20Parks%20in%20New%20South%20Wales%2C%20and%20Ngarkat%20Park%20in%20South%20Australia_Australian%20Fires_BkDgGrO-mQNYi_T_Drying%20of%20Lake%20Urmia_BkD1Gd0xQ1tySjR_Mouth%20of%20Rio%20Uruguay_BkD4PcOCnMD_I_T_CA%20Bay%20to%20Sierras_BkDiGC1Pn03OLhT_Rocky%20Mountains_BkDxFY5DoHQTK_T_Great%20Salt%20Lake_BkDrCJOBnWm6NqN_Midwest_BkDVvToeX0ne-K_African%20Savannah_BkDAuikfp4nd_T_Seasonal%20Lake%20Chad_BkDlOFWoVJV5e_T_Okavango_BkD6LOKXoLUEPxS_Lake%20Erie_BkDpJGP6rfz0r7M_Lake%20Baikal%20Russia_BA-Hy4gkrZXorM_Himalayas_Untitled_B");
+          enablePostMessageAPI: true,
+          onTimeMachinePlayerReady: function(viewerDivId, timelapseObj) {
+            timelapseObj.loadSharedDataFromUnsafeURL("#presentation=ERBAA6FXpl1mkjR_Drying%20of%20Aral%20Sea_BAA9ndHxmNSjRThe%2012000-year-old%20Larsen%20B%20Ice%20Shelf%20disintegrated%20in%20February%2C%202002_Larsen%20B%20Ice%20Shelf_BkDiOI7hYfYhT_TDeforestation%20in%20the%20Amazon%20Rainforest%20south%20of%20Parque%20Estadual%20do%20Xingu_N%20Mato%20Grosso_BkDAX6VTPhJxgTSeasonal%20flooding%20fills%20the%20Cooper%20Creek%20Flood%20Plain%20and%20Lake%20Yamma%20Yamma%20in%20Queensland%2C%20Australia%2E_Lake%20Yamma%20Yamma_BkDuCoSvQN24w_TFires%20in%20Wyperfield%2C%20Murray%20Sunset%2C%20and%20Big%20Desert%20Parks%20in%20New%20South%20Wales%2C%20and%20Ngarkat%20Park%20in%20South%20Australia_Australian%20Fires_BkDgGrO-mQNYi_T_Drying%20of%20Lake%20Urmia_BkD1Gd0xQ1tySjR_Mouth%20of%20Rio%20Uruguay_BkD4PcOCnMD_I_T_CA%20Bay%20to%20Sierras_BkDiGC1Pn03OLhT_Rocky%20Mountains_BkDxFY5DoHQTK_T_Great%20Salt%20Lake_BkDrCJOBnWm6NqN_Midwest_BkDVvToeX0ne-K_African%20Savannah_BkDAuikfp4nd_T_Seasonal%20Lake%20Chad_BkDlOFWoVJV5e_T_Okavango_BkD6LOKXoLUEPxS_Lake%20Erie_BkDpJGP6rfz0r7M_Lake%20Baikal%20Russia_BA-Hy4gkrZXorM_Himalayas_Untitled_B");
           },
           scaleBarOptions: {
             scaleBarDiv: "scaleBar1"

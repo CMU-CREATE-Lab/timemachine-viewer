@@ -37,6 +37,12 @@
     <script src="../js/org/gigapan/postmessage.js" type="text/javascript"></script>
     <script src="../js/org/gigapan/timelapse/crossdomain_api.js" type="text/javascript"></script>
 
+    <script src="../js/glutils/Glb.js"></script>
+    <script src="../js/org/gigapan/timelapse/TileIdx.js" type="text/javascript"></script>
+    <script src="../js/org/gigapan/timelapse/TileView.js" type="text/javascript"></script>
+    <script src="../js/org/gigapan/timelapse/WebglVideoTile.js" type="text/javascript"></script>
+    <script src="../js/org/gigapan/timelapse/WebglTimeMachineLayer.js" type="text/javascript"></script>
+
     <script src="../libs/change-detect/js/ThumbnailServiceAPI.js" type="text/javascript"></script>
     <script src="../libs/change-detect/js/TimeMachineCanvasLayer.js" type="text/javascript"></script>
     <script src="../libs/change-detect/js/ThumbnailTool.js" type="text/javascript"></script>
@@ -58,6 +64,7 @@
       jQuery.support.cors = true;
 
       var url = "https://storage.googleapis.com/earthengine-timelapse/herwig/earthtime_annual_1984_2016/v05/";
+      var timelapse;
 
       function init() {
         var settings = {
@@ -66,9 +73,9 @@
           enablePresentationSlider: true,
           mediaType: ".mp4",
           datasetType: "landsat",
-          onTimeMachinePlayerReady: function(viewerDivId) {
-            setupPostMessageHandlers();
-            timelapse.getSnaplapseForPresentationSlider().getSnaplapseViewer().addEventListener("slide-changed", function(waypoint) {
+          enablePostMessageAPI: true,
+          onTimeMachinePlayerReady: function(viewerDivId, timelapseObj) {
+            timelapseObj.getSnaplapseForPresentationSlider().getSnaplapseViewer().addEventListener("slide-changed", function(waypoint) {
               post("from-timemachine-slide-changed", waypoint.title);
             });
           },

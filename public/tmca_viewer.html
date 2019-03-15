@@ -30,6 +30,12 @@
     <script src="ajax_includes.js" type="text/javascript"></script>
     <script src="template_includes.js" type="text/javascript"></script>
 
+    <script src="../js/glutils/Glb.js"></script>
+    <script src="../js/org/gigapan/timelapse/TileIdx.js" type="text/javascript"></script>
+    <script src="../js/org/gigapan/timelapse/TileView.js" type="text/javascript"></script>
+    <script src="../js/org/gigapan/timelapse/WebglVideoTile.js" type="text/javascript"></script>
+    <script src="../js/org/gigapan/timelapse/WebglTimeMachineLayer.js" type="text/javascript"></script>
+
     <script src="libs/change-detect/js/ThumbnailServiceAPI.js" type="text/javascript"></script>
     <script src="libs/change-detect/js/TimeMachineCanvasLayer.js" type="text/javascript"></script>
     <script src="libs/change-detect/js/ThumbnailTool.js" type="text/javascript"></script>
@@ -40,12 +46,13 @@
       jQuery.support.cors = true;
 
       var url = "./";
+      var timelapse;
 
       function init() {
         var settings = {
           url: url,
           enableEditor: true,
-          onTimeMachinePlayerReady: function(viewerDivId) {
+          onTimeMachinePlayerReady: function(viewerDivId, timelapseObj) {
           },
           disableTourLooping: true,
           mediaType: ".mp4",

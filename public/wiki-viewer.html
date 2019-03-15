@@ -26,6 +26,12 @@
     <script src="../js/org/gigapan/timelapse/defaultUI.js" type="text/javascript"></script>
     <script src="../js/org/gigapan/timelapse/urlEncoder.js" type="text/javascript"></script>
 
+    <script src="../js/glutils/Glb.js"></script>
+    <script src="../js/org/gigapan/timelapse/TileIdx.js" type="text/javascript"></script>
+    <script src="../js/org/gigapan/timelapse/TileView.js" type="text/javascript"></script>
+    <script src="../js/org/gigapan/timelapse/WebglVideoTile.js" type="text/javascript"></script>
+    <script src="../js/org/gigapan/timelapse/WebglTimeMachineLayer.js" type="text/javascript"></script>
+
     <script src="../libs/change-detect/js/ThumbnailServiceAPI.js" type="text/javascript"></script>
     <script src="../libs/change-detect/js/TimeMachineCanvasLayer.js" type="text/javascript"></script>
     <script src="../libs/change-detect/js/ThumbnailTool.js" type="text/javascript"></script>
@@ -54,6 +60,7 @@
       //var host = (timelapseMetadata["use_tm1"] === "true") ? "http://timemachine1.gc.cs.cmu.edu/" : "http://g7.gigapan.org/";
       //var url = host + "timemachines/" + timelapseMetadata["id"];
       var url = "https://tiles.cmucreatelab.org/" + timelapseMetadata["id"];
+      var timelapse;
 
       function init() {
         var myView = null;
@@ -64,8 +71,9 @@
           showFullScreenBtn: false,
           enableEditor: true,
           enablePresentationSlider: true,
-          onTimeMachinePlayerReady: function(viewerDivId) {
-            setupPostMessageHandlers();
+          enablePostMessageAPI: true,
+          ignoreWebGLSupport: true,
+          onTimeMachinePlayerReady: function(viewerDivId, timelapseObj) {
           },
           disableTourLooping: true,
           isGoogleAnalyticEventTrackingEnabled: true
