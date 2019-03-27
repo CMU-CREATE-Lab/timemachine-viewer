@@ -811,5 +811,17 @@ if (!org.gigapan) {
     window.msRequestAnimationFrame ||
     function (callback) {
         setTimeout(function() { callback(Date.now()); },  1000/60);
-    }
+    };
+
+  org.gigapan.Util.loadGoogleAPIs = function(globalCallbackFunctionName, apiKeys) {
+    if (typeof(google) !== "undefined") return;
+
+    var newScript = document.createElement('script');
+    var mapSrc = 'https://maps.google.com/maps/api/js?libraries=places&callback=' + globalCallbackFunctionName;
+    if (apiKeys["googleMaps"])
+      mapSrc += '&key=' + apiKeys["googleMaps"];
+    newScript.setAttribute('src', mapSrc);
+    newScript.setAttribute('type', 'text/javascript');
+    document.getElementsByTagName('head')[0].appendChild(newScript);
+  };
 })();

@@ -1,0 +1,400 @@
+/*@font-face {
+  font-family: 'GoogleSans-Regular';
+  src: url('fonts/GoogleSans-Regular.woff') format('woff');
+}
+
+@font-face {
+  font-family: 'GoogleSans-Medium';
+  src: url('fonts/GoogleSans-Medium.woff') format('woff');
+}*/
+
+@font-face {
+  font-family: 'Roboto-Regular';
+  src: url('fonts/Roboto-Regular.woff') format('woff');
+}
+
+@font-face {
+  font-family: 'Roboto-Medium';
+  src: url('fonts/Roboto-Medium.woff') format('woff');
+}
+
+html.forced-portrait {
+  transform: rotate(-90deg);
+  transform-origin: left top;
+  width: 100vh;
+  height: 100vw;
+  overflow-x: hidden;
+  position: absolute;
+  top: 100%;
+  left: 0;
+}
+
+*:not(input) {
+  -webkit-touch-callout: none;
+    -webkit-user-select: none;
+     -khtml-user-select: none;
+       -moz-user-select: none;
+        -ms-user-select: none;
+            user-select: none;
+}
+
+.etMobileTopNav {
+  background-color: #fff;
+}
+
+.etMobileSearchBoxContainer {
+  /* Should be GoogleSans-Regular */
+  font-family: 'Roboto-Regular';
+  margin: 15px;
+}
+
+.etMobileSearchBox {
+  width: 100%;
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  box-sizing: border-box;
+  top: 15px;
+  font-size: 16px;
+  text-align: center;
+  padding-top: 16px;
+  padding-bottom: 16px;
+  border-radius: 8px;
+  border: none;
+  -webkit-appearance: none;
+  -webkit-box-shadow: 0px 1px 3px 1px #bcbcbc;
+  box-shadow: 0px 1px 3px 1px #bcbcbc;
+  outline: none;
+}
+
+.etMobileSearchBoxIcon {
+  background: url(../images/search-2.png) center center no-repeat;
+  background-size: contain;
+  width: 25px;
+  height: 25px;
+  position: absolute;
+  left: 31px;
+  top: 30px;
+  cursor: default;
+  opacity: 0.3;
+}
+
+.etMobileSearchBox:focus {
+  -webkit-appearance: none;
+  -webkit-box-shadow: 0px 1px 3px 1px #6d6d6d;
+  box-shadow: 0px 1px 3px 1px #6d6d6d;
+}
+
+.etMobileSearchBox:focus ~ span {
+  opacity: 0.6;
+}
+
+.etMobileSearchBoxClear {
+  background: url(../images/close.png) center center no-repeat;
+  background-size: contain;
+  width: 20px;
+  height: 20px;
+  position: absolute;
+  right: 31px;
+  top: 30px;
+  cursor: pointer;
+  opacity: 0.5;
+  display: none;
+}
+
+.etMobileTimelineContainer {
+  height: 40px;
+  width: 100%;
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding-top: 9px;
+  padding-bottom: 0px;
+  margin-right: 14px;
+}
+
+.etMobileTimelineContainer::-webkit-scrollbar {
+  width: 0 !important
+}
+
+.etMobileTimeline {
+  /* Should be GoogleSans-Regular */
+  font-family: 'Roboto-Regular';
+  overflow-x: hidden;
+  padding-top: 8px;
+  padding-bottom: 8px;
+  margin-top: -8px;
+}
+
+.etMobilePlaybackButton {
+  width: 56px;
+  height: 56px;
+  position: absolute;
+  z-index: 100;
+  border-radius: 30px;
+  opacity: 0.87;
+  background: #1e1e1e;
+  border: none;
+  right: 20px;
+  margin-top: 20px;
+  -webkit-appearance: none;
+  -webkit-box-shadow: 0px 4px 8px 3px rgba(60, 64, 67, 0.3), 0px 1px 3px 0px rgba(60, 64, 67, 0.15);
+  box-shadow: 0px 4px 8px 3px rgba(60, 64, 67, 0.3), 0px 1px 3px 0px rgba(60, 64, 67, 0.15);
+}
+
+.etMobilePlaybackButton.ui-button .ui-icon.ui-icon-custom-pause-white {
+  background-image: url(../images/buttons/custom_pause_white.png);
+  margin-top: -12px;
+  margin-left: -15px;
+  background-size: 30px 25px;
+  width: 38px;
+  height: 38px;
+}
+
+.etMobilePlaybackButton.ui-button .ui-icon.ui-icon-custom-play-white {
+  background-image: url(../images/buttons/custom_play_white.png);
+  margin-top: -16px;
+  margin-left: -16px;
+  width: 32px;
+  height: 32px;
+  background-size: 32px 32px;
+}
+
+.etMobileTimelineDivider {
+  color: #80868B;
+  font-size: 15px;
+  padding-left: 16px;
+  padding-right: 16px;
+}
+
+.etMobileTimelineTick {
+  color: #80868B;
+  font-size: 14px;
+  padding-left: 24px;
+  padding-right: 24px;
+}
+
+.etMobileTimelineTickSelected {
+  /* Should be GoogleSans-Medium */
+  font-family: 'Roboto-Medium';
+  border-radius: 16px;
+  background-color: #2979FF;
+  color: white;
+  font-size: 16px;
+  padding-top: 8px;
+  padding-bottom: 8px;
+}
+
+.mobile .tiledContentHolder {
+  position: relative;
+  height: calc(100% - 129px);
+}
+
+.etMobileWaypointDrawerContainer {
+  min-height: 48px;
+  max-height: 65%;
+  height: 48px;
+  width: 100%;
+  bottom: 0px;
+  position: absolute;
+  background: white;
+  border-radius: 8px 8px 0px 0px;
+  z-index: 9000;
+  display: none;
+  overflow-y: auto;
+}
+
+.etMobileWaypointDrawerContainer > div:not(.etMobileWaypointDrawerContainerHeader) {
+  padding-left: 24px;
+}
+
+.etMobileWaypointDrawerContainer.maximized {
+  height: 65%;
+}
+
+.etMobileWaypointDrawerContainer.maximized .etMobileWaypointDrawerContainerHeader {
+  padding-bottom: 20px;
+}
+
+.etDrawerProductAboutHeading {
+  /* Should be GoogleSans-Medium */
+  font-family: 'Roboto-Medium';
+  font-size: 18px;
+  padding-bottom: 20px;
+}
+
+.etDrawerProductAboutHeading.maximized {
+  padding-left: 60px !important;
+}
+
+.etDrawerProductAboutDescription {
+  font-family: 'Roboto-Regular';
+  font-size: 13px;
+  padding-bottom: 30px;
+  padding-right: 45px;
+}
+
+.etDrawerProductLearnMoreContent {
+  top: 105px;
+  background: white;
+  z-index: 10;
+  position: absolute;
+  width: calc(100% - 48px);
+  display: none;
+}
+
+.etDrawerProductAboutDescriptionMoreButton {
+  background-image: url(../images/right.png);
+  background-size: 35px 35px;
+  position: absolute;
+  display: inline-block;
+  right: 14px;
+  width: 35px;
+  height: 35px;
+  opacity: 0.55;
+  top: 101px;
+  cursor: pointer;
+}
+
+.etDrawerLearnMoreExit {
+  background-image: url(../images/back-arrow.png);
+  background-size: 30px 30px;
+  position: absolute;
+  display: inline-block;
+  left: 20px;
+  width: 30px;
+  height: 30px;
+  top: 60px;
+  cursor: pointer;
+}
+
+.etDrawerProductHighlightsHeading {
+  /* Should be GoogleSans-Medium */
+  font-family: 'Roboto-Medium';
+  font-size: 18px;
+  padding-bottom: 20px;
+}
+
+.etMobileWaypointDrawerContainerHeader {
+  /* Should be GoogleSans-Medium */
+  font-family: 'Roboto-Medium';
+  font-size: 18px;
+  text-align: center;
+  padding-top: 20px;
+  height: 25px;
+  display: flex;
+  justify-content: center;
+}
+
+.etMobileWaypointDrawerContainer.maximized  .etMobileWaypointDrawerContainerHeader.scrolled {
+  -webkit-appearance: none;
+  -webkit-box-shadow: 0px 6px 6px -6px #bcbcbc;
+  box-shadow: 0px 6px 6px -6px #bcbcbc;
+  position: sticky;
+  position: -webkit-sticky;
+  z-index: 90;
+}
+
+.etMobileWaypointDrawerContainerDragIndicator {
+  width: 36px;
+  background: #e0e0e0;
+  border-radius: 2px;
+  position: absolute;
+  height: 4px;
+  top: 10px;
+}
+
+.presentationSlider.vertical {
+  overflow-y: auto;
+  height: calc(100% - 209px);
+  position: absolute;
+  width: calc(100% - 24px);
+}
+
+.presentationSlider.vertical .snaplapse_keyframe_list {
+  display: -webkit-box;
+  display: -moz-box;
+  display: -ms-flexbox;
+  display: -webkit-flex;
+  display: flex;
+  flex-wrap: wrap;
+  flex-direction: row;
+  align-items: center;
+  height: 100%;
+}
+
+.presentationSlider.vertical .snaplapse_keyframe_list_item {
+  font-family: 'Roboto-Regular';
+  width: calc(50% - 26px);
+  height: 120px;
+  margin-right: 24px;
+  margin-bottom: 24px;
+  background-color: white;
+  border-radius: 8px;
+  border: 1px solid #dadce0;
+  position: relative;
+  cursor: pointer;
+  color: #202124;
+}
+
+.presentationSlider.vertical .snaplapse_keyframe_list_item_thumbnail {
+  border: none;
+  border-top-left-radius: 8px;
+  border-bottom-left-radius: 8px;
+}
+
+@media only screen and (max-width: 740px) {
+  .presentationSlider.vertical .snaplapse_keyframe_list_item {
+     width: 100%;
+  }
+}
+
+.player:not(.no-hover) .presentationSlider.vertical .snaplapse_keyframe_list_item:hover {
+  border: 1px solid #939393;
+}
+
+.presentationSlider.vertical .snaplapse_keyframe_list_item_title {
+  /* Should be GoogleSans-Regular */
+  font-family: 'Roboto-Regular';
+  margin-left: 120px;
+  padding-left: 16px;
+  position: absolute;
+  left: 0px;
+  top: 16px;
+}
+
+.presentationSlider.vertical .snaplapse_keyframe_list_item_description {
+  margin-left: 120px;
+  padding-left: 16px;
+  position: absolute;
+  left: 0px;
+  top: 38px;
+  color: #5f6368;
+  font-size: 14px;
+  padding-right: 20px;
+  line-height: 1.5;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  -o-text-overflow: ellipsis;
+     text-overflow: ellipsis;
+  display: block;
+  display: -webkit-box;
+  height: 65px;
+}
+
+.presentationSlider.vertical .thumbnail_highlight {
+  border: 2px solid #939393;
+  border-radius: 8px;
+  -webkit-appearance: none;
+  -webkit-box-shadow: 2px 2px 3px 1px #e0e0e0;
+  box-shadow: 2px 2px 3px 1px #e0e0e0;
+}
+
+/* TODO: Need to make these mobile specific */
+
+.pac-item {
+  height: 45px;
+}
+
+.pac-item, .pac-item-query {
+  font-size: 16px;
+}

@@ -259,7 +259,7 @@ if (!org.gigapan.timelapse.Timelapse) {
             lightness: 100
           }]
         }];
-
+        // Callback when google APIs are loaded
         window.loadContextMapLeaflet = function() {
           var googleAPIScript;
           googleAPIScript = document.createElement('script');
@@ -282,13 +282,7 @@ if (!org.gigapan.timelapse.Timelapse) {
             }
           };
         };
-        var leafletScript = document.createElement('script');
-        var mapSrc = 'https://maps.google.com/maps/api/js?libraries=places&callback=loadContextMapLeaflet';
-        if (apiKeys["googleMaps"])
-          mapSrc += '&key=' + apiKeys["googleMaps"];
-        leafletScript.setAttribute('src', mapSrc);
-        leafletScript.setAttribute('type', 'text/javascript');
-        document.getElementsByTagName('head')[0].appendChild(leafletScript);
+        UTIL.loadGoogleAPIs("loadContextMapLeaflet", apiKeys);
       } else if (tileType == "OpenStreetMap") {
         var osmUrl = contextMapOptions["tileUrl"] || 'http://{s}.tile.openstreetmap.org/';
         osmUrl += '/{z}/{x}/{y}.png';

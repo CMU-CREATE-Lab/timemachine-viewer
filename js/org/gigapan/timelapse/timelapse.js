@@ -157,7 +157,7 @@ if (!window['$']) {
     };
     var minViewportHeight = 370;
     var minViewportWidth = 540;
-    var defaultLoopDwellTime = 0.5;
+    var defaultLoopDwellTime = 1.0;
     var pixelRatio = window.devicePixelRatio || 1;
 
     // If the user requested a tour editor AND has a div in the DOM for the editor,
@@ -181,6 +181,7 @@ if (!window['$']) {
     var annotator;
     var customUI;
     var defaultUI;
+    var mobileUI;
     var visualizer;
     var thumbnailTool;
     var changeDetectionTool;
@@ -224,6 +225,7 @@ if (!window['$']) {
     var didFirstTimeOnLoad = false;
     var isMovingToWaypoint = false;
     var isSpinnerShowing = false;
+    var isMobileDevice = UTIL.isMobileDevice();
 
     // Viewer
     var viewerDivId = timeMachineDivId + " .player";
@@ -292,7 +294,7 @@ if (!window['$']) {
     var customMaxScale;
     var keysDown = [];
     var shareViewLoopInterval;
-    var timePadding = isIE ? 0.3 : 0.0;
+    var timePadding = isIE || isChrome ? 0.3 : 0.0;
     // animateRate in milliseconds, 40 means 25 FPS
     var animateRate = 40;
     if (isHyperwall)
@@ -419,7 +421,9 @@ if (!window['$']) {
     };
 
     this.updateShareViewTextbox = function() {
-      defaultUI.updateShareViewTextbox();
+      if (defaultUI) {
+        defaultUI.updateShareViewTextbox();
+      }
     };
 
     this.setMinZoomSpeedPerSecond = function(value) {
@@ -637,8 +641,12 @@ if (!window['$']) {
         // Need to manually do this because of the looping dwell code
         if (customUI) {
           customUI.setPlaybackButtonIcon("pause");
+        } else if (mobileUI) {
+          mobileUI.setPlaybackButtonIcon("pause");
         }
-        defaultUI.setPlaybackButtonIcon("pause");
+        if (defaultUI) {
+          defaultUI.setPlaybackButtonIcon("pause");
+        }
         return;
       }
       if (_isPaused()) {
@@ -772,9 +780,10 @@ if (!window['$']) {
       var newView;
       if (!bboxView || !bboxView['bbox'])
         return;
-      var bboxViewNE = bboxView.bbox.ne;
-      var bboxViewSW = bboxView.bbox.sw;
-      if (( typeof (tmJSON['projection-bounds']) !== 'undefined') && bboxViewNE && bboxViewSW && UTIL.isNumber(bboxViewNE.lat) && UTIL.isNumber(bboxViewNE.lng) && UTIL.isNumber(bboxViewSW.lat) && UTIL.isNumber(bboxViewSW.lng)) {
+      // For years, ne/sw was incorrectly used as the labels for nw/se. It has been corrected, but for current legacy reasons we assumed ne/sw actually refers to nw/se.
+      var bboxViewNW = bboxView.bbox.nw || bboxView.bbox.ne;
+      var bboxViewSE = bboxView.bbox.se || bboxView.bbox.sw;
+      if (( typeof (tmJSON['projection-bounds']) !== 'undefined') && bboxViewNW && bboxViewSE && UTIL.isNumber(bboxViewNW.lat) && UTIL.isNumber(bboxViewNW.lng) && UTIL.isNumber(bboxViewSE.lat) && UTIL.isNumber(bboxViewSE.lng)) {
         newView = latLngBoundingBoxToPixelCenter(bboxView);
       } else if (UTIL.isNumber(bboxView.bbox.xmin) && UTIL.isNumber(bboxView.bbox.xmax) && UTIL.isNumber(bboxView.bbox.ymin) && UTIL.isNumber(bboxView.bbox.ymax)) {
         newView = pixelBoundingBoxToPixelCenter(bboxView);
@@ -1001,6 +1010,8 @@ if (!window['$']) {
             theMouse = document.createEvent("MouseEvent");
             theMouse.initMouseEvent('click', true, true, window, 1, theTouch.screenX, theTouch.screenY, theTouch.clientX, theTouch.clientY, false, false, false, false, 0, null);
             theTouch.target.dispatchEvent(theMouse);
+            // Dispatching a mouse click event does not give focus to some elements, such as input fields. Trigger focus ourselves.
+            $(theTouch.target).focus();
           }
 
           isTouchMoving = false;
@@ -1445,9 +1456,10 @@ if (!window['$']) {
         }
       } else if (newView.bbox) {// Bounding box view
         var newViewBbox = newView.bbox;
-        var newViewBboxNE = newViewBbox.ne;
-        var newViewBboxSW = newViewBbox.sw;
-        if (( typeof (tmJSON['projection-bounds']) !== 'undefined') && newViewBboxNE && newViewBboxSW && UTIL.isNumber(newViewBboxNE.lat) && UTIL.isNumber(newViewBboxNE.lng) && UTIL.isNumber(newViewBboxSW.lat) && UTIL.isNumber(newViewBboxSW.lng)) {
+        // For years, ne/sw was incorrectly used as the labels for nw/se. It has been corrected, but for current legacy reasons we assumed ne/sw actually refers to nw/se.
+        var newViewBboxNW = newViewBbox.nw || newViewBbox.ne;
+        var newViewBboxSE = newViewBbox.se || newViewBbox.sw;
+        if (( typeof (tmJSON['projection-bounds']) !== 'undefined') && newViewBboxNW && newViewBboxSE && UTIL.isNumber(newViewBboxNW.lat) && UTIL.isNumber(newViewBboxNW.lng) && UTIL.isNumber(newViewBboxSE.lat) && UTIL.isNumber(newViewBboxSE.lng)) {
           newView = latLngBoundingBoxToPixelCenter(newView);
         } else if (UTIL.isNumber(newViewBbox.xmin) && UTIL.isNumber(newViewBbox.xmax) && UTIL.isNumber(newViewBbox.ymin) && UTIL.isNumber(newViewBbox.ymax)) {
           newView = pixelBoundingBoxToPixelCenter(newView);
@@ -1618,7 +1630,7 @@ if (!window['$']) {
           var isLatLng = false;
           var bboxView = unsafe_viewParam.bbox;
           for (var key in bboxView) {
-            if (key == "ne" || key == "sw") {
+            if (key == "ne" || key == "sw" || key == "nw" || key == "se") {
               isLatLng = true;
               for (var innerKey in bboxView[key])
                 tmpViewParam.push(bboxView[key][innerKey]);
@@ -1650,11 +1662,11 @@ if (!window['$']) {
           // share view was in the form NWSE
           view = {
             bbox: {
-              "ne": {
+              "nw": {
                 "lat": parseFloat(unsafe_viewParam[0]),
                 "lng": parseFloat(unsafe_viewParam[1])
               },
-              "sw": {
+              "se": {
                 "lat": parseFloat(unsafe_viewParam[2]),
                 "lng": parseFloat(unsafe_viewParam[3])
               }
@@ -2151,9 +2163,9 @@ if (!window['$']) {
       window.onresize = onresize;
     };
 
-    var onresize = function() {
+    var onresize = function(forceResize) {
       var $viewerDiv = $("#" + viewerDivId);
-      if (viewportWidth == $viewerDiv.width() && viewportHeight == $viewerDiv.height())
+      if (!forceResize && viewportWidth == $viewerDiv.width() && viewportHeight == $viewerDiv.height())
         return;
       resizeViewer();
       // TODO implement a resize listener and put this in the snaplapseViewer class
@@ -2208,8 +2220,9 @@ if (!window['$']) {
 
     var resizeViewer = function() {
       var $viewerDiv = $("#" + viewerDivId);
+      var $tiledContentHolder = $("#" + viewerDivId + " .tiledContentHolder");
       viewportWidth = $viewerDiv.width();
-      viewportHeight = $viewerDiv.height();
+      viewportHeight = $viewerDiv.height() - $tiledContentHolder.offset().top;
 
       // TODO: scale might not be correct when we unhide viewport
       if ($( "#" + viewerDivId + ":visible").length == 0) return;
@@ -2725,16 +2738,17 @@ if (!window['$']) {
         bbox = bbox.bbox;
 
       var projection = _getProjection();
-      var newViewBboxNE = bbox.ne;
-      var newViewBboxSW = bbox.sw;
+      // For years, ne/sw was incorrectly used as the labels for nw/se. It has been corrected, but for current legacy reasons we assumed ne/sw actually refers to nw/se.
+      var newViewBboxNW = bbox.nw || bbox.ne;
+      var newViewBboxSE = bbox.se || bbox.sw;
 
       var a = projection.latlngToPoint({
-        lat: newViewBboxNE.lat,
-        lng: newViewBboxNE.lng
+        lat: newViewBboxNW.lat,
+        lng: newViewBboxNW.lng
       });
       var b = projection.latlngToPoint({
-        lat: newViewBboxSW.lat,
-        lng: newViewBboxSW.lng
+        lat: newViewBboxSE.lat,
+        lng: newViewBboxSE.lng
       });
 
       var xmax = Math.max(a.x, b.x);
@@ -3029,7 +3043,9 @@ if (!window['$']) {
           unsafe_sharedData = unsafe_sharedVars.presentation;
           snaplapseForSharedData = snaplapseForPresentationSlider;
           var $keyframeContainer = snaplapseForPresentationSlider.getSnaplapseViewer().getKeyframeContainer();
-          addViewerBottomMargin($keyframeContainer.outerHeight() - 1);
+          if (settings["presentationSliderSettings"] && settings["presentationSliderSettings"]["orientation"] != "vertical") {
+            addViewerBottomMargin($keyframeContainer.outerHeight() - 1);
+          }
           UTIL.addGoogleAnalyticEvent('window', 'onHashChange', 'url-load-presentation');
         }
         // Handle the shared data
@@ -3057,6 +3073,40 @@ if (!window['$']) {
       }
     };
     this.loadSharedDataFromUnsafeURL = loadSharedDataFromUnsafeURL;
+
+    var loadUnsafeWaypointsJSON = function(unsafeWaypointsJSON) {
+      if (!unsafeWaypointsJSON) return;
+      var snaplapseForPresentationSlider = timelapse.getSnaplapseForPresentationSlider();
+      if (snaplapseForPresentationSlider) {
+        var waypointsJSON = snaplapseForPresentationSlider.unsafeWaypointsJSONtoJSON(unsafeWaypointsJSON)
+        var snaplapseViewerForSharedData = snaplapseForPresentationSlider.getSnaplapseViewer();
+        $(".etDrawerContainerTitle").text(unsafeWaypointsJSON['product-title']);
+        $(".etDrawerProductAboutDescriptionContent").text(unsafeWaypointsJSON['product-about']);
+        $(".etDrawerProductHighlightsHeading").text(unsafeWaypointsJSON['product-highlights-title']);
+        $(".etDrawerLearnMoreExit").hide();
+        $(".etMobileWaypointDrawerContainer").show();
+        snaplapseViewerForSharedData.loadNewSnaplapse(waypointsJSON, false);
+
+        $(".etDrawerProductAboutDescriptionMoreButton").on("click", function() {
+          $(".etDrawerProductLearnMoreContent").show();
+          $(".presentationSlider").hide();
+          $(".etDrawerProductLearnMoreContent").load(rootAppURL + "templates/" + unsafeWaypointsJSON['learn-more-template-name']);
+          $(".etDrawerLearnMoreExit").show();
+          $(".etDrawerProductAboutHeading").addClass("maximized");
+        });
+
+        $(".etDrawerLearnMoreExit").on("click", function() {
+          $(this).hide();
+          $(".etDrawerProductLearnMoreContent").hide();
+          $(".presentationSlider").show();
+          $(".etDrawerProductAboutHeading").removeClass("maximized");
+        });
+
+
+      }
+    };
+    this.loadUnsafeWaypointsJSON = loadUnsafeWaypointsJSON;
+
 
     var needFirstAncestor = function(tileidx) {
       //UTIL.log("need ancestor for " + dumpTileidx(tileidx));
@@ -3323,8 +3373,12 @@ if (!window['$']) {
           return;
         if (customUI) {
           customUI.setPlaybackButtonIcon("pause");
+        } else if (mobileUI) {
+          mobileUI.setPlaybackButtonIcon("pause");
         }
-        defaultUI.setPlaybackButtonIcon("pause");
+        if (defaultUI) {
+          defaultUI.setPlaybackButtonIcon("pause");
+        }
       });
 
       _addVideoPlayListener(function() {
@@ -3333,8 +3387,12 @@ if (!window['$']) {
           return;
         if (customUI) {
           customUI.setPlaybackButtonIcon("play");
+        } else if (mobileUI) {
+          mobileUI.setPlaybackButtonIcon("play");
         }
-        defaultUI.setPlaybackButtonIcon("play");
+        if (defaultUI) {
+          defaultUI.setPlaybackButtonIcon("play");
+        }
       });
 
       _makeVideoVisibleListener(function(videoId) {
@@ -3420,9 +3478,14 @@ if (!window['$']) {
         changeDetectionTool = new ChangeDetectionTool(thisObj, thumbnailTool, changeDetectionOptions);
       }
 
-      defaultUI = new org.gigapan.timelapse.DefaultUI(thisObj, settings);
-      if (useCustomUI)
-        customUI = new org.gigapan.timelapse.CustomUI(thisObj, settings);
+      if (isMobileDevice && org.gigapan.timelapse.MobileUI) {
+        mobileUI = new org.gigapan.timelapse.MobileUI(thisObj, settings);
+      } else {
+        defaultUI = new org.gigapan.timelapse.DefaultUI(thisObj, settings);
+        if (useCustomUI) {
+          customUI = new org.gigapan.timelapse.CustomUI(thisObj, settings);
+        }
+      }
 
       if(timelineMetadataVisualizerEnabled) {
         timelineMetadataVisualizer = new org.gigapan.timelapse.TimelineMetadataVisualizer(thisObj);
@@ -3433,13 +3496,13 @@ if (!window['$']) {
       //handlePluginVideoTagOverride();
 
       // Must be placed after customUI is created
-      if (settings["scaleBarOptions"] && tmJSON['projection-bounds'])
+      if (!isMobileDevice && settings["scaleBarOptions"] && tmJSON['projection-bounds'])
         scaleBar = new org.gigapan.timelapse.ScaleBar(settings["scaleBarOptions"], thisObj);
 
       if (isHyperwall)
         customUI.handleHyperwallChangeUI();
 
-      if (settings["contextMapOptions"] && tmJSON['projection-bounds'] /*&& typeof google !== "undefined"*/) {
+      if (!isMobileDevice && settings["contextMapOptions"] && tmJSON['projection-bounds'] /*&& typeof google !== "undefined"*/) {
         if (!isHyperwall || fields.showMap)
           contextMap = new org.gigapan.timelapse.ContextMap(settings["contextMapOptions"], thisObj, settings);
       }
@@ -3995,6 +4058,11 @@ if (!window['$']) {
     }
 
     UTIL.log('Timelapse("' + settings["url"] + '")');
-    UTIL.ajax("html", rootAppURL, "templates/player_template.html", loadPlayerControlsTemplate);
+    if (isMobileDevice) {
+      UTIL.ajax("html", rootAppURL, "templates/mobile_player_template.html", loadPlayerControlsTemplate);
+    } else {
+      UTIL.ajax("html", rootAppURL, "templates/player_template.html", loadPlayerControlsTemplate);
+    }
+
   };
 })();
