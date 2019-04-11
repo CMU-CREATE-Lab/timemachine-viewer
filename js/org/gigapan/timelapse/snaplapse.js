@@ -828,7 +828,8 @@ if (!Math.uuid) {
             rowCount = 0;
           }
           themeTitle = waypointTitle.slice(1);
-          themeEnabled = typeof(csvRow['Enabled']) === "undefined" || csvRow['Enabled'].trim() === "TRUE" || csvRow['Enabled'].trim() === "" ? true : false;
+          // Include legacy case of no 'Enabled' column
+          themeEnabled = typeof(csvRow['Enabled']) === "undefined" || csvRow['Enabled'].trim().toLowerCase() === "true" ? true : false;
 
           // Sanitize
           themeId = themeTitle.replace(/ /g,"_").replace(/[^a-zA-Z0-9-_]/g, '').toLowerCase();
@@ -861,7 +862,8 @@ if (!Math.uuid) {
           }
           storyTitle = csvRow['Annotation Title'] ? csvRow['Annotation Title'].trim() : waypointTitle.slice(2);
           storyDescription = waypointText.trim();
-          storyEnabled = typeof(csvRow['Enabled']) === "undefined" || csvRow['Enabled'].trim() === "TRUE" || csvRow['Enabled'].trim() === "" ? true : false;
+          // Include legacy case of no 'Enabled' column
+          storyEnabled = typeof(csvRow['Enabled']) === "undefined" || csvRow['Enabled'].trim().toLowerCase() === "true" ? true : false;
 
           // Sanitize
           storyId = waypointTitle.slice(2).replace(/ /g,"_").replace(/[^a-zA-Z0-9-_]/g, '').toLowerCase();
