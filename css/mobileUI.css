@@ -321,7 +321,3 @@ html.forced-portrait {
 .mobileUI .customDialog .ui-dialog-titlebar {
   display: none;
 }
-
-.mobileUI .etDrawerLearnMoreExit, .mobileUI .etDrawerLearnMoreExpand {
-  top: 73px;
-}
