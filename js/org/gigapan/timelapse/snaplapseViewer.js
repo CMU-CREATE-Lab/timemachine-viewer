@@ -148,6 +148,7 @@ if (!org.gigapan.timelapse.snaplapse) {
     var $createSubtitle_dialog = $("#" + composerDivId + " .createSubtitle_dialog");
     var $keyframeContainer = $("#" + composerDivId + " .snaplapse_keyframe_container");
     var $sortable;
+    var $waypointDrawerContainerMain = $("#" + viewerDivId + " .waypointDrawerContainerMain");
 
     // Parameters
     var rootURL;
@@ -189,14 +190,12 @@ if (!org.gigapan.timelapse.snaplapse) {
     var hideCustomUI = function() {
       if(!isHidingCustomUI && useRecordingMode) {
         isHidingCustomUI = true;
-        $("#" + viewerDivId + " .googleLogo").remove();
         $("#" + viewerDivId + " .sideToolBar").hide();
         $("#" + viewerDivId + " .scaleBarContainer").hide();
       }
       if (!isHidingCustomUI) {
         isHidingCustomUI = true;
         $("#" + viewerDivId + " .sideToolBar").hide();
-        $("#" + viewerDivId + " .googleLogo").css("bottom", "-=45px");
         $("#" + viewerDivId + " .toggleContextMapBtn").hide();
         $("#" + viewerDivId + " .contextMapResizer").hide();
         $("#" + viewerDivId + " .customTimeline").hide();
@@ -226,7 +225,6 @@ if (!org.gigapan.timelapse.snaplapse) {
       if (isHidingCustomUI) {
         isHidingCustomUI = false;
         $("#" + viewerDivId + " .sideToolBar").show();
-        $("#" + viewerDivId + " .googleLogo").css("bottom", "+=45px");
         $("#" + viewerDivId + " .toggleContextMapBtn").show();
         $("#" + viewerDivId + " .contextMapResizer").show();
         $("#" + viewerDivId + " .customTimeline").show();
@@ -330,10 +328,13 @@ if (!org.gigapan.timelapse.snaplapse) {
     this.animateTourOverlayAndPlay = animateTourOverlayAndPlay;
 
     var initializeSnaplapseUI = function() {
-      UTIL.touchHorizontalScroll($keyframeContainer);
-      if (orientation == "vertical") {
+      if (uiEnabled && orientation == "vertical") {
+        $waypointDrawerContainerMain.show();
+        $(".waypointDrawerContainerToggle").on("click", function() {
+          $waypointDrawerContainerMain.toggleClass("waypointDrawerClosed");
+        });
         $("#" + composerDivId).addClass("vertical");
-        $(".etMobileWaypointDrawerContainer").append($("#" + composerDivId));
+        $(".etDrawerProductHighlights").append($("#" + composerDivId));
       }
       if (!usePresentationSlider && uiEnabled) {
         createEditorToolbar();
@@ -356,6 +357,7 @@ if (!org.gigapan.timelapse.snaplapse) {
 
       // Configure the keyframe list's selectable handlers
       if (uiEnabled) {
+        UTIL.touchHorizontalScroll($keyframeContainer);
         $sortable = $("#" + composerDivId + " .snaplapse_keyframe_list");
         $sortable.sortable({
           axis: "x",
@@ -413,10 +415,10 @@ if (!org.gigapan.timelapse.snaplapse) {
 
       if (uiEnabled) {
         setPresentationMode(startEditorFromPresentationMode);
+        $("#" + composerDivId).on("click", ".snaplapse_keyframe_list_item", function(event, customData) {
+          clickWaypoint(event, customData);
+        });
       }
-      $("#" + composerDivId).on("click", ".snaplapse_keyframe_list_item", function(event, customData) {
-        clickWaypoint(event, customData);
-      });
     };
 
     var createDialogWindows = function() {
@@ -1693,7 +1695,7 @@ if (!org.gigapan.timelapse.snaplapse) {
     };
 
     var prepareKeyFrameThumbnail = function(keyframe, insertionIndex) {
-      if (thumbnailUrlList.length > 0 || useThumbnailServe) {
+      if (thumbnailUrlList.length > 0 || useThumbnailServer) {
         // Call thumbnail server to generate URL or pull
         // from list of provided thumbnail URLs, which is
         // assumed to be in order of how thumbnails will be displayed
@@ -1745,7 +1747,9 @@ if (!org.gigapan.timelapse.snaplapse) {
         selectAndGo($("#" + targetId), keyframeId, null, null, null, false);
       }
 
-      $(".etMobileWaypointDrawerContainer").removeClass("maximized");
+      if (isMobileDevice) {
+        $(".waypointDrawerContainer").removeClass("maximized");
+      }
 
       if (!wayPointClickedByAutoMode)
         UTIL.addGoogleAnalyticEvent('button', 'click', 'editor-go-to-keyframe=' + keyframe.unsafe_string_frameTitle);
@@ -1762,8 +1766,8 @@ if (!org.gigapan.timelapse.snaplapse) {
       }
       if (!$select.length) return;
       if (usePresentationSlider) {
-        $sortable.children().children().children(".snaplapse_keyframe_list_item_thumbnail_overlay_presentation").removeClass("thumbnail_highlight");
-        $select.children().children(".snaplapse_keyframe_list_item_thumbnail_overlay_presentation").addClass("thumbnail_highlight");
+        $sortable.find(".snaplapse_keyframe_list_item_thumbnail_overlay_presentation").removeClass("thumbnail_highlight");
+        $select.find(".snaplapse_keyframe_list_item_thumbnail_overlay_presentation").addClass("thumbnail_highlight");
         timelapse.updateShareViewTextbox();
       }
       if (typeof (keyframeId) != "undefined") {

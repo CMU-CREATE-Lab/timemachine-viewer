@@ -201,6 +201,14 @@ if (!org.gigapan) {
     return true;
   };
 
+  org.gigapan.Util.isIOSDevice = function() {
+    return isIOSDevice;
+  };
+
+  org.gigapan.Util.isAndroidDevice = function() {
+    return isAndroidDevice;
+  }
+
   org.gigapan.Util.isChrome = function() {
     return isChromeUserAgent;
   };
@@ -789,10 +797,12 @@ if (!org.gigapan) {
     var el = $elem[0];
     var scrollStartPos = 0;
     el.addEventListener("touchstart", function(e) {
+      if ($(this).hasClass("disableScroll")) return;
       scrollStartPos = this.scrollTop + e.touches[0].pageY;
       e.preventDefault();
     }, false);
     el.addEventListener("touchmove", function(e) {
+      if ($(this).hasClass("disableScroll")) return;
       this.scrollTop = scrollStartPos - e.touches[0].pageY;
       e.preventDefault();
     }, false);

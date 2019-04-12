@@ -146,8 +146,12 @@ if (!window['$']) {
     var skippedFramesAtStart = ( typeof (settings["skippedFramesAtStart"]) == "undefined" || settings["skippedFramesAtStart"] < 0) ? 0 : settings["skippedFramesAtStart"];
     var enableMetadataCacheBreaker = settings["enableMetadataCacheBreaker"] || false;
     var enableContextMapOnDefaultUI = ( typeof (settings["enableContextMapOnDefaultUI"]) == "undefined") ? false : settings["enableContextMapOnDefaultUI"];
+    // TODO: Remove the need for this?
     var datasetType = settings["datasetType"];
-    var useCustomUI = ( typeof (settings["useCustomUI"]) == "undefined") ? (settings["datasetType"] == "landsat" || settings["datasetType"] == "modis") : settings["useCustomUI"];
+    // TODO: Remove the need for this?
+    var useCustomUI = settings["datasetType"] == "landsat" || settings["datasetType"] == "modis" || settings["uiType"] == "customUI";
+    var uiType = typeof(settings["uiType"]) == "undefined" ? (useCustomUI ? "customUI" : "defaultUI") : settings["uiType"];
+    // TODO: This is probably not working as intended or even fully necessary now
     var useTouchFriendlyUI = ( typeof (settings["useTouchFriendlyUI"]) == "undefined") ? false : settings["useTouchFriendlyUI"];
     var useThumbnailServer = ( typeof (settings["useThumbnailServer"]) == "undefined") ? true : settings["useThumbnailServer"];
     var showSizePicker = settings["showSizePicker"] || false;
@@ -155,6 +159,7 @@ if (!window['$']) {
       width: 250,
       height: 142
     };
+    var waypointSliderOrientation = (settings["presentationSliderSettings"] && typeof(settings["presentationSliderSettings"]["orientation"]) == "undefined") ? "horizontal" : settings["presentationSliderSettings"]["orientation"];
     var minViewportHeight = 370;
     var minViewportWidth = 540;
     var defaultLoopDwellTime = 1.0;
@@ -401,6 +406,10 @@ if (!window['$']) {
 
     this.useCustomUI = function() {
       return useCustomUI;
+    };
+
+    this.getUIType = function() {
+      return uiType;
     };
 
     this.getStartDwell = function() {
@@ -3043,7 +3052,7 @@ if (!window['$']) {
           unsafe_sharedData = unsafe_sharedVars.presentation;
           snaplapseForSharedData = snaplapseForPresentationSlider;
           var $keyframeContainer = snaplapseForPresentationSlider.getSnaplapseViewer().getKeyframeContainer();
-          if (settings["presentationSliderSettings"] && settings["presentationSliderSettings"]["orientation"] != "vertical") {
+          if (waypointSliderOrientation == "horizontal") {
             addViewerBottomMargin($keyframeContainer.outerHeight() - 1);
           }
           UTIL.addGoogleAnalyticEvent('window', 'onHashChange', 'url-load-presentation');
@@ -3075,34 +3084,67 @@ if (!window['$']) {
     this.loadSharedDataFromUnsafeURL = loadSharedDataFromUnsafeURL;
 
     var loadUnsafeWaypointsJSON = function(unsafeWaypointsJSON) {
-      if (!unsafeWaypointsJSON) return;
+      if (!unsafeWaypointsJSON || !unsafeWaypointsJSON['waypoints']) return;
+
       var snaplapseForPresentationSlider = timelapse.getSnaplapseForPresentationSlider();
       if (snaplapseForPresentationSlider) {
         var waypointsJSON = snaplapseForPresentationSlider.unsafeWaypointsJSONtoJSON(unsafeWaypointsJSON)
         var snaplapseViewerForSharedData = snaplapseForPresentationSlider.getSnaplapseViewer();
-        $(".etDrawerContainerTitle").text(unsafeWaypointsJSON['product-title']);
-        $(".etDrawerProductAboutDescriptionContent").text(unsafeWaypointsJSON['product-about']);
-        $(".etDrawerProductHighlightsHeading").text(unsafeWaypointsJSON['product-highlights-title']);
+        var $keyframeContainer = snaplapseForPresentationSlider.getSnaplapseViewer().getKeyframeContainer();
+
+        var $waypointDrawerContainerMain = $("#" + viewerDivId + " .waypointDrawerContainerMain");
+        var $waypointDrawerContainer = $("#" + viewerDivId + " .waypointDrawerContainer");
+        var $waypointDrawerContainerHeader = $("#" + viewerDivId + " .waypointDrawerContainerHeader");
+
+        if (waypointSliderOrientation == "horizontal") {
+          addViewerBottomMargin($keyframeContainer.outerHeight() - 1);
+        }
+        $(".etDrawerContainerTitle").text(unsafeWaypointsJSON['product-title'] || "My Project");
+        if (unsafeWaypointsJSON['product-about']) {
+          $(".etDrawerProductAboutDescriptionContent").text(unsafeWaypointsJSON['product-about']);
+        } else {
+          $(".etDrawerAbout, .etDrawerAbout + .etDrawerSectionSeparator").hide();
+        }
+        $(".etDrawerProductHighlightsHeading").text(unsafeWaypointsJSON['product-highlights-title'] || "Project Highlights");
         $(".etDrawerLearnMoreExit").hide();
-        $(".etMobileWaypointDrawerContainer").show();
         snaplapseViewerForSharedData.loadNewSnaplapse(waypointsJSON, false);
 
-        $(".etDrawerProductAboutDescriptionMoreButton").on("click", function() {
-          $(".etDrawerProductLearnMoreContent").show();
-          $(".presentationSlider").hide();
-          $(".etDrawerProductLearnMoreContent").load(rootAppURL + "templates/" + unsafeWaypointsJSON['learn-more-template-name']);
+        $(".etDrawerLearnMoreExpand").on("click", function() {
+          $(".etDrawerProductLearnMoreContent").load(rootAppURL + "templates/" + unsafeWaypointsJSON['learn-more-template-name'], function() {
+            $(".etDrawerProductLearnMoreContent").show("slide", { direction: "right" }, 250);
+          });
+          $(".etDrawerProductAboutDescription, .etDrawerProductHighlightsHeading, .etDrawerSectionSeparator").hide();
           $(".etDrawerLearnMoreExit").show();
+
+          $(".presentationSlider, .etDrawerLearnMoreExpand").hide();
           $(".etDrawerProductAboutHeading").addClass("maximized");
+
         });
 
         $(".etDrawerLearnMoreExit").on("click", function() {
           $(this).hide();
           $(".etDrawerProductLearnMoreContent").hide();
-          $(".presentationSlider").show();
+          $(".etDrawerLearnMoreExpand, .etDrawerSectionSeparator").show();
+          $(".presentationSlider, .etDrawerProductAboutDescription, .etDrawerProductHighlightsHeading").show("slide", { direction: "left" }, 250);
           $(".etDrawerProductAboutHeading").removeClass("maximized");
         });
 
+        if (mobileUI) {
+          $waypointDrawerContainer.show();
+        } else {
+          $waypointDrawerContainerMain.removeClass("hidden");
+          setTimeout(function() {
+            $waypointDrawerContainerMain.removeClass("waypointDrawerClosed");
+          }, 50);
 
+          $waypointDrawerContainer.on("scroll", function(e) {
+            if (this.scrollTop == 0) {
+              $waypointDrawerContainerHeader.removeClass("scrolled");
+            } else {
+              $waypointDrawerContainerHeader.addClass("scrolled");
+            }
+          });
+        }
       }
     };
     this.loadUnsafeWaypointsJSON = loadUnsafeWaypointsJSON;
@@ -3478,13 +3520,11 @@ if (!window['$']) {
         changeDetectionTool = new ChangeDetectionTool(thisObj, thumbnailTool, changeDetectionOptions);
       }
 
+      defaultUI = new org.gigapan.timelapse.DefaultUI(thisObj, settings);
       if (isMobileDevice && org.gigapan.timelapse.MobileUI) {
         mobileUI = new org.gigapan.timelapse.MobileUI(thisObj, settings);
-      } else {
-        defaultUI = new org.gigapan.timelapse.DefaultUI(thisObj, settings);
-        if (useCustomUI) {
-          customUI = new org.gigapan.timelapse.CustomUI(thisObj, settings);
-        }
+      } else if (useCustomUI) {
+        customUI = new org.gigapan.timelapse.CustomUI(thisObj, settings);
       }
 
       if(timelineMetadataVisualizerEnabled) {
@@ -3892,6 +3932,12 @@ if (!window['$']) {
 
       // Hide the UI because it is not ready yet
       $viewerDiv.css("visibility", "hidden");
+
+      if (isMobileDevice) {
+        $("#" + timeMachineDivId).addClass("mobileUI");
+      } else if (uiType == "materialUI") {
+        $("#" + timeMachineDivId).addClass("materialUI");
+      }
 
       var tmp = document.getElementById("{REPLACE}");
       $(tmp).attr("id", timeMachineDivId + "_timelapse");

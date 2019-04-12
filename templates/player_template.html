@@ -27,6 +27,43 @@
 
   <div id="{REPLACE}" class="tiledContentHolder"></div>
 
+  <div class="waypointDrawerContainerMain waypointDrawerClosed hidden">
+    <div class="waypointDrawerContainer">
+      <div class="waypointDrawerContainerHeader">
+        <div class="etDrawerContainerTitle"></div>
+      </div>
+      <div class="etDrawerContent">
+        <div class="etDrawerAbout">
+          <div class="etDrawerProductAboutHeading">
+            <span class="etDrawerLearnMoreExit"></span>
+            <span class="etDrawerLearnMoreExpand"></span>
+            About the project
+          </div>
+          <div class="etDrawerProductAboutDescription">
+            <div class="etDrawerProductAboutDescriptionContent"></div>
+          </div>
+          <div class="etDrawerProductLearnMoreContainer">
+            <div class="etDrawerProductLearnMoreContent"></div>
+          </div>
+        </div>
+        <div class="etDrawerSectionSeparator"></div>
+        <div class="etDrawerProductHighlights">
+          <div class="etDrawerProductHighlightsHeading"></div>
+        </div>
+      </div>
+    </div>
+    <div class="waypointDrawerContainerToggle" title="Toggle learn more">
+      <div class="waypointDrawerContainerToggleIcon"></div>
+    </div>
+    <div class="waypointDrawerSideControlsContainer"></div>
+  </div>
+
+  <div class="addressLookupContainer">
+    <input class="addressLookup" placeholder="Search for a location">
+    <span class="addressLookupSearchIcon" title="Toggle search"></span>
+    <span class="addressLookupClearIcon" title="Clear search"></span>
+  </div>
+
   <div class="captureTime" title="Capture time">
     <div class="currentCaptureTime"></div>
   </div>
@@ -53,7 +90,7 @@
     <button class="toggleSpeed" id="slowSpeed" title="Toggle playback speed">
       Slow
     </button>
-    <button class="share customButton" title="Share current view">
+    <button class="share" title="Share">
       Share
     </button>
     <button class="tool customButton" title="Tools">
@@ -109,10 +146,29 @@
     <li data-rate="0" data-title="Custom">Custom</li>
   </ul>
 
-  <div class="shareView">
+  <div class="shareViewModal">
+    <div id="share-link-container-main">
+      <p class="heading">Share Current View</p>
+      <div class="share-link-container">
+        <div class="shareurl always-selectable"></div>
+        <span class="copy-text-button shareurl-copy-text-button"></span>
+      </div>
+    </div>
+    <div id="embed-link-container-main">
+      <br>
+      <p class="heading">Embed Current View</p>
+      <div class="embed-link-container">
+        <div class="shareembed always-selectable"></div>
+        <span class="copy-text-button shareembed-copy-text-button"></span>
+      </div>
+    </div>
+    <span class="close-share"></span>
+  </div>
+
+  <div class="shareView customDialog">
     <div class="ui-dialog-titlebar ui-widget-header ui-corner-all ui-helper-clearfix ui-draggable-handle">
       <span id="ui-id-5" class="ui-dialog-title">Share a View</span>
-      <button type="button" class="ui-button ui-widget ui-state-default ui-corner-all ui-button-icon-only ui-dialog-titlebar-close" role="button" title="Close">
+      <button type="button" class="ui-button ui-widget ui-state-default ui-corner-all ui-button-icon-only ui-dialog-titlebar-close close-share" role="button" title="Close">
         <span class="ui-button-icon-primary ui-icon ui-icon-closethick"></span>
         <span class="ui-button-text">Close</span>
       </button>

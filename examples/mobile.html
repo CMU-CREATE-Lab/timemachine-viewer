@@ -9,6 +9,7 @@
     <link href="../css/contextMap.css" rel="stylesheet" type="text/css"/>
     <link href="../css/scaleBar.css" rel="stylesheet" type="text/css"/>
     <link href="../css/customUI.css" rel="stylesheet" type="text/css"/>
+    <link href="../css/materialUI.css" rel="stylesheet" type="text/css"/>
     <link href="../css/mobileUI.css" rel="stylesheet" type="text/css"/>
     <link href="../css/leaflet/leaflet.css" rel="stylesheet" type="text/css"/>
 
@@ -76,9 +77,13 @@
             orientation: "vertical",
             onLoadAnimation: "none" // or "zoom"
           },
-          datasetType: "landsat",
           viewerType: "canvas",
           mediaType: ".mp4",
+          datasetType: "landsat",
+          uiType: "materialUI",
+          shareViewDialogType: "modal",
+          rootShareViewUrl: "https://earthengine.google.com/timelapse",
+          rootShareEmbedUrl: "https://earthengine.google.com/iframes/timelapse_player_embed.html",
           apiKeys: {'googleMaps': 'AIzaSyAXCgU8iGYvPMnSAcmsy5X3o2b-Np_Bo7Q'},
           playOnLoad: false,
           enablePostMessageAPI: true,
@@ -88,13 +93,9 @@
               post("from-timemachine-slide-changed", waypoint.title);
             });
             // Example way to load a tour
-
             //timelapseObj.loadSharedDataFromUnsafeURL("#tour=EEDkDAVnCdAw_SiI__DkDAFtUaZ_eRrM__DkDAq6saZGdRlQ__BkDACrDZB9QQxS__Untitled_B", true);
             //timelapseObj.loadSharedDataFromUnsafeURL("#presentation=ENDkDPWPyXs9wR6gBAmazon%20Deforestation%20in%20Rondonia_Rondonia_DkDT37Hawc4T8VA%20large-scale%20hydroelectric%20project%20in%20the%20Brazilian%20Amazon%20rainforest_Tucurui%20Dam_BkDTiTRWWTmR6gBRiver%20meandering%20in%20the%20Amazon_Meander_DkDK9ySWib2R2dThe%20abandonment%20of%20a%20river%20channel%20and%20the%20formation%20of%20a%20new%20river%20channel_Bolivia%20Avulsion_DkDU28jbt4xTkcErosion%20in%20the%20Amazon%27s%20mouth_Mouth%20of%20Amazon_DkDcOeLoWayQ6gBThe%20Cape%20and%20islands%20are%20subject%20to%20massive%20coastal%20erosion_South%20Cape%20Cod_BkDPt3KmUZ3P6gBThe%20Outer%20Banks%20often%20suffers%20significant%20beach%20erosion%20during%20storms_Outer%20Banks%20NC_DkDFGq9mKcYi8VThe%20shrinking%20and%20drying%20up%20of%20the%20Lake%20Urmia_Lake%20Urmia_DkDOcGQprwpkmRThe%20shrinking%20of%20the%20Aral%20Sea%20destroys%20fishing%20industry%20and%20brings%20unemployment%20and%20public%20health%20problems_Aral%20Sea_DkDSq1joU5sk6gBThe%20expansion%20of%20irrigation%20systems%20near%20the%20Aral%20Sea_Aral%20Expansion_BkDcM7nkdxUhgZCenter-pivot%20irrigation%20irrigates%20crops%20with%20sprinklers%20centered%20on%20the%20pivot%2C%20creating%20a%20green%20circular%20pattern_Saudi%20Irrigation_CkDWmblQtbBxuXBushfires%20in%20Australia%20are%20frequent%20during%20the%20hotter%20months%20of%20the%20year_Australia%20Bushfire_DkDWZuFgTJ1tycThe%20eruption%20of%20Mount%20Pinatubo%20on%20June%2015%2C%201991_Pinatubo_Untitled_B");
-            // TODO: This conditional is not needed and is only here for this specific mobile test.
-            if (org.gigapan.Util.isMobileDevice()) {
-              timelapseObj.loadUnsafeWaypointsJSON({"product-title":"Earth Timelapse","product-about":"Timelapse is a global, zoomable video that lets you see how the Earth has changed over the past 32 years.","learn-more-template-name":"learn_more_template.html","product-highlights-title":"Timelapses around the world","waypoints":[{"title":"My first location","description":"My first location description","thumbnail-path":"../../foo.png","view":{"bbox":{"nw":{"lat":19.17,"lng":0.621},"se":{"lat":2.71,"lng":23.79}}}},{"title":"My second location","description":"My second location description","thumbnail-path":"../../foo2.png","view":{"center":{"lat":35.85,"lng":-90.409},"zoom":5},"start-capture-time":"2001","playback-speed":0}]})
-            }
+            timelapseObj.loadUnsafeWaypointsJSON({"product-title":"Earth Timelapse","product-about":"Timelapse is a global, zoomable video that lets you see how the Earth has changed over the past 32 years.","learn-more-template-name":"learn_more_template.html","product-highlights-title":"Timelapses around the world","waypoints":[{"title":"My first location","description":"My first location description","view":{"bbox":{"nw":{"lat":19.17,"lng":0.621},"se":{"lat":2.71,"lng":23.79}}}},{"title":"My second location","description":"My second location description","view":{"center":{"lat":35.85,"lng":-90.409},"zoom":5},"start-capture-time":"2001","playback-speed":0}]})
           },
           scaleBarOptions: {
             scaleBarDiv: "scaleBar1"
@@ -102,7 +103,6 @@
           contextMapOptions: {
             contextMapDiv: "contextMap1"
           },
-          showHomeBtn: false,
           showAddressLookup: true
         };
         timelapse = new org.gigapan.timelapse.Timelapse("timeMachine", settings);

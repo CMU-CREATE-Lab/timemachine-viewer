@@ -99,6 +99,24 @@ if (!org.gigapan.timelapse.Timelapse) {
     // Class variables
     //
 
+    // Settings
+    var useCustomUI = timelapse.useCustomUI();
+    var showShareBtn = ( typeof (settings["showShareBtn"]) == "undefined") ? ( useCustomUI ? false : true) : settings["showShareBtn"];
+    var showHomeBtn = ( typeof (settings["showHomeBtn"]) == "undefined") ? false : settings["showHomeBtn"];
+    var showFullScreenBtn = ( typeof (settings["showFullScreenBtn"]) == "undefined") ? true : settings["showFullScreenBtn"];
+    var showMainControls = ( typeof (settings["showMainControls"]) == "undefined") ? true : settings["showMainControls"];
+    var showZoomControls = ( typeof (settings["showZoomControls"]) == "undefined") ? true : settings["showZoomControls"];
+    var showPanControls = ( typeof (settings["showPanControls"]) == "undefined") ? true : settings["showPanControls"];
+    var showEditorOnLoad = ( typeof (settings["showEditorOnLoad"]) == "undefined") ? false : settings["showEditorOnLoad"];
+    var showThumbnailTool = ( typeof (settings["showThumbnailTool"]) == "undefined") ? false : settings["showThumbnailTool"];
+    var editorEnabled = timelapse.isEditorEnabled();
+    var annotatorEnabled = timelapse.isAnnotatorEnabled();
+    var changeDetectionEnabled = timelapse.isChangeDetectionEnabled();
+    var showChangeDetectionOnLoad = ( typeof (settings["showChangeDetectionOnLoad"]) == "undefined") ? false : settings["showChangeDetectionOnLoad"];
+    var socialMediaSettings = settings["socialMedia"] || {};
+    var waypointSliderOrientation = (settings["presentationSliderSettings"] && typeof(settings["presentationSliderSettings"]["orientation"]) == "undefined") ? "horizontal" : settings["presentationSliderSettings"]["orientation"];
+    var shareViewDialogType = typeof(settings["shareViewDialogType"]) == "undefined" ? (isMobileDevice ? "modal" : "drawer") : settings["shareViewDialogType"];
+
     // Objects
     var visualizer = timelapse.getVisualizer();
     var videoset = timelapse.getVideoset();
@@ -137,10 +155,16 @@ if (!org.gigapan.timelapse.Timelapse) {
     var $thumbnailPreviewCopyTextButton = $("#" + viewerDivId + " .thumbnail-preview-copy-text-button");
     var $thumbnailPreviewCopyDataButton = $("#" + viewerDivId + " .thumbnail-preview-copy-data-button");
     var $thumbnailPreviewCopyDownloadButton = $("#" + viewerDivId + " .thumbnail-preview-copy-download-button");
-    var $shareViewDialog = $("#" + viewerDivId + " .shareView");
-    var $shareViewDialogClose = $("#" + viewerDivId + " .ui-dialog-titlebar-close");
+    var $shareDialog = $("#" + viewerDivId + " .shareView");
+    if (shareViewDialogType == "modal") {
+      $shareDialog = $("#" + viewerDivId + " .shareViewModal");
+    }
+    var $shareButton = $("#" + viewerDivId + " .share")
+    var $shareDialogClose = $("#" + viewerDivId + " .close-share");
     var $shareUrl = $("#" + viewerDivId + " .shareurl");
+    var $shareEmbedUrl = $("#" + viewerDivId + " .shareembed")
     var $shareUrlCopyTextButton = $("#" + viewerDivId + " .shareurl-copy-text-button");
+    var $shareEmbedUrlCopyTextButton = $("#" + viewerDivId + " .shareembed-copy-text-button");
     var $shareAccordion = $("#" + viewerDivId + " .shareView .accordion");
     var $editorCheckboxContainer = $("#" + viewerDivId + " .toolDialog .customCheckboxContainer[data-mode='editor']");
     var $annotatorCheckboxContainer = $("#" + viewerDivId + " .toolDialog .customCheckboxContainer[data-mode='annotator']");
@@ -149,25 +173,12 @@ if (!org.gigapan.timelapse.Timelapse) {
     var $annotatorCheckbox = $("#" + viewerDivId + " .toolDialog .customCheckbox[value='annotator']");
     var $changeDetectionCheckbox = $("#" + viewerDivId + " .toolDialog .customCheckbox[value='change-detection']");
     var $changeDetectionControl = $("#" + viewerDivId + " .toolDialog .changeDetectionControl");
-
-    // Settings
-    var useCustomUI = timelapse.useCustomUI();
-    var showShareBtn = ( typeof (settings["showShareBtn"]) == "undefined") ? ( useCustomUI ? false : true) : settings["showShareBtn"];
-    var showHomeBtn = ( typeof (settings["showHomeBtn"]) == "undefined") ? true : settings["showHomeBtn"];
-    var showFullScreenBtn = ( typeof (settings["showFullScreenBtn"]) == "undefined") ? true : settings["showFullScreenBtn"];
-    var showMainControls = ( typeof (settings["showMainControls"]) == "undefined") ? true : settings["showMainControls"];
-    var showZoomControls = ( typeof (settings["showZoomControls"]) == "undefined") ? true : settings["showZoomControls"];
-    var showPanControls = ( typeof (settings["showPanControls"]) == "undefined") ? true : settings["showPanControls"];
-    var showEditorOnLoad = ( typeof (settings["showEditorOnLoad"]) == "undefined") ? false : settings["showEditorOnLoad"];
-    var showThumbnailTool = ( typeof (settings["showThumbnailTool"]) == "undefined") ? false : settings["showThumbnailTool"];
-    var editorEnabled = timelapse.isEditorEnabled();
-    var annotatorEnabled = timelapse.isAnnotatorEnabled();
-    var changeDetectionEnabled = timelapse.isChangeDetectionEnabled();
-    var showChangeDetectionOnLoad = ( typeof (settings["showChangeDetectionOnLoad"]) == "undefined") ? false : settings["showChangeDetectionOnLoad"];
-    var socialMediaSettings = settings["socialMedia"] || {};
+    var $waypointDrawerContainerMain = $("#" + viewerDivId + " .waypointDrawerContainerMain");
+    var $waypointDrawerSideControlsContainer = $("#" + viewerDivId + " .waypointDrawerSideControlsContainer");
 
     // Flags
     var isSafari = UTIL.isSafari();
+    var isMobileDevice = UTIL.isMobileDevice();
     var originalIsPaused;
     var useTouchFriendlyUI = timelapse.useTouchFriendlyUI();
     var timePadding = timelapse.getTimePadding();
@@ -280,8 +291,8 @@ if (!org.gigapan.timelapse.Timelapse) {
       // Create share button
       createShareButton();
       if (!showShareBtn) {
-        $("#" + viewerDivId + " .share").hide();
-        $("#" + viewerDivId + " .shareView").hide();
+        $shareButton.hide();
+        $shareDialog.hide();
       }
       // Create tool button
       if (editorEnabled || annotatorEnabled || changeDetectionEnabled) {
@@ -456,24 +467,65 @@ if (!org.gigapan.timelapse.Timelapse) {
       if (typeof google === "undefined")
         return;
 
-      var $addressLookupElem = $('<input>').attr({
-        size: 35,
-        type: "textbox",
-        id: "addressLookup",
-        "placeholder": "Search for places..."
-      });
+      var $addressLookupElemContainer = $('.addressLookupContainer');
+      if (waypointSliderOrientation == "vertical") {
+        $waypointDrawerSideControlsContainer.append($addressLookupElemContainer);
+      }
 
-      $addressLookupElem.wrap("<div id='addressLookupContainer'>").parent().appendTo("#" + viewerDivId);
+      var $addressLookupElem = $('.addressLookup');
+      $addressLookupElemContainer.show();
 
-      $('<div class="search-button"><span class="search-button-icon"></span></div>').appendTo("#addressLookupContainer");
+      var $searchBoxClear = $(".addressLookupClearIcon");
+      var $searchBoxIcon = $(".addressLookupSearchIcon")
 
       var autocomplete = new google.maps.places.Autocomplete($addressLookupElem.get(0));
       var geocoder = new google.maps.Geocoder();
 
-      $('#addressLookupContainer .search-button').on("click", function(e) {
+      $searchBoxIcon.on("mouseover mouseout", function() {
+        $addressLookupElem.toggleClass("hover");
+      });
+
+      $searchBoxIcon.on("click", function() {
+        var toggleWidth, paddingRight;
+        if ($addressLookupElem.width() == 0) {
+          var toggleWidth = "200";
+          var paddingRight = "30";
+          $addressLookupElem.focus();
+        } else {
+          toggleWidth = "0";
+          paddingRight = "0"
+        }
+
+        $addressLookupElem.stop().animate({
+          width: toggleWidth,
+          paddingRight: paddingRight
+        });
+      });
+
+      $searchBoxClear.on('click', function() {
+        $addressLookupElem.val("");
+        $(this).hide();
+        $searchBoxIcon.show();
+        $('.pac-container').hide();
+      });
+
+      $addressLookupElem.on("click", function(e) {
         google.maps.event.trigger(autocomplete, 'place_changed');
         return false;
       });
+
+      $addressLookupElem.on("input", function() {
+        if ($(this).val() == "") {
+          $searchBoxClear.hide();
+        } else {
+          $searchBoxClear.show();
+        }
+      });
+
+      // Hack to disable Chrome (and maybe other browser) autofill/complete
+      setTimeout(function() {
+        $addressLookupElem.attr("autocomplete", "null");
+      }, 1000);
 
       google.maps.event.addListener(autocomplete, 'place_changed', function() {
         var place = autocomplete.getPlace();
@@ -552,8 +604,8 @@ if (!org.gigapan.timelapse.Timelapse) {
     this.resetShareThumbnailUI = resetShareThumbnailUI;
 
     var showThumbnailToolWindow = function() {
-      if (!$("#" + viewerDivId + ' .shareView').is(":visible")) {
-        $("#" + viewerDivId + " .share").trigger("click");
+      if (!$shareDialog.is(":visible")) {
+        $shareButton.trigger("click");
       }
     };
     this.showThumbnailToolWindow = showThumbnailToolWindow;
@@ -578,488 +630,542 @@ if (!org.gigapan.timelapse.Timelapse) {
     };
 
     var createShareButton = function() {
-      $("#" + viewerDivId + " .share").button({
-        icons: {
-          primary: "ui-icon-person"
-        },
-        text: true
-      }).click(function() {
-        $("#" + viewerDivId + ' .shareView').toggle("slide", { direction: "right" }, 1);
-        $("#" + viewerDivId + ", #" + viewerDivId + " .shareView").toggleClass("right-panel-active");
-        timelapse.onresize();
-        if ($("#" + viewerDivId).hasClass("right-panel-active")) {
-          updateShareViewTextbox();
-          var snaplapse = timelapse.getSnaplapseForPresentationSlider();
-          if (snaplapse) {
-            var snaplapseViewer = snaplapse.getSnaplapseViewer();
-            if (snaplapseViewer.getCurrentWaypointIndex() == -1 || typeof(EARTH_TIMELAPSE_CONFIG) === "undefined") {
-              $("#" + viewerDivId + " .presentation-mode-share-input").hide();
-            } else  {
-              $("#" + viewerDivId + " .presentation-mode-share-input").show();
-            }
-          }
-          UTIL.addGoogleAnalyticEvent('button', 'click', 'viewer-show-share-dialog');
-          var activeIdx = $shareAccordion.accordion("option", "active");
-          var $activePanel = $($shareAccordion.accordion("instance").panels[activeIdx]);
-          if ($activePanel.hasClass("share-thumbnail")) {
-            setThumbnailToolAspectRatio();
-            timelapse.getThumbnailTool().showCropBox();
-          }
-        } else {
-          disableShareThumbnail();
-          $("#" + timeMachineDivId + " .shareView .waypoint-index, #" + timeMachineDivId + " .shareView .waypoint-only").prop("checked", false);
-        }
-      });
-      $shareViewDialogClose.on("click", function() {
-        $("#" + viewerDivId + " .share").trigger("click");
-      });
-      $shareViewDialog.addClass("customDialog");
-      $shareUrl.focus(function() {
-        $(this).select();
-      }).click(function() {
-        $(this).select();
-      }).mouseup(function(e) {
-        e.preventDefault();
-      });
-      $shareUrlCopyTextButton.button().click(function(event) {
-        $shareUrl.select();
-        document.execCommand('copy');
-        setButtonTooltip("Copied", $shareUrlCopyTextButton);
-      }).hover(function() {
-        setButtonTooltip("Copy to clipboard", $shareUrlCopyTextButton);
-      }, function() {
-        setButtonTooltip("", $shareUrlCopyTextButton);
-      });
-      // Share view accordion
-      if (!showThumbnailTool) {
-        removeAccordionPanel("share-thumbnail");
+
+      if (waypointSliderOrientation == "vertical") {
+        $waypointDrawerSideControlsContainer.append($shareButton);
       }
-      $shareAccordion.accordion({
-        heightStyle: "content",
-        animate: false,
-        beforeActivate: function(event, ui) {
-          if (ui.oldPanel.hasClass("share-thumbnail")) {
+
+      if (shareViewDialogType == "modal") {
+        if (isMobileDevice) {
+          $("#embed-link-container-main").hide();
+        }
+        $shareDialog.dialog({
+          resizable: false,
+          autoOpen: false,
+          dialogClass: "customDialog",
+          appendTo: "#" + viewerDivId,
+          modal: true
+        });
+        // Create share button for modal
+        $shareButton.show().button({
+          icons: {
+            primary: "ui-icon-custom-share-black"
+          },
+          text: false
+        }).on("click", function() {
+          $shareUrl.text(timelapse.getSettings()['rootShareViewUrl'] + timelapse.getShareView());
+          $shareEmbedUrl.text('<iframe width="1080" height="600" src="' + timelapse.getSettings()['rootShareEmbedUrl'] + timelapse.getShareView() + '" frameborder="0" allowfullscreen></iframe>');
+          $shareDialog.dialog('open');
+        });
+        $shareDialogClose.on("click", function() {
+          $shareDialog.dialog('close');
+        });
+        var shareCopyButtons = [$shareUrlCopyTextButton[0], $shareEmbedUrlCopyTextButton[0]].filter(function(e){return e});
+        $(shareCopyButtons).click(function(event) {
+          var $this = $(this);
+          var element = $this.prev(".always-selectable")[0];
+          var range, select;
+          if (document.body.createTextRange) {
+            range = document.body.createTextRange();
+            range.moveToElementText(element);
+            range.select();
+          } else if (document.createRange) {
+            range = document.createRange();
+            range.selectNode(element)
+            select = window.getSelection();
+            select.removeAllRanges();
+            select.addRange(range);
+          }
+          document.execCommand('copy');
+          setButtonTooltip("Copied", $this, 750);
+          window.getSelection().removeAllRanges();
+        });
+      } else {
+        // Create share button for panel
+        $shareButton.show().addClass('customButton').button({
+          icons: {
+            primary: "ui-icon-person"
+          },
+          text: true
+        }).click(function() {
+          $("#" + viewerDivId + ' .shareView').toggle("slide", { direction: "right" }, 1);
+          $("#" + viewerDivId + ", #" + viewerDivId + " .shareView").toggleClass("right-panel-active");
+          timelapse.onresize();
+          if ($("#" + viewerDivId).hasClass("right-panel-active")) {
+            updateShareViewTextbox();
+            var snaplapse = timelapse.getSnaplapseForPresentationSlider();
+            if (snaplapse) {
+              var snaplapseViewer = snaplapse.getSnaplapseViewer();
+              if (snaplapseViewer.getCurrentWaypointIndex() == -1 || typeof(EARTH_TIMELAPSE_CONFIG) === "undefined") {
+                $("#" + viewerDivId + " .presentation-mode-share-input").hide();
+              } else  {
+                $("#" + viewerDivId + " .presentation-mode-share-input").show();
+              }
+            }
+            UTIL.addGoogleAnalyticEvent('button', 'click', 'viewer-show-share-dialog');
+            var activeIdx = $shareAccordion.accordion("option", "active");
+            var $activePanel = $($shareAccordion.accordion("instance").panels[activeIdx]);
+            if ($activePanel.hasClass("share-thumbnail")) {
+              setThumbnailToolAspectRatio();
+              timelapse.getThumbnailTool().showCropBox();
+            }
+          } else {
             disableShareThumbnail();
-          }
-          if (ui.newPanel.hasClass("share-thumbnail")) {
-            enableShareThumbnail();
-          }
-        }
-      });
-      // Create spinners
-      $.widget("ui.captureTimeSpinner", $.ui.spinner, {
-        options: {
-          step: 1,
-          page: 5,
-          min: 0,
-          currentIndex: 0,
-          max: timelapse.getCaptureTimes().length - 1
-        },
-        _parse: function(value) {
-          var captureTimes = timelapse.getCaptureTimes();
-          if (typeof value === "string") {
-            var isNumber = !isNaN(value);
-            if (isNumber) {
-              var decimalPlaceContent = timelapse.getCurrentCaptureTime().split(".");
-              var numDecimalPlaces = typeof(decimalPlaceContent[1]) !== "undefined" ? decimalPlaceContent[1].length : 0;
-              var parsedNumber = parseFloat(value);
-              if (parsedNumber > 0 && numDecimalPlaces > 0) {
-                value = parsedNumber.toFixed(numDecimalPlaces);
-              }
-            }
-            var newIndex = captureTimes.indexOf(value);
-            // TODO: If it's not a number, assume a date. What if our labels are all text or some combintation of text and numbers?
-            if (!isNumber) {
-              var minTime = new Date(captureTimes[0].replace(/-/g, "/")).getTime();
-              var maxTime = new Date(captureTimes[captureTimes.length - 1].replace(/-/g, "/")).getTime();
-              var dateObj = new Date(value.replace(/-/g, "/"));
-              var dateObjTime = dateObj.getTime();
-              if (dateObj != "Invalid Date") {
-                if (dateObjTime > maxTime)  {
-                  newIndex = this.options.max;
-                } else if (dateObjTime < minTime) {
-                  newIndex = this.options.min;
-                } else if (newIndex == -1) {
-                  newIndex = timelapse.findExactOrClosestCaptureTime(value);
-                }
-              }
-            } else {
-              if (value < captureTimes[this.options.min]) {
-                newIndex = this.options.min;
-              } else if (value > captureTimes[this.options.max]) {
-                newIndex = this.options.max;
-              }
-            }
-            if (newIndex == -1) {
-              newIndex = this.options.currentIndex;
-            }
-            this.options.currentIndex = newIndex;
-            return newIndex;
-          } else {
-            // In this case, value is the index.
-            return value;
-          }
-
-        },
-        _format: function(value) {
-          var format = timelapse.getCaptureTimes()[value];
-          return format;
-        }
-      });
-      $startingTimeSpinner.captureTimeSpinner({
-        change: function(event, ui) {
-          var endingVal = $endingTimeSpinner.captureTimeSpinner("value");
-          var startingVal = $startingTimeSpinner.captureTimeSpinner("value");
-          if (startingVal > endingVal) {
-            $endingTimeSpinner.captureTimeSpinner("value", startingVal);
-          }
-        },
-        spin: function(event, ui) {
-          timelapse.seekToFrame(ui.value);
-        }
-      }).on("mousedown", function(event) {
-        // Update the text field after a user input event
-        if (isStartingTimeSpinnerBlurAdded == false) {
-          isStartingTimeSpinnerBlurAdded = true;
-          var spinnerValue = event.target.value;
-          currentStartingIdx = timelapse.getCaptureTimes().indexOf(spinnerValue);
-          $startingTimeSpinner.one("blur", function() {
-            isStartingTimeSpinnerBlurAdded = false;
-            currentStartingIdx = $startingTimeSpinner.captureTimeSpinner("value");
-            event.target.value = timelapse.getCaptureTimes()[currentStartingIdx];
-            timelapse.seekToFrame(currentStartingIdx);
-            handleThumbnailDurationChange();
-          });
-        }
-      });
-      $startingTimeSpinner.parent().on("mouseleave", function() {
-        handleThumbnailDurationChange();
-      });
-      $endingTimeSpinner.captureTimeSpinner({
-        change: function(event, ui) {
-          var endingVal = $endingTimeSpinner.captureTimeSpinner("value");
-          var startingVal = $startingTimeSpinner.captureTimeSpinner("value");
-          if (endingVal < startingVal) {
-            $startingTimeSpinner.captureTimeSpinner("value", endingVal);
-          }
-        },
-        spin: function(event, ui) {
-          timelapse.seekToFrame(ui.value);
-        }
-      }).on("mousedown", function(event) {
-        // Update the text field after a user input event
-        if (isEndingTimeSpinnerBlurAdded == false) {
-          isEndingTimeSpinnerBlurAdded = true;
-          var spinnerValue = event.target.value;
-          currentEndingIdx = timelapse.getCaptureTimes().indexOf(spinnerValue);
-          $endingTimeSpinner.one("blur", function() {
-            isEndingTimeSpinnerBlurAdded = false;
-            currentEndingIdx = $endingTimeSpinner.captureTimeSpinner("value");
-            event.target.value = timelapse.getCaptureTimes()[currentEndingIdx];
-            timelapse.seekToFrame(currentEndingIdx);
-            handleThumbnailDurationChange();
-          });
-        }
-      });
-      $endingTimeSpinner.parent().on("mouseleave", function() {
-        handleThumbnailDurationChange();
-      });
-
-      $thumbnailSetCurrentTimeForTimeSpinner.on("click", function() {
-        setButtonTooltip("", $(this));
-        if ($(this).hasClass("thumbnail-set-start-time-from-timeline")) {
-          $startingTimeSpinner.captureTimeSpinner("value", timelapse.getCurrentFrameNumber());
-        } else if ($(this).hasClass("thumbnail-set-end-time-from-timeline")) {
-          $endingTimeSpinner.captureTimeSpinner("value", timelapse.getCurrentFrameNumber());
-        }
-        thumbnailDurationInFrames = Math.max(1, $endingTimeSpinner.captureTimeSpinner("value") - $startingTimeSpinner.captureTimeSpinner("value") + 1);
-        if (thumbnailDurationInFrames > maxThumbnailLength) {
-          $(".thumbnail-processing-time-warning-container").show().find("div").html(thumbnailLengthWarningMsg);
-        } else {
-          $(".thumbnail-processing-time-warning-container").hide();
-        }
-        handleThumbnailDurationChange();
-      });
-
-      timelapse.addTimelineUIChangeListener(function() {
-        resetShareThumbnailUI();
-      });
-
-      // Create dropdown menu
-      $thumbnailPlaybackRate.button({
-        icons: {
-          secondary: "ui-icon-triangle-1-s"
-        },
-        text: true
-      }).click(function() {
-        if ($thumbnailPlaybackRateMenu.is(":visible")) {
-          $thumbnailPlaybackRateMenu.hide();
-        } else {
-          $thumbnailPlaybackRateMenu.show().position({
-            my: "left top",
-            at: "left bottom",
-            of: $(this)
-          });
-          $(document).one("mouseup", function(e) {
-            var targetGroup = $(e.target).parents().addBack();
-            if (!targetGroup.is(".thumbnail-playback-rate"))
-              $thumbnailPlaybackRateMenu.hide();
-          });
-        }
-      });
-      $thumbnailPlaybackRateMenu.menu();
-      $thumbnailPlaybackRateMenu.find("li").click(function() {
-        $thumbnailPlaybackRate.find("span").first().text($(this).data("title"));
-        $thumbnailPlaybackRate.data("rate", $(this).data("rate"));
-        if ($thumbnailPlaybackRate.find("span").text() == "Custom" && $(".custom-thumbnail-playback-rate").length) return;
-        if ($(this).data("rate") == 0 && $(".custom-thumbnail-playback-rate").length == 0){
-          $('.thumbnail-playback-rate').after('<input class="custom-thumbnail-playback-rate" type="number" min="0.1" max="10" step=".1"/>');
-        } else{
-          $('.custom-thumbnail-playback-rate').remove();
-        }
-      });
-
-      // Hide preview areas
-      $thumbnailPreviewContainer.hide();
-      $thumbnailPreviewCopyTextContainer.hide();
-      // Add events
-      $("#" + viewerDivId + " .generate-thumbnail").button().click(function(event) {
-        $(this).button("disable");
-        $(".thumbnail-preview-container").addClass("loading");
-        handleThumbnailDurationChange();
-        //$thumbnailPreviewCopyTextButton.button("disable");
-        $thumbnailPreviewCopyDataButton.button("disable");
-        $thumbnailPreviewCopyDownloadButton.button("disable");
-
-        $(".social-media").empty();
-
-        var urlSettings;
-        var format;
-
-        if ($thumbnailVideoSelector.hasClass('selected')) {
-          format = "mp4";
-        } else if ($thumbnailImageSelector.hasClass('selected')) {
-          // Note: This means no single year gif of flows is currently supported
-          if (thumbnailDurationInFrames == 1) {
-            format = "png";
-          } else {
-            format = "gif";
-          }
-        }
-
-        var captureTimes = timelapse.getCaptureTimes();
-        var startCaptureTime = captureTimes[$startingTimeSpinner.captureTimeSpinner("value")];
-        var endCaptureTime = captureTimes[$endingTimeSpinner.captureTimeSpinner("value")];
-
-        var isNumber = !isNaN(startCaptureTime);
-        if (!(isNumber && startCaptureTime - 0 < 1000)) {
-          if (captureTimes[0].match(/PM|AM/)) {
-            var startEpochTime = timelapse.sanitizedParseTimeGMT(startCaptureTime);
-            var startTimeDate = new Date(startEpochTime);
-            startCaptureTime = startTimeDate.getFullYear() + "-" + ("0" + (startTimeDate.getMonth() + 1)).slice(-2) + "-" + (("0" + startTimeDate.getDate()).slice(-2)) + " " + ("0" + startTimeDate.getHours()).slice(-2) + ":" + ("0" + startTimeDate.getMinutes()).slice(-2) + ":" + ("0" + startTimeDate.getSeconds()).slice(-2);
-
-            var endEpochTime = timelapse.sanitizedParseTimeGMT(endCaptureTime);
-            var endTimeDate = new Date(endEpochTime);
-            endCaptureTime = endTimeDate.getFullYear() + "-" + ("0" + (endTimeDate.getMonth() + 1)).slice(-2) + "-" + (("0" + endTimeDate.getDate()).slice(-2)) + " " + ("0" + endTimeDate.getHours()).slice(-2) + ":" + ("0" + endTimeDate.getMinutes()).slice(-2) + ":" + ("0" + endTimeDate.getSeconds()).slice(-2);
-          }
-          var startCaptureTimeArray = startCaptureTime.replace("UTC", "").replace(/[ T:]/g, "-").replace(".00Z", "").split("-");
-          var endCaptureTimeArray = endCaptureTime.replace("UTC", "").replace(/[ T:]/g, "-").replace(".00Z", "").split("-");
-
-          var startYear = parseInt(startCaptureTimeArray[0]);
-          var startMonth = parseInt(startCaptureTimeArray[1]) || 1;
-          var startDay = parseInt(startCaptureTimeArray[2]) || 1;
-          var startHour = parseInt(startCaptureTimeArray[3]) || 0;
-          var startMinute = parseInt(startCaptureTimeArray[4]) || 0;
-          var startSecond = parseInt(startCaptureTimeArray[5]) || 0;
-
-          var endYear = parseInt(endCaptureTimeArray[0]);
-          var endMonth = parseInt(endCaptureTimeArray[1]) || 12;
-          var endDay = parseInt(endCaptureTimeArray[2]) || 31;
-          var endHour = parseInt(endCaptureTimeArray[3]) || 0;
-          var endMinute = parseInt(endCaptureTimeArray[4]) || 0;
-          var endSecond = parseInt(endCaptureTimeArray[5]) || 0;
-
-          var initialISOStringLength = 19;
-          if (startHour == 0 && startMinute == 0 && startSecond == 0 && endHour == 0 && endMinute == 0 && endSecond == 0) {
-            initialISOStringLength = 10;
-          }
-
-          thumbnailBeginTime = new Date(Date.UTC(startYear, (startMonth - 1), startDay, startHour, startMinute, startSecond)).toISOString().substr(0, initialISOStringLength).replace(/[-T:]/g, "");
-          thumbnailEndTime = new Date(Date.UTC(endYear, (endMonth - 1), endDay, endHour, endMinute, endSecond)).toISOString().substr(0, initialISOStringLength).replace(/[-T:]/g, "");
-        } else {
-          thumbnailBeginTime = timelapse.frameNumberToTime(captureTimes.indexOf(startCaptureTime));
-          thumbnailEndTime = timelapse.frameNumberToTime(captureTimes.indexOf(endCaptureTime));
-        }
-        thumbnailPlaybackSpeed = (parseFloat($("#" + viewerDivId + " .custom-thumbnail-playback-rate").val()) * 100) || ($thumbnailPlaybackRate.data("rate") * 100);
-
-        var desiredFps;
-        if (isWebglViewer) {
-          desiredFps = $("#" + viewerDivId + " .thumbnail-fps").val();
-        } else {
-          desiredFps = Math.max(1, ($("#" + viewerDivId + " .custom-thumbnail-playback-rate").val() || (Math.max(1, timelapse.getMaxPlaybackRate()) * $thumbnailPlaybackRate.data("rate"))) * timelapse.getFps());
-        }
-        // For browser compatibility, we force a max of 16fps when making gifs.
-        // Info from 2012 says that Safari and IE begin to skip frames when playing faster than this.
-        if (format == "gif") {
-          desiredFps = Math.min(16, desiredFps);
-        }
-
-        urlSettings = {
-          startFrame: $startingTimeSpinner.captureTimeSpinner("value"),
-          ps: thumbnailPlaybackSpeed,
-          bt: thumbnailBeginTime,
-          et: thumbnailEndTime,
-          fps: desiredFps,
-          embedTime: $("#" + viewerDivId + " .embed-capture-time").prop('checked'),
-          smoothPlayback: $("#" + viewerDivId + " .smooth-playback").prop('checked'),
-          startDwell: $("#" + viewerDivId + " .thumbnail-start-delay").val(),
-          endDwell: $("#" + viewerDivId + " .thumbnail-end-delay").val(),
-          width: $thumbnailCustomBoundsWidth.val(),
-          height: $thumbnailCustomBoundsHeight.val(),
-          bound: undefined, /* getURL will compute it from the green box */
-          format: format
-        };
-
-        if (!isWebglViewer) {
-          urlSettings.nframes = thumbnailDurationInFrames;
-        }
-
-        var thumbnailParams = timelapse.getThumbnailTool().getURL(urlSettings);
-
-        var listeners = eventListeners["thumbnail-generated-from-ui"];
-        if (listeners) {
-          for (var i = 0; i < listeners.length; i++) {
-            listeners[i]($.extend({}, {url : thumbnailParams.url, timemachineId : timelapse.getTmJSON().id, beginTime : thumbnailBeginTime, endTime : thumbnailEndTime}, thumbnailParams.args));
-          }
-        }
-
-        setThumbnailPreviewArea(thumbnailParams);
-      });
-
-      $("#" + timeMachineDivId + " .shareView").on("click", ".waypoint-index, .waypoint-only", function(e) {
-        $("#" + timeMachineDivId + " .shareView .waypoint-index, #" + timeMachineDivId + " .shareView .waypoint-only").not($(e.currentTarget)).prop("checked", false);
-        updateShareViewTextbox();
-      });
-
-      $thumbnailImageSelector.button().on("click", function() {
-        $thumbnailVideoSelector.removeClass('selected');
-        $(this).addClass('selected');
-        $(".thumbnail-fps").prop('disabled', true);
-        handleThumbnailDurationChange();
-        var buttonText;
-        if (thumbnailDurationInFrames == 1) {
-          buttonText = "Generate Image";
-        } else {
-          buttonText = "Generate GIF";
-        }
-        $(".generate-thumbnail .ui-button-text").text(buttonText);
-      });
-
-      $("#thumbnail-fps-overlay").on("mouseover", function() {
-        if ($thumbnailFps.prop("disabled")) {
-          setButtonTooltip("Video type needs to be selected to use this", $(this));
-        }
-      }).on("mouseout", function() {
-        setButtonTooltip("", $(this));
-      });
-
-      $thumbnailVideoSelector.button().on("click", function() {
-        if ($(this).hasClass("disabled")) return;
-        $thumbnailImageSelector.removeClass('selected');
-        $(".thumbnail-fps").prop('disabled', false);
-        $(this).addClass('selected');
-        handleThumbnailDurationChange();
-        $(".generate-thumbnail .ui-button-text").text("Generate Video");
-      }).on("mouseover", function() {
-        if ($(this).hasClass("disabled")) {
-          setButtonTooltip("Duration needs to be longer", $(this));
-        }
-      }).on("mouseout", function() {
-        setButtonTooltip("", $(this));
-      });
-
-      $thumbnailCustomBoundsWidth.on("change", function() {
-        setThumbnailToolAspectRatio();
-        timelapse.getThumbnailTool().redrawCropBox();
-      });
-
-      $thumbnailCustomBoundsHeight.on("change", function() {
-        setThumbnailToolAspectRatio();
-        timelapse.getThumbnailTool().redrawCropBox();
-      });
-
-      $thumbnailSwapSelectionDimensions.on("click", function() {
-        var w = $thumbnailCustomBoundsWidth.val();
-        var h = $thumbnailCustomBoundsHeight.val();
-        $thumbnailCustomBoundsWidth.val(h);
-        $thumbnailCustomBoundsHeight.val(w);
-        setThumbnailToolAspectRatio();
-        timelapse.getThumbnailTool().redrawCropBox();
-      });
-
-      $thumbnailPreviewCopyTextButton.button().click(function(event) {
-        var tempInput = document.createElement("input");
-        tempInput.style = "position: absolute; left: -1000px; top: -1000px";
-        tempInput.value = $thumbnailPreviewCopyDownloadButton.data("download-url");
-        document.body.appendChild(tempInput);
-        tempInput.select();
-        document.execCommand("copy");
-        document.body.removeChild(tempInput);
-        setButtonTooltip("Copied", $thumbnailPreviewCopyTextButton);
-      }).hover(function() {
-        setButtonTooltip("Copy to clipboard", $thumbnailPreviewCopyTextButton);
-      }, function() {
-        setButtonTooltip("", $thumbnailPreviewCopyTextButton);
-      });
-
-      $thumbnailPreviewCopyDataButton.button().click(function(event) {
-        var element = $thumbnailPreviewContainer.get(0);
-        var range, select;
-        if (document.body.createTextRange) {
-          range = document.body.createTextRange();
-          range.moveToElementText(element);
-          range.select();
-        } else if (document.createRange) {
-          range = document.createRange();
-          range.selectNode(element)
-          select = window.getSelection();
-          select.removeAllRanges();
-          select.addRange(range);
-        }
-        document.execCommand('copy');
-        setButtonTooltip("Copied", $thumbnailPreviewCopyDataButton);
-        window.getSelection().removeAllRanges();
-      }).hover(function() {
-        setButtonTooltip("Copy to clipboard", $thumbnailPreviewCopyDataButton);
-      }, function() {
-        setButtonTooltip("", $thumbnailPreviewCopyDataButton);
-      });
-
-      $thumbnailPreviewCopyDownloadButton.button().click(function(event) {
-        download($(this).data("download-url"), "export." + $(this).data("download-type"), null);
-        setButtonTooltip("Downloading", $thumbnailPreviewCopyDownloadButton);
-      }).hover(function() {
-        setButtonTooltip("Download to your computer", $thumbnailPreviewCopyDownloadButton);
-      }, function() {
-        setButtonTooltip("", $thumbnailPreviewCopyDownloadButton);
-      });
-
-      timelapse.addViewEndChangeListener(function() {
-        updateShareViewTextbox();
-      });
-
-      if (typeof(EARTH_TIMELAPSE_CONFIG) === "undefined") {
-        $("#thumbnail-fps-overlay").closest("tr").hide();
-      }
-      timelapse.addMasterPlaybackRateChangeListener(function() {
-        $(".thumbnail-playback-rate-menu .ui-menu-item").each(function() {
-          $(this).text($(this).data("title"));
-          if ($(this).data('rate')) {
-            var playbackRate = parseFloat($(this).data('rate')) * timelapse.getMaxPlaybackRate();
-            $(this).text($(this).text() + " (" + playbackRate + "X)");
+            $("#" + timeMachineDivId + " .shareView .waypoint-index, #" + timeMachineDivId + " .shareView .waypoint-only").prop("checked", false);
           }
         });
-      });
+        $shareDialogClose.on("click", function() {
+          $shareButton.trigger("click");
+        });
+        $shareUrl.focus(function() {
+          $(this).select();
+        }).click(function() {
+          $(this).select();
+        }).mouseup(function(e) {
+          e.preventDefault();
+        });
+        $shareUrlCopyTextButton.button().click(function(event) {
+          $shareUrl.select();
+          document.execCommand('copy');
+          setButtonTooltip("Copied", $shareUrlCopyTextButton);
+        }).hover(function() {
+          setButtonTooltip("Copy to clipboard", $shareUrlCopyTextButton);
+        }, function() {
+          setButtonTooltip("", $shareUrlCopyTextButton);
+        });
+        // Share view accordion
+        if (!showThumbnailTool) {
+          removeAccordionPanel("share-thumbnail");
+        }
+        $shareAccordion.accordion({
+          heightStyle: "content",
+          animate: false,
+          beforeActivate: function(event, ui) {
+            if (ui.oldPanel.hasClass("share-thumbnail")) {
+              disableShareThumbnail();
+            }
+            if (ui.newPanel.hasClass("share-thumbnail")) {
+              enableShareThumbnail();
+            }
+          }
+        });
+        // Create spinners
+        $.widget("ui.captureTimeSpinner", $.ui.spinner, {
+          options: {
+            step: 1,
+            page: 5,
+            min: 0,
+            currentIndex: 0,
+            max: timelapse.getCaptureTimes().length - 1
+          },
+          _parse: function(value) {
+            var captureTimes = timelapse.getCaptureTimes();
+            if (typeof value === "string") {
+              var isNumber = !isNaN(value);
+              if (isNumber) {
+                var decimalPlaceContent = timelapse.getCurrentCaptureTime().split(".");
+                var numDecimalPlaces = typeof(decimalPlaceContent[1]) !== "undefined" ? decimalPlaceContent[1].length : 0;
+                var parsedNumber = parseFloat(value);
+                if (parsedNumber > 0 && numDecimalPlaces > 0) {
+                  value = parsedNumber.toFixed(numDecimalPlaces);
+                }
+              }
+              var newIndex = captureTimes.indexOf(value);
+              // TODO: If it's not a number, assume a date. What if our labels are all text or some combintation of text and numbers?
+              if (!isNumber) {
+                var minTime = new Date(captureTimes[0].replace(/-/g, "/")).getTime();
+                var maxTime = new Date(captureTimes[captureTimes.length - 1].replace(/-/g, "/")).getTime();
+                var dateObj = new Date(value.replace(/-/g, "/"));
+                var dateObjTime = dateObj.getTime();
+                if (dateObj != "Invalid Date") {
+                  if (dateObjTime > maxTime)  {
+                    newIndex = this.options.max;
+                  } else if (dateObjTime < minTime) {
+                    newIndex = this.options.min;
+                  } else if (newIndex == -1) {
+                    newIndex = timelapse.findExactOrClosestCaptureTime(value);
+                  }
+                }
+              } else {
+                if (value < captureTimes[this.options.min]) {
+                  newIndex = this.options.min;
+                } else if (value > captureTimes[this.options.max]) {
+                  newIndex = this.options.max;
+                }
+              }
+              if (newIndex == -1) {
+                newIndex = this.options.currentIndex;
+              }
+              this.options.currentIndex = newIndex;
+              return newIndex;
+            } else {
+              // In this case, value is the index.
+              return value;
+            }
+
+          },
+          _format: function(value) {
+            var format = timelapse.getCaptureTimes()[value];
+            return format;
+          }
+        });
+        $startingTimeSpinner.captureTimeSpinner({
+          change: function(event, ui) {
+            var endingVal = $endingTimeSpinner.captureTimeSpinner("value");
+            var startingVal = $startingTimeSpinner.captureTimeSpinner("value");
+            if (startingVal > endingVal) {
+              $endingTimeSpinner.captureTimeSpinner("value", startingVal);
+            }
+          },
+          spin: function(event, ui) {
+            timelapse.seekToFrame(ui.value);
+          }
+        }).on("mousedown", function(event) {
+          // Update the text field after a user input event
+          if (isStartingTimeSpinnerBlurAdded == false) {
+            isStartingTimeSpinnerBlurAdded = true;
+            var spinnerValue = event.target.value;
+            currentStartingIdx = timelapse.getCaptureTimes().indexOf(spinnerValue);
+            $startingTimeSpinner.one("blur", function() {
+              isStartingTimeSpinnerBlurAdded = false;
+              currentStartingIdx = $startingTimeSpinner.captureTimeSpinner("value");
+              event.target.value = timelapse.getCaptureTimes()[currentStartingIdx];
+              timelapse.seekToFrame(currentStartingIdx);
+              handleThumbnailDurationChange();
+            });
+          }
+        });
+        $startingTimeSpinner.parent().on("mouseleave", function() {
+          handleThumbnailDurationChange();
+        });
+        $endingTimeSpinner.captureTimeSpinner({
+          change: function(event, ui) {
+            var endingVal = $endingTimeSpinner.captureTimeSpinner("value");
+            var startingVal = $startingTimeSpinner.captureTimeSpinner("value");
+            if (endingVal < startingVal) {
+              $startingTimeSpinner.captureTimeSpinner("value", endingVal);
+            }
+          },
+          spin: function(event, ui) {
+            timelapse.seekToFrame(ui.value);
+          }
+        }).on("mousedown", function(event) {
+          // Update the text field after a user input event
+          if (isEndingTimeSpinnerBlurAdded == false) {
+            isEndingTimeSpinnerBlurAdded = true;
+            var spinnerValue = event.target.value;
+            currentEndingIdx = timelapse.getCaptureTimes().indexOf(spinnerValue);
+            $endingTimeSpinner.one("blur", function() {
+              isEndingTimeSpinnerBlurAdded = false;
+              currentEndingIdx = $endingTimeSpinner.captureTimeSpinner("value");
+              event.target.value = timelapse.getCaptureTimes()[currentEndingIdx];
+              timelapse.seekToFrame(currentEndingIdx);
+              handleThumbnailDurationChange();
+            });
+          }
+        });
+        $endingTimeSpinner.parent().on("mouseleave", function() {
+          handleThumbnailDurationChange();
+        });
+
+        $thumbnailSetCurrentTimeForTimeSpinner.on("click", function() {
+          setButtonTooltip("", $(this));
+          if ($(this).hasClass("thumbnail-set-start-time-from-timeline")) {
+            $startingTimeSpinner.captureTimeSpinner("value", timelapse.getCurrentFrameNumber());
+          } else if ($(this).hasClass("thumbnail-set-end-time-from-timeline")) {
+            $endingTimeSpinner.captureTimeSpinner("value", timelapse.getCurrentFrameNumber());
+          }
+          thumbnailDurationInFrames = Math.max(1, $endingTimeSpinner.captureTimeSpinner("value") - $startingTimeSpinner.captureTimeSpinner("value") + 1);
+          if (thumbnailDurationInFrames > maxThumbnailLength) {
+            $(".thumbnail-processing-time-warning-container").show().find("div").html(thumbnailLengthWarningMsg);
+          } else {
+            $(".thumbnail-processing-time-warning-container").hide();
+          }
+          handleThumbnailDurationChange();
+        });
+
+        timelapse.addTimelineUIChangeListener(function() {
+          resetShareThumbnailUI();
+        });
+
+        // Create dropdown menu
+        $thumbnailPlaybackRate.button({
+          icons: {
+            secondary: "ui-icon-triangle-1-s"
+          },
+          text: true
+        }).click(function() {
+          if ($thumbnailPlaybackRateMenu.is(":visible")) {
+            $thumbnailPlaybackRateMenu.hide();
+          } else {
+            $thumbnailPlaybackRateMenu.show().position({
+              my: "left top",
+              at: "left bottom",
+              of: $(this)
+            });
+            $(document).one("mouseup", function(e) {
+              var targetGroup = $(e.target).parents().addBack();
+              if (!targetGroup.is(".thumbnail-playback-rate"))
+                $thumbnailPlaybackRateMenu.hide();
+            });
+          }
+        });
+        $thumbnailPlaybackRateMenu.menu();
+        $thumbnailPlaybackRateMenu.find("li").click(function() {
+          $thumbnailPlaybackRate.find("span").first().text($(this).data("title"));
+          $thumbnailPlaybackRate.data("rate", $(this).data("rate"));
+          if ($thumbnailPlaybackRate.find("span").text() == "Custom" && $(".custom-thumbnail-playback-rate").length) return;
+          if ($(this).data("rate") == 0 && $(".custom-thumbnail-playback-rate").length == 0){
+            $('.thumbnail-playback-rate').after('<input class="custom-thumbnail-playback-rate" type="number" min="0.1" max="10" step=".1"/>');
+          } else{
+            $('.custom-thumbnail-playback-rate').remove();
+          }
+        });
+
+        // Hide preview areas
+        $thumbnailPreviewContainer.hide();
+        $thumbnailPreviewCopyTextContainer.hide();
+        // Add events
+        $("#" + viewerDivId + " .generate-thumbnail").button().click(function(event) {
+          $(this).button("disable");
+          $(".thumbnail-preview-container").addClass("loading");
+          handleThumbnailDurationChange();
+          //$thumbnailPreviewCopyTextButton.button("disable");
+          $thumbnailPreviewCopyDataButton.button("disable");
+          $thumbnailPreviewCopyDownloadButton.button("disable");
+
+          $(".social-media").empty();
+
+          var urlSettings;
+          var format;
+
+          if ($thumbnailVideoSelector.hasClass('selected')) {
+            format = "mp4";
+          } else if ($thumbnailImageSelector.hasClass('selected')) {
+            // Note: This means no single year gif of flows is currently supported
+            if (thumbnailDurationInFrames == 1) {
+              format = "png";
+            } else {
+              format = "gif";
+            }
+          }
+
+          var captureTimes = timelapse.getCaptureTimes();
+          var startCaptureTime = captureTimes[$startingTimeSpinner.captureTimeSpinner("value")];
+          var endCaptureTime = captureTimes[$endingTimeSpinner.captureTimeSpinner("value")];
+
+          var isNumber = !isNaN(startCaptureTime);
+          if (!(isNumber && startCaptureTime - 0 < 1000)) {
+            if (captureTimes[0].match(/PM|AM/)) {
+              var startEpochTime = timelapse.sanitizedParseTimeGMT(startCaptureTime);
+              var startTimeDate = new Date(startEpochTime);
+              startCaptureTime = startTimeDate.getFullYear() + "-" + ("0" + (startTimeDate.getMonth() + 1)).slice(-2) + "-" + (("0" + startTimeDate.getDate()).slice(-2)) + " " + ("0" + startTimeDate.getHours()).slice(-2) + ":" + ("0" + startTimeDate.getMinutes()).slice(-2) + ":" + ("0" + startTimeDate.getSeconds()).slice(-2);
+
+              var endEpochTime = timelapse.sanitizedParseTimeGMT(endCaptureTime);
+              var endTimeDate = new Date(endEpochTime);
+              endCaptureTime = endTimeDate.getFullYear() + "-" + ("0" + (endTimeDate.getMonth() + 1)).slice(-2) + "-" + (("0" + endTimeDate.getDate()).slice(-2)) + " " + ("0" + endTimeDate.getHours()).slice(-2) + ":" + ("0" + endTimeDate.getMinutes()).slice(-2) + ":" + ("0" + endTimeDate.getSeconds()).slice(-2);
+            }
+            var startCaptureTimeArray = startCaptureTime.replace("UTC", "").replace(/[ T:]/g, "-").replace(".00Z", "").split("-");
+            var endCaptureTimeArray = endCaptureTime.replace("UTC", "").replace(/[ T:]/g, "-").replace(".00Z", "").split("-");
+
+            var startYear = parseInt(startCaptureTimeArray[0]);
+            var startMonth = parseInt(startCaptureTimeArray[1]) || 1;
+            var startDay = parseInt(startCaptureTimeArray[2]) || 1;
+            var startHour = parseInt(startCaptureTimeArray[3]) || 0;
+            var startMinute = parseInt(startCaptureTimeArray[4]) || 0;
+            var startSecond = parseInt(startCaptureTimeArray[5]) || 0;
+
+            var endYear = parseInt(endCaptureTimeArray[0]);
+            var endMonth = parseInt(endCaptureTimeArray[1]) || 12;
+            var endDay = parseInt(endCaptureTimeArray[2]) || 31;
+            var endHour = parseInt(endCaptureTimeArray[3]) || 0;
+            var endMinute = parseInt(endCaptureTimeArray[4]) || 0;
+            var endSecond = parseInt(endCaptureTimeArray[5]) || 0;
+
+            var initialISOStringLength = 19;
+            if (startHour == 0 && startMinute == 0 && startSecond == 0 && endHour == 0 && endMinute == 0 && endSecond == 0) {
+              initialISOStringLength = 10;
+            }
+
+            thumbnailBeginTime = new Date(Date.UTC(startYear, (startMonth - 1), startDay, startHour, startMinute, startSecond)).toISOString().substr(0, initialISOStringLength).replace(/[-T:]/g, "");
+            thumbnailEndTime = new Date(Date.UTC(endYear, (endMonth - 1), endDay, endHour, endMinute, endSecond)).toISOString().substr(0, initialISOStringLength).replace(/[-T:]/g, "");
+          } else {
+            thumbnailBeginTime = timelapse.frameNumberToTime(captureTimes.indexOf(startCaptureTime));
+            thumbnailEndTime = timelapse.frameNumberToTime(captureTimes.indexOf(endCaptureTime));
+          }
+          thumbnailPlaybackSpeed = (parseFloat($("#" + viewerDivId + " .custom-thumbnail-playback-rate").val()) * 100) || ($thumbnailPlaybackRate.data("rate") * 100);
+
+          var desiredFps;
+          if (isWebglViewer) {
+            desiredFps = $("#" + viewerDivId + " .thumbnail-fps").val();
+          } else {
+            desiredFps = Math.max(1, ($("#" + viewerDivId + " .custom-thumbnail-playback-rate").val() || (Math.max(1, timelapse.getMaxPlaybackRate()) * $thumbnailPlaybackRate.data("rate"))) * timelapse.getFps());
+          }
+          // For browser compatibility, we force a max of 16fps when making gifs.
+          // Info from 2012 says that Safari and IE begin to skip frames when playing faster than this.
+          if (format == "gif") {
+            desiredFps = Math.min(16, desiredFps);
+          }
+
+          urlSettings = {
+            startFrame: $startingTimeSpinner.captureTimeSpinner("value"),
+            ps: thumbnailPlaybackSpeed,
+            bt: thumbnailBeginTime,
+            et: thumbnailEndTime,
+            fps: desiredFps,
+            embedTime: $("#" + viewerDivId + " .embed-capture-time").prop('checked'),
+            smoothPlayback: $("#" + viewerDivId + " .smooth-playback").prop('checked'),
+            startDwell: $("#" + viewerDivId + " .thumbnail-start-delay").val(),
+            endDwell: $("#" + viewerDivId + " .thumbnail-end-delay").val(),
+            width: $thumbnailCustomBoundsWidth.val(),
+            height: $thumbnailCustomBoundsHeight.val(),
+            bound: undefined, /* getURL will compute it from the green box */
+            format: format
+          };
+
+          if (!isWebglViewer) {
+            urlSettings.nframes = thumbnailDurationInFrames;
+          }
+
+          var thumbnailParams = timelapse.getThumbnailTool().getURL(urlSettings);
+
+          var listeners = eventListeners["thumbnail-generated-from-ui"];
+          if (listeners) {
+            for (var i = 0; i < listeners.length; i++) {
+              listeners[i]($.extend({}, {url : thumbnailParams.url, timemachineId : timelapse.getTmJSON().id, beginTime : thumbnailBeginTime, endTime : thumbnailEndTime}, thumbnailParams.args));
+            }
+          }
+
+          setThumbnailPreviewArea(thumbnailParams);
+        });
+
+        $("#" + timeMachineDivId + " .shareView").on("click", ".waypoint-index, .waypoint-only", function(e) {
+          $("#" + timeMachineDivId + " .shareView .waypoint-index, #" + timeMachineDivId + " .shareView .waypoint-only").not($(e.currentTarget)).prop("checked", false);
+          updateShareViewTextbox();
+        });
+
+        $thumbnailImageSelector.button().on("click", function() {
+          $thumbnailVideoSelector.removeClass('selected');
+          $(this).addClass('selected');
+          $(".thumbnail-fps").prop('disabled', true);
+          handleThumbnailDurationChange();
+          var buttonText;
+          if (thumbnailDurationInFrames == 1) {
+            buttonText = "Generate Image";
+          } else {
+            buttonText = "Generate GIF";
+          }
+          $(".generate-thumbnail .ui-button-text").text(buttonText);
+        });
+
+        $("#thumbnail-fps-overlay").on("mouseover", function() {
+          if ($thumbnailFps.prop("disabled")) {
+            setButtonTooltip("Video type needs to be selected to use this", $(this));
+          }
+        }).on("mouseout", function() {
+          setButtonTooltip("", $(this));
+        });
+
+        $thumbnailVideoSelector.button().on("click", function() {
+          if ($(this).hasClass("disabled")) return;
+          $thumbnailImageSelector.removeClass('selected');
+          $(".thumbnail-fps").prop('disabled', false);
+          $(this).addClass('selected');
+          handleThumbnailDurationChange();
+          $(".generate-thumbnail .ui-button-text").text("Generate Video");
+        }).on("mouseover", function() {
+          if ($(this).hasClass("disabled")) {
+            setButtonTooltip("Duration needs to be longer", $(this));
+          }
+        }).on("mouseout", function() {
+          setButtonTooltip("", $(this));
+        });
+
+        $thumbnailCustomBoundsWidth.on("change", function() {
+          setThumbnailToolAspectRatio();
+          timelapse.getThumbnailTool().redrawCropBox();
+        });
+
+        $thumbnailCustomBoundsHeight.on("change", function() {
+          setThumbnailToolAspectRatio();
+          timelapse.getThumbnailTool().redrawCropBox();
+        });
+
+        $thumbnailSwapSelectionDimensions.on("click", function() {
+          var w = $thumbnailCustomBoundsWidth.val();
+          var h = $thumbnailCustomBoundsHeight.val();
+          $thumbnailCustomBoundsWidth.val(h);
+          $thumbnailCustomBoundsHeight.val(w);
+          setThumbnailToolAspectRatio();
+          timelapse.getThumbnailTool().redrawCropBox();
+        });
+
+        $thumbnailPreviewCopyTextButton.button().click(function(event) {
+          var tempInput = document.createElement("input");
+          tempInput.style = "position: absolute; left: -1000px; top: -1000px";
+          tempInput.value = $thumbnailPreviewCopyDownloadButton.data("download-url");
+          document.body.appendChild(tempInput);
+          tempInput.select();
+          document.execCommand("copy");
+          document.body.removeChild(tempInput);
+          setButtonTooltip("Copied", $thumbnailPreviewCopyTextButton);
+        }).hover(function() {
+          setButtonTooltip("Copy to clipboard", $thumbnailPreviewCopyTextButton);
+        }, function() {
+          setButtonTooltip("", $thumbnailPreviewCopyTextButton);
+        });
+
+        $thumbnailPreviewCopyDataButton.button().click(function(event) {
+          var element = $thumbnailPreviewContainer.get(0);
+          var range, select;
+          if (document.body.createTextRange) {
+            range = document.body.createTextRange();
+            range.moveToElementText(element);
+            range.select();
+          } else if (document.createRange) {
+            range = document.createRange();
+            range.selectNode(element)
+            select = window.getSelection();
+            select.removeAllRanges();
+            select.addRange(range);
+          }
+          document.execCommand('copy');
+          setButtonTooltip("Copied", $thumbnailPreviewCopyDataButton);
+          window.getSelection().removeAllRanges();
+        }).hover(function() {
+          setButtonTooltip("Copy to clipboard", $thumbnailPreviewCopyDataButton);
+        }, function() {
+          setButtonTooltip("", $thumbnailPreviewCopyDataButton);
+        });
+
+        $thumbnailPreviewCopyDownloadButton.button().click(function(event) {
+          download($(this).data("download-url"), "export." + $(this).data("download-type"), null);
+          setButtonTooltip("Downloading", $thumbnailPreviewCopyDownloadButton);
+        }).hover(function() {
+          setButtonTooltip("Download to your computer", $thumbnailPreviewCopyDownloadButton);
+        }, function() {
+          setButtonTooltip("", $thumbnailPreviewCopyDownloadButton);
+        });
+
+        timelapse.addViewEndChangeListener(function() {
+          updateShareViewTextbox();
+        });
+
+        if (typeof(EARTH_TIMELAPSE_CONFIG) === "undefined") {
+          $("#thumbnail-fps-overlay").closest("tr").hide();
+        }
+        timelapse.addMasterPlaybackRateChangeListener(function() {
+          $(".thumbnail-playback-rate-menu .ui-menu-item").each(function() {
+            $(this).text($(this).data("title"));
+            if ($(this).data('rate')) {
+              var playbackRate = parseFloat($(this).data('rate')) * timelapse.getMaxPlaybackRate();
+              $(this).text($(this).text() + " (" + playbackRate + "X)");
+            }
+          });
+        });
+      }
+
+
     };
 
     var handleThumbnailDurationChange = function() {
@@ -1143,7 +1249,6 @@ if (!org.gigapan.timelapse.Timelapse) {
           $thumbnailPreviewCopyTextButtonTooltip.hide();
         }, duration);
       }
-
     };
 
     var setThumbnailPreviewArea = function(response) {
@@ -1830,6 +1935,14 @@ if (!org.gigapan.timelapse.Timelapse) {
     //
     // Constructor code
     //
+
+    if (isMobileDevice) {
+      createShareButton();
+      return;
+    }
+    if (waypointSliderOrientation == "vertical") {
+      $("#" + timeMachineDivId).addClass("verticalWaypointDrawerContainer");
+    }
     createSideToolBar();
     createMainUI();
     if (useCustomUI) { // custom UI is being used, alter main UI accordingly

@@ -134,7 +134,7 @@ if (!org.gigapan.timelapse.Timelapse) {
     var mapGeometry = {
       "width": startWidth,
       "height": startHeight,
-      "right": 21,
+      "right": 74,
       "top": 21
     };
     var lastMapGeometry;
@@ -400,7 +400,7 @@ if (!org.gigapan.timelapse.Timelapse) {
       if (showToggleBtn && !isHyperwall) {
         var toggleIconClose = useTouchFriendlyUI ? "ui-icon-custom-arrowthick-1-ne" : "ui-icon-arrowthick-1-ne";
         var toggleIconOpen = useTouchFriendlyUI ? "ui-icon-custom-arrowthick-1-sw" : "ui-icon-arrowthick-1-sw";
-        $smallMapContainer.append('<button class="toggleContextMapBtn" title="Toggle the map">Toggle</button>');
+        $smallMapContainer.append('<button class="toggleContextMapBtn" title="Toggle context map">Toggle</button>');
         var $toggleContextMapBtn = $(".toggleContextMapBtn");
         $toggleContextMapBtn.button({
           icons: {

@@ -612,8 +612,147 @@ _:-moz-tree-row(hover), .helpPlayerLabel .ui-button-text {
 .sideToolBar {
   position: absolute;
   top: 20px;
-  left: 20px;
+  right: 20px;
   z-index: 15;
+}
+
+.verticalWaypointDrawerContainer .sideToolBar {
+  right: 20px;
+}
+
+.pac-container {
+  z-index: 90002;
+  -webkit-appearance: none;
+  -webkit-box-shadow: 0px 3px 6px rgba(0,0,0,0.3);
+  box-shadow: 0px 3px 6px rgba(0,0,0,0.3);
+  top: 60px !important;
+}
+
+.pac-item {
+  height: 45px;
+}
+
+.pac-item span:last-child:not(.pac-matched) {
+  display: block;
+  margin-left: 22px;
+  margin-top: -12px;
+  font-size: 12px;
+}
+
+.pac-item, .pac-item-query {
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.addressLookupContainer {
+  position: absolute;
+  top: 20px;
+  left: 20px;
+  z-index: 99;
+  height: 38px;
+  width: 38px;
+  display: none;
+}
+
+.verticalWaypointDrawerContainer .addressLookupContainer {
+  position: relative;
+  top: auto;
+  left: auto;
+}
+
+.addressLookup {
+  z-index: 136;
+  width: 0px;
+  height: 38px;
+  padding: 0px;
+  box-shadow: 2px 2px 3px rgba(0,0,0,0.3);
+  border-top-left-radius: 1px;
+  border-bottom-left-radius: 1px;
+  border-top-right-radius: 0px;
+  border-bottom-right-radius: 0px;
+  outline: none;
+  border: 1px solid #d3d3d3;
+  padding-left: 38px;
+  padding-right: 0px;
+  border-radius: 4px;
+}
+
+.addressLookupSearchIcon:hover {
+  opacity: 0.9;
+}
+
+.addressLookupSearchIcon {
+  background: url(../images/search-black.png) center center no-repeat;
+  background-size: contain;
+  width: 24px;
+  height: 24px;
+  position: absolute;
+  right: 6px;
+  top: 9px;
+  cursor: default;
+  opacity: 0.60;
+  cursor: pointer;
+}
+
+.addressLookupSearchIcon:after {
+  content: '';
+  position: absolute;
+  top: -11px;
+  bottom: -7px;
+  left: -7px;
+  right: -11px;
+}
+
+.addressLookupClearIcon {
+  background: url(../images/close.png) center center no-repeat;
+  background-size: contain;
+  width: 24px;
+  height: 24px;
+  position: absolute;
+  left: 240px;
+  top: 8px;
+  cursor: pointer;
+  opacity: 0.60;
+  display: none;
+}
+
+.addressLookupClearIcon:after {
+  content: '';
+  position: absolute;
+  top: -10px;
+  bottom: -8px;
+  left: -10px;
+  right: -5px;
+}
+
+.addressLookupClearIcon:hover {
+  opacity: 0.9;
+}
+
+.addressLookup.expanded {
+  width: 200px;
+  padding-left: 8px;
+  transition: 0.5s;
+}
+
+.search-button {
+  width: 40px;
+  height: 40px;
+  background: white;
+  border-radius: 4px;
+  position: absolute;
+  cursor: pointer;
+  top: 0px;
+  left: -40px;
+  -webkit-box-shadow: 2px 2px 3px rgba(0, 0, 0, 0.3);
+  box-shadow: 2px 2px 3px rgba(0, 0, 0, 0.3);
+  outline: none;
+  border: 1px solid #d3d3d3;
+}
+
+.search-button.expanded {
+  border-top-right-radius: 0px;
+  border-bottom-right-radius: 0px;
 }
 
 .zoom .ui-button {
@@ -622,13 +761,20 @@ _:-moz-tree-row(hover), .helpPlayerLabel .ui-button-text {
   width: 40px;
   height: 40px;
   background: white;
-  border-bottom-right-radius: 2px !important;
-  border-top-right-radius: 2px !important;
   -webkit-box-shadow: 2px 2px 3px rgba(0, 0, 0, 0.3);
   box-shadow: 2px 2px 3px rgba(0, 0, 0, 0.3);
   outline: none;
   position: relative;
   border-radius: 0px;
+}
+
+.zoomin.ui-state-hover, .zoomout.ui-state-hover {
+  border: 1px solid #d3d3d3;
+}
+
+.zoomin {
+  border-top-right-radius: 4px !important;
+  border-top-left-radius: 4px !important;
 }
 
 .zoomin .ui-icon.ui-icon-plus, .zoomout .ui-button .ui-icon.ui-icon-custom-plus {
@@ -640,6 +786,11 @@ _:-moz-tree-row(hover), .helpPlayerLabel .ui-button-text {
           background-size: contain;
   margin-left: -8px;
   margin-top: -8px;
+}
+
+.zoomout {
+  border-bottom-right-radius: 4px !important;
+  border-bottom-left-radius: 4px !important;
 }
 
 .zoomout .ui-icon.ui-icon-minus, .zoomout .ui-button .ui-icon.ui-icon-custom-minus {
@@ -1413,6 +1564,11 @@ input::-ms-clear {
   z-index: 100000;
   overflow-y: auto;
   width: 418px;
+  border-left: 1px solid black;
+}
+
+.shareViewModal {
+  display: none;
 }
 
 .shareView .ui-widget-content {
@@ -1425,6 +1581,95 @@ input::-ms-clear {
 
 .shareView.right-panel-active {
   right: -418px !important;
+}
+
+.shareViewModal.ui-dialog-content {
+  overflow: hidden;
+  padding-bottom: 20px;
+}
+
+.shareViewModal .share-link-container, .shareViewModal .embed-link-container {
+  font-size: 13px;
+  border: 1px solid #f4f4f4;
+  background-color: #f4f4f4;
+  border-radius: 8px;
+  color: #1e88e5;
+  width: 255px !important;
+  padding: 8px;
+}
+
+.shareViewModal .shareurl, .shareViewModal .shareembed {
+  width: 230px !important;
+  height: 16px !important;
+  overflow: hidden;
+  margin: 0px !important;
+  word-break: break-all;
+}
+
+.shareViewModal .close-share {
+  background: url(../images/close.png) center center no-repeat;
+  background-size: 20px 20px;
+  display: inline-block;
+  width: 20px;
+  height: 20px;
+  cursor: default;
+  opacity: 0.67;
+  position: absolute;
+  right: 10px;
+  top: 10px;
+  cursor: pointer;
+}
+
+.shareViewModal .close-share:hover {
+  opacity: 0.9;
+}
+
+.shareViewModal .close-share:after {
+  content:'';
+  position: absolute;
+  top: -12px;
+  bottom: -12px;
+  left: -12px;
+  right: -12px;
+}
+
+.shareViewModal .copy-text-button {
+  background: url(../images/copy.png) center center no-repeat;
+  background-size: 20px 20px;
+  display: inline-block;
+  width: 20px;
+  height: 20px;
+  cursor: default;
+  opacity: 0.67;
+  position: absolute;
+  right: 22px;
+  margin-top: -18px;
+  cursor: pointer;
+}
+
+.shareViewModal .copy-text-button:hover {
+  opacity: 0.9;
+}
+
+.shareViewModal .copy-text-button:after {
+  content:'';
+  position: absolute;
+  top: -12px;
+  bottom: -12px;
+  left: -12px;
+  right: -12px;
+}
+
+.shareViewModal #share-link-container-main p.heading {
+  /* Should be GoogleSans-Regular */
+  font-family: 'Roboto-Regular';
+  font-size: 18px;
+}
+
+.shareViewModal #embed-link-container-main p.heading {
+  /* Should be GoogleSans-Regular */
+  font-family: 'Roboto-Regular';
+  font-size: 18px;
 }
 
 #vector-layers input, #vector-layers label {
@@ -1574,4 +1819,165 @@ input::-ms-clear {
 
 .shareView.customDialog {
   border-left: 1px solid black;
+}
+
+.waypointDrawerContainerMain {
+  display: none;
+}
+
+.waypointDrawerContainerHeader {
+  /* Should be GoogleSans-Medium */
+  font-family: 'Roboto-Medium';
+  font-size: 18px;
+  text-align: center;
+  padding-top: 18px;
+  height: 37px;
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  justify-content: center;
+  position: sticky;
+  position: -webkit-sticky;
+  z-index: 90;
+  top: 0;
+  background: white;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.12);
+}
+
+body:not(.mobileUI) .waypointDrawerContainerHeader:not(.mobileUI) {
+  font-size: 20px;
+  height: 41px;
+}
+
+.waypointDrawerSideControlsContainer {
+  position: relative;
+  right: 0px;
+  top: 20px;
+  width: auto;
+  height: 40px;
+  right: -416px;
+  -webkit-box-orient: horizontal;
+  -webkit-box-direction: normal;
+  -ms-flex-direction: row;
+  flex-direction: row;
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -ms-flex-wrap: wrap;
+      flex-wrap: wrap;
+}
+
+.waypointDrawerSideControlsContainer > div, .waypointDrawerSideControlsContainer > button {
+  margin-right: 10px;
+}
+
+.waypointDrawerContainer .waypointDrawerContainerHeader.scrolled {
+  -webkit-appearance: none;
+  -webkit-box-shadow: 0px 6px 6px -6px #bcbcbc;
+  box-shadow: 0px 6px 6px -6px #bcbcbc;
+  position: sticky;
+  position: -webkit-sticky;
+  z-index: 90;
+  top: 0;
+  background: white;
+}
+
+.etDrawerProductAboutHeading {
+  /* Should be GoogleSans-Medium */
+  font-family: 'Roboto-Medium';
+  font-size: 18px;
+  padding-bottom: 20px;
+}
+
+.etDrawerProductAboutHeading.maximized {
+  padding-left: 35px !important;
+}
+
+.etDrawerProductAboutDescription {
+  color: #424242;
+  font-family: 'Roboto-Regular';
+  font-size: 15px;
+  padding-bottom: 22px;
+  padding-right: 50px;
+}
+
+.etDrawerProductLearnMoreContent {
+  top: 120px;
+  background: white;
+  z-index: 10;
+  position: absolute;
+  width: calc(100% - 110px);
+  padding-left: 34px;
+  display: none;
+}
+
+.etDrawerLearnMoreExit {
+  background-image: url(../images/back-arrow.png);
+  background-size: 25px 25px;
+  position: absolute;
+  display: inline-block;
+  left: 20px;
+  width: 20px;
+  height: 20px;
+  top: 77px;
+  cursor: pointer;
+  opacity: 0.7;
+  display: none;
+}
+
+.etDrawerLearnMoreExit:hover {
+  opacity: 0.9
+}
+
+.etDrawerLearnMoreExit:after {
+  content:'';
+  position: absolute;
+  top: -12px;
+  bottom: -12px;
+  left: -12px;
+  right: -12px;
+}
+
+.etDrawerLearnMoreExpand {
+  background-image: url(../images/forward-arrow.png);
+  background-size: 25px 25px;
+  position: absolute;
+  display: inline-block;
+  left: 172px;
+  width: 20px;
+  height: 20px;
+  top: 77px;
+  cursor: pointer;
+  opacity: 0.7;
+}
+
+.etDrawerLearnMoreExpand:hover {
+  opacity: 0.9
+}
+
+.etDrawerLearnMoreExpand:after {
+  content:'';
+  position: absolute;
+  top: -10px;
+  bottom: -10px;
+  left: -10px;
+  right: -10px;
+}
+
+.etDrawerProductHighlightsHeading {
+  /* Should be GoogleSans-Medium */
+  font-family: 'Roboto-Medium';
+  font-size: 18px;
+  padding-bottom: 20px;
+}
+
+.etDrawerAbout, .etDrawerProductHighlights {
+  padding-left: 24px;
+  padding-top: 20px;
+}
+
+.etDrawerSectionSeparator {
+  height: 1px;
+  background: rgba(0, 0, 0, 0.12);
+  width: 100%;
 }

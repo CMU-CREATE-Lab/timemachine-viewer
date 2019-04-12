@@ -9,7 +9,7 @@
   height: 20px;
   margin-right: 0px;
   margin-left: 0px;
-  border-radius: 0px !important;
+  border-radius: 4px !important;
   vertical-align: middle;
   box-shadow: 2px 2px 3px rgba(0,0,0,0.3);
   z-index: 999;
@@ -24,6 +24,10 @@
   margin-left: -8px;
 }
 
+.toggleContextMapBtn.ui-state-hover {
+  border: 1px solid #d3d3d3;
+}
+
 .contextMapContainer {
   /* Border must be 0px */
   border-top: 0px solid #000000;
@@ -32,6 +36,7 @@
   border-bottom: 0px solid #000000;
   position: absolute;
   z-index: 12;
+  border-radius: 4px;
 }
 
 .contextMap {
@@ -41,6 +46,7 @@
   height: 100%;
   color: #FFFFFF;
   text-align: center;
+  border-radius: 4px;
 }
 
 .contextMapResizer {

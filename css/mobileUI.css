@@ -1,13 +1,3 @@
-/*@font-face {
-  font-family: 'GoogleSans-Regular';
-  src: url('fonts/GoogleSans-Regular.woff') format('woff');
-}
-
-@font-face {
-  font-family: 'GoogleSans-Medium';
-  src: url('fonts/GoogleSans-Medium.woff') format('woff');
-}*/
-
 @font-face {
   font-family: 'Roboto-Regular';
   src: url('fonts/Roboto-Regular.woff') format('woff');
@@ -29,63 +19,99 @@ html.forced-portrait {
   left: 0;
 }
 
-*:not(input) {
-  -webkit-touch-callout: none;
-    -webkit-user-select: none;
-     -khtml-user-select: none;
-       -moz-user-select: none;
-        -ms-user-select: none;
-            user-select: none;
-}
-
 .etMobileTopNav {
   background-color: #fff;
+}
+
+.etMobileSearchOverlay {
+  position: absolute;
+  width: 100%;
+  height: calc(100% - 61px);
+  background: white;
+  z-index: 9001;
+  display: none;
 }
 
 .etMobileSearchBoxContainer {
   /* Should be GoogleSans-Regular */
   font-family: 'Roboto-Regular';
-  margin: 15px;
+  margin: 10px;
+  margin-bottom: 8px;
 }
 
 .etMobileSearchBox {
   width: 100%;
+  height: 34px;
   -webkit-box-sizing: border-box;
   -moz-box-sizing: border-box;
   box-sizing: border-box;
-  top: 15px;
-  font-size: 16px;
-  text-align: center;
-  padding-top: 16px;
-  padding-bottom: 16px;
-  border-radius: 8px;
+  font-size: 14px;
+  text-align: left;
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 10px;
+  padding-right: 32px;
+  border-radius: 18px;
   border: none;
   -webkit-appearance: none;
-  -webkit-box-shadow: 0px 1px 3px 1px #bcbcbc;
-  box-shadow: 0px 1px 3px 1px #bcbcbc;
+  border: 1px solid #dadce0;
   outline: none;
+  -webkit-transition: all 0.6s cubic-bezier(0.165, 0.84, 0.44, 1);
+  transition: all 0.6s cubic-bezier(0.165, 0.84, 0.44, 1);
+}
+
+.etMobileSearchBox.active {
+  padding-left: 40px;
+}
+
+.etMobileSearchBox.active ~ .etMobileSearchBoxBack {
+  display: block;
 }
 
 .etMobileSearchBoxIcon {
-  background: url(../images/search-2.png) center center no-repeat;
+  background: url(../images/search-black.png) center center no-repeat;
   background-size: contain;
-  width: 25px;
-  height: 25px;
+  width: 20px;
+  height: 20px;
   position: absolute;
-  left: 31px;
-  top: 30px;
+  right: 20px;
+  top: 17px;
   cursor: default;
-  opacity: 0.3;
+  opacity: 0.4;
 }
 
 .etMobileSearchBox:focus {
   -webkit-appearance: none;
-  -webkit-box-shadow: 0px 1px 3px 1px #6d6d6d;
-  box-shadow: 0px 1px 3px 1px #6d6d6d;
+  -webkit-box-shadow: 0px 0px 3px 0px #6d6d6d;
+  box-shadow: 0px 0px 3px 0px #6d6d6d;
+    -webkit-transition: all 0.6s cubic-bezier(0.165, 0.84, 0.44, 1);
+  transition: all 0.6s cubic-bezier(0.165, 0.84, 0.44, 1);
 }
 
 .etMobileSearchBox:focus ~ span {
   opacity: 0.6;
+}
+
+.etMobileSearchBoxBack {
+  background-image: url(../images/back-arrow.png);
+  background-size: contain;
+  width: 20px;
+  height: 20px;
+  position: absolute;
+  left: 20px;
+  top: 17px;
+  cursor: pointer;
+  opacity: 0.4;
+  display: none;
+}
+
+.etMobileSearchBoxBack:after {
+  content:'';
+  position: absolute;
+  top: -10px;
+  bottom: -10px;
+  left: -10px;
+  right: -10px;
 }
 
 .etMobileSearchBoxClear {
@@ -94,21 +120,26 @@ html.forced-portrait {
   width: 20px;
   height: 20px;
   position: absolute;
-  right: 31px;
-  top: 30px;
+  right: 20px;
+  top: 17px;
   cursor: pointer;
-  opacity: 0.5;
+  opacity: 0.4;
   display: none;
 }
 
+.etMobileSearchBoxClear:after {
+  content:'';
+  position: absolute;
+  top: -10px;
+  bottom: -10px;
+  left: -10px;
+  right: -10px;
+}
+
 .etMobileTimelineContainer {
-  height: 40px;
   width: 100%;
   overflow-x: auto;
   overflow-y: hidden;
-  padding-top: 9px;
-  padding-bottom: 0px;
-  margin-right: 14px;
 }
 
 .etMobileTimelineContainer::-webkit-scrollbar {
@@ -119,9 +150,11 @@ html.forced-portrait {
   /* Should be GoogleSans-Regular */
   font-family: 'Roboto-Regular';
   overflow-x: hidden;
-  padding-top: 8px;
+  display: -webkit-flex;
+  display: flex;
+  -webkit-flex-direction: row;
+  flex-direction: row;
   padding-bottom: 8px;
-  margin-top: -8px;
 }
 
 .etMobilePlaybackButton {
@@ -163,13 +196,25 @@ html.forced-portrait {
   font-size: 15px;
   padding-left: 16px;
   padding-right: 16px;
+  display: block;
+  flex-basis: 8px;
+  flex-grow: 0;
+  flex-shrink: 0;
+  transform: translateY(50%);
+  height: 20px;
 }
 
 .etMobileTimelineTick {
   color: #80868B;
   font-size: 14px;
-  padding-left: 24px;
-  padding-right: 24px;
+  padding-left: 16px;
+  padding-right: 16px;
+  display: block;
+  flex-basis: 36px;
+  flex-grow: 0;
+  flex-shrink: 0;
+  padding-top: 8px;
+  padding-bottom: 8px;
 }
 
 .etMobileTimelineTickSelected {
@@ -179,118 +224,7 @@ html.forced-portrait {
   background-color: #2979FF;
   color: white;
   font-size: 16px;
-  padding-top: 8px;
-  padding-bottom: 8px;
-}
-
-.mobile .tiledContentHolder {
-  position: relative;
-  height: calc(100% - 129px);
-}
-
-.etMobileWaypointDrawerContainer {
-  min-height: 48px;
-  max-height: 65%;
-  height: 48px;
-  width: 100%;
-  bottom: 0px;
-  position: absolute;
-  background: white;
-  border-radius: 8px 8px 0px 0px;
-  z-index: 9000;
-  display: none;
-  overflow-y: auto;
-}
-
-.etMobileWaypointDrawerContainer > div:not(.etMobileWaypointDrawerContainerHeader) {
-  padding-left: 24px;
-}
-
-.etMobileWaypointDrawerContainer.maximized {
-  height: 65%;
-}
-
-.etMobileWaypointDrawerContainer.maximized .etMobileWaypointDrawerContainerHeader {
-  padding-bottom: 20px;
-}
-
-.etDrawerProductAboutHeading {
-  /* Should be GoogleSans-Medium */
-  font-family: 'Roboto-Medium';
-  font-size: 18px;
-  padding-bottom: 20px;
-}
-
-.etDrawerProductAboutHeading.maximized {
-  padding-left: 60px !important;
-}
-
-.etDrawerProductAboutDescription {
-  font-family: 'Roboto-Regular';
-  font-size: 13px;
-  padding-bottom: 30px;
-  padding-right: 45px;
-}
-
-.etDrawerProductLearnMoreContent {
-  top: 105px;
-  background: white;
-  z-index: 10;
-  position: absolute;
-  width: calc(100% - 48px);
-  display: none;
-}
-
-.etDrawerProductAboutDescriptionMoreButton {
-  background-image: url(../images/right.png);
-  background-size: 35px 35px;
-  position: absolute;
-  display: inline-block;
-  right: 14px;
-  width: 35px;
-  height: 35px;
-  opacity: 0.55;
-  top: 101px;
-  cursor: pointer;
-}
-
-.etDrawerLearnMoreExit {
-  background-image: url(../images/back-arrow.png);
-  background-size: 30px 30px;
-  position: absolute;
-  display: inline-block;
-  left: 20px;
-  width: 30px;
-  height: 30px;
-  top: 60px;
-  cursor: pointer;
-}
-
-.etDrawerProductHighlightsHeading {
-  /* Should be GoogleSans-Medium */
-  font-family: 'Roboto-Medium';
-  font-size: 18px;
-  padding-bottom: 20px;
-}
-
-.etMobileWaypointDrawerContainerHeader {
-  /* Should be GoogleSans-Medium */
-  font-family: 'Roboto-Medium';
-  font-size: 18px;
-  text-align: center;
-  padding-top: 20px;
-  height: 25px;
-  display: flex;
-  justify-content: center;
-}
-
-.etMobileWaypointDrawerContainer.maximized  .etMobileWaypointDrawerContainerHeader.scrolled {
-  -webkit-appearance: none;
-  -webkit-box-shadow: 0px 6px 6px -6px #bcbcbc;
-  box-shadow: 0px 6px 6px -6px #bcbcbc;
-  position: sticky;
-  position: -webkit-sticky;
-  z-index: 90;
+  display: block;
 }
 
 .etMobileWaypointDrawerContainerDragIndicator {
@@ -298,103 +232,96 @@ html.forced-portrait {
   background: #e0e0e0;
   border-radius: 2px;
   position: absolute;
-  height: 4px;
-  top: 10px;
+  height: 3px;
+  top: 8px;
 }
 
-.presentationSlider.vertical {
-  overflow-y: auto;
-  height: calc(100% - 209px);
-  position: absolute;
-  width: calc(100% - 24px);
-}
-
-.presentationSlider.vertical .snaplapse_keyframe_list {
-  display: -webkit-box;
-  display: -moz-box;
-  display: -ms-flexbox;
-  display: -webkit-flex;
-  display: flex;
-  flex-wrap: wrap;
-  flex-direction: row;
-  align-items: center;
-  height: 100%;
-}
-
-.presentationSlider.vertical .snaplapse_keyframe_list_item {
-  font-family: 'Roboto-Regular';
-  width: calc(50% - 26px);
-  height: 120px;
-  margin-right: 24px;
-  margin-bottom: 24px;
-  background-color: white;
-  border-radius: 8px;
-  border: 1px solid #dadce0;
+.mobileUI .tiledContentHolder {
   position: relative;
-  cursor: pointer;
-  color: #202124;
+  height: calc(100% - 95px);
 }
 
-.presentationSlider.vertical .snaplapse_keyframe_list_item_thumbnail {
-  border: none;
-  border-top-left-radius: 8px;
-  border-bottom-left-radius: 8px;
+.mobileUI .waypointDrawerContainer {
+  min-height: 56px;
+  max-height: 65%;
+  height: 56px;
+  width: 100%;
+  border-right: 0px;
+  bottom: 0px;
+  position: absolute;
+  background: white;
+  border-radius: 16px 16px 0px 0px;
+  z-index: 100;
+  display: none;
+  overflow-y: auto;
+  -webkit-appearance: none;
+  -webkit-box-shadow: none;
+  box-shadow: none;
+}
+
+.mobileUI .waypointDrawerContainer.maximized {
+  height: 65%;
+}
+
+.mobileUI .waypointDrawerContainer.maximized .etDrawerContent {
+  display: block;
 }
 
 @media only screen and (max-width: 740px) {
-  .presentationSlider.vertical .snaplapse_keyframe_list_item {
+  .mobileUI .waypointDrawerContainer .presentationSlider.vertical .snaplapse_keyframe_list_item {
      width: 100%;
   }
 }
 
-.player:not(.no-hover) .presentationSlider.vertical .snaplapse_keyframe_list_item:hover {
-  border: 1px solid #939393;
-}
-
-.presentationSlider.vertical .snaplapse_keyframe_list_item_title {
-  /* Should be GoogleSans-Regular */
-  font-family: 'Roboto-Regular';
-  margin-left: 120px;
-  padding-left: 16px;
-  position: absolute;
-  left: 0px;
-  top: 16px;
-}
-
-.presentationSlider.vertical .snaplapse_keyframe_list_item_description {
-  margin-left: 120px;
-  padding-left: 16px;
-  position: absolute;
-  left: 0px;
-  top: 38px;
-  color: #5f6368;
-  font-size: 14px;
-  padding-right: 20px;
-  line-height: 1.5;
-  -webkit-line-clamp: 3;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-  -o-text-overflow: ellipsis;
-     text-overflow: ellipsis;
-  display: block;
-  display: -webkit-box;
-  height: 65px;
-}
-
-.presentationSlider.vertical .thumbnail_highlight {
-  border: 2px solid #939393;
-  border-radius: 8px;
+.mobileUI .pac-container {
+  width: calc(100% - 62px) !important;
+  top: 43px !important;
+  left: 31px !important;
+  z-index: 90002;
   -webkit-appearance: none;
-  -webkit-box-shadow: 2px 2px 3px 1px #e0e0e0;
-  box-shadow: 2px 2px 3px 1px #e0e0e0;
+  -webkit-box-shadow: 0px 3px 6px rgba(0,0,0,0.3);
+  box-shadow: 0px 3px 6px rgba(0,0,0,0.3);
 }
 
-/* TODO: Need to make these mobile specific */
-
-.pac-item {
-  height: 45px;
+.mobileUI .share {
+  width: 40px;
+  height: 40px;
+  position: absolute;
+  z-index: 100;
+  border-radius: 30px;
+  opacity: 0.87;
+  background: white;
+  border: #1e1e1e;
+  border: none;
+  right: 28px;
+  bottom: initial;
+  margin-top: 100px;
+  -webkit-appearance: none;
+  -webkit-box-shadow: 0px 4px 8px 3px rgba(60, 64, 67, 0.3), 0px 1px 3px 0px rgba(60, 64, 67, 0.15);
+  box-shadow: 0px 4px 8px 3px rgba(60, 64, 67, 0.3), 0px 1px 3px 0px rgba(60, 64, 67, 0.15);
+  display: none;
 }
 
-.pac-item, .pac-item-query {
-  font-size: 16px;
+.mobileUI .share .ui-icon-custom-share-black {
+  background-image: url(../images/buttons/share-black.png);
+  margin-top: -10px;
+  margin-left: -11px;
+  background-size: 20px 20px;
+  width: 20px;
+  height: 20px;
+  opacity: 0.87;
+}
+
+.mobileUI .ui-dialog.ui-widget.customDialog {
+  border-radius: 16px;
+  border: 1px solid #fefefe;
+  padding-bottom: 20px;
+}
+
+.mobileUI .customDialog .ui-dialog-titlebar {
+  display: none;
+}
+
+.mobileUI .etDrawerLearnMoreExit, .mobileUI .etDrawerLearnMoreExpand {
+  top: 73px;
 }

@@ -101,10 +101,13 @@ if (!org.gigapan.timelapse.Timelapse) {
 
     // Objects
     var videoset = timelapse.getVideoset();
+    var defaultUI = timelapse.getDefaultUI();
 
     // Parameters
     var captureTimes;
     var numFrames;
+    var initialPlayerHeight;
+    var currentDrawerContentScrollPos = 0;
 
     // DOM elements
     var timeMachineDivId = timelapse.getTimeMachineDivId();
@@ -112,13 +115,19 @@ if (!org.gigapan.timelapse.Timelapse) {
     var $playbackButton = $("#" + viewerDivId + " .etMobilePlaybackButton");
     var $timeline = $("#" + viewerDivId + " .etMobileTimeline")
     var $timelineContainer = $("#" + viewerDivId + " .etMobileTimelineContainer");
-    var $waypointDrawerContainer = $("#" + viewerDivId + " .etMobileWaypointDrawerContainer");
-    var $waypointDrawerContainerHeader = $("#" + viewerDivId + " .etMobileWaypointDrawerContainerHeader");
+    var $waypointDrawerContainer = $("#" + viewerDivId + " .waypointDrawerContainer");
+    var $waypointDrawerContainerHeader = $("#" + viewerDivId + " .waypointDrawerContainerHeader");
     var $waypointDrawerMainContent = $("#" + viewerDivId + " .presentationSlider");
+    var $searchBox = $("#" + viewerDivId + " .etMobileSearchBox");
+    var $searchBackButton = $("#" + viewerDivId + " .etMobileSearchBoxBack");
+    var $thumbnailPreviewCopyTextButtonTooltip = $("#" + viewerDivId + " .thumbnail-preview-copy-text-button-tooltip");
+    var $thumbnailPreviewCopyTextButtonTooltipContent = $("#" + viewerDivId + " .thumbnail-preview-copy-text-button-tooltip").find("p");
 
     // Flags
     var addedTimelineSliderListener = false;
     var isScrolling = false;
+
+    var draggingDelayTimer = null;
 
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -128,7 +137,7 @@ if (!org.gigapan.timelapse.Timelapse) {
 
     var initializeTimelineSlider = function() {
       createTimelineSlider();
-      UTIL.touchHorizontalScroll($timelineContainer);
+      //UTIL.touchHorizontalScroll($(".etMobileTimeline"));
     }
 
     var createTimelineSlider = function() {
@@ -146,6 +155,9 @@ if (!org.gigapan.timelapse.Timelapse) {
       $timeline.html(timelineHTML);
 
       $timelineContainer.swipe( {
+        /*swipeStatus: function(event, phase, direction, distance, duration, fingerCount, fingerData) {
+          console.log(event, phase, direction, distance, duration);
+        },*/
         // Generic swipe handler for all directions
         swipe: function(event, direction, distance, duration, fingerCount, fingerData) {
           var $selectedElm = $(".etMobileTimelineTickSelected");
@@ -157,7 +169,7 @@ if (!org.gigapan.timelapse.Timelapse) {
             updateTimelineSlider(null,  $selectedElm.nextAll(".etMobileTimelineTick:first")[0], false);
           }
         },
-        threshold: 30
+        threshold: 10
       });
 
       $(".etMobileTimelineTick").on("click", function() {
@@ -226,9 +238,12 @@ if (!org.gigapan.timelapse.Timelapse) {
       });
     }
 
-
     var createWaypointDrawer = function() {
-      $waypointDrawerMainContent.on("scroll", function() {
+      $waypointDrawerContainer.on("scroll", function(e) {
+        if ($(this).hasClass("disableScroll")) {
+          $(this).scrollTop(currentDrawerContentScrollPos);
+          return;
+        }
         if (this.scrollTop == 0) {
           $waypointDrawerContainerHeader.removeClass("scrolled");
         } else {
@@ -236,30 +251,74 @@ if (!org.gigapan.timelapse.Timelapse) {
         }
       });
 
-      var moveThreshold = 20;
-
       $waypointDrawerContainer.on("mousedown", function(e) {
+        if (!$(e.target).closest(".waypointDrawerContainerHeader").length) return;
+        var lastYPos;
+        var lastYDirection = null;
         var startYPos = e.pageY;
+        lastYPos = startYPos;
+        var startHeight = $(this).height();
         var currentYPos;
-        if (!$(e.target).closest(".etMobileWaypointDrawerContainerHeader").length) return;
-        //if ($(e.target).parents(".waypointDrawerMainContentContainer").first().length) return;
+        $(this).addClass("disableScroll");
+
+        currentDrawerContentScrollPos = $waypointDrawerContainer.scrollTop();
+        clearTimeout(draggingDelayTimer);
+
         $(document).on("mousemove.waypointPanel", function(e) {
           currentYPos = e.pageY;
+          if (lastYPos > e.pageY) {
+            lastYDirection = "up";
+          } else if (lastYPos < e.pageY) {
+            lastYDirection = "down";
+          }
+          lastYPos = currentYPos;
+          var dist = startYPos - currentYPos;
+          $waypointDrawerContainer.height(startHeight + dist);
         });
         $(document).one("mouseup.waypointPanel", function(e) {
-
-          if (currentYPos + moveThreshold < startYPos) {
+          if (lastYDirection && lastYDirection == "up") {
+            $waypointDrawerContainer.stop(true, false).animate({
+              height: "100%"
+            });
             $waypointDrawerContainer.addClass("maximized");
-          } else if (currentYPos - moveThreshold > startYPos) {
-            $waypointDrawerContainer.removeClass("maximized");
+          } else if (lastYDirection && lastYDirection == "down") {
+            $waypointDrawerContainer.stop(true, false).animate({
+              height: "0px"
+            }, function() {
+               $waypointDrawerContainer.removeClass("maximized");
+            });
+
           }
+          $waypointDrawerContainer.removeClass("disableScroll");
           $(document).off(".waypointPanel");
         });
       });
 
-      UTIL.verticalTouchScroll($(".presentationSlider"));
+      UTIL.verticalTouchScroll($waypointDrawerContainer);
 
       timelapse.onresize(true);
+    };
+
+    var initializeSearch = function() {
+      if (window.location.search.indexOf("searchMode=true") >= 0) {
+        window.history.replaceState(null, null, window.location.pathname + window.location.hash);
+      }
+
+      $(window).on('popstate', function() {
+        var historyState = history.state;
+        if (historyState && historyState.searchMode) {
+          $searchBackButton.trigger("click");
+        }
+      });
+
+      timelapse.addResizeListener(function() {
+        var historyState = history.state;
+        if (historyState && historyState.searchMode && initialPlayerHeight == $(".player").height()) {
+          history.pushState({"searchMode" : true }, "", "?searchMode=true");
+        }
+      });
+
+      UTIL.loadGoogleAPIs("org.gigapan.timelapse.MobileUI.initializeSearchBox", settings.apiKeys);
     };
 
 
@@ -297,19 +356,23 @@ if (!org.gigapan.timelapse.Timelapse) {
     // Constructor code
     //
 
-    $("#" + timeMachineDivId).addClass("mobile no-hover");
-    $("#" + viewerDivId).addClass("no-hover");
+    $("body, #" + viewerDivId).addClass("no-hover");
 
     createPlayPauseButton();
+
+    //createLayersButton();
 
     initializeTimelineSlider()
 
     createWaypointDrawer();
 
-    UTIL.loadGoogleAPIs("org.gigapan.timelapse.MobileUI.initializeSearchBox", settings.apiKeys);
+    initializeSearch();
+
+    initialPlayerHeight = $(".player").height();
 
     // TODO: Force portrait mode. Maybe someday allow landscape?
     $(window).on("orientationchange", function() {
+      //TODO: does this not work on iOS? Or just iOS tablets?
       if (screen.orientation.angle == 90) {
         $("html").addClass("forced-portrait");
       } else {
@@ -326,35 +389,84 @@ if (!org.gigapan.timelapse.Timelapse) {
 
     var $searchBox = $(".etMobileSearchBox");
     var $searchBoxClear = $(".etMobileSearchBoxClear");
+    var $searchBoxIcon = $(".etMobileSearchBoxIcon");
+    var $searchOverlay = $(" .etMobileSearchOverlay");
+    var $searchBackButton = $(".etMobileSearchBoxBack");
+    var $timelineContainer = $(".etMobileTimelineContainer");
     var autocomplete = new google.maps.places.Autocomplete($searchBox.get(0));
     var geocoder = new google.maps.Geocoder();
+    var keepSearchResult = false;
+    var lastSearchResultView = null;
 
     // Enable places selection from dropdown on touch devices
     $(document).on('touchstart', '.pac-item', function(e) {
       e.preventDefault();
-      var searchItemText = $(this).text();
+      $(this).children().each(function( index ) {
+        $(this).append(' ');
+      });
+      var searchItemText =  $(this).text();
+      searchItemText = searchItemText.replace(/\s\s+/g, ' ');
       $searchBox.val(searchItemText);
       google.maps.event.trigger(autocomplete, 'place_changed', {
         locationName: searchItemText
       });
     });
 
+    $searchBoxIcon.on("click", function() {
+      $searchBox.trigger("focus");
+    });
+
+    $searchBox.on("focus", function() {
+      toggleSearchOverlay("show");
+    });
+
+    $searchBackButton.on("click", function() {
+      toggleSearchOverlay("hide");
+      if (!keepSearchResult) {
+        $searchBoxClear.trigger("click");
+      } else if (lastSearchResultView) {
+        timelapse.setNewView(lastSearchResultView, false, false);
+      }
+    });
+
     $searchBoxClear.on('click', function() {
+      keepSearchResult = false;
+      lastSearchResultView = null;
       $searchBox.val("");
       $(this).hide();
+      $searchBoxIcon.show();
       $('.pac-container').hide();
     });
+
+    var toggleSearchOverlay = function(state) {
+      if (state == "show") {
+        $searchBox.addClass("active");
+        $searchOverlay.show();
+        $timelineContainer.hide();
+        history.pushState({"searchMode" : true }, "", "?searchMode=true");
+      } else if (state == "hide") {
+        $searchBox.removeClass("active");
+        $searchOverlay.hide();
+        $timelineContainer.show();
+        $searchBox.blur();
+        window.history.back();
+      }
+    };
 
     $searchBox.on("input", function() {
       if ($(this).val() == "") {
         $searchBoxClear.hide();
+        $searchBoxIcon.show();
       } else {
         $searchBoxClear.show();
+        $searchBoxIcon.hide();
       }
     });
 
     google.maps.event.addListener(autocomplete, 'place_changed', function() {
+      toggleSearchOverlay("hide");
       var place = autocomplete.getPlace();
+      keepSearchResult = true;
       if (!place || !place.geometry) {
         var address = $searchBox.val();
         geocoder.geocode({
@@ -391,6 +503,7 @@ if (!org.gigapan.timelapse.Timelapse) {
                 }
               };
             }
+            lastSearchResultView = newView;
             timelapse.setNewView(newView, false, false);
             UTIL.addGoogleAnalyticEvent('textbox', 'search', 'go-to-searched-place');
           } else {
@@ -405,6 +518,7 @@ if (!org.gigapan.timelapse.Timelapse) {
           },
           "zoom": 10
         };
+        lastSearchResultView = newView;
         timelapse.setNewView(newView, false, false);
         UTIL.addGoogleAnalyticEvent('textbox', 'search', 'go-to-searched-place');
       }

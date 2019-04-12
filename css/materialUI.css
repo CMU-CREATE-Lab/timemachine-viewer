@@ -1,0 +1,142 @@
+.materialUI .waypointDrawerContainerMain {
+  position: relative;
+  width: 377px;
+  height: 100%;
+  left: 0;
+  transition: 0.5s;
+}
+
+.materialUI .waypointDrawerContainer {
+  width: 377px;
+  height: 100%;
+  left: 0px;
+  position: absolute;
+  background: white;
+  border-radius: 0px;
+  z-index: 99;
+  display: block;
+  overflow-y: auto;
+  -webkit-appearance: none;
+  -webkit-box-shadow: 4px 0px 3px rgba(0,0,0,0.3);
+  box-shadow: 4px 0px 3px rgba(0,0,0,0.3);
+  border-right: 1px solid rgba(0, 0, 0, 0.12);
+}
+
+.materialUI .waypointDrawerClosed {
+  transition: 0.5s;
+  left: -378px;
+}
+
+.materialUI .waypointDrawerContainerToggle {
+  width: 24px;
+  height: 38px;
+  background: white;
+  position: absolute;
+  right: -26px;
+  top: 20px;
+  z-index: 99;
+  border-radius: 0px 4px 4px 0px;
+  -webkit-appearance: none;
+  -webkit-box-shadow: 2px 2px 3px rgba(0,0,0,0.3);
+  box-shadow: 2px 2px 3px rgba(0,0,0,0.3);
+  border: 1px solid #d3d3d3;
+  cursor: pointer;
+}
+
+.materialUI .waypointDrawerContainerToggle:hover .waypointDrawerContainerToggleIcon {
+  opacity: 0.9;
+}
+
+.materialUI .waypointDrawerContainerToggleIcon {
+  background: url(../images/right-arrow-black.png) center center no-repeat;
+  background-size: contain;
+  width: 30px;
+  height: 30px;
+  position: absolute;
+  right: -2px;
+  top: 4px;
+  opacity: 0.7;
+  display: inline-block;
+}
+
+.materialUI .customDialog .ui-dialog-titlebar {
+  display: none;
+}
+
+.materialUI .ui-dialog.ui-widget.customDialog {
+  border-radius: 16px;
+  border: 1px solid #fefefe;
+  padding-bottom: 20px;
+}
+
+.materialUI .waypointDrawerContainer .presentationSlider.vertical .snaplapse_keyframe_list_item {
+  width: 100%;
+}
+
+.materialUI .waypointDrawerContainer .waypointDrawerContainerHeader {
+  text-align: left;
+}
+
+.materialUI .waypointDrawerContainer .presentationSlider.vertical {
+  height: calc(100% - 265px);
+}
+
+.materialUI .share {
+  background: white;
+  z-index: 136;
+  width: 0px;
+  height: 40px;
+  padding: 0px;
+  box-shadow: 2px 2px 3px rgba(0,0,0,0.3);
+  border-top-left-radius: 1px;
+  border-bottom-left-radius: 1px;
+  border-top-right-radius: 0px;
+  border-bottom-right-radius: 0px;
+  outline: none;
+  border: 1px solid #d3d3d3;
+  padding-left: 38px;
+  padding-right: 0px;
+  border-radius: 4px;
+  position: relative;
+  z-index: 99;
+  bottom: auto;
+  display: none;
+}
+
+
+.materialUI.verticalWaypointDrawerContainer .share {
+  left: auto;
+  right: auto;
+}
+
+.materialUI .share .ui-button {
+  margin-top: 0px;
+  display: block;
+  width: 40px;
+  height: 40px;
+  background: white;
+  -webkit-box-shadow: 2px 2px 3px rgba(0, 0, 0, 0.3);
+  box-shadow: 2px 2px 3px rgba(0, 0, 0, 0.3);
+  outline: none;
+  position: relative;
+  border-radius: 0px;
+}
+
+.materialUI .share.ui-state-hover {
+  border: 1px solid #d3d3d3;
+}
+
+.materialUI .share .ui-icon-custom-share-black {
+  background: url(../images/buttons/share-black.png);
+  width: 24px;
+  height: 24px;
+  opacity: 0.6;
+  -webkit-background-size: contain;
+          background-size: contain;
+  margin-left: -13px;
+  margin-top: -12px
+}
+
+.materialUI .share:hover .ui-icon-custom-share-black{
+  opacity: 0.9;
+}

@@ -521,7 +521,7 @@ if (!Math.uuid) {
     };
 
     var unsafeWaypointsJSONtoJSON = function(unsafeWaypointsJSON) {
-      if (!unsafeWaypointsJSON) return;
+      if (!unsafeWaypointsJSON || !unsafeWaypointsJSON['waypoints']) return;
       var snaplapseJSON = {};
       var tmJSON = timelapse.getTmJSON();
       snaplapseJSON['snaplapse'] = {};

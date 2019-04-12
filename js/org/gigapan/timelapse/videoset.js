@@ -531,7 +531,8 @@ if (!window['$']) {
           video.drawIntervalId = null;
         }, false);
       }
-      if (isMobileSupported) {
+      // TODO: 20190408
+      /*if (isMobileSupported) {
         _handleVideoPromise(video, "load");
         if (_isPaused()) {
           if (!video.playPromise) {
@@ -541,7 +542,7 @@ if (!window['$']) {
             _handleVideoPromise(video, "pause");
           }, 1);
         }
-      }
+      }*/
       return video;
     };
     this.addVideo = _addVideo;
@@ -1525,7 +1526,7 @@ if (!window['$']) {
             canvasContext.clearRect(0, 0, canvas.width, canvas.height);
             canvasContext.drawImage(video, videoGeometry.left, videoGeometry.top, videoGeometry.width, videoGeometry.height);
           } catch(e) {
-            UTIL.error(e.message);
+            UTIL.error(e.name);
           }
         }
         // Notify draw listeners
