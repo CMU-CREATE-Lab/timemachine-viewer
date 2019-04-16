@@ -120,6 +120,9 @@ if (!org.gigapan.timelapse.Timelapse) {
     var $waypointDrawerMainContent = $("#" + viewerDivId + " .presentationSlider");
     var $searchBox = $("#" + viewerDivId + " .etMobileSearchBox");
     var $searchBackButton = $("#" + viewerDivId + " .etMobileSearchBoxBack");
+    var $searchBoxClear = $("#" + viewerDivId + " .etMobileSearchBoxClear");
+    var $searchBoxIcon = $("#" + viewerDivId + " .etMobileSearchBoxIcon");
+    var $searchOverlay = $("#" + viewerDivId + " .etMobileSearchOverlay");
     var $thumbnailPreviewCopyTextButtonTooltip = $("#" + viewerDivId + " .thumbnail-preview-copy-text-button-tooltip");
     var $thumbnailPreviewCopyTextButtonTooltipContent = $("#" + viewerDivId + " .thumbnail-preview-copy-text-button-tooltip").find("p");
 
@@ -318,9 +321,157 @@ if (!org.gigapan.timelapse.Timelapse) {
         }
       });
 
-      UTIL.loadGoogleAPIs("org.gigapan.timelapse.MobileUI.initializeSearchBox", settings.apiKeys);
+      UTIL.loadGoogleAPIs(initializeSearchBox, settings.apiKeys);
     };
 
+    var initializeSearchBox = function() {
+      var autocomplete = new google.maps.places.Autocomplete($searchBox.get(0));
+      var geocoder = new google.maps.Geocoder();
+      var keepSearchResult = false;
+      var lastSearchResultView = null;
+
+      // Enable places selection from dropdown on touch devices
+      $(document).on('touchstart', '.pac-item', function(e) {
+        e.preventDefault();
+        $(this).children().each(function( index ) {
+          $(this).append(' ');
+        });
+        var searchItemText =  $(this).text();
+        searchItemText = searchItemText.replace(/\s\s+/g, ' ');
+        $searchBox.val(searchItemText);
+        google.maps.event.trigger(autocomplete, 'place_changed', {
+          locationName: searchItemText
+        });
+      });
+
+      $searchBoxIcon.on("click", function() {
+        $searchBox.trigger("focus");
+      });
+
+      $searchBox.on("focus", function() {
+        toggleSearchOverlay("show");
+      });
+
+      $searchBackButton.on("click", function() {
+        toggleSearchOverlay("hide");
+        if (!keepSearchResult) {
+          $searchBoxClear.trigger("click");
+        } else if (lastSearchResultView) {
+          timelapse.setNewView(lastSearchResultView, false, false);
+        }
+      });
+
+      $searchBoxClear.on('click', function() {
+        keepSearchResult = false;
+        lastSearchResultView = null;
+        $searchBox.val("");
+        $(this).hide();
+        $searchBoxIcon.show();
+        $('.pac-container').hide();
+      });
+
+      var toggleSearchOverlay = function(state) {
+        if (state == "show") {
+          $searchBox.addClass("active");
+          $searchOverlay.show();
+          $timelineContainer.hide();
+          history.pushState({"searchMode" : true }, "", "?searchMode=true");
+        } else if (state == "hide") {
+          $searchBox.removeClass("active");
+          $searchOverlay.hide();
+          $timelineContainer.show();
+          $searchBox.blur();
+          window.history.back();
+        }
+      };
+
+      $searchBox.on("input", function() {
+        if ($(this).val() == "") {
+          $searchBoxClear.hide();
+          $searchBoxIcon.show();
+        } else {
+          $searchBoxClear.show();
+          $searchBoxIcon.hide();
+        }
+      });
+
+      google.maps.event.addListener(autocomplete, 'place_changed', function() {
+        toggleSearchOverlay("hide");
+        var place = autocomplete.getPlace();
+        keepSearchResult = true;
+        if (!place || !place.geometry) {
+          var address = $searchBox.val();
+          geocoder.geocode({
+            'address': address
+          }, function(results, status) {
+            if (status == google.maps.GeocoderStatus.OK) {
+              var newView;
+              var bounds = results[0].geometry.bounds;
+              if (bounds) {
+                var northEastLatLng = bounds.getNorthEast();
+                var southWestLatLng = bounds.getSouthWest();
+              }
+              if (!northEastLatLng || !southWestLatLng) {
+                var lat = results[0].geometry.location.lat();
+                var lng = results[0].geometry.location.lng();
+                newView = {
+                  center: {
+                    lat: lat,
+                    lng: lng
+                  },
+                  zoom: 10
+                };
+              } else {
+                newView = {
+                  bbox: {
+                    ne: {
+                      lat: northEastLatLng.lat(),
+                      lng: northEastLatLng.lng()
+                    },
+                    sw: {
+                      lat: southWestLatLng.lat(),
+                      lng: southWestLatLng.lng()
+                    }
+                  }
+                };
+              }
+              lastSearchResultView = newView;
+              timelapse.setNewView(newView, false, false);
+              UTIL.addGoogleAnalyticEvent('textbox', 'search', 'go-to-searched-place');
+            } else {
+              UTIL.log("Geocode failed: " + status);
+            }
+          });
+        } else {
+          var newView = {
+            center: {
+              "lat": place.geometry.location.lat(),
+              "lng": place.geometry.location.lng()
+            },
+            "zoom": 10
+          };
+          lastSearchResultView = newView;
+          timelapse.setNewView(newView, false, false);
+          UTIL.addGoogleAnalyticEvent('textbox', 'search', 'go-to-searched-place');
+        }
+        document.activeElement.blur();
+      });
+
+      var setSearchStateFromShareView = function(shareViewString) {
+        if (!shareViewString) return;
+        var shareViewStringArray = shareViewString.split(",");
+        keepSearchResult = true;
+        lastSearchResultView = {
+          center: {
+            lat: shareViewStringArray[0],
+            lng: shareViewStringArray[1]
+          },
+          zoom: shareViewStringArray[2]
+        };
+      };
+
+      defaultUI.populateSearchBoxWithLocationString(null, true, setSearchStateFromShareView);
+    }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////
     //
@@ -350,7 +501,6 @@ if (!org.gigapan.timelapse.Timelapse) {
     };
     this.setPlaybackButtonIcon = setPlaybackButtonIcon;
 
-
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////
     //
     // Constructor code
@@ -360,8 +510,6 @@ if (!org.gigapan.timelapse.Timelapse) {
 
     createPlayPauseButton();
 
-    //createLayersButton();
-
     initializeTimelineSlider()
 
     createWaypointDrawer();
@@ -370,161 +518,9 @@ if (!org.gigapan.timelapse.Timelapse) {
 
     initialPlayerHeight = $(".player").height();
 
-    // TODO: Force portrait mode. Maybe someday allow landscape?
-    $(window).on("orientationchange", function() {
-      //TODO: does this not work on iOS? Or just iOS tablets?
-      if (screen.orientation.angle == 90) {
-        $("html").addClass("forced-portrait");
-      } else {
-        $("html").removeClass("forced-portrait");
-      }
-    });
-
   };
   //end of org.gigapan.timelapse.MobileUI
 
-  org.gigapan.timelapse.MobileUI.initializeSearchBox = function() {
-    if (typeof google === "undefined")
-      return;
-
-    var $searchBox = $(".etMobileSearchBox");
-    var $searchBoxClear = $(".etMobileSearchBoxClear");
-    var $searchBoxIcon = $(".etMobileSearchBoxIcon");
-    var $searchOverlay = $(" .etMobileSearchOverlay");
-    var $searchBackButton = $(".etMobileSearchBoxBack");
-    var $timelineContainer = $(".etMobileTimelineContainer");
-    var autocomplete = new google.maps.places.Autocomplete($searchBox.get(0));
-    var geocoder = new google.maps.Geocoder();
-    var keepSearchResult = false;
-    var lastSearchResultView = null;
-
-    // Enable places selection from dropdown on touch devices
-    $(document).on('touchstart', '.pac-item', function(e) {
-      e.preventDefault();
-      $(this).children().each(function( index ) {
-        $(this).append(' ');
-      });
-      var searchItemText =  $(this).text();
-      searchItemText = searchItemText.replace(/\s\s+/g, ' ');
-      $searchBox.val(searchItemText);
-      google.maps.event.trigger(autocomplete, 'place_changed', {
-        locationName: searchItemText
-      });
-    });
-
-    $searchBoxIcon.on("click", function() {
-      $searchBox.trigger("focus");
-    });
-
-    $searchBox.on("focus", function() {
-      toggleSearchOverlay("show");
-    });
-
-    $searchBackButton.on("click", function() {
-      toggleSearchOverlay("hide");
-      if (!keepSearchResult) {
-        $searchBoxClear.trigger("click");
-      } else if (lastSearchResultView) {
-        timelapse.setNewView(lastSearchResultView, false, false);
-      }
-    });
-
-    $searchBoxClear.on('click', function() {
-      keepSearchResult = false;
-      lastSearchResultView = null;
-      $searchBox.val("");
-      $(this).hide();
-      $searchBoxIcon.show();
-      $('.pac-container').hide();
-    });
-
-    var toggleSearchOverlay = function(state) {
-      if (state == "show") {
-        $searchBox.addClass("active");
-        $searchOverlay.show();
-        $timelineContainer.hide();
-        history.pushState({"searchMode" : true }, "", "?searchMode=true");
-      } else if (state == "hide") {
-        $searchBox.removeClass("active");
-        $searchOverlay.hide();
-        $timelineContainer.show();
-        $searchBox.blur();
-        window.history.back();
-      }
-    };
-
-    $searchBox.on("input", function() {
-      if ($(this).val() == "") {
-        $searchBoxClear.hide();
-        $searchBoxIcon.show();
-      } else {
-        $searchBoxClear.show();
-        $searchBoxIcon.hide();
-      }
-    });
-
-    google.maps.event.addListener(autocomplete, 'place_changed', function() {
-      toggleSearchOverlay("hide");
-      var place = autocomplete.getPlace();
-      keepSearchResult = true;
-      if (!place || !place.geometry) {
-        var address = $searchBox.val();
-        geocoder.geocode({
-          'address': address
-        }, function(results, status) {
-          if (status == google.maps.GeocoderStatus.OK) {
-            var newView;
-            var bounds = results[0].geometry.bounds;
-            if (bounds) {
-              var northEastLatLng = bounds.getNorthEast();
-              var southWestLatLng = bounds.getSouthWest();
-            }
-            if (!northEastLatLng || !southWestLatLng) {
-              var lat = results[0].geometry.location.lat();
-              var lng = results[0].geometry.location.lng();
-              newView = {
-                center: {
-                  lat: lat,
-                  lng: lng
-                },
-                zoom: 10
-              };
-            } else {
-              newView = {
-                bbox: {
-                  ne: {
-                    lat: northEastLatLng.lat(),
-                    lng: northEastLatLng.lng()
-                  },
-                  sw: {
-                    lat: southWestLatLng.lat(),
-                    lng: southWestLatLng.lng()
-                  }
-                }
-              };
-            }
-            lastSearchResultView = newView;
-            timelapse.setNewView(newView, false, false);
-            UTIL.addGoogleAnalyticEvent('textbox', 'search', 'go-to-searched-place');
-          } else {
-            UTIL.log("Geocode failed: " + status);
-          }
-        });
-      } else {
-        var newView = {
-          center: {
-            "lat": place.geometry.location.lat(),
-            "lng": place.geometry.location.lng()
-          },
-          "zoom": 10
-        };
-        lastSearchResultView = newView;
-        timelapse.setNewView(newView, false, false);
-        UTIL.addGoogleAnalyticEvent('textbox', 'search', 'go-to-searched-place');
-      }
-      document.activeElement.blur();
-    });
-  };
 
 })();
 //end of (function() {

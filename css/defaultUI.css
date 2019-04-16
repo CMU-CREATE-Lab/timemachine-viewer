@@ -644,7 +644,7 @@ _:-moz-tree-row(hover), .helpPlayerLabel .ui-button-text {
   cursor: pointer;
 }
 
-.addressLookupContainer {
+.searchBoxContainer {
   position: absolute;
   top: 20px;
   left: 20px;
@@ -654,13 +654,13 @@ _:-moz-tree-row(hover), .helpPlayerLabel .ui-button-text {
   display: none;
 }
 
-.verticalWaypointDrawerContainer .addressLookupContainer {
+.verticalWaypointDrawerContainer .searchBoxContainer {
   position: relative;
   top: auto;
   left: auto;
 }
 
-.addressLookup {
+.player:not(.mobileUI) .searchBox {
   z-index: 136;
   width: 0px;
   height: 38px;
@@ -677,11 +677,11 @@ _:-moz-tree-row(hover), .helpPlayerLabel .ui-button-text {
   border-radius: 4px;
 }
 
-.addressLookupSearchIcon:hover {
+.searchBoxIcon:hover {
   opacity: 0.9;
 }
 
-.addressLookupSearchIcon {
+.searchBoxIcon {
   background: url(../images/search-black.png) center center no-repeat;
   background-size: contain;
   width: 24px;
@@ -694,7 +694,7 @@ _:-moz-tree-row(hover), .helpPlayerLabel .ui-button-text {
   cursor: pointer;
 }
 
-.addressLookupSearchIcon:after {
+.searchBoxIcon:after {
   content: '';
   position: absolute;
   top: -11px;
@@ -703,7 +703,7 @@ _:-moz-tree-row(hover), .helpPlayerLabel .ui-button-text {
   right: -11px;
 }
 
-.addressLookupClearIcon {
+.searchBoxClearIcon {
   background: url(../images/close.png) center center no-repeat;
   background-size: contain;
   width: 24px;
@@ -716,7 +716,7 @@ _:-moz-tree-row(hover), .helpPlayerLabel .ui-button-text {
   display: none;
 }
 
-.addressLookupClearIcon:after {
+.searchBoxClearIcon:after {
   content: '';
   position: absolute;
   top: -10px;
@@ -725,14 +725,8 @@ _:-moz-tree-row(hover), .helpPlayerLabel .ui-button-text {
   right: -5px;
 }
 
-.addressLookupClearIcon:hover {
+.searchBoxClearIcon:hover {
   opacity: 0.9;
-}
-
-.addressLookup.expanded {
-  width: 200px;
-  padding-left: 8px;
-  transition: 0.5s;
 }
 
 .search-button {
@@ -748,11 +742,6 @@ _:-moz-tree-row(hover), .helpPlayerLabel .ui-button-text {
   box-shadow: 2px 2px 3px rgba(0, 0, 0, 0.3);
   outline: none;
   border: 1px solid #d3d3d3;
-}
-
-.search-button.expanded {
-  border-top-right-radius: 0px;
-  border-bottom-right-radius: 0px;
 }
 
 .zoom .ui-button {
@@ -1110,11 +1099,17 @@ _:-moz-tree-row(hover), .customDialog .customDialogButton .ui-button-text {
 }
 
 #browser_not_supported {
-  display: block;
-  left: calc(50% - 257px);
-  position: fixed;
-  top: calc(50% - 79px);
-  width: 514px;
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-pack: center;
+  -ms-flex-pack: center;
+  justify-content: center;
+  -webkit-box-align: center;
+  -ms-flex-align: center;
+  align-items: center;
+  height: 100%;
+  width: 100%;
 }
 
 #html5_overridden_message {
@@ -1131,6 +1126,9 @@ _:-moz-tree-row(hover), .customDialog .customDialogButton .ui-button-text {
   padding: 15px 10px 15px 60px;
   background-repeat: no-repeat;
   background-position: 10px center;
+  height: auto;
+  width: auto;
+  max-width: 514px;
 }
 
 .warning {
@@ -1844,7 +1842,7 @@ input::-ms-clear {
   border-bottom: 1px solid rgba(0, 0, 0, 0.12);
 }
 
-body:not(.mobileUI) .waypointDrawerContainerHeader:not(.mobileUI) {
+.player:not(.mobileUI) .waypointDrawerContainerHeader:not(.mobileUI) {
   font-size: 20px;
   height: 41px;
 }
@@ -1854,12 +1852,13 @@ body:not(.mobileUI) .waypointDrawerContainerHeader:not(.mobileUI) {
   right: 0px;
   top: 20px;
   width: auto;
+  float: left;
   height: 40px;
   right: -416px;
   -webkit-box-orient: horizontal;
-  -webkit-box-direction: normal;
-  -ms-flex-direction: row;
-  flex-direction: row;
+  -webkit-box-direction: reverse;
+  -ms-flex-direction: row-reverse;
+  flex-direction: row-reverse;
   display: -webkit-box;
   display: -ms-flexbox;
   display: flex;
@@ -1980,4 +1979,8 @@ body:not(.mobileUI) .waypointDrawerContainerHeader:not(.mobileUI) {
   height: 1px;
   background: rgba(0, 0, 0, 0.12);
   width: 100%;
+}
+
+.ui-widget-overlay.ui-front {
+  z-index: 2000 !important;
 }

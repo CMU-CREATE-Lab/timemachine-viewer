@@ -123,6 +123,7 @@ if (!org.gigapan.timelapse.Timelapse) {
     var changeDetectionTool = timelapse.getChangeDetectionTool();
     var panInterval;
     var eventListeners = {};
+    var uiType = timelapse.getUIType();
 
     // DOM elements
     var timeMachineDivId = timelapse.getTimeMachineDivId();
@@ -159,6 +160,8 @@ if (!org.gigapan.timelapse.Timelapse) {
     if (shareViewDialogType == "modal") {
       $shareDialog = $("#" + viewerDivId + " .shareViewModal");
     }
+    var $searchBox = $("#" + timeMachineDivId + " .searchBox");
+    var $searchBoxIcon = $("#" + timeMachineDivId + " .searchBoxIcon");
     var $shareButton = $("#" + viewerDivId + " .share")
     var $shareDialogClose = $("#" + viewerDivId + " .close-share");
     var $shareUrl = $("#" + viewerDivId + " .shareurl");
@@ -463,58 +466,60 @@ if (!org.gigapan.timelapse.Timelapse) {
     };
     this.createSizePicker = createSizePicker;
 
+    // TODO: Can we combine this with the code in mobileUI.js for single searchbox UI setup method
     var createAddressLookupUI = function() {
       if (typeof google === "undefined")
         return;
 
-      var $addressLookupElemContainer = $('.addressLookupContainer');
+      var $searchBoxContainer = $('.searchBoxContainer');
       if (waypointSliderOrientation == "vertical") {
-        $waypointDrawerSideControlsContainer.append($addressLookupElemContainer);
+        $waypointDrawerSideControlsContainer.prepend($searchBoxContainer);
       }
 
-      var $addressLookupElem = $('.addressLookup');
-      $addressLookupElemContainer.show();
+      $searchBoxContainer.show();
 
-      var $searchBoxClear = $(".addressLookupClearIcon");
-      var $searchBoxIcon = $(".addressLookupSearchIcon")
+      var $searchBoxClear = $(".searchBoxClearIcon");
 
-      var autocomplete = new google.maps.places.Autocomplete($addressLookupElem.get(0));
+      var autocomplete = new google.maps.places.Autocomplete($searchBox.get(0));
       var geocoder = new google.maps.Geocoder();
 
       $searchBoxIcon.on("mouseover mouseout", function() {
-        $addressLookupElem.toggleClass("hover");
+        $searchBox.toggleClass("hover");
       });
 
       $searchBoxIcon.on("click", function() {
         var toggleWidth, paddingRight;
-        if ($addressLookupElem.width() == 0) {
+        if ($searchBox.width() == 0) {
           var toggleWidth = "200";
           var paddingRight = "30";
-          $addressLookupElem.focus();
+          $searchBox.focus();
         } else {
           toggleWidth = "0";
-          paddingRight = "0"
+          paddingRight = "0";
         }
-
-        $addressLookupElem.stop().animate({
+        $searchBox.toggleClass("expanded");
+        $searchBox.stop().animate({
           width: toggleWidth,
           paddingRight: paddingRight
         });
       });
 
       $searchBoxClear.on('click', function() {
-        $addressLookupElem.val("");
+        $searchBox.val("");
         $(this).hide();
         $searchBoxIcon.show();
         $('.pac-container').hide();
       });
 
-      $addressLookupElem.on("click", function(e) {
-        google.maps.event.trigger(autocomplete, 'place_changed');
-        return false;
-      });
+      // TODO
+      if (uiType != "materialUI") {
+        $searchBox.on("click", function(e) {
+          google.maps.event.trigger(autocomplete, 'place_changed');
+          return false;
+        });
+      }
 
-      $addressLookupElem.on("input", function() {
+      $searchBox.on("input", function() {
         if ($(this).val() == "") {
           $searchBoxClear.hide();
         } else {
@@ -524,13 +529,13 @@ if (!org.gigapan.timelapse.Timelapse) {
 
       // Hack to disable Chrome (and maybe other browser) autofill/complete
       setTimeout(function() {
-        $addressLookupElem.attr("autocomplete", "null");
+        $searchBox.attr("autocomplete", "null");
       }, 1000);
 
       google.maps.event.addListener(autocomplete, 'place_changed', function() {
         var place = autocomplete.getPlace();
         if (!place || !place.geometry) {
-          var address = $addressLookupElem.val();
+          var address = $searchBox.val();
           geocoder.geocode({
             'address': address
           }, function(results, status) {
@@ -580,8 +585,38 @@ if (!org.gigapan.timelapse.Timelapse) {
           UTIL.addGoogleAnalyticEvent('textbox', 'search', 'go-to-searched-place');
         }
       });
+
+      if (uiType == "materialUI") {
+        populateSearchBoxWithLocationString(null, true);
+      }
+
     };
     this.createAddressLookupUI = createAddressLookupUI;
+
+    var populateSearchBoxWithLocationString = function(newSearchString, fromHashVars, callback) {
+      var searchString = newSearchString || "";
+      var hashViewString = "";
+      if (fromHashVars) {
+        var hashVars = org.gigapan.Util.getUnsafeHashVars();
+        if (hashVars && hashVars.v) {
+          hashViewString = hashVars.v;
+          if (hashViewString.indexOf("latLng") > 0) {
+            var latLng = hashViewString.split(",");
+            searchString = parseFloat(latLng[0]).toFixed(5) + "," + parseFloat(latLng[1]).toFixed(5);
+          }
+        }
+      }
+      if (searchString) {
+        $searchBox.val(searchString).trigger("input");
+        if (!$searchBox.hasClass("expanded")) {
+          $searchBoxIcon.trigger("click");
+        }
+      }
+      if (typeof(callback) === "function") {
+        callback(hashViewString);
+      }
+    }
+    this.populateSearchBoxWithLocationString = populateSearchBoxWithLocationString;
 
     var setShareThumbnailUI = function(starting) {
 

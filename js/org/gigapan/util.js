@@ -103,7 +103,7 @@ if (!org.gigapan) {
   // Chrome 54 added background playback of media, which shouldn't be relevant to our needs but it might be.
   var isSupportedChromeMobileVersion = matchChromeVersionString && matchChromeVersionString.length > 1 && parseInt(matchChromeVersionString[1]) >= 54;
   var isAndroidDevice = navigatorUserAgent.match(/Android/) != null;
-  var matchAndroidVersionString = navigatorUserAgent.match(/Android (\d+(?:\.\d+){1,2})/);
+  var matchAndroidVersionString = navigator.userAgent.match(/Android (\d+(?:\.*\d*){1,2})/);
   // 4.4 is technically the minimum version that supports the required video related policies. For technical reasons though, we ask for latest Lollipop or later in the hopes of getting better hardware.
   var isSupportedAndroidVersion = isAndroidDevice && parseFloat(matchAndroidVersionString[1]) >= 5.1
 
@@ -113,6 +113,10 @@ if (!org.gigapan) {
   var supportedMediaTypes = [];
   var scrollBarWidth = null;
   var doDraw = true;
+  var googleAPICallbackQueue = [];
+  var isGoogleAPILoading = false;
+  var isGoogleAPIReady = false;
+
 
   //0 == none
   //1 == errors only
@@ -823,15 +827,41 @@ if (!org.gigapan) {
         setTimeout(function() { callback(Date.now()); },  1000/60);
     };
 
-  org.gigapan.Util.loadGoogleAPIs = function(globalCallbackFunctionName, apiKeys) {
-    if (typeof(google) !== "undefined") return;
+  org.gigapan.Util.loadGoogleAPIs = function(callback, apiKeys) {
+    if (isGoogleAPIReady) {
+      if (typeof(callback) === "function") {
+        callback();
+      }
+      return;
+    } else if (isGoogleAPILoading) {
+      googleAPICallbackQueue.push(callback);
+      return;
+    }
+    isGoogleAPILoading = true;
+    googleAPICallbackQueue.push(callback);
+
+    org.gigapan.Util.googleMapsAPILoadedCallback = function() {
+      isGoogleAPIReady = true;
+      isGoogleAPILoading = false;
+      for (var i = 0; i < googleAPICallbackQueue.length; i++) {
+        if (typeof(googleAPICallbackQueue[i]) === "function") {
+          googleAPICallbackQueue[i]();
+        }
+      }
+      googleAPICallbackQueue = [];
+    }
 
     var newScript = document.createElement('script');
-    var mapSrc = 'https://maps.google.com/maps/api/js?libraries=places&callback=' + globalCallbackFunctionName;
+    var mapSrc = 'https://maps.google.com/maps/api/js?libraries=places&callback=org.gigapan.Util.googleMapsAPILoadedCallback';
     if (apiKeys["googleMaps"])
       mapSrc += '&key=' + apiKeys["googleMaps"];
     newScript.setAttribute('src', mapSrc);
     newScript.setAttribute('type', 'text/javascript');
     document.getElementsByTagName('head')[0].appendChild(newScript);
   };
+
+  org.gigapan.Util.isGoogleAPIReady = function() {
+    return isGoogleAPIReady;
+  };
+
 })();

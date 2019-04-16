@@ -260,7 +260,7 @@ if (!org.gigapan.timelapse.Timelapse) {
           }]
         }];
         // Callback when google APIs are loaded
-        window.loadContextMapLeaflet = function() {
+        var loadContextMapLeaflet = function() {
           var googleAPIScript;
           googleAPIScript = document.createElement('script');
           googleAPIScript.setAttribute('src', UTIL.getRootAppURL() + 'js/leaflet/Google.js');
@@ -282,7 +282,7 @@ if (!org.gigapan.timelapse.Timelapse) {
             }
           };
         };
-        UTIL.loadGoogleAPIs("loadContextMapLeaflet", apiKeys);
+        UTIL.loadGoogleAPIs(loadContextMapLeaflet, apiKeys);
       } else if (tileType == "OpenStreetMap") {
         var osmUrl = contextMapOptions["tileUrl"] || 'http://{s}.tile.openstreetmap.org/';
         osmUrl += '/{z}/{x}/{y}.png';

@@ -124,6 +124,8 @@ if (!org.gigapan.timelapse.snaplapse) {
     var presentationSliderLoadAnimation = ( settings["presentationSliderSettings"] && typeof (settings["presentationSliderSettings"]["onLoadAnimation"]) != "undefined") ? settings["presentationSliderSettings"]["onLoadAnimation"] : "zoom";
     var presentationSliderPlayAfterAnimation = ( settings["presentationSliderSettings"] && typeof (settings["presentationSliderSettings"]["playAfterAnimation"]) != "undefined") ? settings["presentationSliderSettings"]["playAfterAnimation"] : true;
     var desiredPresentationSliderHeight = ( settings["presentationSliderSettings"] && typeof (settings["presentationSliderSettings"]["height"]) != "undefined") ? settings["presentationSliderSettings"]["height"] : 94;
+    var uiType = timelapse.getUIType();
+    var defaultUI = timelapse.getDefaultUI();
 
     // Flags
     var didOnce = false;
@@ -149,6 +151,8 @@ if (!org.gigapan.timelapse.snaplapse) {
     var $keyframeContainer = $("#" + composerDivId + " .snaplapse_keyframe_container");
     var $sortable;
     var $waypointDrawerContainerMain = $("#" + viewerDivId + " .waypointDrawerContainerMain");
+    var $searchBox = $("#" + timeMachineDivId + " .searchBox");
+    var $searchBoxContainer = $("#" + timeMachineDivId + " .searchBoxContainer");
 
     // Parameters
     var rootURL;
@@ -266,7 +270,12 @@ if (!org.gigapan.timelapse.snaplapse) {
     var initializeTourOverlyUI = function(tourTitle) {
       timelapse.stopParabolicMotion();
 
-      $("#addressLookupContainer").hide();
+      if (uiType == "materialUI") {
+        $waypointDrawerContainerMain.hide();
+      } else {
+        $searchBoxContainer.hide();
+      }
+      $("#" + viewerDivId + " .contextMapContainer").addClass("playingTour");
       $("#" + viewerDivId + " .snaplapseTourPlayBack").remove();
       $("#" + viewerDivId + " .tourLoadOverlay").remove();
       $("#" + viewerDivId).append('<div class="snaplapseTourPlayBack playTour"></div>');
@@ -714,7 +723,7 @@ if (!org.gigapan.timelapse.snaplapse) {
       $("#" + composerDivId + " .newTimewarp").button("option", "disabled", true);
       $("#" + composerDivId + " .setTimewarp").button("option", "disabled", true);
       if (showAddressLookup)
-        $("#" + composerDivId + ' .addressLookup').attr("disabled", "disabled").css("opacity", "0.5");
+        $searchBox.attr("disabled", "disabled").css("opacity", "0.5");
       if (showEditorModeButton)
         $("#" + composerDivId + " .toggleMode").button("option", "disabled", true);
     };
@@ -728,7 +737,7 @@ if (!org.gigapan.timelapse.snaplapse) {
       $("#" + composerDivId + " .newTimewarp").button("option", "disabled", false);
       $("#" + composerDivId + " .setTimewarp").button("option", "disabled", false);
       if (showAddressLookup)
-        $("#" + composerDivId + ' .addressLookup').removeAttr("disabled").css("opacity", "1");
+        $searchBox.removeAttr("disabled").css("opacity", "1");
       if (showEditorModeButton)
         $("#" + composerDivId + " .toggleMode").button("option", "disabled", false);
     };
@@ -968,8 +977,15 @@ if (!org.gigapan.timelapse.snaplapse) {
           $("#" + viewerDivId + " .instructions").removeClass('on');
           $("#" + viewerDivId + ' .timelineSlider').slider("disable");
           $("#" + viewerDivId + " .tourLoadOverlayPlay").attr("src", rootAppURL + "images/tour_stop_outline.png").css("opacity", "1.0");
-          $("#" + viewerDivId + " .snaplapseTourPlayBack").css("left", "0px").toggleClass("playTour stopTour").removeClass("hasSearch").attr("title", "Click to stop this tour");
-          $("#addressLookupContainer").hide();
+          $("#" + viewerDivId + " .snaplapseTourPlayBack").css("left", "0px").toggleClass("playTour stopTour").attr("title", "Click to stop this tour");
+          $("#" + viewerDivId + " .contextMapContainer").addClass("playingTour");
+          if (showAddressLookup) {
+            $("#" + viewerDivId + " .snaplapseTourPlayBack").removeClass("hasSearch");
+            $searchBoxContainer.hide();
+          }
+          if (uiType == "materialUI") {
+            $waypointDrawerContainerMain.hide();
+          }
         });
 
         snaplapse.addEventListener('stop', function() {
@@ -1021,8 +1037,15 @@ if (!org.gigapan.timelapse.snaplapse) {
           $("#" + viewerDivId + ' .help').removeClass("disabled").addClass("enabled");
           $("#" + viewerDivId + ' .timelineSlider').slider("enable");
           $("#" + viewerDivId + " .tourLoadOverlayPlay").attr("src", rootAppURL + "images/tour_replay_outline.png").css("opacity", "1.0");
-          $("#" + viewerDivId + " .snaplapseTourPlayBack").css("left", "60px").toggleClass("stopTour playTour").addClass("hasSearch").attr("title", "Click to replay this tour");
-          $("#addressLookupContainer").show();
+          $("#" + viewerDivId + " .snaplapseTourPlayBack").toggleClass("stopTour playTour").attr("title", "Click to replay this tour");
+          if (showAddressLookup) {
+            $("#" + viewerDivId + " .snaplapseTourPlayBack").addClass("hasSearch");
+            $searchBoxContainer.show();
+          }
+          if (uiType == "materialUI") {
+            $("#" + viewerDivId + " .contextMapContainer").removeClass("playingTour");
+            $waypointDrawerContainerMain.show();
+          }
         });
 
         snaplapse.addEventListener('keyframe-added', function(keyframe, insertionIndex, keyframes) {
@@ -1836,6 +1859,11 @@ if (!org.gigapan.timelapse.snaplapse) {
           } else {
             timelapse.setNewView(newView, true, doPlay, setViewCallback);
           }
+        }
+        if (uiType == "materialUI") {
+          var centerView = timelapse.pixelBoundingBoxToLatLngCenterView(keyframe.bounds).center;
+          var searchString = parseFloat(centerView.lat).toFixed(5) + "," + parseFloat(centerView.lng).toFixed(5);
+          defaultUI.populateSearchBoxWithLocationString(searchString, false);
         }
         if (usePresentationSlider && doNotFireListener != true) {
           var listeners = eventListeners["slide-changed"];

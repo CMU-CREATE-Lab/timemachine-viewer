@@ -631,7 +631,11 @@
 }
 
 .snaplapseTourPlayBack.hasSearch {
-  top: 47px;
+  top: 59px;
+}
+
+.contextMapContainer.playingTour {
+  right: 20px !important;
 }
 
 .tourLoadOverlay {
@@ -643,7 +647,7 @@
   top: 0px;
   background: black;
   cursor: pointer;
-  z-index: 99;
+  z-index: 2000;
   visibility: hidden;
 }
 
@@ -960,6 +964,13 @@
   position: absolute;
   left: 0px;
   top: 16px;
+  -webkit-line-clamp: 1;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  -o-text-overflow: ellipsis;
+  text-overflow: ellipsis;
+  display: block;
+  display: -webkit-box;
 }
 
 .presentationSlider.vertical .snaplapse_keyframe_list_item_description {

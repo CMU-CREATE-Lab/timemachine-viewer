@@ -491,6 +491,10 @@ if (!window['$']) {
       return customUI;
     };
 
+    this.getMobileUI = function() {
+      return mobileUI;
+    }
+
     this.getTimelineMetadataVisualizer = function() {
       return timelineMetadataVisualizer;
     };
@@ -984,6 +988,9 @@ if (!window['$']) {
 
       switch (e.type) {
         case "touchstart":
+          // TODO
+          if ($(e.target).parents("#static_map_base_layer").length) return;
+
           mouseEvent = "mousedown";
           touchStartTargetElement = theTouch;
 
@@ -1047,6 +1054,8 @@ if (!window['$']) {
           if (thisTouchCount == 1) {
             // Translate
           } else if (thisTouchCount == 2) {
+            if (!$(e.target).hasClass("dataPanesContainer")) return;
+
             var dist = Math.abs(Math.sqrt((e.touches[0].pageX - e.touches[1].pageX) * (e.touches[0].pageX - e.touches[1].pageX) + (e.touches[0].pageY - e.touches[1].pageY) * (e.touches[0].pageY - e.touches[1].pageY)));
             thisLocation = {
               pageX: (e.touches[0].pageX + e.touches[1].pageX) / 2,
@@ -3132,10 +3141,13 @@ if (!window['$']) {
         if (mobileUI) {
           $waypointDrawerContainer.show();
         } else {
-          $waypointDrawerContainerMain.removeClass("hidden");
-          setTimeout(function() {
-            $waypointDrawerContainerMain.removeClass("waypointDrawerClosed");
-          }, 50);
+          var hashVars = org.gigapan.Util.getUnsafeHashVars();
+          if (!hashVars.tour) {
+            $waypointDrawerContainerMain.removeClass("hidden");
+            setTimeout(function() {
+              $waypointDrawerContainerMain.removeClass("waypointDrawerClosed");
+            }, 50);
+          }
 
           $waypointDrawerContainer.on("scroll", function(e) {
             if (this.scrollTop == 0) {
@@ -3934,9 +3946,9 @@ if (!window['$']) {
       $viewerDiv.css("visibility", "hidden");
 
       if (isMobileDevice) {
-        $("#" + timeMachineDivId).addClass("mobileUI");
+        $("#" + timeMachineDivId + ", #" + viewerDivId).addClass("mobileUI");
       } else if (uiType == "materialUI") {
-        $("#" + timeMachineDivId).addClass("materialUI");
+        $("#" + timeMachineDivId + ", #" + viewerDivId).addClass("materialUI");
       }
 
       var tmp = document.getElementById("{REPLACE}");
