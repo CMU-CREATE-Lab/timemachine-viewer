@@ -151,6 +151,8 @@
   font-family: 'Roboto-Regular';
   overflow-x: hidden;
   display: -webkit-flex;
+  display: -webkit-box;
+  display: -ms-flexbox;
   display: flex;
   -webkit-flex-direction: row;
   flex-direction: row;
@@ -320,6 +322,14 @@
 
 .mobileUI .customDialog .ui-dialog-titlebar {
   display: none;
+}
+
+.mobileUI .snaplapseTourPlayBack .tourLoadOverlayPlay:not(.animating) {
+  top: 18px !important;
+}
+
+.mobileUI .snaplapseTourPlayBack  .tourLoadOverlayTitle:not(.animating) {
+  top: 26px !important;
 }
 
 #static_map_base_layer {

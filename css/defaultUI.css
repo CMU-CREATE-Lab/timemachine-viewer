@@ -1099,6 +1099,7 @@ _:-moz-tree-row(hover), .customDialog .customDialogButton .ui-button-text {
 }
 
 #browser_not_supported {
+  display: -webkit-flex;
   display: -webkit-box;
   display: -ms-flexbox;
   display: flex;
@@ -1830,6 +1831,7 @@ input::-ms-clear {
   text-align: center;
   padding-top: 18px;
   height: 37px;
+  display: -webkit-flex;
   display: -webkit-box;
   display: -ms-flexbox;
   display: flex;
@@ -1859,6 +1861,7 @@ input::-ms-clear {
   -webkit-box-direction: reverse;
   -ms-flex-direction: row-reverse;
   flex-direction: row-reverse;
+  display: -webkit-flex;
   display: -webkit-box;
   display: -ms-flexbox;
   display: flex;

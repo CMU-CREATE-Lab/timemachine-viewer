@@ -627,11 +627,15 @@
   cursor: pointer;
   height: 48px;
   visibility: hidden;
-  width: 450px;
+  width: auto;
 }
 
-.snaplapseTourPlayBack.hasSearch {
+.player:not(.mobileUI) .snaplapseTourPlayBack.hasSearch {
   top: 59px;
+}
+
+.mobileUI .snaplapseTourPlayBack {
+  top: 94px;
 }
 
 .contextMapContainer.playingTour {
@@ -649,6 +653,11 @@
   cursor: pointer;
   z-index: 2000;
   visibility: hidden;
+  display: -webkit-flex;
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  justify-content: center;
 }
 
 .tourLoadOverlayPlay {
@@ -667,11 +676,17 @@
   text-shadow: -1px 0 1px black, 0 1px 1px black, 1px 0 1px black, 0 -1px 1px black;
   font-family: Arial, Helvetica, sans-serif;
   font-size: 14pt;
-  position: absolute;
+  position: relative;
   top: 71%;
-  left: 50%;
   z-index: 99;
   color: #ffffff;
+  width: auto;
+  height: 20px;
+}
+
+.tourLoadOverlayTitle.animating {
+  position: absolute;
+  left: 50%;
 }
 
 .keyframeSubtitleBoxForHovering {
@@ -925,10 +940,9 @@
 }
 
 .presentationSlider.vertical .snaplapse_keyframe_list {
-  display: -webkit-box;
-  display: -moz-box;
-  display: -ms-flexbox;
   display: -webkit-flex;
+  display: -webkit-box;
+  display: -ms-flexbox;
   display: flex;
   flex-wrap: wrap;
   flex-direction: row;

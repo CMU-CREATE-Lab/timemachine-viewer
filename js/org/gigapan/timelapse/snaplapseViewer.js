@@ -283,7 +283,7 @@ if (!org.gigapan.timelapse.snaplapse) {
 
       // Add the tour title to be used during tour playback
       var $tourLoadOverlayTitle = $("#" + viewerDivId + " .tourLoadOverlayTitle");
-      $tourLoadOverlayTitle.text("Tour: " + tourTitle).css("margin-left", -($tourLoadOverlayTitle.width() / 2) + "px");
+      $tourLoadOverlayTitle.text("Tour: " + tourTitle);
 
       var $tourLoadOverlayPlay = $("#" + viewerDivId + " .tourLoadOverlayPlay");
       $("#" + viewerDivId + " .tourLoadOverlay").hover(function() {
@@ -306,18 +306,23 @@ if (!org.gigapan.timelapse.snaplapse) {
     };
 
     var animateTourOverlayAndPlay = function(duration) {
-      $("#" + viewerDivId + " .snaplapseTourPlayBack").css("visibility", "visible");
+      var $tourTitle = $("#" + viewerDivId + " .tourLoadOverlayTitle");
+      var $tourPlaybackControls = $("#" + viewerDivId + " .snaplapseTourPlayBack");
+
+      $tourPlaybackControls.css("visibility", "visible");
       // Animate tour title
-      $("#" + viewerDivId + " .tourLoadOverlayTitle").animate({
-        "top": "26px",
+      var topPos = isMobileDevice ? "120px" : "26px";
+      $tourTitle.addClass("animating").animate({
+        "top": topPos,
         "left": "63px",
         "margin-left": "0px"
       }, duration, function() {
-        $("#" + viewerDivId + " .tourLoadOverlayTitle").appendTo($("#" + viewerDivId + " .snaplapseTourPlayBack"));
+        $tourTitle.removeClass("animating").appendTo($tourPlaybackControls);
       });
       // Animate tour play button
+      topPos = isMobileDevice ? "112px" : "18px";
       $("#" + viewerDivId + " .tourLoadOverlayPlay").animate({
-        "top": "18px",
+        "top": topPos,
         "left": "18px",
         "width": "40px",
         "height": "40px",
@@ -325,7 +330,7 @@ if (!org.gigapan.timelapse.snaplapse) {
         "margin-top": "0px",
         "opacity": "1.0"
       }, duration, function() {
-        $("#" + viewerDivId + " .tourLoadOverlayPlay").appendTo($("#" + viewerDivId + " .snaplapseTourPlayBack"));
+        $("#" + viewerDivId + " .tourLoadOverlayPlay").appendTo($tourPlaybackControls);
         $("#" + viewerDivId + " .tourLoadOverlay").css("visibility", "hidden");
         $(this).attr({
           "src": rootAppURL + "images/tour_stop_outline.png",
@@ -961,7 +966,11 @@ if (!org.gigapan.timelapse.snaplapse) {
             }
           }
 
-          if (!useCustomUI) {
+          if (isMobileDevice) {
+            $(".waypointDrawerContainer").hide();
+            $(".etMobilePlaybackButton").hide();
+            $(".share").hide();
+          } else if (!useCustomUI) {
             $sideToolbar.hide();
             $controls.hide();
             setCaptureTimePosition("down");
@@ -1024,7 +1033,11 @@ if (!org.gigapan.timelapse.snaplapse) {
             hideAnnotationBubble();
           }
 
-          if (!useCustomUI) {
+          if (isMobileDevice) {
+            $(".waypointDrawerContainer").show();
+            $(".etMobilePlaybackButton").show();
+            $(".share").show();
+          } else if (!useCustomUI) {
             $sideToolbar.show();
             $controls.show();
             setCaptureTimePosition("up");
@@ -1214,10 +1227,10 @@ if (!org.gigapan.timelapse.snaplapse) {
         }
         if (!uiEnabled && !usePresentationSlider) {
           timelapse.pause();
+          // TODO: UI handling of tours is a mess. Revisit.
           initializeTourOverlyUI(tourTitle);
           if (noPlaybackOverlay != true) {
             $("#" + viewerDivId + " .tourLoadOverlay").css("visibility", "visible");
-            //$("#" + viewerDivId + " .tourLoadOverlayPlay").css("visibility", "visible");
           }
           setSubtitlePosition("down");
           $("#" + timeMachineDivId + " .presentationSlider").hide();
