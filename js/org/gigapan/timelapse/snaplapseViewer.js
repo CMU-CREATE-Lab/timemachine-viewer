@@ -1876,6 +1876,9 @@ if (!org.gigapan.timelapse.snaplapse) {
         if (uiType == "materialUI") {
           var centerView = timelapse.pixelBoundingBoxToLatLngCenterView(keyframe.bounds).center;
           var searchString = parseFloat(centerView.lat).toFixed(5) + "," + parseFloat(centerView.lng).toFixed(5);
+          if (!defaultUI) {
+            defaultUI = timelapse.getDefaultUI();
+          }
           defaultUI.populateSearchBoxWithLocationString(searchString, false);
         }
         if (usePresentationSlider && doNotFireListener != true) {
