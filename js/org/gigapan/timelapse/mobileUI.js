@@ -113,8 +113,7 @@ if (!org.gigapan.timelapse.Timelapse) {
     var timeMachineDivId = timelapse.getTimeMachineDivId();
     var viewerDivId = timelapse.getViewerDivId();
     var $playbackButton = $("#" + viewerDivId + " .etMobilePlaybackButton");
-    var $timeline = $("#" + viewerDivId + " .etMobileTimeline")
-    var $timelineContainer = $("#" + viewerDivId + " .etMobileTimelineContainer");
+    var $timelineContainer = $("#" + viewerDivId + " .materialTimelineContainer");
     var $waypointDrawerContainer = $("#" + viewerDivId + " .waypointDrawerContainer");
     var $waypointDrawerContainerHeader = $("#" + viewerDivId + " .waypointDrawerContainerHeader");
     var $waypointDrawerMainContent = $("#" + viewerDivId + " .presentationSlider");
@@ -123,6 +122,7 @@ if (!org.gigapan.timelapse.Timelapse) {
     var $searchBoxClear = $("#" + viewerDivId + " .etMobileSearchBoxClear");
     var $searchBoxIcon = $("#" + viewerDivId + " .etMobileSearchBoxIcon");
     var $searchOverlay = $("#" + viewerDivId + " .etMobileSearchOverlay");
+    var $orientationChangeOverlay = $("#" + timeMachineDivId + " .etMobileOrientationChangeOverlay");
     var $thumbnailPreviewCopyTextButtonTooltip = $("#" + viewerDivId + " .thumbnail-preview-copy-text-button-tooltip");
     var $thumbnailPreviewCopyTextButtonTooltipContent = $("#" + viewerDivId + " .thumbnail-preview-copy-text-button-tooltip").find("p");
 
@@ -370,6 +370,15 @@ if (!org.gigapan.timelapse.Timelapse) {
       defaultUI.populateSearchBoxWithLocationString(null, true, setSearchStateFromShareView);
     }
 
+    var checkOrientation = function() {
+      if (window.orientation == 0 || window.orientation == 180) {
+        $orientationChangeOverlay.hide();
+      } else {
+        $orientationChangeOverlay.show();
+      }
+    }
+
+
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////
     //
     // Public methods
@@ -388,6 +397,13 @@ if (!org.gigapan.timelapse.Timelapse) {
     initializeSearch();
 
     initialPlayerHeight = $("#" + viewerDivId).height();
+
+    checkOrientation();
+
+    $(window).on("orientationchange", function() {
+      checkOrientation();
+    });
+
 
   };
   //end of org.gigapan.timelapse.MobileUI

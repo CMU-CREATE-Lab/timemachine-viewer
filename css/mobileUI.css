@@ -276,6 +276,35 @@
   top: 26px !important;
 }
 
+.mobileUI .etMobileOrientationChangeOverlay {
+  width: 100%;
+  height: 100%;
+  background-color: #4a4a4a;
+  position: absolute;
+  z-index: 9000;
+  background-image: url(../images/orientation-invert.png);
+  background-position: center;
+  background-repeat: no-repeat;
+  display: none;
+}
+
+.mobileUI .etMobileOrientationChangeOverlayText {
+  position: relative;
+  color: #9b9b9b;
+  font-size: 24px;
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-align: center;
+  -ms-flex-align: center;
+  align-items: center;
+  -webkit-box-pack: center;
+  -ms-flex-pack: center;
+  justify-content: center;
+  height: 100%;
+  top: 100px;
+}
+
 #static_map_base_layer {
   width: 100%;
   height: 100%;
