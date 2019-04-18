@@ -488,7 +488,8 @@ if (!window['$']) {
 
       mostRecentlyAddedVideo = video;
 
-      if (isMobileSupported) {
+      // TODO: 20190418
+      /*if (isMobileSupported) {
         $("#" + currentVideoId).one('loadedmetadata', function() {
           if (video.readyState == 1) {
             _handleVideoPromise(video, "load");
@@ -502,7 +503,8 @@ if (!window['$']) {
             }
           }
         });
-      }
+      }*/
+
       if (viewerType != "video") {
         video.addEventListener('playing', function() {
           if (video.handleSeekStuck && !advancing) {
@@ -531,8 +533,7 @@ if (!window['$']) {
           video.drawIntervalId = null;
         }, false);
       }
-      // TODO: 20190408
-      /*if (isMobileSupported) {
+      if (isMobileSupported) {
         _handleVideoPromise(video, "load");
         if (_isPaused()) {
           if (!video.playPromise) {
@@ -542,7 +543,7 @@ if (!window['$']) {
             _handleVideoPromise(video, "pause");
           }, 1);
         }
-      }*/
+      }
       return video;
     };
     this.addVideo = _addVideo;
