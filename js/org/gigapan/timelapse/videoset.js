@@ -763,6 +763,11 @@ if (!window['$']) {
       if (actionType == "play" && video.paused) {
         video.playPromise = video.play();
       }
+      // HTML5 video does not return Promises in <= IE 11, so we create a fake one.
+      // Also note that <= IE11 does not support Promises, so we need to include a polyfill.
+      if (isIE && !isIEEdge) {
+        video.playPromise = Promise.resolve(true);
+      }
       if (video.playPromise !== undefined) {
         video.playPromise.then(function (_) {
           if (actionType == "pause" && !video.paused) {
