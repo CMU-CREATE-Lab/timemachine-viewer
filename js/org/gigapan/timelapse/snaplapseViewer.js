@@ -99,6 +99,7 @@ if (!org.gigapan.timelapse.snaplapse) {
     // Objects
     var videoset = timelapse.getVideoset();
     var eventListeners = {};
+    var materialUI = timelapse.getMaterialUI();
 
     // Settings
     var isMobileDevice = UTIL.isMobileDevice();
@@ -147,6 +148,7 @@ if (!org.gigapan.timelapse.snaplapse) {
     var timeMachineDivId = timelapse.getTimeMachineDivId();
     var $sortable;
     var $videoSizeSelect;
+    var $timelapseContainer = $("#" + timeMachineDivId);
     var $createSubtitle_dialog = $("#" + composerDivId + " .createSubtitle_dialog");
     var $keyframeContainer = $("#" + composerDivId + " .snaplapse_keyframe_container");
     var $sortable;
@@ -345,7 +347,16 @@ if (!org.gigapan.timelapse.snaplapse) {
       if (uiEnabled && orientation == "vertical") {
         $waypointDrawerContainerMain.show();
         $(".waypointDrawerContainerToggle").on("click", function() {
+          $timelapseContainer.toggleClass("waypointDrawerOpen");
           $waypointDrawerContainerMain.toggleClass("waypointDrawerClosed");
+          if (uiType == "materialUI") {
+            if (!materialUI) {
+              materialUI = timelapse.getMaterialUI();
+            }
+            setTimeout(function() {
+              materialUI.refocusTimeline();
+            }, 400);
+          }
         });
         $("#" + composerDivId).addClass("vertical");
         $(".etDrawerProductHighlights").append($("#" + composerDivId));

@@ -339,7 +339,7 @@ _:-moz-tree-row(hover), .helpPlayerLabel .ui-button-text {
   z-index: 10;
 }
 
-.playbackButton.ui-button {
+.player:not(.materialUI):not(.mobileUI) .playbackButton.ui-button {
   position: absolute;
   width: 58px;
   height: 58px;

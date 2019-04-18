@@ -1973,6 +1973,7 @@ if (!org.gigapan.timelapse.Timelapse) {
 
     if (isMobileDevice) {
       createShareButton();
+      createMainUI();
       return;
     }
     if (waypointSliderOrientation == "vertical") {

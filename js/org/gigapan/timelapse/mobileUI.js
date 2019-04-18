@@ -138,109 +138,6 @@ if (!org.gigapan.timelapse.Timelapse) {
     // Private methods
     //
 
-    var initializeTimelineSlider = function() {
-      createTimelineSlider();
-      //UTIL.touchHorizontalScroll($(".etMobileTimeline"));
-    }
-
-    var createTimelineSlider = function() {
-      var timelineHTML = "";
-      captureTimes = timelapse.getCaptureTimes();
-      numFrames = captureTimes.length;
-
-      for (var i = 0; i < captureTimes.length; i++) {
-        timelineHTML += "<span class='etMobileTimelineTick' data-frame=" + i + ">" + captureTimes[i] + "</span>";
-      }
-      timelineHTML += "<span class='etMobileTimelineDivider'>&#8226;</span>";
-      for (var i = 0; i < captureTimes.length; i++) {
-        timelineHTML += "<span class='etMobileTimelineTick etMainMobileTimelineTick' data-frame=" + i + ">" + captureTimes[i] + "</span>";
-      }
-      $timeline.html(timelineHTML);
-
-      $timelineContainer.swipe( {
-        /*swipeStatus: function(event, phase, direction, distance, duration, fingerCount, fingerData) {
-          console.log(event, phase, direction, distance, duration);
-        },*/
-        // Generic swipe handler for all directions
-        swipe: function(event, direction, distance, duration, fingerCount, fingerData) {
-          var $selectedElm = $(".etMobileTimelineTickSelected");
-          if (!$selectedElm.length) return;
-          var currentFrameNum = parseInt($selectedElm.attr("data-frame"));
-          if ((currentFrameNum > 0 || $selectedElm.hasClass("etMainMobileTimelineTick")) && direction == "right") {
-            updateTimelineSlider(null,  $selectedElm.prevAll(".etMobileTimelineTick:first")[0], false);
-          } else if ((currentFrameNum < numFrames - 1 || !$selectedElm.hasClass("etMainMobileTimelineTick")) && direction == "left") {
-            updateTimelineSlider(null,  $selectedElm.nextAll(".etMobileTimelineTick:first")[0], false);
-          }
-        },
-        threshold: 10
-      });
-
-      $(".etMobileTimelineTick").on("click", function() {
-        updateTimelineSlider(null, this, false);
-      });
-
-      if (!addedTimelineSliderListener) {
-        addedTimelineSliderListener = true;
-        videoset.addEventListener('sync', function() {
-          var currentFrameNumber = timelapse.getCurrentFrameNumber();
-          var $selectedElm = $(".etMobileTimelineTickSelected");
-          if (!$selectedElm.hasClass("etMainMobileTimelineTick") || parseInt($selectedElm.attr("data-frame")) == currentFrameNumber) return;
-          updateTimelineSlider(currentFrameNumber, null, true);
-        });
-      }
-
-      var startTimeElm = $(".etMainMobileTimelineTick").first();
-      updateTimelineSlider(0, startTimeElm);
-    };
-
-    var updateTimelineSlider = function(frameNum, timeTick, fromSync) {
-      var elementToHighlight = timeTick;
-      if (!elementToHighlight) {
-        elementToHighlight = $('.etMainMobileTimelineTick[data-frame="' + frameNum + '"]');
-      }
-      if (elementToHighlight) {
-        if (frameNum == null) {
-          frameNum = parseInt($(elementToHighlight).attr("data-frame"));
-        }
-        //var scrollOptions = {inline: 'center'};
-        var scrollOptions = {time: 100};
-        if (fromSync) {
-          scrollOptions = {
-           ease: null,
-           time: 0
-         }
-        }
-        $(".etMobileTimelineTick").removeClass("etMobileTimelineTickSelected");
-        $(elementToHighlight).addClass("etMobileTimelineTickSelected");
-        window.scrollIntoView($(elementToHighlight)[0], scrollOptions, function() {
-          isScrolling = false;
-        });
-        if (timelapse.isPaused()) {
-          timelapse.seekToFrame(frameNum);
-        }
-      }
-    };
-
-    var createPlayPauseButton = function() {
-      // Create play button
-      $playbackButton.button({
-        icons: {
-          primary: "ui-icon-custom-play-white"
-        },
-        text: false
-      }).on("click", function() {
-        var $selectedElm = $(".etMobileTimelineTickSelected");
-        if (!$selectedElm.hasClass("etMainMobileTimelineTick")) {
-          $(".etMainMobileTimelineTick").first().click();
-        }
-        timelapse.handlePlayPause();
-        //if (!timelapse.isPaused())
-        //  UTIL.addGoogleAnalyticEvent('button', 'click', 'viewer-play');
-        //else
-        //  UTIL.addGoogleAnalyticEvent('button', 'click', 'viewer-pause');
-      });
-    }
-
     var createWaypointDrawer = function() {
       $waypointDrawerContainer.on("scroll", function(e) {
         if ($(this).hasClass("disableScroll")) {
@@ -478,28 +375,6 @@ if (!org.gigapan.timelapse.Timelapse) {
     // Public methods
     //
 
-    var setPlaybackButtonIcon = function(type) {
-      if (type == "pause") {
-        $playbackButton.button({
-          icons: {
-            primary: "ui-icon-custom-play-white"
-          },
-          text: false
-        }).attr({
-          "title": "Play"
-        });
-      } else if (type == "play") {
-        $playbackButton.button({
-          icons: {
-            primary: "ui-icon-custom-pause-white"
-          },
-          text: false
-        }).attr({
-          "title": "Pause"
-        });
-      }
-    };
-    this.setPlaybackButtonIcon = setPlaybackButtonIcon;
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////
     //
@@ -508,15 +383,11 @@ if (!org.gigapan.timelapse.Timelapse) {
 
     $("body, #" + viewerDivId).addClass("no-hover");
 
-    createPlayPauseButton();
-
-    initializeTimelineSlider()
-
     createWaypointDrawer();
 
     initializeSearch();
 
-    initialPlayerHeight = $(".player").height();
+    initialPlayerHeight = $("#" + viewerDivId).height();
 
   };
   //end of org.gigapan.timelapse.MobileUI

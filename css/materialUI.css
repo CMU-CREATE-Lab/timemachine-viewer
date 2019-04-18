@@ -1,8 +1,10 @@
 .materialUI .waypointDrawerContainerMain {
-  position: relative;
+  position: absolute;
   width: 377px;
   height: 100%;
   left: 0;
+  -webkit-transition: 0.5s;
+  -o-transition: 0.5s;
   transition: 0.5s;
 }
 
@@ -23,6 +25,8 @@
 }
 
 .materialUI .waypointDrawerClosed {
+  -webkit-transition: 0.5s;
+  -o-transition: 0.5s;
   transition: 0.5s;
   left: -378px;
 }
@@ -52,6 +56,7 @@
   background-repeat: no-repeat;
   background-position: center;
   background-size: contain;
+  -webkit-background-size: contain;
   width: 30px;
   height: 30px;
   position: absolute;
@@ -66,6 +71,7 @@
   background-repeat: no-repeat;
   background-position: center;
   background-size: contain;
+  -webkit-background-size: contain;
 }
 
 .materialUI .customDialog .ui-dialog-titlebar {
@@ -95,6 +101,7 @@
   width: 0px;
   height: 40px;
   padding: 0px;
+  -webkit-box-shadow: 2px 2px 3px rgba(0,0,0,0.3);
   box-shadow: 2px 2px 3px rgba(0,0,0,0.3);
   border-top-left-radius: 1px;
   border-bottom-left-radius: 1px;
@@ -139,12 +146,296 @@
   width: 24px;
   height: 24px;
   opacity: 0.6;
+  background-size: contain;
   -webkit-background-size: contain;
-          background-size: contain;
   margin-left: -13px;
   margin-top: -12px
 }
 
 .materialUI .share:hover .ui-icon-custom-share-black{
   opacity: 0.9;
+}
+
+.materialUI:not(.mobileUI) .materialTimeline {
+  overflow-x: hidden;
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-orient: horizontal;
+  -webkit-box-direction: normal;
+  -ms-flex-direction: row;
+  flex-direction: row;
+  padding-top: 8px;
+  padding-bottom: 8px;
+  background: white;
+  width: 100%;
+}
+
+.materialUI:not(.mobileUI) .materialTimeline.isIE {
+  overflow-x: auto;
+  -ms-overflow-style: none;
+}
+
+.materialUI:not(.mobileUI) .materialTimelineContainerMain {
+  width: 100%;
+  overflow-x: auto;
+  overflow-y: hidden;
+  z-index: 200;
+  position: absolute;
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-pack: center;
+  -ms-flex-pack: center;
+  justify-content: center;
+  bottom: 0px;
+  padding-bottom: 20px;
+  right: 0;
+  -webkit-transition: width 0.5s;
+  -o-transition: width 0.5s;
+  transition: width 0.5s;
+}
+
+.materialUI.waypointDrawerOpen .materialTimelineContainerMain {
+  right: 0px;
+  width: calc(100% - 377px);
+  -webkit-transition: width 0.5s;
+  -o-transition: width 0.5s;
+  transition: width 0.5s;
+ }
+
+.materialUI .playbackButton {
+  width: 56px;
+  -webkit-box-flex: 0;
+  -ms-flex-positive: 0;
+  flex-grow: 0;
+  -ms-flex-negative: 0;
+  flex-shrink: 0;
+  -ms-flex-preferred-size: 56px;
+  flex-basis: 56px;
+  height: auto;
+  background: white;
+  border-left: 0px;
+  border-top: 0px;
+  border-bottom: 0px;
+  border-right: 1px solid rgba(0, 0, 0, 0.12);
+  border-top-left-radius: 8px !important;
+  border-bottom-left-radius: 8px !important;
+  border-top-right-radius: 0px !important;
+  border-bottom-right-radius: 0px !important;
+  position: relative;
+  margin: 0px;
+}
+
+.materialUI .ui-button .ui-icon.ui-icon-custom-play {
+  margin-top: -10px;
+  margin-left: -8px;
+  background-size: 20px 18px;
+  -webkit-background-size: 20px 18px;
+  width: 20px;
+  height: 18px;
+}
+
+.materialUI .ui-button .ui-icon.ui-icon-custom-pause {
+  margin-top: -9px;
+  margin-left: -10px;
+  background-size: 20px 17px;
+  -webkit-background-size: 20px 18px;
+  width: 20px;
+  height: 17px;
+}
+
+.materialUI .leftSeekControlIcon:hover, .materialUI .rightSeekControlIcon:hover {
+  opacity: 0.9;
+}
+
+.materialUI .leftSeekControl, .materialUI .rightSeekControl {
+  width: 24px;
+  height: auto;
+  -webkit-box-flex: 0;
+  -ms-flex-positive: 0;
+  flex-grow: 0;
+  -ms-flex-negative: 0;
+  flex-shrink: 0;
+  -ms-flex-preferred-size: 24px;
+  flex-basis: 24px;
+  position: relative;
+}
+
+.materialUI .leftSeekControlIcon {
+  background: url(../images/chevron-left.png);
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: contain;
+  -webkit-background-size: contain;
+  width: 24px;
+  height: 24px;
+  position: absolute;
+  display: inline-block;
+  top: 14px;
+  opacity: 0.58;
+  cursor: pointer;
+}
+
+.materialUI .rightSeekControlIcon {
+  background: url(../images/chevron-right.png);
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: contain;
+  -webkit-background-size: contain;
+  width: 24px;
+  height: 24px;
+  position: absolute;
+  display: inline-block;
+  top: 14px;
+  opacity: 0.58;
+  cursor: pointer;
+}
+
+.materialUI .speedControl {
+  -webkit-box-flex: 0;
+  -ms-flex-positive: 0;
+  flex-grow: 0;
+  -ms-flex-negative: 0;
+  flex-shrink: 0;
+  -ms-flex-preferred-size: 56px;
+  flex-basis: 56px;
+  width: 56px;
+  height: auto;
+  border-left: 1px solid rgba(0, 0, 0, 0.12)
+}
+
+.materialUI .speedControl .ui-selectmenu-button {
+  background: white;
+  width: 100%;
+  height: 51px;
+  border: none;
+  outline: none;
+  border-radius: 0;
+  position: absolute;
+}
+
+.materialUI .speedControl.isIE .ui-selectmenu-button {
+  position: relative;
+}
+
+.materialUI .speedControl .ui-selectmenu-button span.ui-selectmenu-text {
+  padding: 0px;
+  text-align: center;
+  margin-top: 16px;
+  font-size: 13px;
+  color: #2979ff;
+  opacity: 0.8;
+}
+
+.materialUI .speedControl .ui-selectmenu-button:hover span.ui-selectmenu-text {
+  opacity: 1;
+}
+
+.materialUI .speedControl .ui-selectmenu-button .ui-icon {
+  display: none;
+}
+
+#speedControlOptions-menu {
+  border: 1px solid rgba(0, 0, 0, 0.12);
+}
+
+#speedControlOptions-menu .ui-menu-item.ui-state-focus {
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  background: rgba(0, 0, 0, 0.08);
+}
+
+.materialUI #speedControlOptions {
+  width: 100%;
+  height: 100%;
+}
+
+.materialUI .materialTimelineContainer {
+  background: white;
+  -webkit-appearance: none;
+  box-shadow: 2px 2px 3px rgba(0, 0, 0, 0.3);
+  -webkit-box-shadow: 2px 2px 3px rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  border-radius: 8px;
+  width: 75%;
+  z-index: 200;
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+}
+
+.materialUI .scaleBarContainer {
+  display: none;
+}
+
+.materialTimelineContainer {
+  width: 100%;
+  overflow-x: hidden;
+  overflow-y: hidden;
+  z-index: 200;
+}
+
+.materialTimelineContainer::-webkit-scrollbar {
+  width: 0 !important
+}
+
+.materialTimeline {
+  /* Should be GoogleSans-Regular */
+  font-family: 'Roboto-Regular';
+  overflow-x: hidden;
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-orient: horizontal;
+  -webkit-box-direction: normal;
+  -ms-flex-direction: row;
+  flex-direction: row;
+  padding-bottom: 8px;
+}
+
+.materialTimelineDivider {
+  color: #80868B;
+  font-size: 15px;
+  padding-left: 16px;
+  padding-right: 16px;
+  display: block;
+  -ms-flex-preferred-size: 8px;
+  flex-basis: 8px;
+  -webkit-box-flex: 0;
+  -ms-flex-positive: 0;
+  flex-grow: 0;
+  -ms-flex-negative: 0;
+  flex-shrink: 0;
+  -webkit-transform: translateY(50%);
+  -ms-transform: translateY(50%);
+  transform: translateY(50%);
+  height: 20px;
+}
+
+.materialTimelineTick {
+  color: #80868B;
+  font-size: 14px;
+  padding-right: 16px;
+  padding-left: 16px;
+  display: block;
+  -ms-flex-preferred-size: 36px;
+  flex-basis: 36px;
+  -webkit-box-flex: 0;
+  -ms-flex-positive: 0;
+  flex-grow: 0;
+  -ms-flex-negative: 0;
+  flex-shrink: 0;
+  padding-top: 10px;
+  padding-bottom: 8px;
+  cursor: pointer;
+}
+
+.materialTimelineTickSelected {
+  /* Should be GoogleSans-Medium */
+  font-family: 'Roboto-Medium';
+  border-radius: 16px;
+  background-color: #2979FF;
+  color: white;
+  font-size: 16px;
+  display: block;
 }

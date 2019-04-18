@@ -187,6 +187,7 @@ if (!window['$']) {
     var customUI;
     var defaultUI;
     var mobileUI;
+    var materialUI;
     var visualizer;
     var thumbnailTool;
     var changeDetectionTool;
@@ -493,7 +494,11 @@ if (!window['$']) {
 
     this.getMobileUI = function() {
       return mobileUI;
-    }
+    };
+
+    this.getMaterialUI = function() {
+      return materialUI;
+    };
 
     this.getTimelineMetadataVisualizer = function() {
       return timelineMetadataVisualizer;
@@ -654,8 +659,6 @@ if (!window['$']) {
         // Need to manually do this because of the looping dwell code
         if (customUI) {
           customUI.setPlaybackButtonIcon("pause");
-        } else if (mobileUI) {
-          mobileUI.setPlaybackButtonIcon("pause");
         }
         if (defaultUI) {
           defaultUI.setPlaybackButtonIcon("pause");
@@ -836,7 +839,9 @@ if (!window['$']) {
               thisObj.handlePlayPause();
             $(activeElement).removeClass("openHand closedHand");
             seekToFrame(getCurrentFrameNumber() - 1);
-            if (customUI) {
+            if (uiType == "materialUI") {
+              materialUI.seekControlAction("left");
+            } else if (customUI) {
               customUI.focusTimeTick(getCurrentFrameNumber() - 1);
             }
           }
@@ -856,7 +861,9 @@ if (!window['$']) {
               thisObj.handlePlayPause();
             $(activeElement).removeClass("openHand closedHand");
             seekToFrame(getCurrentFrameNumber() + 1);
-            if (customUI) {
+            if (uiType == "materialUI") {
+              materialUI.seekControlAction("right");
+            } else if (customUI) {
               customUI.focusTimeTick(getCurrentFrameNumber() + 1);
             }
           }
@@ -3145,7 +3152,13 @@ if (!window['$']) {
           if (!hashVars.tour) {
             $waypointDrawerContainerMain.removeClass("hidden");
             setTimeout(function() {
+              $("#" + timeMachineDivId).addClass("waypointDrawerOpen");
               $waypointDrawerContainerMain.removeClass("waypointDrawerClosed");
+              if (uiType == "materialUI") {
+                setTimeout(function() {
+                  materialUI.refocusTimeline();
+                }, 400);
+              }
             }, 50);
           }
 
@@ -3427,8 +3440,6 @@ if (!window['$']) {
           return;
         if (customUI) {
           customUI.setPlaybackButtonIcon("pause");
-        } else if (mobileUI) {
-          mobileUI.setPlaybackButtonIcon("pause");
         }
         if (defaultUI) {
           defaultUI.setPlaybackButtonIcon("pause");
@@ -3441,8 +3452,6 @@ if (!window['$']) {
           return;
         if (customUI) {
           customUI.setPlaybackButtonIcon("play");
-        } else if (mobileUI) {
-          mobileUI.setPlaybackButtonIcon("play");
         }
         if (defaultUI) {
           defaultUI.setPlaybackButtonIcon("play");
@@ -3533,10 +3542,15 @@ if (!window['$']) {
       }
 
       defaultUI = new org.gigapan.timelapse.DefaultUI(thisObj, settings);
-      if (isMobileDevice && org.gigapan.timelapse.MobileUI) {
-        mobileUI = new org.gigapan.timelapse.MobileUI(thisObj, settings);
+
+      if (uiType == "materialUI") {
+        materialUI = new org.gigapan.timelapse.MaterialUI(thisObj, settings);
       } else if (useCustomUI) {
         customUI = new org.gigapan.timelapse.CustomUI(thisObj, settings);
+      }
+
+      if (isMobileDevice && org.gigapan.timelapse.MobileUI) {
+        mobileUI = new org.gigapan.timelapse.MobileUI(thisObj, settings);
       }
 
       if(timelineMetadataVisualizerEnabled) {
