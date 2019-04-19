@@ -119,6 +119,7 @@ if (!org.gigapan.timelapse.Timelapse) {
     var $searchBoxIcon = $("#" + viewerDivId + " .etMobileSearchBoxIcon");
     var $searchOverlay = $("#" + viewerDivId + " .etMobileSearchOverlay");
     var $orientationChangeOverlay = $("#" + timeMachineDivId + " .etMobileOrientationChangeOverlay");
+    var $searchBoxAutoCompleteContainer;
 
     // Flags
     var keepSearchResult = false;
@@ -132,8 +133,8 @@ if (!org.gigapan.timelapse.Timelapse) {
 
     var createWaypointDrawer = function() {
       $waypointDrawerContainer.on("scroll", function(e) {
-        if ($(this).hasClass("disableScroll")) {
-          $(this).scrollTop(currentDrawerContentScrollPos);
+        if ($waypointDrawerContainer.hasClass("disableScroll")) {
+          $waypointDrawerContainer.scrollTop(currentDrawerContentScrollPos);
           return;
         }
         if (this.scrollTop == 0) {
@@ -149,9 +150,9 @@ if (!org.gigapan.timelapse.Timelapse) {
         var lastYDirection = null;
         var startYPos = e.pageY;
         lastYPos = startYPos;
-        var startHeight = $(this).height();
+        var startHeight = $waypointDrawerContainer.height();
         var currentYPos;
-        $(this).addClass("disableScroll");
+        $waypointDrawerContainer.addClass("disableScroll");
 
         currentDrawerContentScrollPos = $waypointDrawerContainer.scrollTop();
 
@@ -218,11 +219,12 @@ if (!org.gigapan.timelapse.Timelapse) {
 
       // Enable places selection from dropdown on touch devices
       $(document).on('touchstart', '.pac-item', function(e) {
+        var $pacItem = $(this);
         e.preventDefault();
-        $(this).children().each(function( index ) {
+        $pacItem.children().each(function(index) {
           $(this).append(' ');
         });
-        var searchItemText =  $(this).text();
+        var searchItemText = $pacItem.text();
         searchItemText = searchItemText.replace(/\s\s+/g, ' ');
         $searchBox.val(searchItemText);
         google.maps.event.trigger(autocomplete, 'place_changed', {
@@ -235,6 +237,10 @@ if (!org.gigapan.timelapse.Timelapse) {
       });
 
       $searchBox.on("focus", function() {
+        if (!$searchBoxAutoCompleteContainer) {
+          $searchBoxAutoCompleteContainer = $('.pac-container');
+          $searchBoxAutoCompleteContainer.addClass("mobileUI");
+        }
         toggleSearchOverlay("show");
       });
 
@@ -251,9 +257,9 @@ if (!org.gigapan.timelapse.Timelapse) {
         keepSearchResult = false;
         lastSearchResultView = null;
         $searchBox.val("");
-        $(this).hide();
+        $searchBoxClear.hide();
         $searchBoxIcon.show();
-        $('.pac-container').hide();
+        $searchBoxAutoCompleteContainer.hide();
       });
 
       var toggleSearchOverlay = function(state) {
@@ -272,7 +278,7 @@ if (!org.gigapan.timelapse.Timelapse) {
       };
 
       $searchBox.on("input", function() {
-        if ($(this).val() == "") {
+        if ($searchBox.val() == "") {
           $searchBoxClear.hide();
           $searchBoxIcon.show();
         } else {
