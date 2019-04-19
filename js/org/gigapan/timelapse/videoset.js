@@ -141,6 +141,10 @@ if (!window['$']) {
     var inactiveVideos = {};
     var currentlyShownVideo = null;
     var playbackRate = 1;
+    // This min/max playback rate is specified by Chrome/FireFox and clamping to it has
+    // become a requirement with latest browser updates or we suffer video playback glitches/errors thrown.
+    var minPlaybackRate = 0.0625;
+    var maxPlaybackRate = 16.0;
     var id = 0;
     var fps = 25;
     var isSplitVideo = false;
@@ -424,7 +428,7 @@ if (!window['$']) {
         video.geometry = {};
       }
       _repositionVideo(video, geometry);
-      video.defaultPlaybackRate = video.playbackRate = playbackRate;
+      video.defaultPlaybackRate = video.playbackRate = _clampToValidPlaybackRate(playbackRate);
       if (viewerType == "video") {
         video.style.position = 'absolute';
         video.style.display = 'inline';
@@ -872,6 +876,10 @@ if (!window['$']) {
       return true;
     };
 
+    var _clampToValidPlaybackRate = function(rate) {
+      return Math.min(Math.max(rate, minPlaybackRate), maxPlaybackRate);
+    };
+
     this.setPlaybackRate = function(rate) {
       if (rate != playbackRate) {
         var t = _getCurrentTime();
@@ -881,7 +889,7 @@ if (!window['$']) {
         var videoRate = emulatingPlaybackRate ? 0 : rate;
         UTIL.log("*** SETTING VIDEO PLAYBACK RATE TO " + videoRate);
         for (var videoId in activeVideos) {
-          activeVideos[videoId].defaultPlaybackRate = activeVideos[videoId].playbackRate = videoRate;
+          activeVideos[videoId].defaultPlaybackRate = activeVideos[videoId].playbackRate = _clampToValidPlaybackRate(videoRate);
         }
         _updateSyncInterval();
       }
@@ -1461,12 +1469,12 @@ if (!window['$']) {
               //perfTimeTweaks++;
               UTIL.log("video(" + videoId + ") time correction: tweaking from " + (video.getCurrentTime() - leader) + " to " + t + " (error=" + error + ", rate=" + rateTweak + ", state=" + video.readyState + ")");
               // Speed or slow video so that we'll be even by the next sync interval
-              video.playbackRate = playbackRate * rateTweak;
+              video.playbackRate = _clampToValidPlaybackRate(playbackRate * rateTweak);
             }
           }
         } else {
           if (video.playbackRate != playbackRate) {
-            video.playbackRate = playbackRate;
+            video.playbackRate = _clampToValidPlaybackRate(playbackRate);
           }
           if (!video.ready && video.readyState >= 3) {
             _makeVideoVisible(video, "sync");

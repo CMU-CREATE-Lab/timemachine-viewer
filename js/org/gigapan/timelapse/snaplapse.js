@@ -159,7 +159,7 @@ if (!Math.uuid) {
     var defaultLoopTimes = 2;
     var doExtraStartDwell = false;
     var extraStartDwell = 0;
-    var startingPlaybackRate = 1;
+    var startingPlaybackRate;
 
     var _clearSnaplapse = function() {
       if (thisObj.isPlaying) {
@@ -1383,7 +1383,7 @@ if (!Math.uuid) {
 
       if (currentKeyframeInterval != null) {
         var rate = currentKeyframeInterval.getPlaybackRate();
-        timelapse.setPlaybackRate(rate, null, true);
+        timelapse.setPlaybackRate(rate, true, true);
 
         // When we set the current keyframe interval,
         // ask if we need to do an extra pausing at the beginning of playing the tour

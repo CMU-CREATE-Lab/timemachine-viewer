@@ -1858,7 +1858,7 @@ if (!window['$']) {
     // The function is used for pausing the video for some duration
     // and optionally doing something afterwards
     var waitFor = function(seconds, callBack) {
-      // True means do not save the PlaybackRate
+      // True means do not save the playbackRate being passed in.
       thisObj.setPlaybackRate(0, true);
       return setTimeout(function() {
         if (callBack)
@@ -1895,12 +1895,13 @@ if (!window['$']) {
       }
     };
 
-    this.setPlaybackRate = function(rate, preserveOriginalRate, skipUpdateUI) {
+    this.setPlaybackRate = function(rate, skipPreserveOriginalRate, skipUpdateUI) {
       var newRate = parseFloat(rate);
       if (!isNaN(newRate)) {
-        if (!preserveOriginalRate) {
+        if (!skipPreserveOriginalRate) {
           originalPlaybackRate = newRate;
         }
+
         videoset.setPlaybackRate(newRate);
 
         // Pano video is used for the timewarp map in editor

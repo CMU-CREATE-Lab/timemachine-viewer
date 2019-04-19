@@ -351,7 +351,6 @@ if (!org.gigapan.timelapse.Timelapse) {
       var supportedOrientationAngle = windowOrientation == 0 || windowOrientation == 180;
       var supportedOrientation = window.innerHeight >= window.innerWidth;
       var widthHeightDiff = Math.abs(window.innerHeight - window.innerWidth);
-      console.log(widthHeightDiff);
       if ((fromPageLoad && supportedOrientation) ||
           (supportedOrientationAngle && supportedOrientation) ||
           (!supportedOrientationAngle && supportedOrientation) ||

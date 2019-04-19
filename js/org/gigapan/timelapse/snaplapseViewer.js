@@ -1839,7 +1839,7 @@ if (!org.gigapan.timelapse.snaplapse) {
           // Set playbackrate
           if (keyframe['speed'] > 0) {
             var playbackRate = timelapse.getMaxPlaybackRate() * (keyframe['speed'] / 100.0);
-            timelapse.setPlaybackRate(playbackRate);
+            timelapse.setPlaybackRate(playbackRate, true);
           } else {
             if (timelapse.isDoingLoopingDwell()) {
               timelapse.handlePlayPause();
@@ -1950,6 +1950,7 @@ if (!org.gigapan.timelapse.snaplapse) {
             var currentView = timelapse.getView();
             var previousWaypointBounds = previousWaypoint.bounds;
             if (((previousWaypoint.scale * 3.0 < currentView.scale && !timelapse.isMovingToWaypoint()) || (previousWaypoint.scale / 2.5 > currentView.scale && !timelapse.isMovingToWaypoint()) || !(currentView.x >= previousWaypointBounds.xmin && currentView.x <= previousWaypointBounds.xmax && currentView.y >= previousWaypointBounds.ymin && currentView.y <= previousWaypointBounds.ymax))) {
+              timelapse.restorePlaybackRate();
               var listeners = eventListeners["left-waypoint-view-threshold"];
               if (listeners) {
                 for (var i = 0; i < listeners.length; i++) {
@@ -1972,6 +1973,7 @@ if (!org.gigapan.timelapse.snaplapse) {
         var waypointScale = timelapse.pixelBoundingBoxToPixelCenter(waypointBounds).scale;
         var currentView = timelapse.getView();
         if ((waypointScale / 2.5 > currentView.scale || !(currentView.x >= waypointBounds.xmin && currentView.x <= waypointBounds.xmax && currentView.y >= waypointBounds.ymin && currentView.y <= waypointBounds.ymax))) {
+          timelapse.restorePlaybackRate();
           var listeners = eventListeners["left-waypoint-view-threshold"];
           if (listeners) {
             for (var i = 0; i < listeners.length; i++) {
