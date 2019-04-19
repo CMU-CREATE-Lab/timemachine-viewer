@@ -100,37 +100,29 @@ if (!org.gigapan.timelapse.Timelapse) {
     //
 
     // Objects
-    var videoset = timelapse.getVideoset();
     var defaultUI = timelapse.getDefaultUI();
+    var snaplapseForPresentationSlider = timelapse.getSnaplapseForPresentationSlider();
 
     // Parameters
-    var captureTimes;
-    var numFrames;
     var initialPlayerHeight;
     var currentDrawerContentScrollPos = 0;
 
     // DOM elements
     var timeMachineDivId = timelapse.getTimeMachineDivId();
     var viewerDivId = timelapse.getViewerDivId();
-    var $playbackButton = $("#" + viewerDivId + " .etMobilePlaybackButton");
     var $timelineContainer = $("#" + viewerDivId + " .materialTimelineContainer");
     var $waypointDrawerContainer = $("#" + viewerDivId + " .waypointDrawerContainer");
     var $waypointDrawerContainerHeader = $("#" + viewerDivId + " .waypointDrawerContainerHeader");
-    var $waypointDrawerMainContent = $("#" + viewerDivId + " .presentationSlider");
     var $searchBox = $("#" + viewerDivId + " .etMobileSearchBox");
     var $searchBackButton = $("#" + viewerDivId + " .etMobileSearchBoxBack");
     var $searchBoxClear = $("#" + viewerDivId + " .etMobileSearchBoxClear");
     var $searchBoxIcon = $("#" + viewerDivId + " .etMobileSearchBoxIcon");
     var $searchOverlay = $("#" + viewerDivId + " .etMobileSearchOverlay");
     var $orientationChangeOverlay = $("#" + timeMachineDivId + " .etMobileOrientationChangeOverlay");
-    var $thumbnailPreviewCopyTextButtonTooltip = $("#" + viewerDivId + " .thumbnail-preview-copy-text-button-tooltip");
-    var $thumbnailPreviewCopyTextButtonTooltipContent = $("#" + viewerDivId + " .thumbnail-preview-copy-text-button-tooltip").find("p");
 
     // Flags
-    var addedTimelineSliderListener = false;
-    var isScrolling = false;
-
-    var draggingDelayTimer = null;
+    var keepSearchResult = false;
+    var lastSearchResultView = null;
 
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -162,7 +154,6 @@ if (!org.gigapan.timelapse.Timelapse) {
         $(this).addClass("disableScroll");
 
         currentDrawerContentScrollPos = $waypointDrawerContainer.scrollTop();
-        clearTimeout(draggingDelayTimer);
 
         $(document).on("mousemove.waypointPanel", function(e) {
           currentYPos = e.pageY;
@@ -224,8 +215,6 @@ if (!org.gigapan.timelapse.Timelapse) {
     var initializeSearchBox = function() {
       var autocomplete = new google.maps.places.Autocomplete($searchBox.get(0));
       var geocoder = new google.maps.Geocoder();
-      var keepSearchResult = false;
-      var lastSearchResultView = null;
 
       // Enable places selection from dropdown on touch devices
       $(document).on('touchstart', '.pac-item', function(e) {
@@ -354,21 +343,8 @@ if (!org.gigapan.timelapse.Timelapse) {
         document.activeElement.blur();
       });
 
-      var setSearchStateFromShareView = function(shareViewString) {
-        if (!shareViewString) return;
-        var shareViewStringArray = shareViewString.split(",");
-        keepSearchResult = true;
-        lastSearchResultView = {
-          center: {
-            lat: shareViewStringArray[0],
-            lng: shareViewStringArray[1]
-          },
-          zoom: shareViewStringArray[2]
-        };
-      };
-
-      defaultUI.populateSearchBoxWithLocationString(null, true, setSearchStateFromShareView);
-    }
+      defaultUI.populateSearchBoxWithLocationString(null, true, setSearchStateFromView);
+    };
 
     var checkOrientation = function() {
       if (window.orientation == 0 || window.orientation == 180) {
@@ -376,13 +352,44 @@ if (!org.gigapan.timelapse.Timelapse) {
       } else {
         $orientationChangeOverlay.show();
       }
-    }
+    };
+
+    var setupUIEvents = function() {
+      $(window).on("orientationchange", function() {
+        checkOrientation();
+      });
+
+      if (snaplapseForPresentationSlider) {
+        var snaplapseViewerForPresentationSlider = snaplapseForPresentationSlider.getSnaplapseViewer();
+        snaplapseViewerForPresentationSlider.addEventListener('slide-before-changed', function(waypoint) {
+          $waypointDrawerContainer.animate({
+            height: "0%"
+          }, 150, function() {
+            $waypointDrawerContainer.removeClass("maximized");
+          });
+        });
+      }
+    };
 
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////
     //
     // Public methods
     //
+
+    var setSearchStateFromView = function(viewString) {
+      if (!viewString) return;
+      var viewStringArray = viewString.split(",");
+      keepSearchResult = true;
+      lastSearchResultView = {
+        center: {
+          lat: viewStringArray[0],
+          lng: viewStringArray[1]
+        },
+        zoom: viewStringArray[2]
+      };
+    };
+    this.setSearchStateFromView = setSearchStateFromView;
 
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -400,14 +407,8 @@ if (!org.gigapan.timelapse.Timelapse) {
 
     checkOrientation();
 
-    $(window).on("orientationchange", function() {
-      checkOrientation();
-    });
-
-
+    setupUIEvents();
   };
   //end of org.gigapan.timelapse.MobileUI
-
-
 })();
 //end of (function() {

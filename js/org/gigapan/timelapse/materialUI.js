@@ -92,7 +92,6 @@ if (!org.gigapan.timelapse.Timelapse) {
 // CODE
 //
 (function() {
-  var UTIL = org.gigapan.Util;
   org.gigapan.timelapse.MaterialUI = function(timelapse, settings) {
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////
     //
@@ -101,28 +100,21 @@ if (!org.gigapan.timelapse.Timelapse) {
 
     // Objects
     var videoset = timelapse.getVideoset();
-    var defaultUI = timelapse.getDefaultUI();
     var UTIL = org.gigapan.Util;
+    var snaplapseForPresentationSlider = timelapse.getSnaplapseForPresentationSlider();
 
     // Parameters
     var captureTimes;
     var numFrames;
-    var initialPlayerHeight;
-    var currentDrawerContentScrollPos = 0;
 
     // DOM elements
-    var timeMachineDivId = timelapse.getTimeMachineDivId();
     var viewerDivId = timelapse.getViewerDivId();
-    var $timeline = $("#" + viewerDivId + " .materialTimeline")
-    var $timelineContainer = $("#" + viewerDivId + " .materialTimelineContainerMain");
+    var $timeline = $("#" + viewerDivId + " .materialTimeline");
     var $speedControls = $("#" + viewerDivId + " #speedControlOptions");
     var $rightSeekControl = $("#" + viewerDivId + " .rightSeekControl");
     var $leftSeekControl = $("#" + viewerDivId + " .leftSeekControl");
-    var $waypointDrawerContainer = $("#" + viewerDivId + " .waypointDrawerContainer");
-    var $waypointDrawerContainerHeader = $("#" + viewerDivId + " .waypointDrawerContainerHeader");
-    var $waypointDrawerMainContent = $("#" + viewerDivId + " .presentationSlider");
-    var $thumbnailPreviewCopyTextButtonTooltip = $("#" + viewerDivId + " .thumbnail-preview-copy-text-button-tooltip");
-    var $thumbnailPreviewCopyTextButtonTooltipContent = $("#" + viewerDivId + " .thumbnail-preview-copy-text-button-tooltip").find("p");
+    var $materialNowViewingContent = $("#" + viewerDivId + " .materialNowViewingContent");
+    var $materialNowViewingText = $("#" + viewerDivId + " .materialNowViewingText");
     var $timelineTicks;
     var $mainTimelineTicks;
     var $selectedTimelineTick;
@@ -131,17 +123,15 @@ if (!org.gigapan.timelapse.Timelapse) {
     var addedTimelineSliderListener = false;
     var isScrolling = false;
 
-    var draggingDelayTimer = null;
-
     var setupPlayPauseEventHandlers = function() {
       timelapse.addVideoPlayListener(function() {
         if (!$selectedTimelineTick.hasClass("mainMaterialTimelineTick")) {
-          timelapse.handlePlayPause()
+          timelapse.handlePlayPause();
           $mainTimelineTicks.first().click();
-          timelapse.handlePlayPause()
+          timelapse.handlePlayPause();
         }
       });
-    }
+    };
 
     var createTimelineSlider = function() {
       var timelineHTML = "";
@@ -217,7 +207,7 @@ if (!org.gigapan.timelapse.Timelapse) {
           scrollOptions = {
            ease: null,
            time: 0
-         }
+         };
         }
         $timelineTicks.removeClass("materialTimelineTickSelected");
         $selectedTimelineTick.addClass("materialTimelineTickSelected");
@@ -248,7 +238,7 @@ if (!org.gigapan.timelapse.Timelapse) {
       if (UTIL.isIE()) {
         $("#" + viewerDivId + " .speedControl").addClass("isIE");
       }
-    }
+    };
 
     var handleSeekControls = function() {
       $leftSeekControl.on("click", function() {
@@ -258,7 +248,25 @@ if (!org.gigapan.timelapse.Timelapse) {
       $rightSeekControl.on("click", function() {
         seekControlAction("right");
       });
-    }
+    };
+
+    var setupNowViewingUI = function() {
+      if (snaplapseForPresentationSlider) {
+        var snaplapseViewerForPresentationSlider = snaplapseForPresentationSlider.getSnaplapseViewer();
+        snaplapseViewerForPresentationSlider.addEventListener('slide-changed', function(waypoint) {
+          if (waypoint.title) {
+            $materialNowViewingText.text(waypoint.title);
+            $materialNowViewingContent.show();
+          } else {
+            $materialNowViewingContent.hide();
+          }
+        });
+        snaplapseViewerForPresentationSlider.addEventListener('left-waypoint-view-threshold', function(waypoint) {
+          $materialNowViewingContent.hide();
+          $("#" + viewerDivId + " .snaplapse_keyframe_list .thumbnail_highlight").removeClass("thumbnail_highlight");
+        });
+      }
+    };
 
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -268,7 +276,7 @@ if (!org.gigapan.timelapse.Timelapse) {
 
     var refocusTimeline = function() {
       $selectedTimelineTick.trigger("click");
-    }
+    };
     this.refocusTimeline = refocusTimeline;
 
     var seekControlAction = function(direction) {
@@ -278,7 +286,7 @@ if (!org.gigapan.timelapse.Timelapse) {
       } else if ((currentFrameNum < numFrames - 1 || !$selectedTimelineTick.hasClass("mainMaterialTimelineTick")) && direction == "right") {
         updateTimelineSlider(null,  $selectedTimelineTick.nextAll("#" + viewerDivId + " .materialTimelineTick:first"), false);
       }
-    }
+    };
     this.seekControlAction = seekControlAction;
 
 
@@ -287,7 +295,7 @@ if (!org.gigapan.timelapse.Timelapse) {
     // Constructor code
     //
 
-    setupPlayPauseEventHandlers()
+    setupPlayPauseEventHandlers();
 
     createTimelineSlider();
 
@@ -295,7 +303,7 @@ if (!org.gigapan.timelapse.Timelapse) {
 
     handleSeekControls();
 
-
+    setupNowViewingUI();
   };
   //end of org.gigapan.timelapse.MaterialUI
 })();

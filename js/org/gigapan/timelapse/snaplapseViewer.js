@@ -100,6 +100,10 @@ if (!org.gigapan.timelapse.snaplapse) {
     var videoset = timelapse.getVideoset();
     var eventListeners = {};
     var materialUI = timelapse.getMaterialUI();
+    var waypointViewChangeListener;
+    var waypointViewThresholdListener;
+    var parabolicMotionStoppedListener;
+    var previousWaypoint = {};
 
     // Settings
     var isMobileDevice = UTIL.isMobileDevice();
@@ -127,6 +131,7 @@ if (!org.gigapan.timelapse.snaplapse) {
     var desiredPresentationSliderHeight = ( settings["presentationSliderSettings"] && typeof (settings["presentationSliderSettings"]["height"]) != "undefined") ? settings["presentationSliderSettings"]["height"] : 94;
     var uiType = timelapse.getUIType();
     var defaultUI = timelapse.getDefaultUI();
+    var mobileUI = timelapse.getMobileUI();
 
     // Flags
     var didOnce = false;
@@ -171,6 +176,7 @@ if (!org.gigapan.timelapse.snaplapse) {
     var scrollBarWidth = UTIL.getScrollBarWidth();
     var KEYFRAME_THUMBNAIL_WIDTH = 126;
     var KEYFRAME_THUMBNAIL_HEIGHT = 73;
+    var currentSelectedWaypointIndex;
 
     this.addEventListener = function(eventName, listener) {
       if (eventName && listener && typeof (listener) == "function") {
@@ -1775,9 +1781,12 @@ if (!org.gigapan.timelapse.snaplapse) {
       var keyframeId = targetId.split("_")[3];
       var keyframe = snaplapse.cloneFrame(snaplapse.getKeyframeById(keyframeId));
 
+      timelapse.removeParabolicMotionStoppedListener(parabolicMotionStoppedListener);
+
       var listeners = eventListeners["slide-before-changed"];
+      currentSelectedWaypointIndex = $("#" + targetId).index();
       if (listeners) {
-        var waypoint = {index: $("#" + targetId).index(), title: keyframe.unsafe_string_frameTitle, annotationBoxTitle: keyframe.unsafe_string_annotationBoxTitle, description: keyframe.unsafe_string_description, bounds: keyframe.bounds, layers: keyframe.layers, time: keyframe.time, beginTime: keyframe.beginTime, endTime: keyframe.endTime, speed: keyframe.speed};
+        var waypoint = {index: currentSelectedWaypointIndex, title: keyframe.unsafe_string_frameTitle, annotationBoxTitle: keyframe.unsafe_string_annotationBoxTitle, description: keyframe.unsafe_string_description, bounds: keyframe.bounds, layers: keyframe.layers, time: keyframe.time, beginTime: keyframe.beginTime, endTime: keyframe.endTime, speed: keyframe.speed};
         for (var i = 0; i < listeners.length; i++) {
           try {
             listeners[i](waypoint);
@@ -1885,17 +1894,31 @@ if (!org.gigapan.timelapse.snaplapse) {
           }
         }
         if (uiType == "materialUI") {
-          var centerView = timelapse.pixelBoundingBoxToLatLngCenterView(keyframe.bounds).center;
-          var searchString = parseFloat(centerView.lat).toFixed(5) + "," + parseFloat(centerView.lng).toFixed(5);
+          var centerView = timelapse.pixelBoundingBoxToLatLngCenterView(keyframe.bounds);
+          var searchString = parseFloat(centerView.center.lat).toFixed(5) + "," + parseFloat(centerView.center.lng).toFixed(5) + "," + centerView.zoom;
           if (!defaultUI) {
             defaultUI = timelapse.getDefaultUI();
           }
-          defaultUI.populateSearchBoxWithLocationString(searchString, false);
+          var populateSearchBoxCallback;
+          if (isMobileDevice) {
+            if (!mobileUI) {
+              mobileUI = timelapse.getMobileUI();
+            }
+            populateSearchBoxCallback = mobileUI.setSearchStateFromView;
+          }
+          defaultUI.populateSearchBoxWithLocationString(searchString, false, populateSearchBoxCallback);
         }
+        currentSelectedWaypointIndex = $select.index();
         if (usePresentationSlider && doNotFireListener != true) {
-          var listeners = eventListeners["slide-changed"];
+          var waypoint = {index: currentSelectedWaypointIndex, title: keyframe.unsafe_string_frameTitle, annotationBoxTitle: keyframe.unsafe_string_annotationBoxTitle, description: keyframe.unsafe_string_description, bounds: keyframe.bounds, layers: keyframe.layers, time: keyframe.time, beginTime: keyframe.beginTime, endTime: keyframe.endTime, speed: keyframe.speed};
+
+          var listeners = eventListeners['left-waypoint-view-threshold'];
           if (listeners) {
-            var waypoint = {index: $select.index(), title: keyframe.unsafe_string_frameTitle, annotationBoxTitle: keyframe.unsafe_string_annotationBoxTitle, description: keyframe.unsafe_string_description, bounds: keyframe.bounds, layers: keyframe.layers, time: keyframe.time, beginTime: keyframe.beginTime, endTime: keyframe.endTime, speed: keyframe.speed};
+            handleLeaveWaypointView(waypoint);
+          }
+
+          listeners = eventListeners["slide-changed"];
+          if (listeners) {
             for (var i = 0; i < listeners.length; i++) {
               try {
                 listeners[i](waypoint);
@@ -1908,6 +1931,56 @@ if (!org.gigapan.timelapse.snaplapse) {
       }
     };
     this.selectAndGo = selectAndGo;
+
+    var handleLeaveWaypointView = function(waypoint) {
+      var waypointTitle = waypoint.title;
+      var waypointBounds = waypoint.bounds;
+      var waypointPlaybackSpeed = waypoint.speed;
+      var waypointScale = timelapse.pixelBoundingBoxToPixelCenter(waypointBounds).scale;
+
+      timelapse.removeViewChangeListener(waypointViewChangeListener);
+      timelapse.removeViewChangeListener(waypointViewThresholdListener);
+
+      waypointViewChangeListener = function() {
+        var currentView = timelapse.getView();
+        previousWaypoint.scale = waypointScale;
+        previousWaypoint.bounds = waypointBounds;
+        if (currentView.scale * 2.5 > waypointScale && (currentView.x >= waypointBounds.xmin && currentView.x <= waypointBounds.xmax && currentView.y >= waypointBounds.ymin && currentView.y <= waypointBounds.ymax)) {
+          waypointViewThresholdListener = function() {
+            var currentView = timelapse.getView();
+            var previousWaypointBounds = previousWaypoint.bounds;
+            if (((previousWaypoint.scale * 3.0 < currentView.scale && !timelapse.isMovingToWaypoint()) || (previousWaypoint.scale / 2.5 > currentView.scale && !timelapse.isMovingToWaypoint()) || !(currentView.x >= previousWaypointBounds.xmin && currentView.x <= previousWaypointBounds.xmax && currentView.y >= previousWaypointBounds.ymin && currentView.y <= previousWaypointBounds.ymax))) {
+              var listeners = eventListeners["left-waypoint-view-threshold"];
+              if (listeners) {
+                for (var i = 0; i < listeners.length; i++) {
+                  listeners[i]();
+                }
+              }
+              timelapse.removeViewChangeListener(waypointViewThresholdListener);
+              timelapse.clearShareViewTimeLoop();
+            }
+          };
+          timelapse.addViewChangeListener(waypointViewThresholdListener);
+          timelapse.removeViewChangeListener(waypointViewChangeListener);
+        }
+      };
+      timelapse.addViewChangeListener(waypointViewChangeListener);
+
+      parabolicMotionStoppedListener = function() {
+        timelapse.removeParabolicMotionStoppedListener(parabolicMotionStoppedListener);
+        timelapse.removeViewChangeListener(waypointViewChangeListener);
+        var waypointScale = timelapse.pixelBoundingBoxToPixelCenter(waypointBounds).scale;
+        var currentView = timelapse.getView();
+        if ((waypointScale / 2.5 > currentView.scale || !(currentView.x >= waypointBounds.xmin && currentView.x <= waypointBounds.xmax && currentView.y >= waypointBounds.ymin && currentView.y <= waypointBounds.ymax))) {
+          var listeners = eventListeners["left-waypoint-view-threshold"];
+          if (listeners) {
+            for (var i = 0; i < listeners.length; i++) {
+              listeners[i]();
+            }
+          }
+        }
+      };
+    };
 
     var loadThumbnailFromKeyframe = function(keyframe, listIndex) {
       var $img = $("#" + timeMachineDivId + "_snaplapse_keyframe_" + keyframe['id'] + "_thumbnail");
@@ -2179,7 +2252,7 @@ if (!org.gigapan.timelapse.snaplapse) {
 
     this.getCurrentWaypointIndex = function() {
       // We count from 0
-      return $sortable.find(".thumbnail_highlight").closest(".snaplapse_keyframe_list_item").index();
+      return currentSelectedWaypointIndex;
     };
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////

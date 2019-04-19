@@ -595,25 +595,32 @@ if (!org.gigapan.timelapse.Timelapse) {
 
     var populateSearchBoxWithLocationString = function(newSearchString, fromHashVars, callback) {
       var searchString = newSearchString || "";
-      var hashViewString = "";
+      var viewArray;
+      var centerViewFromSearchString;
+
       if (fromHashVars) {
         var hashVars = org.gigapan.Util.getUnsafeHashVars();
         if (hashVars && hashVars.v) {
-          hashViewString = hashVars.v;
-          if (hashViewString.indexOf("latLng") > 0) {
-            var latLng = hashViewString.split(",");
-            searchString = parseFloat(latLng[0]).toFixed(5) + "," + parseFloat(latLng[1]).toFixed(5);
-          }
+          viewArray = hashVars.v.split(",");
         }
+      } else if (searchString) {
+        viewArray = searchString.split(",");
       }
+
+      if (viewArray && viewArray.length > 2) {
+        searchString = parseFloat(viewArray[0]).toFixed(5) + "," + parseFloat(viewArray[1]).toFixed(5);
+        centerViewFromSearchString = searchString + "," + viewArray[2];
+      }
+
       if (searchString) {
         $searchBox.val(searchString).trigger("input");
         if (!$searchBox.hasClass("expanded")) {
           $searchBoxIcon.trigger("click");
         }
       }
+
       if (typeof(callback) === "function") {
-        callback(hashViewString);
+        callback(centerViewFromSearchString);
       }
     }
     this.populateSearchBoxWithLocationString = populateSearchBoxWithLocationString;
