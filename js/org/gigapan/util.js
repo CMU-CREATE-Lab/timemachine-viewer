@@ -92,6 +92,7 @@ if (!org.gigapan) {
   var isSilkUserAgent = navigatorUserAgent.match(/Silk/) != null;
   var isMobileIEEdgeUserAgent = navigatorUserAgent.match(/EdgA/) != null;
   var isChromeOS = navigatorUserAgent.match(/CrOS/) != null;
+  var isPixelC = navigatorUserAgent.match(/Pixel C/) != null;
   var isSamsungInternetUserAgent = navigatorUserAgent.match(/SamsungBrowser/) != null;
   var isMobileDevice = !isChromeOS && (navigatorUserAgent.match(/Android/i) || navigatorUserAgent.match(/webOS/i) || navigatorUserAgent.match(/iPhone/i) || navigatorUserAgent.match(/iPad/i) || navigatorUserAgent.match(/iPod/i) || navigatorUserAgent.match(/BlackBerry/i) || navigatorUserAgent.match(/Windows Phone/i) || navigatorUserAgent.match(/Mobile/i)) != null;
   var isIOSDevice = navigatorUserAgent.match(/iPad|iPhone|iPod/) != null;
@@ -721,9 +722,11 @@ if (!org.gigapan) {
     // Even with video tag, Firefox mobile still flickers.
     // Force MS Edge mobile to use video tag. Seems to be less flicker when doing that. (20190303)
     // Force IE 11 to canvas, despite it having basic webgl support. Because it fails to support CORS with webgl, we cannot make use of it. (20190303)
+    // Force the Pixel C device to use video tag. A more robust white listing of different devices based on performance should be done someday. (20190419)
 
     if ((isFirefoxUserAgent && isMobileDevice) ||
         (isMobileIEEdgeUserAgent && isMobileDevice) ||
+        (isMobileDevice && isPixelC) ||
         (isChromeOS && parseInt(matchChromeVersionString[1]) < 54)) {
           computedViewerType = "video";
         } else if (isWebGLSupported && !isMobileDevice && !isSafariUserAgent && !isIE11UserAgent) {
