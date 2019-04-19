@@ -346,8 +346,16 @@ if (!org.gigapan.timelapse.Timelapse) {
       defaultUI.populateSearchBoxWithLocationString(null, true, setSearchStateFromView);
     };
 
-    var checkOrientation = function() {
-      if (window.orientation == 0 || window.orientation == 180) {
+    var checkOrientation = function(fromPageLoad) {
+      var windowOrientation = window.screen.msOrientation || window.screen.mozOrientation || (window.screen.orientation || {}).angle || window.orientation;
+      var supportedOrientationAngle = windowOrientation == 0 || windowOrientation == 180;
+      var supportedOrientation = window.innerHeight >= window.innerWidth;
+      var widthHeightDiff = Math.abs(window.innerHeight - window.innerWidth);
+      console.log(widthHeightDiff);
+      if ((fromPageLoad && supportedOrientation) ||
+          (supportedOrientationAngle && supportedOrientation) ||
+          (!supportedOrientationAngle && supportedOrientation) ||
+          (supportedOrientationAngle && widthHeightDiff < 600)) {
         $orientationChangeOverlay.hide();
       } else {
         $orientationChangeOverlay.show();
@@ -355,8 +363,12 @@ if (!org.gigapan.timelapse.Timelapse) {
     };
 
     var setupUIEvents = function() {
-      $(window).on("orientationchange", function() {
-        checkOrientation();
+      $(window).on('orientationchange', function() {
+        $(window).one('resize', function() {
+          // This timeout is here because there is some unknown delay after the resize before the window innerHeight/innerWidth are the correct values.
+          // Every device/browser combo behaves a bit differently. If only there was a native orientationchangeend event.
+          setTimeout(checkOrientation, 150);
+        });
       });
 
       if (snaplapseForPresentationSlider) {
@@ -405,7 +417,7 @@ if (!org.gigapan.timelapse.Timelapse) {
 
     initialPlayerHeight = $("#" + viewerDivId).height();
 
-    checkOrientation();
+    checkOrientation(true);
 
     setupUIEvents();
   };

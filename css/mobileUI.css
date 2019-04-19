@@ -281,7 +281,7 @@
   height: 100%;
   background-color: #4a4a4a;
   position: absolute;
-  z-index: 9000;
+  z-index: 9010;
   background-image: url(../images/orientation-invert.png);
   background-position: center;
   background-repeat: no-repeat;
