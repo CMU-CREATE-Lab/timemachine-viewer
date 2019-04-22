@@ -4104,6 +4104,11 @@ if (!window['$']) {
       UTIL.setViewerType(settings["viewerType"]);
 
     viewerType = UTIL.getViewerType(settings);
+    // Taking retina screen into account for webgl is quite the performance hit, even on very high end machines.
+    // Ignore pixel ratio for now.
+    if (viewerType == "webgl") {
+      pixelRatio = 1;
+    }
 
     // Set default loop dwell time
     // TODO: This should probably be set not just for landsat, but for all short datasets.
