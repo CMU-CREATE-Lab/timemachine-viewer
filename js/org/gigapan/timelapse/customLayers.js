@@ -137,7 +137,8 @@ if (!org.gigapan.timelapse.Timelapse) {
         scaleControl: false,
         streetViewControl: false,
         rotateControl: false,
-        fullscreenControl: false
+        fullscreenControl: false,
+        gestureHandling: 'greedy'
       });
 
       google.maps.event.addListener(googleMapLayer, 'center_changed', function() {
