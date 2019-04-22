@@ -124,6 +124,7 @@ if (!org.gigapan.timelapse.Timelapse) {
     var panInterval;
     var eventListeners = {};
     var uiType = timelapse.getUIType();
+    var customLayers = timelapse.getCustomLayers();
 
     // DOM elements
     var timeMachineDivId = timelapse.getTimeMachineDivId();
@@ -160,6 +161,8 @@ if (!org.gigapan.timelapse.Timelapse) {
     if (shareViewDialogType == "modal") {
       $shareDialog = $("#" + viewerDivId + " .shareViewModal");
     }
+    var $searchBoxContainer = $("#" + timeMachineDivId + " .searchBoxContainer");
+    var $searchBoxClear = $("#" + timeMachineDivId + " .searchBoxClearIcon");
     var $searchBox = $("#" + timeMachineDivId + " .searchBox");
     var $searchBoxIcon = $("#" + timeMachineDivId + " .searchBoxIcon");
     var $shareButton = $("#" + viewerDivId + " .share")
@@ -471,17 +474,11 @@ if (!org.gigapan.timelapse.Timelapse) {
       if (typeof google === "undefined")
         return;
 
-      var $searchBoxContainer = $('.searchBoxContainer');
       if (waypointSliderOrientation == "vertical") {
         $waypointDrawerSideControlsContainer.prepend($searchBoxContainer);
       }
 
       $searchBoxContainer.show();
-
-      var $searchBoxClear = $(".searchBoxClearIcon");
-
-      var autocomplete = new google.maps.places.Autocomplete($searchBox.get(0));
-      var geocoder = new google.maps.Geocoder();
 
       $searchBoxIcon.on("mouseover mouseout", function() {
         $searchBox.toggleClass("hover");
@@ -511,7 +508,6 @@ if (!org.gigapan.timelapse.Timelapse) {
         $('.pac-container').hide();
       });
 
-      // TODO
       if (uiType != "materialUI") {
         $searchBox.on("click", function(e) {
           google.maps.event.trigger(autocomplete, 'place_changed');
@@ -532,17 +528,56 @@ if (!org.gigapan.timelapse.Timelapse) {
         $searchBox.attr("autocomplete", "null");
       }, 1000);
 
+      setupGoogleMapsSearchPlaceChangedHandlers();
+
+      if (uiType == "materialUI") {
+        populateSearchBoxWithLocationString(null, true);
+      }
+    };
+    this.createAddressLookupUI = createAddressLookupUI;
+
+    var setupGoogleMapsSearchPlaceChangedHandlers = function() {
+      var autocomplete = new google.maps.places.Autocomplete($searchBox.get(0));
+      var geocoder = new google.maps.Geocoder();
+
+      // Enable places selection from dropdown on touch devices
+      $(document).on('touchstart', '.pac-item', function(e) {
+        var $pacItem = $(this);
+        e.preventDefault();
+        $pacItem.children().each(function(index) {
+          $(this).append(' ');
+        });
+        var searchItemText = $pacItem.text();
+        searchItemText = searchItemText.replace(/\s\s+/g, ' ');
+        $searchBox.val(searchItemText);
+        google.maps.event.trigger(autocomplete, 'place_changed', {
+          locationName: searchItemText
+        });
+      });
+
       google.maps.event.addListener(autocomplete, 'place_changed', function() {
+        if (uiType == "materialUI") {
+          if (!customLayers) {
+            customLayers = timelapse.getCustomLayers();
+          }
+          var isGoogleMapLayerVisible = customLayers.isGoogleMapLayerActive();
+          var googleMapLayer = customLayers.getGoogleMapLayer();
+        }
         var place = autocomplete.getPlace();
+        var newView;
+        var listeners = eventListeners["google-search-place-changed"];
+
         if (!place || !place.geometry) {
           var address = $searchBox.val();
           geocoder.geocode({
             'address': address
           }, function(results, status) {
             if (status == google.maps.GeocoderStatus.OK) {
-              var northEastLatLng = results[0].geometry.bounds.getNorthEast();
-              var southWestLatLng = results[0].geometry.bounds.getSouthWest();
-              var newView;
+             var bounds = results[0].geometry.bounds || results[0].geometry.viewport;
+              if (bounds) {
+                var northEastLatLng = bounds.getNorthEast();
+                var southWestLatLng = bounds.getSouthWest();
+              }
               if (!northEastLatLng || !southWestLatLng) {
                 var lat = results[0].geometry.location.lat();
                 var lng = results[0].geometry.location.lng();
@@ -567,31 +602,53 @@ if (!org.gigapan.timelapse.Timelapse) {
                   }
                 };
               }
-              timelapse.setNewView(newView, false, false);
+              if (isGoogleMapLayerVisible) {
+                if (newView.bbox) {
+                  googleMapLayer.fitBounds(bounds);
+                } else {
+                  var mapLatLng = new google.maps.LatLng(newView.center.lat, newView.center.lng);
+                  googleMapLayer.setCenter(mapLatLng);
+                  googleMapLayer.setZoom(newView.zoom);
+                }
+              } else {
+                timelapse.setNewView(newView, false, false);
+              }
               UTIL.addGoogleAnalyticEvent('textbox', 'search', 'go-to-searched-place');
+              if (listeners) {
+                for (var i = 0; i < listeners.length; i++) {
+                  listeners[i](newView);
+                }
+              }
             } else {
               UTIL.log("Geocode failed: " + status);
             }
           });
         } else {
-          var newView = {
+          newView = {
             center: {
               "lat": place.geometry.location.lat(),
               "lng": place.geometry.location.lng()
             },
             "zoom": 10
           };
-          timelapse.setNewView(newView, false, false);
+          if (isGoogleMapLayerVisible) {
+            var mapLatLng = new google.maps.LatLng(newView.center.lat, newView.center.lng);
+            googleMapLayer.setCenter(mapLatLng);
+            googleMapLayer.setZoom(newView.zoom);
+          } else {
+            timelapse.setNewView(newView, false, false);
+          }
           UTIL.addGoogleAnalyticEvent('textbox', 'search', 'go-to-searched-place');
+          if (listeners) {
+            for (var i = 0; i < listeners.length; i++) {
+              listeners[i](newView);
+            }
+          }
         }
+        document.activeElement.blur();
       });
-
-      if (uiType == "materialUI") {
-        populateSearchBoxWithLocationString(null, true);
-      }
-
     };
-    this.createAddressLookupUI = createAddressLookupUI;
+    this.setupGoogleMapsSearchPlaceChangedHandlers = setupGoogleMapsSearchPlaceChangedHandlers;
 
     var populateSearchBoxWithLocationString = function(newSearchString, fromHashVars, callback) {
       var searchString = newSearchString || "";
@@ -1801,15 +1858,6 @@ if (!org.gigapan.timelapse.Timelapse) {
       }
     };
 
-    var zoomIn = function() {
-      var val = Math.min($("#" + viewerDivId + " .zoomSlider").slider("value") + ( useTouchFriendlyUI ? 0.003 : 0.01), 1);
-      timelapse.setScaleFromSlider(val);
-    };
-
-    var zoomOut = function() {
-      var val = Math.max($("#" + viewerDivId + " .zoomSlider").slider("value") - ( useTouchFriendlyUI ? 0.003 : 0.01), 0);
-      timelapse.setScaleFromSlider(val);
-    };
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////
     //
@@ -1842,6 +1890,40 @@ if (!org.gigapan.timelapse.Timelapse) {
     this.isShowMainControls = function() {
       return showMainControls;
     };
+
+    var zoomIn = function(fromShiftKey) {
+      if (uiType == "materialUI") {
+        if (!customLayers) {
+          customLayers = timelapse.getCustomLayers();
+        }
+        var isGoogleMapLayerVisible = customLayers.isGoogleMapLayerActive();
+        var googleMapLayer = customLayers.getGoogleMapLayer();
+      }
+      if (isGoogleMapLayerVisible) {
+        googleMapLayer.setZoom(googleMapLayer.getZoom() + 1);
+      } else {
+        var zoomAmount = fromShiftKey ? 0.999 : 0.85;
+        timelapse.setScale(timelapse.getScale() / zoomAmount);
+      }
+    };
+    this.zoomIn = zoomIn;
+
+    var zoomOut = function(fromShiftKey) {
+      if (uiType == "materialUI") {
+        if (!customLayers) {
+          customLayers = timelapse.getCustomLayers();
+        }
+        var isGoogleMapLayerVisible = customLayers.isGoogleMapLayerActive();
+        var googleMapLayer = customLayers.getGoogleMapLayer();
+      }
+      if (isGoogleMapLayerVisible) {
+        googleMapLayer.setZoom(googleMapLayer.getZoom() - 1);
+      } else {
+        var zoomAmount = fromShiftKey ? 0.999 : 0.85;
+        timelapse.setScale(timelapse.getScale() * zoomAmount);
+      }
+    };
+    this.zoomOut = zoomOut;
 
     var _toggleMainControls = function() {
       showMainControls = !showMainControls;

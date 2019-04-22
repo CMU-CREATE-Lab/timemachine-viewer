@@ -160,6 +160,10 @@ if (!window['$']) {
       height: 142
     };
     var waypointSliderOrientation = (settings["presentationSliderSettings"] && typeof(settings["presentationSliderSettings"]["orientation"]) == "undefined") ? "horizontal" : settings["presentationSliderSettings"]["orientation"];
+    // Only relevant for vertical orientation
+    var openWaypointSliderOnFirstLoad =  ( settings["presentationSliderSettings"] && typeof (settings["presentationSliderSettings"]["openDrawerOnLoad"]) != "undefined") ? settings["presentationSliderSettings"]["openDrawerOnLoad"] : false;
+    var browserNotSupportedTemplateName = ( typeof (settings["browserNotSupportedTemplateName"]) == "undefined") ? "browser_not_supported_template.html" : settings["browserNotSupportedTemplateName"];
+
     var minViewportHeight = 370;
     var minViewportWidth = 540;
     var defaultLoopDwellTime = 1.0;
@@ -188,6 +192,7 @@ if (!window['$']) {
     var defaultUI;
     var mobileUI;
     var materialUI;
+    var customLayers;
     var visualizer;
     var thumbnailTool;
     var changeDetectionTool;
@@ -258,7 +263,7 @@ if (!window['$']) {
     var currentVideo = null;
     var animateInterval = null;
     var lastAnimationTime;
-    var keyIntervals = [];
+    var keyIntervals = {};
     var targetViewChangeListeners = [];
     var viewChangeListeners = [];
     var resizeListeners = [];
@@ -498,6 +503,10 @@ if (!window['$']) {
 
     this.getMaterialUI = function() {
       return materialUI;
+    };
+
+    this.getCustomLayers = function() {
+      return customLayers;
     };
 
     this.getTimelineMetadataVisualizer = function() {
@@ -838,11 +847,14 @@ if (!window['$']) {
             if (!thisObj.isPaused())
               thisObj.handlePlayPause();
             $(activeElement).removeClass("openHand closedHand");
-            seekToFrame(getCurrentFrameNumber() - 1);
             if (uiType == "materialUI") {
               materialUI.seekControlAction("left");
-            } else if (customUI) {
-              customUI.focusTimeTick(getCurrentFrameNumber() - 1);
+            } else {
+              var previousFrame = getCurrentFrameNumber() - 1;
+              seekToFrame(previousFrame);
+              if (customUI) {
+                customUI.focusTimeTick(previousFrame);
+              }
             }
           }
           event.preventDefault();
@@ -860,11 +872,14 @@ if (!window['$']) {
             if (!thisObj.isPaused())
               thisObj.handlePlayPause();
             $(activeElement).removeClass("openHand closedHand");
-            seekToFrame(getCurrentFrameNumber() + 1);
             if (uiType == "materialUI") {
               materialUI.seekControlAction("right");
-            } else if (customUI) {
-              customUI.focusTimeTick(getCurrentFrameNumber() + 1);
+            } else {
+              var nextFrame = getCurrentFrameNumber() + 1;
+              seekToFrame(nextFrame);
+              if (customUI) {
+                customUI.focusTimeTick(nextFrame);
+              }
             }
           }
           event.preventDefault();
@@ -875,11 +890,7 @@ if (!window['$']) {
             return;
           if (event.shiftKey) {
             moveFn = function() {
-              if (event.shiftKey) {
-                targetView.y -= (translationSpeedConstant * 0.4) / view.scale;
-              } else {
-                targetView.y -= (translationSpeedConstant * 0.8) / view.scale;
-              }
+              targetView.y -= (translationSpeedConstant * 0.4) / view.scale;
               setTargetView(targetView);
             };
           }
@@ -890,11 +901,7 @@ if (!window['$']) {
             return;
           if (event.shiftKey) {
             moveFn = function() {
-              if (event.shiftKey) {
-                targetView.y += (translationSpeedConstant * 0.4) / view.scale;
-              } else {
-                targetView.y += (translationSpeedConstant * 0.8) / view.scale;
-              }
+              targetView.y += (translationSpeedConstant * 0.4) / view.scale;
               setTargetView(targetView);
             };
           }
@@ -904,12 +911,7 @@ if (!window['$']) {
         case 109:
         case 189:
           moveFn = function() {
-            if (event.shiftKey) {
-              targetView.scale *= 0.999;
-            } else {
-              targetView.scale *= 0.94;
-            }
-            setTargetView(targetView);
+            defaultUI.zoomOut(event.shiftKey);
           };
           break;
         // Plus
@@ -917,12 +919,7 @@ if (!window['$']) {
         case 107:
         case 187:
           moveFn = function() {
-            if (event.shiftKey) {
-              targetView.scale /= 0.999;
-            } else {
-              targetView.scale /= 0.94;
-            }
-            setTargetView(targetView);
+            defaultUI.zoomIn(event.shiftKey);
           };
           break;
         // P or Spacebar
@@ -942,22 +939,10 @@ if (!window['$']) {
     };
 
     var handleKeyupEvent = function(event) {
-      var numKeysdown = 1;
-      // This addresses the issue where holding down the command key on a Mac, pressing another key
-      // and then releasing that key won't actually trigger a keyup event. Only when the command
-      // key is finally released is this event triggered. At that point, we need to manually remove
-      // all other keys that may have been pressed during that time or we'll be stuck with their
-      // timers still going. Ugh.
-      // Possible Mac 'command' key values depending upon browser and location on keyboard:
-      if (event.which == 224 || event.which == 17 || event.which == 91 || event.which == 92) {
-        numKeysdown = keysDown.length;
-      }
-      for (var i = 0; i < numKeysdown; i++) {
-        var keyUp = keysDown.pop();
-        if (keyIntervals[keyUp] != undefined) {
-          clearInterval(keyIntervals[keyUp]);
-          keyIntervals[keyUp] = undefined;
-        }
+      var keyUp = event.which;
+      if (keyIntervals[keyUp] != undefined) {
+        clearInterval(keyIntervals[keyUp]);
+        keyIntervals[keyUp] = undefined;
       }
     };
 
@@ -2567,7 +2552,7 @@ if (!window['$']) {
 
       refresh();
 
-      if (newView.scale != view.scale) {
+      if (newView.scale.toFixed(6) != view.scale.toFixed(6)) {
         for (var i = 0; i < zoomChangeListeners.length; i++) {
           zoomChangeListeners[i](targetView);
         }
@@ -3043,7 +3028,7 @@ if (!window['$']) {
         if (visualizer || contextMap) {
           var desiredBound = pixelCenterToPixelBoundingBoxView(desiredView).bbox;
           if (videoViewer_projection && contextMap && enableContextMap == true && latlngCenter) {
-            contextMap.setMap(desiredBound, latlngCenter);
+            contextMap.setMiniMap(desiredBound, latlngCenter);
           }
           if (visualizer) {
             visualizer.setMap(desiredBound);
@@ -3135,7 +3120,6 @@ if (!window['$']) {
 
           $(".presentationSlider, .etDrawerLearnMoreExpand").hide();
           $(".etDrawerProductAboutHeading").addClass("maximized");
-
         });
 
         $(".etDrawerLearnMoreExit").on("click", function() {
@@ -3150,7 +3134,7 @@ if (!window['$']) {
           $waypointDrawerContainer.show();
         } else {
           var hashVars = org.gigapan.Util.getUnsafeHashVars();
-          if (!hashVars.tour) {
+          if (!hashVars.tour && openWaypointSliderOnFirstLoad) {
             $waypointDrawerContainerMain.removeClass("hidden");
             setTimeout(function() {
               $("#" + timeMachineDivId).addClass("waypointDrawerOpen");
@@ -3524,8 +3508,10 @@ if (!window['$']) {
         // Visualizer loads a top level video to be used as a context map in the editor. It seeks when the main video also seeks.
         // Most likely that is at the heart of the problem.
         //
+        // IMPORTANT: Visualizer is not compatible with webgl viewer type.
+        //
         // Timewarp visualizer that shows the location of the current view and transitions between keyframes
-        if (enableContextMapOnDefaultUI && !tmJSON['projection-bounds'])
+        if (enableContextMapOnDefaultUI && !tmJSON['projection-bounds'] && viewerType != "webgl")
           visualizer = new org.gigapan.timelapse.Visualizer(thisObj, snaplapse, visualizerGeometry);
       }
 
@@ -3544,7 +3530,8 @@ if (!window['$']) {
 
       defaultUI = new org.gigapan.timelapse.DefaultUI(thisObj, settings);
 
-      if (uiType == "materialUI") {
+      if (uiType == "materialUI" && org.gigapan.timelapse.MaterialUI) {
+        customLayers = new org.gigapan.timelapse.CustomLayers(thisObj, settings);
         materialUI = new org.gigapan.timelapse.MaterialUI(thisObj, settings);
       } else if (useCustomUI) {
         customUI = new org.gigapan.timelapse.CustomUI(thisObj, settings);
@@ -3554,7 +3541,7 @@ if (!window['$']) {
         mobileUI = new org.gigapan.timelapse.MobileUI(thisObj, settings);
       }
 
-      if(timelineMetadataVisualizerEnabled) {
+      if (timelineMetadataVisualizerEnabled) {
         timelineMetadataVisualizer = new org.gigapan.timelapse.TimelineMetadataVisualizer(thisObj);
       }
 
@@ -4105,7 +4092,7 @@ if (!window['$']) {
     browserSupported = UTIL.browserSupported(settings["mediaType"]);
 
     if (!browserSupported) {
-      UTIL.ajax("html", rootAppURL, "templates/browser_not_supported_template.html", function(html) {
+      UTIL.ajax("html", rootAppURL, "templates/" + browserNotSupportedTemplateName, function(html) {
         $("#" + timeMachineDivId).html(html);
       });
       return;

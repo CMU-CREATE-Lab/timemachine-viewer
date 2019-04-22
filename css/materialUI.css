@@ -47,6 +47,11 @@
   cursor: pointer;
 }
 
+.materialUI .waypointDrawerContainerToggle.disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+
 .materialUI .waypointDrawerContainerToggle:hover .waypointDrawerContainerToggleIcon {
   opacity: 0.9;
 }
@@ -152,7 +157,7 @@
   margin-top: -12px
 }
 
-.materialUI .share:hover .ui-icon-custom-share-black{
+.materialUI .share:not(.ui-button-disabled):hover .ui-icon-custom-share-black{
   opacity: 0.9;
 }
 
@@ -169,6 +174,19 @@
   padding-bottom: 8px;
   background: white;
   width: 100%;
+}
+
+.materialUI:not(.mobileUI) .materialTimelineDisabled {
+  width: 75%;
+  color: #9e9e9e;
+  background: white;
+  z-index: 9000;
+  position: absolute;
+  height: 35px;
+  text-align: center;
+  padding-top: 19px;
+  display: none;
+  border-radius: 16px;
 }
 
 .materialUI:not(.mobileUI) .materialTimeline.isIE {
@@ -225,6 +243,10 @@
   border-bottom-right-radius: 0px !important;
   position: relative;
   margin: 0px;
+}
+
+.materialUI .playbackButton.ui-state-disabled {
+  opacity: 0.35;
 }
 
 .materialUI .ui-button .ui-icon.ui-icon-custom-play {
@@ -445,7 +467,7 @@
   height: auto;
   bottom: 94px;
   position: absolute;
-  z-index: 50;
+  z-index: 1;
   color: white;
   margin-left: 20px;
   width: calc(100% - 40px);
@@ -459,7 +481,19 @@
   -webkit-box-direction: normal;
   -ms-flex-direction: row;
   flex-direction: row;
+  -webkit-transition: width 0.5s;
+  -o-transition: width 0.5s;
+  transition: width 0.5s;
+  right: 0px;
 }
+
+.materialUI.waypointDrawerOpen .materialNowViewingContainer {
+  right: 0px;
+  width: calc(100% - 377px);
+  -webkit-transition: width 0.5s;
+  -o-transition: width 0.5s;
+  transition: width 0.5s;
+ }
 
 .materialNowViewingContent {
   width: auto;
@@ -489,4 +523,18 @@
   -ms-flex-preferred-size: 100%;
   flex-basis: 100%;
   word-break: break-all;
+}
+
+#static_map_base_layer {
+  width: 100%;
+  height: 100%;
+  display: none;
+}
+
+.hidden {
+  display: none;
+}
+
+.cursorPointer {
+  cursor: pointer;
 }

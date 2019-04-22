@@ -103,6 +103,7 @@ if (!org.gigapan.timelapse.Timelapse) {
     var UTIL = org.gigapan.Util;
     var snaplapseForPresentationSlider = timelapse.getSnaplapseForPresentationSlider();
 
+
     // Parameters
     var captureTimes;
     var numFrames;
@@ -118,10 +119,15 @@ if (!org.gigapan.timelapse.Timelapse) {
     var $timelineTicks;
     var $mainTimelineTicks;
     var $selectedTimelineTick;
+    var $shareButton = $("#" + viewerDivId + " .share");
+    var $timelineDisabledContainer = $("#" + viewerDivId + " .materialTimelineDisabled");
+    var $waypointDrawerContainerToggle = $("#" + viewerDivId + " .waypointDrawerContainerToggle");
+
 
     // Flags
     var addedTimelineSliderListener = false;
     var isScrolling = false;
+
 
     var setupPlayPauseEventHandlers = function() {
       timelapse.addVideoPlayListener(function() {
@@ -189,7 +195,6 @@ if (!org.gigapan.timelapse.Timelapse) {
       if (UTIL.isIE()) {
         $timeline.addClass("isIE");
       }
-
     };
 
     var updateTimelineSlider = function(frameNum, timeTick, fromSync) {
@@ -253,7 +258,9 @@ if (!org.gigapan.timelapse.Timelapse) {
     var setupNowViewingUI = function() {
       if (snaplapseForPresentationSlider) {
         var snaplapseViewerForPresentationSlider = snaplapseForPresentationSlider.getSnaplapseViewer();
+        console.log('setup');
         snaplapseViewerForPresentationSlider.addEventListener('slide-changed', function(waypoint) {
+          console.log('slide changed', waypoint.title);
           if (waypoint.title) {
             $materialNowViewingText.text(waypoint.title);
             $materialNowViewingContent.show();
@@ -289,6 +296,30 @@ if (!org.gigapan.timelapse.Timelapse) {
     };
     this.seekControlAction = seekControlAction;
 
+    var handleContextMapUICallback = function(isMapLayerVisible) {
+      if (typeof(isMapLayerVisible) === "undefined") return;
+
+      if (isMapLayerVisible) {
+        $shareButton.button("disable");
+        $timelineDisabledContainer.show();
+        if ($(".waypointDrawerContainerMain").hasClass("waypointDrawerClosed")) {
+          $waypointDrawerContainerToggle.addClass("wasClosed");
+        } else {
+          $waypointDrawerContainerToggle.trigger("click");
+        }
+        $waypointDrawerContainerToggle.addClass("disabled");
+      } else {
+        $shareButton.button("enable");
+        $timelineDisabledContainer.hide();
+        $waypointDrawerContainerToggle.removeClass("disabled");
+        if (!$waypointDrawerContainerToggle.hasClass("wasClosed")) {
+          $waypointDrawerContainerToggle.trigger("click");
+        } else {
+          $waypointDrawerContainerToggle.removeClass("wasClosed");
+        }
+      }
+    };
+    this.handleContextMapUICallback = handleContextMapUICallback;
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////
     //

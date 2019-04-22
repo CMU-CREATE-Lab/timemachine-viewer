@@ -158,8 +158,11 @@ if (!org.gigapan.timelapse.snaplapse) {
     var $keyframeContainer = $("#" + composerDivId + " .snaplapse_keyframe_container");
     var $sortable;
     var $waypointDrawerContainerMain = $("#" + viewerDivId + " .waypointDrawerContainerMain");
+    var $waypointDrawerContainerToggle = $("#" + viewerDivId + " .waypointDrawerContainerToggle");
     var $searchBox = $("#" + timeMachineDivId + " .searchBox");
     var $searchBoxContainer = $("#" + timeMachineDivId + " .searchBoxContainer");
+    var $waypointDrawerHighlights = $("#" + timeMachineDivId + " .etDrawerProductHighlights");
+
 
     // Parameters
     var rootURL;
@@ -352,7 +355,8 @@ if (!org.gigapan.timelapse.snaplapse) {
     var initializeSnaplapseUI = function() {
       if (uiEnabled && orientation == "vertical") {
         $waypointDrawerContainerMain.show();
-        $(".waypointDrawerContainerToggle").on("click", function() {
+        $waypointDrawerContainerToggle.on("click", function() {
+          if ($waypointDrawerContainerToggle.hasClass("disabled")) return;
           $timelapseContainer.toggleClass("waypointDrawerOpen");
           $waypointDrawerContainerMain.toggleClass("waypointDrawerClosed");
           if (uiType == "materialUI") {
@@ -365,7 +369,7 @@ if (!org.gigapan.timelapse.snaplapse) {
           }
         });
         $("#" + composerDivId).addClass("vertical");
-        $(".etDrawerProductHighlights").append($("#" + composerDivId));
+        $waypointDrawerHighlights.append($("#" + composerDivId));
       }
       if (!usePresentationSlider && uiEnabled) {
         createEditorToolbar();
