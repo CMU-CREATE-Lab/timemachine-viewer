@@ -258,9 +258,7 @@ if (!org.gigapan.timelapse.Timelapse) {
     var setupNowViewingUI = function() {
       if (snaplapseForPresentationSlider) {
         var snaplapseViewerForPresentationSlider = snaplapseForPresentationSlider.getSnaplapseViewer();
-        console.log('setup');
         snaplapseViewerForPresentationSlider.addEventListener('slide-changed', function(waypoint) {
-          console.log('slide changed', waypoint.title);
           if (waypoint.title) {
             $materialNowViewingText.text(waypoint.title);
             $materialNowViewingContent.show();
