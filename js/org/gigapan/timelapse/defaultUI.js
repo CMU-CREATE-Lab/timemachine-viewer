@@ -566,6 +566,7 @@ if (!org.gigapan.timelapse.Timelapse) {
         var place = autocomplete.getPlace();
         var newView;
         var listeners = eventListeners["google-search-place-changed"];
+        var doPlay = !timelapse.isPaused() || timelapse.isDoingLoopingDwell();
 
         if (!place || !place.geometry) {
           var address = $searchBox.val();
@@ -611,7 +612,7 @@ if (!org.gigapan.timelapse.Timelapse) {
                   googleMapLayer.setZoom(newView.zoom);
                 }
               } else {
-                timelapse.setNewView(newView, false, false);
+                timelapse.setNewView(newView, false, doPlay);
               }
               UTIL.addGoogleAnalyticEvent('textbox', 'search', 'go-to-searched-place');
               if (listeners) {
@@ -636,7 +637,7 @@ if (!org.gigapan.timelapse.Timelapse) {
             googleMapLayer.setCenter(mapLatLng);
             googleMapLayer.setZoom(newView.zoom);
           } else {
-            timelapse.setNewView(newView, false, false);
+            timelapse.setNewView(newView, false, doPlay);
           }
           UTIL.addGoogleAnalyticEvent('textbox', 'search', 'go-to-searched-place');
           if (listeners) {
