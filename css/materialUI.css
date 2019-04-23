@@ -537,11 +537,11 @@
 
 .materialNowViewingContent {
   width: auto;
-  padding-left: 24px;
-  padding-right: 24px;
+  padding-left: 27px;
+  padding-right: 27px;
   -ms-flex-pack: center;
   background: rgba(0, 0, 0, 0.54);
-  padding-top: 10px;
+  padding-top: 11px;
   padding-bottom: 10px;
   -ms-flex-wrap: wrap;
   flex-wrap: wrap;
