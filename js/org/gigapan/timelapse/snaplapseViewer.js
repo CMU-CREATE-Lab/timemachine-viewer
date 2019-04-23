@@ -1147,7 +1147,8 @@ if (!org.gigapan.timelapse.snaplapse) {
                       } else if (presentationSliderLoadAnimation == "warp") {
                         timelapse.setNewView(newView, true, presentationSliderPlayAfterAnimation);
                       }
-                      selectAndGo($("#" + timeMachineDivId + "_snaplapse_keyframe_" + keyframeId), keyframeId, true, false, true);
+                      // TODO (20190423): Before we skipped event listeners in this case. Not sure why, but for now we allow them again.
+                      selectAndGo($("#" + timeMachineDivId + "_snaplapse_keyframe_" + keyframeId), keyframeId, true, false, false);
                     }
                   } else {
                     if (currentAutoModeWaypointIdx != -1) currentAutoModeWaypointIdx--;
