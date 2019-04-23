@@ -367,6 +367,14 @@
   background: rgba(0, 0, 0, 0.08);
 }
 
+#speedControlOptions-menu .ui-menu-item {
+ padding: 10px 0em 10px 1em;
+}
+
+#speedControlOptions-menu.ui-corner-bottom {
+  border-radius: 4px;
+}
+
 .materialUI #speedControlOptions {
   width: 100%;
   height: 100%;
