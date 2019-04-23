@@ -431,7 +431,14 @@
   -webkit-transform: translateY(50%);
   -ms-transform: translateY(50%);
   transform: translateY(50%);
-  height: 20px;
+  height: 17px;
+  width: 8px;
+  -ms-flex: 0 0 auto;
+  flex: 0 0 auto;
+}
+
+.materialTimeline.isIE .materialTimelineDivider {
+  height: 22px !important;
 }
 
 .materialTimelineTick {
@@ -450,6 +457,17 @@
   padding-top: 10px;
   padding-bottom: 8px;
   cursor: pointer;
+  -ms-flex: 0 0 auto;
+  flex: 0 0 auto;
+  width: 36px;
+  flex-shrink: 0;
+  font-size:14px;
+  line-height:14px;
+  display: inline-block;
+}
+
+.materialTimeline.isIE .materialTimelineTick {
+  padding-top: 12px !important;
 }
 
 .materialTimelineTickSelected {
@@ -459,7 +477,11 @@
   background-color: #2979FF;
   color: white;
   font-size: 16px;
+  line-height: 16px;
+  display: inline-block;
   display: block;
+  -ms-flex-negative: 0;
+  flex-shrink: 0;
 }
 
 .materialNowViewingContainer {
@@ -485,6 +507,14 @@
   -o-transition: width 0.5s;
   transition: width 0.5s;
   right: 0px;
+}
+
+.materialTimeline .leftGroup, .materialTimeline .rightGroup {
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -ms-flex-negative: 0;
+  flex-shrink: 0;
 }
 
 .materialUI.waypointDrawerOpen .materialNowViewingContainer {

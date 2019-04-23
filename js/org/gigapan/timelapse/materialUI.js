@@ -117,75 +117,77 @@ if (!org.gigapan.timelapse.Timelapse) {
     var $materialNowViewingContent = $("#" + viewerDivId + " .materialNowViewingContent");
     var $materialNowViewingText = $("#" + viewerDivId + " .materialNowViewingText");
     var $timelineTicks;
-    var $mainTimelineTicks;
     var $selectedTimelineTick;
     var $shareButton = $("#" + viewerDivId + " .share");
     var $timelineDisabledContainer = $("#" + viewerDivId + " .materialTimelineDisabled");
     var $waypointDrawerContainerToggle = $("#" + viewerDivId + " .waypointDrawerContainerToggle");
+    var timelineGroupHTML = "";
+    var timelineGroupSeparator = "<span class='materialTimelineDivider'>&#8226;</span>";
+    var leftTimelineGroupWidth;
+    var rightTimelineGroupWidth;
+    var timelineTickWidth;
+    var lastSelectedGroup;
 
 
     // Flags
     var addedTimelineSliderListener = false;
-    var isScrolling = false;
+    var lastFrameWasGroupEnd = false;
 
-
-    var setupPlayPauseEventHandlers = function() {
-      timelapse.addVideoPlayListener(function() {
-        if (!$selectedTimelineTick.hasClass("mainMaterialTimelineTick")) {
-          timelapse.handlePlayPause();
-          $mainTimelineTicks.first().click();
-          timelapse.handlePlayPause();
-        }
-      });
-    };
 
     var createTimelineSlider = function() {
-      var timelineHTML = "";
+      var currentTimelineHTML = "";
       captureTimes = timelapse.getCaptureTimes();
       numFrames = captureTimes.length;
 
       for (var i = 0; i < captureTimes.length; i++) {
-        timelineHTML += "<span class='materialTimelineTick' data-frame=" + i + ">" + captureTimes[i] + "</span>";
+        currentTimelineHTML += "<span class='materialTimelineTick' data-frame=" + i + ">" + captureTimes[i] + "</span>";
       }
-      timelineHTML += "<span class='materialTimelineDivider'>&#8226;</span>";
-      for (var i = 0; i < captureTimes.length; i++) {
-        timelineHTML += "<span class='materialTimelineTick mainMaterialTimelineTick' data-frame=" + i + ">" + captureTimes[i] + "</span>";
-      }
-      $timeline.html(timelineHTML);
+      timelineGroupHTML = currentTimelineHTML;
+      var $leftGroup = $("<div class='leftGroup'>" + timelineGroupHTML + timelineGroupSeparator + "</div>");
+      var $rightGroup =  $("<div class='rightGroup'>" + timelineGroupHTML + timelineGroupSeparator + "</div>");
+      $timeline.append($leftGroup, $rightGroup);
 
       $timeline.swipe( {
         // Generic swipe handler for all directions
         swipe: function(event, direction, distance, duration, fingerCount, fingerData) {
+          var seekDirection;
           // Swiping left actually means going forward, aka "right"
           // Swiping right actually means going backwards, aka "left"
           if (direction == "left") {
-            direction = "right";
+            seekDirection = "right";
           } else if (direction == "right") {
-            direction = "left";
+            seekDirection = "left";
           }
-          seekControlAction(direction);
-
+          seekControlAction(seekDirection);
         },
         threshold: 10
       });
 
-      $timelineTicks = $("#" + viewerDivId + " .materialTimelineTick");
-      $mainTimelineTicks = $("#" + viewerDivId + " .mainMaterialTimelineTick");
-
-      $timelineTicks.on("click", function() {
+      $timeline.on("click", ".materialTimelineTick", function() {
         updateTimelineSlider(null, $(this), false);
       });
+
+      $timelineTicks = $("#" + viewerDivId + " .materialTimelineTick");
+
+      leftTimelineGroupWidth = $leftGroup.outerWidth(true);
+      rightTimelineGroupWidth = $rightGroup.outerWidth(true);
+      lastSelectedGroup = $rightGroup;
 
       if (!addedTimelineSliderListener) {
         addedTimelineSliderListener = true;
         videoset.addEventListener('sync', function() {
           var currentFrameNumber = timelapse.getCurrentFrameNumber();
-          if (!$selectedTimelineTick.hasClass("mainMaterialTimelineTick") || parseInt($selectedTimelineTick.attr("data-frame")) == currentFrameNumber) return;
+          if (currentFrameNumber == numFrames - 1 && timelapse.isDoingLoopingDwell()) {
+            lastFrameWasGroupEnd = true;
+          }
+          if (!lastFrameWasGroupEnd && (parseInt($selectedTimelineTick.attr("data-frame")) == currentFrameNumber || (timelapse.isPaused() && !timelapse.isDoingLoopingDwell()))) return;
           updateTimelineSlider(currentFrameNumber, null, true);
         });
       }
 
-      var startTimeElm = $mainTimelineTicks.first();
+      var startTimeElm = $("#" + viewerDivId + " .rightGroup").find(".materialTimelineTick:first");
+      timelineTickWidth = startTimeElm.outerWidth(true);
+
       updateTimelineSlider(0, startTimeElm);
 
       timelapse.addResizeListener(function() {
@@ -199,14 +201,18 @@ if (!org.gigapan.timelapse.Timelapse) {
 
     var updateTimelineSlider = function(frameNum, timeTick, fromSync) {
       if (!timeTick || timeTick.length == 0) {
-        timeTick = $('.mainMaterialTimelineTick[data-frame="' + frameNum + '"]');
+        if (lastFrameWasGroupEnd && frameNum == 0 || lastSelectedGroup.hasClass("rightGroup") && $selectedTimelineTick.parent().hasClass("leftGroup")) {
+          timeTick = $selectedTimelineTick.parent().next().find($('.materialTimelineTick')).first();
+          lastFrameWasGroupEnd = false;
+        } else {
+          timeTick = $selectedTimelineTick.parent().find($('.materialTimelineTick[data-frame="' + frameNum + '"]'));
+        }
       }
       if (timeTick.length) {
         $selectedTimelineTick = timeTick;
         if (frameNum == null) {
           frameNum = parseInt($selectedTimelineTick.attr("data-frame"));
         }
-        //var scrollOptions = {inline: 'center'};
         var scrollOptions = {time: 100};
         if (fromSync) {
           scrollOptions = {
@@ -217,7 +223,27 @@ if (!org.gigapan.timelapse.Timelapse) {
         $timelineTicks.removeClass("materialTimelineTickSelected");
         $selectedTimelineTick.addClass("materialTimelineTickSelected");
         window.scrollIntoView($selectedTimelineTick[0], scrollOptions, function() {
-          isScrolling = false;
+          var scrollWidthAmount = $timeline[0].scrollWidth;
+          var scrollLeftAmount = $timeline[0].scrollLeft;
+          var clientWidthAmount = $timeline[0].clientWidth;
+          var scrollDiff = ((scrollWidthAmount - scrollLeftAmount) - clientWidthAmount);
+          var threshold = timelineTickWidth;
+
+          if (scrollLeftAmount <= threshold) {
+            var $nextGroup = $selectedTimelineTick.parent().next();
+            if (!$nextGroup.hasClass("rightGroup")) {
+              // add new timeline segment to the left
+              var $newLeftGroup = $("<div class='leftGroup newLeftGroup'>" + timelineGroupHTML + timelineGroupSeparator + "</div>");
+              $timeline.prepend($newLeftGroup);
+              $timelineTicks = $("#" + viewerDivId + " .materialTimelineTick");
+              $timeline[0].scrollLeft = leftTimelineGroupWidth + scrollLeftAmount;
+            }
+          } else if (scrollDiff <= threshold) {
+            // add to the right
+            var $newRightGroup = $("<div class='rightGroup newRightGroup'>" + timelineGroupHTML + timelineGroupSeparator + "</div>");
+            $timeline.append($newRightGroup);
+            $timelineTicks = $("#" + viewerDivId + " .materialTimelineTick");
+          }
         });
         if (timelapse.isPaused()) {
           timelapse.seekToFrame(frameNum);
@@ -280,16 +306,38 @@ if (!org.gigapan.timelapse.Timelapse) {
     //
 
     var refocusTimeline = function() {
-      $selectedTimelineTick.trigger("click");
+      updateTimelineSlider(null, $selectedTimelineTick, false);
     };
     this.refocusTimeline = refocusTimeline;
 
     var seekControlAction = function(direction) {
-      var currentFrameNum = parseInt($selectedTimelineTick.attr("data-frame"));
-      if ((currentFrameNum > 0 || $selectedTimelineTick.hasClass("mainMaterialTimelineTick")) && direction == "left") {
-        updateTimelineSlider(null,  $selectedTimelineTick.prevAll("#" + viewerDivId + " .materialTimelineTick:first"), false);
-      } else if ((currentFrameNum < numFrames - 1 || !$selectedTimelineTick.hasClass("mainMaterialTimelineTick")) && direction == "right") {
-        updateTimelineSlider(null,  $selectedTimelineTick.nextAll("#" + viewerDivId + " .materialTimelineTick:first"), false);
+      lastSelectedGroup = $selectedTimelineTick.parent();
+      if (direction == "left") {
+        var $previousTimeTick = $selectedTimelineTick.prev("#" + viewerDivId + " .materialTimelineTick");
+        if ($previousTimeTick.length == 0) {
+          // We hit the end of a timeline group, let's look outside of it.
+          var $currentTimelineTickParent = $selectedTimelineTick.parent();
+          $previousTimeTick = $selectedTimelineTick.parent().prev().children("#" + viewerDivId + " .materialTimelineTick:last");
+          if ($currentTimelineTickParent.hasClass("leftGroup")) {
+            $currentTimelineTickParent.remove();
+            $previousTimeTick.parent().removeClass("newLeftGroup");
+          }
+        }
+        updateTimelineSlider(null, $previousTimeTick, false);
+      } else if (direction == "right") {
+        var $nextTimelineTick = $selectedTimelineTick.next("#" + viewerDivId + " .materialTimelineTick");
+        if ($nextTimelineTick.length == 0) {
+          // We hit the end of a timeline group, let's look outside of it
+          var $currentTimelineTickParent = $selectedTimelineTick.parent();
+          $nextTimelineTick = $selectedTimelineTick.parent().next().children("#" + viewerDivId + " .materialTimelineTick:first");
+          if ($currentTimelineTickParent.hasClass("rightGroup")) {
+            var scrollLeftAmount = $timeline[0].scrollLeft;
+            $currentTimelineTickParent.remove();
+            $nextTimelineTick.parent().removeClass("newRightGroup");
+            $timeline[0].scrollLeft = scrollLeftAmount - leftTimelineGroupWidth;
+          }
+        }
+        updateTimelineSlider(null, $nextTimelineTick, false);
       }
     };
     this.seekControlAction = seekControlAction;
@@ -323,8 +371,6 @@ if (!org.gigapan.timelapse.Timelapse) {
     //
     // Constructor code
     //
-
-    setupPlayPauseEventHandlers();
 
     createTimelineSlider();
 
