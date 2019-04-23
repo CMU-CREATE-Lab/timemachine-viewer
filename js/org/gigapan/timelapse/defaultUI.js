@@ -555,6 +555,14 @@ if (!org.gigapan.timelapse.Timelapse) {
         });
       });
 
+      $searchBox.on("keydown", function(e) {
+        if (e.which == 13) {
+          google.maps.event.trigger(autocomplete, 'place_changed', {
+            locationName: $searchBox.val()
+          });
+        }
+      });
+
       google.maps.event.addListener(autocomplete, 'place_changed', function() {
         if (uiType == "materialUI") {
           if (!customLayers) {
