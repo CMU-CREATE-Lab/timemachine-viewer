@@ -491,8 +491,7 @@
   position: absolute;
   z-index: 1;
   color: white;
-  margin-left: 20px;
-  width: calc(100% - 40px);
+  width: calc(100% - 80px);
   display: -webkit-box;
   display: -ms-flexbox;
   display: flex;
@@ -507,6 +506,8 @@
   -o-transition: width 0.5s;
   transition: width 0.5s;
   right: 0px;
+  margin-left: 40px;
+  margin-right: 40px;
 }
 
 .materialTimeline .leftGroup, .materialTimeline .rightGroup {
@@ -519,11 +520,11 @@
 
 .materialUI.waypointDrawerOpen .materialNowViewingContainer {
   right: 0px;
-  width: calc(100% - 377px);
+  width: calc(100% - 457px);
   -webkit-transition: width 0.5s;
   -o-transition: width 0.5s;
   transition: width 0.5s;
- }
+}
 
 .materialNowViewingContent {
   width: auto;
