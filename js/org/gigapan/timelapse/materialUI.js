@@ -117,6 +117,7 @@ if (!org.gigapan.timelapse.Timelapse) {
     var $materialNowViewingContainer = $("#" + viewerDivId + " .materialNowViewingContainer");
     var $materialNowViewingContent = $("#" + viewerDivId + " .materialNowViewingContent");
     var $materialNowViewingText = $("#" + viewerDivId + " .materialNowViewingText");
+    var $materialNowViewingClose = $("#" + viewerDivId + " .materialNowViewingContent .close");
     var $timelineTicks;
     var $selectedTimelineTick;
     var $shareButton = $("#" + viewerDivId + " .share");
@@ -284,6 +285,10 @@ if (!org.gigapan.timelapse.Timelapse) {
 
     var setupNowViewingUI = function() {
       if (snaplapseForPresentationSlider) {
+        var closeAnnotation = function() {
+          $materialNowViewingContent.hide();
+          $("#" + viewerDivId + " .snaplapse_keyframe_list .thumbnail_highlight").removeClass("thumbnail_highlight");
+        };
         var snaplapseViewerForPresentationSlider = snaplapseForPresentationSlider.getSnaplapseViewer();
         snaplapseViewerForPresentationSlider.addEventListener('slide-changed', function(waypoint) {
           if (waypoint.title) {
@@ -294,8 +299,10 @@ if (!org.gigapan.timelapse.Timelapse) {
           }
         });
         snaplapseViewerForPresentationSlider.addEventListener('left-waypoint-view-threshold', function(waypoint) {
-          $materialNowViewingContent.hide();
-          $("#" + viewerDivId + " .snaplapse_keyframe_list .thumbnail_highlight").removeClass("thumbnail_highlight");
+          closeAnnotation();
+        });
+        $materialNowViewingClose.on("click", function() {
+          closeAnnotation();
         });
       }
     };
