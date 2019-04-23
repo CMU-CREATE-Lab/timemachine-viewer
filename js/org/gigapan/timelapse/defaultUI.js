@@ -508,13 +508,6 @@ if (!org.gigapan.timelapse.Timelapse) {
         $('.pac-container').hide();
       });
 
-      if (uiType != "materialUI") {
-        $searchBox.on("click", function(e) {
-          google.maps.event.trigger(autocomplete, 'place_changed');
-          return false;
-        });
-      }
-
       $searchBox.on("input", function() {
         if ($(this).val() == "") {
           $searchBoxClear.hide();
@@ -554,6 +547,13 @@ if (!org.gigapan.timelapse.Timelapse) {
           locationName: searchItemText
         });
       });
+
+      if (uiType != "materialUI") {
+        $searchBox.on("click", function(e) {
+          google.maps.event.trigger(autocomplete, 'place_changed');
+          return false;
+        });
+      }
 
       $searchBox.on("keydown", function(e) {
         if (e.which == 13) {
