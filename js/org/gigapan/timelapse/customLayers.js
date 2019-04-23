@@ -131,7 +131,6 @@ if (!org.gigapan.timelapse.Timelapse) {
         center: {lat: startView.center.lat, lng: startView.center.lng},
         zoom: startView.zoom,
         maxZoom: 14,
-        minZoom: 1,
         zoomControl: false,
         mapTypeControl: false,
         scaleControl: false,
