@@ -3706,7 +3706,7 @@ if (!window['$']) {
         var canvasLayer = {
           timelapse: thisObj,
           canvas: canvas,
-          resolutionScale: window.devicePixelRatio || 1
+          resolutionScale: pixelRatio
         };
         var webglTimeMachineLayerOptions = {
           mediaType: mediaType,
