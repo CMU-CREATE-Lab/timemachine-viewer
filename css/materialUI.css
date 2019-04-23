@@ -516,6 +516,7 @@
   right: 0px;
   margin-left: 40px;
   margin-right: 40px;
+  pointer-events: none;
 }
 
 .materialTimeline .leftGroup, .materialTimeline .rightGroup {

@@ -114,6 +114,7 @@ if (!org.gigapan.timelapse.Timelapse) {
     var $speedControls = $("#" + viewerDivId + " #speedControlOptions");
     var $rightSeekControl = $("#" + viewerDivId + " .rightSeekControl");
     var $leftSeekControl = $("#" + viewerDivId + " .leftSeekControl");
+    var $materialNowViewingContainer = $("#" + viewerDivId + " .materialNowViewingContainer");
     var $materialNowViewingContent = $("#" + viewerDivId + " .materialNowViewingContent");
     var $materialNowViewingText = $("#" + viewerDivId + " .materialNowViewingText");
     var $timelineTicks;
@@ -347,6 +348,7 @@ if (!org.gigapan.timelapse.Timelapse) {
 
       if (isMapLayerVisible) {
         $shareButton.button("disable");
+        $materialNowViewingContainer.hide();
         $timelineDisabledContainer.show();
         if ($(".waypointDrawerContainerMain").hasClass("waypointDrawerClosed")) {
           $waypointDrawerContainerToggle.addClass("wasClosed");
@@ -356,6 +358,7 @@ if (!org.gigapan.timelapse.Timelapse) {
         $waypointDrawerContainerToggle.addClass("disabled");
       } else {
         $shareButton.button("enable");
+        $materialNowViewingContainer.show();
         $timelineDisabledContainer.hide();
         $waypointDrawerContainerToggle.removeClass("disabled");
         if (!$waypointDrawerContainerToggle.hasClass("wasClosed")) {
