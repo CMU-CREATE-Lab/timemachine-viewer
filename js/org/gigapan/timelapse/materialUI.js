@@ -130,6 +130,7 @@ if (!org.gigapan.timelapse.Timelapse) {
     var timelineTickWidth;
     var lastSelectedGroup;
     var $tourTimeText;
+    var startDownX;
 
 
     // Flags
@@ -150,20 +151,32 @@ if (!org.gigapan.timelapse.Timelapse) {
       var $rightGroup =  $("<div class='rightGroup'>" + timelineGroupHTML + timelineGroupSeparator + "</div>");
       $timeline.append($leftGroup, $rightGroup);
 
-      $timeline.swipe( {
-        // Generic swipe handler for all directions
-        swipe: function(event, direction, distance, duration, fingerCount, fingerData) {
-          var seekDirection;
-          // Swiping left actually means going forward, aka "right"
+      $timeline.on("mousedown", function(e) {
+        if (typeof(e.pageX) === "undefined") {
+          startDownX = e.clientX;
+        } else {
+          startDownX = e.pageX;
+        }
+      });
+
+      $timeline.on("mouseup", function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        var endDownX;
+        if (typeof(e.pageX) === "undefined") {
+          endDownX = e.clientX;
+        } else {
+          endDownX = e.pageX;
+        }
+        var diff = (startDownX - endDownX);
+        var threshold = 20;
+        if ((diff + threshold) < 0) {
           // Swiping right actually means going backwards, aka "left"
-          if (direction == "left") {
-            seekDirection = "right";
-          } else if (direction == "right") {
-            seekDirection = "left";
-          }
-          seekControlAction(seekDirection);
-        },
-        threshold: 10
+          seekControlAction("left");
+        } else if ((diff - threshold) > 0) {
+          // Swiping left actually means going forward, aka "right"
+          seekControlAction("right");
+        }
       });
 
       $timeline.on("click", ".materialTimelineTick", function() {
