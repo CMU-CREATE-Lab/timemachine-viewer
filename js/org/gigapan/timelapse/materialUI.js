@@ -221,7 +221,9 @@ if (!org.gigapan.timelapse.Timelapse) {
 
     var updateTimelineSlider = function(frameNum, timeTick, fromSync) {
       if (!timeTick || timeTick.length == 0) {
-        if (lastFrameWasGroupEnd && frameNum == 0 || lastSelectedGroup.hasClass("rightGroup") && $selectedTimelineTick.parent().hasClass("leftGroup")) {
+        if ((lastFrameWasGroupEnd && frameNum == 0) ||
+            (lastSelectedGroup.hasClass("rightGroup") && $selectedTimelineTick.parent().hasClass("leftGroup")) ||
+            (lastSelectedGroup.hasClass("leftGroup") && $selectedTimelineTick.parent().hasClass("leftGroup"))) {
           timeTick = $selectedTimelineTick.parent().next().find($('.materialTimelineTick')).first();
           lastFrameWasGroupEnd = false;
         } else {
@@ -250,8 +252,8 @@ if (!org.gigapan.timelapse.Timelapse) {
           var threshold = timelineTickWidth;
 
           if (clientWidthAmount > 0 && scrollLeftAmount <= threshold) {
-            var $nextGroup = $selectedTimelineTick.parent().next();
-            if (!$nextGroup.hasClass("rightGroup")) {
+            var $prevGroup = $selectedTimelineTick.parent().prev();
+            if ($prevGroup.length == 0) {
               // Add new timeline segment to the left
               var $newLeftGroup = $("<div class='leftGroup newLeftGroup'>" + timelineGroupHTML + timelineGroupSeparator + "</div>");
               $timeline.prepend($newLeftGroup);
