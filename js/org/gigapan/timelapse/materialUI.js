@@ -236,20 +236,32 @@ if (!org.gigapan.timelapse.Timelapse) {
           var scrollDiff = ((scrollWidthAmount - scrollLeftAmount) - clientWidthAmount);
           var threshold = timelineTickWidth;
 
-          if (scrollLeftAmount <= threshold) {
+          if (clientWidthAmount > 0 && scrollLeftAmount <= threshold) {
             var $nextGroup = $selectedTimelineTick.parent().next();
             if (!$nextGroup.hasClass("rightGroup")) {
-              // add new timeline segment to the left
+              // Add new timeline segment to the left
               var $newLeftGroup = $("<div class='leftGroup newLeftGroup'>" + timelineGroupHTML + timelineGroupSeparator + "</div>");
               $timeline.prepend($newLeftGroup);
               $timelineTicks = $("#" + viewerDivId + " .materialTimelineTick");
               $timeline[0].scrollLeft = leftTimelineGroupWidth + scrollLeftAmount;
             }
-          } else if (scrollDiff <= threshold) {
-            // add to the right
+          } else if (clientWidthAmount > 0 && scrollDiff <= threshold) {
+            var doFixScroll = false;
+            // Ensure only one tmp group ever exists
+            var $existingNewRightGroup = $("#" + viewerDivId + " .newRightGroup");
+            if ($existingNewRightGroup.length == 1) {
+              var $previousRightGroup = $existingNewRightGroup.prev();
+              $existingNewRightGroup.removeClass("newRightGroup");
+              $previousRightGroup.remove();
+              doFixScroll = true;
+            }
+            // Add to the right
             var $newRightGroup = $("<div class='rightGroup newRightGroup'>" + timelineGroupHTML + timelineGroupSeparator + "</div>");
             $timeline.append($newRightGroup);
             $timelineTicks = $("#" + viewerDivId + " .materialTimelineTick");
+            if (doFixScroll) {
+              $timeline[0].scrollLeft = scrollLeftAmount - leftTimelineGroupWidth;
+            }
           }
         });
         if (timelapse.isPaused()) {
