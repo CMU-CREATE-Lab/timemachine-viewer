@@ -129,6 +129,7 @@ if (!org.gigapan.timelapse.Timelapse) {
     var rightTimelineGroupWidth;
     var timelineTickWidth;
     var lastSelectedGroup;
+    var $tourTimeText;
 
 
     // Flags
@@ -186,6 +187,10 @@ if (!org.gigapan.timelapse.Timelapse) {
           updateTimelineSlider(currentFrameNumber, null, true);
         });
       }
+
+      // For tours
+      $tourTimeText = $('<div class="timeText"></div>');
+      $("#" + viewerDivId).append($tourTimeText);
 
       var startTimeElm = $("#" + viewerDivId + " .rightGroup").find(".materialTimelineTick:first");
       timelineTickWidth = startTimeElm.outerWidth(true);
@@ -250,6 +255,7 @@ if (!org.gigapan.timelapse.Timelapse) {
         if (timelapse.isPaused()) {
           timelapse.seekToFrame(frameNum);
         }
+        $tourTimeText.text($selectedTimelineTick.text());
       }
     };
 

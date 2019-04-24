@@ -162,6 +162,7 @@ if (!org.gigapan.timelapse.snaplapse) {
     var $searchBox = $("#" + timeMachineDivId + " .searchBox");
     var $searchBoxContainer = $("#" + timeMachineDivId + " .searchBoxContainer");
     var $waypointDrawerHighlights = $("#" + timeMachineDivId + " .etDrawerProductHighlights");
+    var $materialTimelineContainerMain = $("#" + viewerDivId + " .materialTimelineContainerMain");
 
 
     // Parameters
@@ -283,6 +284,7 @@ if (!org.gigapan.timelapse.snaplapse) {
 
       if (uiType == "materialUI") {
         $waypointDrawerContainerMain.hide();
+        $materialTimelineContainerMain.hide();
       } else {
         $searchBoxContainer.hide();
       }
@@ -988,9 +990,8 @@ if (!org.gigapan.timelapse.snaplapse) {
           }
 
           if (isMobileDevice) {
-            $(".waypointDrawerContainer").hide();
-            $(".etMobilePlaybackButton").hide();
-            $(".share").hide();
+            $(".waypointDrawerContainer, .etMobileLayersButton, .share").hide();
+            $playbackButton.hide();
           } else if (!useCustomUI) {
             $sideToolbar.hide();
             $controls.hide();
@@ -1015,6 +1016,11 @@ if (!org.gigapan.timelapse.snaplapse) {
           }
           if (uiType == "materialUI") {
             $waypointDrawerContainerMain.hide();
+            $sideToolbar.hide();
+            if (!isMobileDevice) {
+              $("#" + viewerDivId + " .timeText").show();
+            }
+            $materialTimelineContainerMain.hide();
           }
         });
 
@@ -1055,9 +1061,8 @@ if (!org.gigapan.timelapse.snaplapse) {
           }
 
           if (isMobileDevice) {
-            $(".waypointDrawerContainer").show();
-            $(".etMobilePlaybackButton").show();
-            $(".share").show();
+            $(".waypointDrawerContainer, .etMobileLayersButton, .share").show();
+            $playbackButton.show();
           } else if (!useCustomUI) {
             $sideToolbar.show();
             $controls.show();
@@ -1079,6 +1084,14 @@ if (!org.gigapan.timelapse.snaplapse) {
           if (uiType == "materialUI") {
             $("#" + viewerDivId + " .contextMapContainer").removeClass("playingTour");
             $waypointDrawerContainerMain.show();
+            if (!isMobileDevice) {
+              $("#" + viewerDivId + " .timeText").hide();
+            }
+            $materialTimelineContainerMain.show();
+            if (!materialUI) {
+              materialUI = timelapse.getMaterialUI();
+            }
+            materialUI.refocusTimeline();
           }
         });
 

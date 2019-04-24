@@ -329,7 +329,7 @@
 
 .materialUI .speedControl .ui-selectmenu-button {
   background: white;
-  width: 100%;
+  width: 56px !important;
   height: 51px;
   border: none;
   outline: none;
@@ -591,6 +591,13 @@
   height: 24px;
   margin-left: -17px;
   top: 0px;
+}
+
+.materialUI .timeText, .mobileUI .timeText {
+  bottom: 20px;
+  top: auto;
+  border-radius: 8px;
+  display: none;
 }
 
 #static_map_base_layer {
