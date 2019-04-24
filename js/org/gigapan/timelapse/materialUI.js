@@ -169,7 +169,7 @@ if (!org.gigapan.timelapse.Timelapse) {
           endDownX = e.pageX;
         }
         var diff = (startDownX - endDownX);
-        var threshold = 20;
+        var threshold = 10;
         if ((diff + threshold) < 0) {
           // Swiping right actually means going backwards, aka "left"
           seekControlAction("left");
