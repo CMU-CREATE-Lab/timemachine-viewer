@@ -3112,9 +3112,15 @@ if (!window['$']) {
         snaplapseViewerForSharedData.loadNewSnaplapse(waypointsJSON, false);
 
         $(".etDrawerLearnMoreExpand").on("click", function() {
-          $(".etDrawerProductLearnMoreContent").load(rootAppURL + "templates/" + unsafeWaypointsJSON['learn-more-template-name'], function() {
-            $(".etDrawerProductLearnMoreContent").show("slide", { direction: "right" }, 250);
-          });
+          var $etDrawerProductLearnMoreContent = $("#" + viewerDivId + " .etDrawerProductLearnMoreContent");
+          if ($etDrawerProductLearnMoreContent.text().length == 0) {
+            UTIL.ajax("html", rootAppURL, "templates/" + unsafeWaypointsJSON['learn-more-template-name'], function(html) {
+              $etDrawerProductLearnMoreContent.html(html);
+              $etDrawerProductLearnMoreContent.show("slide", { direction: "right" }, 250);
+            });
+          } else {
+            $etDrawerProductLearnMoreContent.show("slide", { direction: "right" }, 250);
+          }
           $(".etDrawerProductAboutDescription, .etDrawerProductHighlightsHeading, .etDrawerSectionSeparator").hide();
           $(".etDrawerLearnMoreExit").show();
 
