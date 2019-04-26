@@ -975,16 +975,15 @@
   font-family: 'Roboto-Regular';
   margin-left: 120px;
   padding-left: 16px;
+  width: calc(100% - 145px);
   position: absolute;
   left: 0px;
   top: 16px;
-  -webkit-line-clamp: 1;
-  -webkit-box-orient: vertical;
+  white-space: -moz-pre-space;
+  white-space: nowrap;
   overflow: hidden;
   -o-text-overflow: ellipsis;
   text-overflow: ellipsis;
-  display: block;
-  display: -webkit-box;
 }
 
 .presentationSlider.vertical .snaplapse_keyframe_list_item_description {
