@@ -238,7 +238,7 @@ if (!org.gigapan.timelapse.Timelapse) {
         var scrollOptions = {
           time: 100,
           validTarget: function(target) {
-            return $(target)[0] === $timeline[0];
+            return target === $timeline[0];
           }
         };
         if (fromSync) {
