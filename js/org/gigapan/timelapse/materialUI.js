@@ -235,12 +235,15 @@ if (!org.gigapan.timelapse.Timelapse) {
         if (frameNum == null) {
           frameNum = parseInt($selectedTimelineTick.attr("data-frame"));
         }
-        var scrollOptions = {time: 100};
+        var scrollOptions = {
+          time: 100,
+          validTarget: function(target) {
+            return $(target)[0] === $timeline[0];
+          }
+        };
         if (fromSync) {
-          scrollOptions = {
-           ease: null,
-           time: 0
-         };
+          scrollOptions.ease = null;
+          scrollOptions.time = 0;
         }
         $timelineTicks.removeClass("materialTimelineTickSelected");
         $selectedTimelineTick.addClass("materialTimelineTickSelected");
