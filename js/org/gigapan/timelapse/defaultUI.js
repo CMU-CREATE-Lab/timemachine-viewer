@@ -674,8 +674,8 @@ if (!org.gigapan.timelapse.Timelapse) {
       }
 
       if (viewArray && viewArray.length > 2) {
-        searchString = parseFloat(viewArray[0]).toFixed(5) + "," + parseFloat(viewArray[1]).toFixed(5);
-        centerViewFromSearchString = searchString + "," + viewArray[2];
+        searchString = parseFloat(viewArray[0]).toFixed(5) + ", " + parseFloat(viewArray[1]).toFixed(5);
+        centerViewFromSearchString = viewArray[0] + "," + viewArray[1] + "," + viewArray[2];
       }
 
       if (searchString) {
