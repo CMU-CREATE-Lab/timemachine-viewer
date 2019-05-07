@@ -103,7 +103,8 @@ if (!org.gigapan.timelapse.Timelapse) {
     var barLength;
     var datasetType = timelapse.getDatasetType();
     var useTouchFriendlyUI = timelapse.useTouchFriendlyUI();
-    var scaleBarGeometryLandsat = {
+    // TODO: This should be handled through CSS.
+    var scaleBarGeometryDefault = {
       "x": 9,
       "y": useTouchFriendlyUI ? 106 : 85,
       "position": "left",
@@ -361,10 +362,11 @@ if (!org.gigapan.timelapse.Timelapse) {
     // Create elements for scale bar
     var createScaleBarElements = function() {
       var scaleBarGeometry;
-      if (datasetType == "landsat")
-        scaleBarGeometry = scaleBarGeometryLandsat;
-      else if (datasetType == "modis")
+      if (datasetType == "modis") {
         scaleBarGeometry = scaleBarGeometryMODIS;
+      } else {
+        scaleBarGeometry = scaleBarGeometryDefault;
+      }
       // Set bar length
       barLength = scaleBarGeometry.barLength;
       // Create elements

@@ -1,0 +1,615 @@
+.materialUI .waypointDrawerContainerMain {
+  position: absolute;
+  width: 377px;
+  height: 100%;
+  left: 0;
+  -webkit-transition: 0.5s;
+  -o-transition: 0.5s;
+  transition: 0.5s;
+}
+
+.materialUI .waypointDrawerContainer {
+  width: 377px;
+  height: 100%;
+  left: 0px;
+  position: absolute;
+  background: white;
+  border-radius: 0px;
+  z-index: 1002;
+  display: block;
+  overflow-y: auto;
+  -webkit-appearance: none;
+  -webkit-box-shadow: 4px 0px 3px rgba(0,0,0,0.3);
+  box-shadow: 4px 0px 3px rgba(0,0,0,0.3);
+  border-right: 1px solid rgba(0, 0, 0, 0.12);
+}
+
+.materialUI .waypointDrawerClosed {
+  -webkit-transition: 0.5s;
+  -o-transition: 0.5s;
+  transition: 0.5s;
+  left: -378px;
+}
+
+.materialUI .waypointDrawerContainerToggle {
+  width: 24px;
+  height: 38px;
+  background: white;
+  position: absolute;
+  right: -26px;
+  top: 20px;
+  z-index: 1002;
+  border-radius: 0px 4px 4px 0px;
+  -webkit-appearance: none;
+  -webkit-box-shadow: 2px 2px 3px rgba(0,0,0,0.3);
+  box-shadow: 2px 2px 3px rgba(0,0,0,0.3);
+  border: 1px solid #d3d3d3;
+  cursor: pointer;
+}
+
+.materialUI .waypointDrawerContainerToggle.disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+
+.materialUI .waypointDrawerContainerToggle:hover .waypointDrawerContainerToggleIcon {
+  opacity: 0.9;
+}
+
+.materialUI .waypointDrawerContainerToggleIcon {
+  background: url(../images/left-arrow-black.png);
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: contain;
+  -webkit-background-size: contain;
+  width: 30px;
+  height: 30px;
+  position: absolute;
+  right: -2px;
+  top: 4px;
+  opacity: 0.7;
+  display: inline-block;
+}
+
+.materialUI .waypointDrawerClosed .waypointDrawerContainerToggleIcon {
+  background: url(../images/right-arrow-black.png);
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: contain;
+  -webkit-background-size: contain;
+}
+
+.materialUI .customDialog .ui-dialog-titlebar {
+  display: none;
+}
+
+.materialUI .ui-dialog.ui-widget.customDialog {
+  border-radius: 16px;
+  border: 1px solid #fefefe;
+  padding-bottom: 20px;
+}
+
+.materialUI .waypointDrawerContainer .presentationSlider.vertical .snaplapse_keyframe_list_item {
+  width: 100%;
+}
+
+.materialUI .waypointDrawerContainer .waypointDrawerContainerHeader {
+  text-align: left;
+}
+
+.materialUI .waypointDrawerContainer .presentationSlider.vertical {
+  height: calc(100% - 265px);
+}
+
+.materialUI .share {
+  background: white;
+  width: 0px;
+  height: 40px;
+  padding: 0px;
+  -webkit-box-shadow: 2px 2px 3px rgba(0,0,0,0.3);
+  box-shadow: 2px 2px 3px rgba(0,0,0,0.3);
+  border-top-left-radius: 1px;
+  border-bottom-left-radius: 1px;
+  border-top-right-radius: 0px;
+  border-bottom-right-radius: 0px;
+  outline: none;
+  border: 1px solid #d3d3d3;
+  padding-left: 38px;
+  padding-right: 0px;
+  border-radius: 4px;
+  position: relative;
+  z-index: 99;
+  bottom: auto;
+  display: none;
+}
+
+
+.materialUI.verticalWaypointDrawerContainer .share {
+  left: auto;
+  right: auto;
+}
+
+.materialUI .share .ui-button {
+  margin-top: 0px;
+  display: block;
+  width: 40px;
+  height: 40px;
+  background: white;
+  -webkit-box-shadow: 2px 2px 3px rgba(0, 0, 0, 0.3);
+  box-shadow: 2px 2px 3px rgba(0, 0, 0, 0.3);
+  outline: none;
+  position: relative;
+  border-radius: 0px;
+}
+
+.materialUI .share.ui-state-hover {
+  border: 1px solid #d3d3d3;
+}
+
+.materialUI .share .ui-icon-custom-share-black {
+  background: url(../images/buttons/share-black.png);
+  width: 24px;
+  height: 24px;
+  opacity: 0.6;
+  background-size: contain;
+  -webkit-background-size: contain;
+  margin-left: -13px;
+  margin-top: -12px
+}
+
+.materialUI .share:not(.ui-button-disabled):hover .ui-icon-custom-share-black{
+  opacity: 0.9;
+}
+
+.materialUI:not(.mobileUI) .materialTimeline {
+  overflow-x: hidden;
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-orient: horizontal;
+  -webkit-box-direction: normal;
+  -ms-flex-direction: row;
+  flex-direction: row;
+  padding-top: 8px;
+  padding-bottom: 8px;
+  background: white;
+  width: 100%;
+}
+
+.materialUI:not(.mobileUI) .materialTimelineDisabled {
+  width: 75%;
+  color: #9e9e9e;
+  background: white;
+  z-index: 9000;
+  position: absolute;
+  height: 35px;
+  text-align: center;
+  padding-top: 19px;
+  display: none;
+  border-radius: 16px;
+}
+
+.materialUI:not(.mobileUI) .materialTimeline.isIE {
+  overflow-x: auto;
+  -ms-overflow-style: none;
+}
+
+.materialUI:not(.mobileUI) .materialTimelineContainerMain {
+  width: 100%;
+  overflow-x: auto;
+  overflow-y: hidden;
+  z-index: 200;
+  position: absolute;
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-pack: center;
+  -ms-flex-pack: center;
+  justify-content: center;
+  bottom: 0px;
+  padding-bottom: 20px;
+  right: 0;
+  -webkit-transition: width 0.5s;
+  -o-transition: width 0.5s;
+  transition: width 0.5s;
+}
+
+.materialUI.waypointDrawerOpen .materialTimelineContainerMain {
+  right: 0px;
+  width: calc(100% - 377px);
+  -webkit-transition: width 0.5s;
+  -o-transition: width 0.5s;
+  transition: width 0.5s;
+ }
+
+.materialUI .playbackButton {
+  width: 56px;
+  -webkit-box-flex: 0;
+  -ms-flex-positive: 0;
+  flex-grow: 0;
+  -ms-flex-negative: 0;
+  flex-shrink: 0;
+  -ms-flex-preferred-size: 56px;
+  flex-basis: 56px;
+  height: auto;
+  background: white;
+  border-left: 0px;
+  border-top: 0px;
+  border-bottom: 0px;
+  border-right: 1px solid rgba(0, 0, 0, 0.12);
+  border-top-left-radius: 8px !important;
+  border-bottom-left-radius: 8px !important;
+  border-top-right-radius: 0px !important;
+  border-bottom-right-radius: 0px !important;
+  position: relative;
+  margin: 0px;
+}
+
+.materialUI .playbackButton.ui-state-disabled {
+  opacity: 0.35;
+}
+
+.materialUI .ui-button .ui-icon.ui-icon-custom-play {
+  margin-top: -10px;
+  margin-left: -8px;
+  background-size: 20px 18px;
+  -webkit-background-size: 20px 18px;
+  width: 20px;
+  height: 18px;
+}
+
+.materialUI .ui-button .ui-icon.ui-icon-custom-pause {
+  margin-top: -9px;
+  margin-left: -10px;
+  background-size: 20px 17px;
+  -webkit-background-size: 20px 18px;
+  width: 20px;
+  height: 17px;
+}
+
+.materialUI .leftSeekControlIcon:hover, .materialUI .rightSeekControlIcon:hover {
+  opacity: 0.9;
+}
+
+.materialUI .leftSeekControl, .materialUI .rightSeekControl {
+  width: 24px;
+  height: auto;
+  -webkit-box-flex: 0;
+  -ms-flex-positive: 0;
+  flex-grow: 0;
+  -ms-flex-negative: 0;
+  flex-shrink: 0;
+  -ms-flex-preferred-size: 24px;
+  flex-basis: 24px;
+  position: relative;
+}
+
+.materialUI .leftSeekControlIcon {
+  background: url(../images/chevron-left.png);
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: contain;
+  -webkit-background-size: contain;
+  width: 24px;
+  height: 24px;
+  position: absolute;
+  display: inline-block;
+  top: 14px;
+  opacity: 0.58;
+  cursor: pointer;
+}
+
+.materialUI .rightSeekControlIcon {
+  background: url(../images/chevron-right.png);
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: contain;
+  -webkit-background-size: contain;
+  width: 24px;
+  height: 24px;
+  position: absolute;
+  display: inline-block;
+  top: 14px;
+  opacity: 0.58;
+  cursor: pointer;
+}
+
+.materialUI .speedControl {
+  -webkit-box-flex: 0;
+  -ms-flex-positive: 0;
+  flex-grow: 0;
+  -ms-flex-negative: 0;
+  flex-shrink: 0;
+  -ms-flex-preferred-size: 56px;
+  flex-basis: 56px;
+  width: 56px;
+  height: auto;
+  border-left: 1px solid rgba(0, 0, 0, 0.12)
+}
+
+.materialUI .speedControl .ui-selectmenu-button {
+  background: white;
+  width: 56px !important;
+  height: 51px;
+  border: none;
+  outline: none;
+  border-radius: 0;
+  position: absolute;
+}
+
+.materialUI .speedControl.isIE .ui-selectmenu-button {
+  position: relative;
+}
+
+.materialUI .speedControl .ui-selectmenu-button span.ui-selectmenu-text {
+  padding: 0px;
+  text-align: center;
+  margin-top: 16px;
+  font-size: 13px;
+  color: #2979ff;
+  opacity: 0.8;
+}
+
+.materialUI .speedControl .ui-selectmenu-button:hover span.ui-selectmenu-text {
+  opacity: 1;
+}
+
+.materialUI .speedControl .ui-selectmenu-button .ui-icon {
+  display: none;
+}
+
+#speedControlOptions-menu {
+  border: 1px solid rgba(0, 0, 0, 0.12);
+}
+
+#speedControlOptions-menu .ui-menu-item.ui-state-focus {
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  background: rgba(0, 0, 0, 0.08);
+}
+
+#speedControlOptions-menu .ui-menu-item {
+ padding: 10px 0em 10px 1em;
+}
+
+#speedControlOptions-menu.ui-corner-bottom {
+  border-radius: 4px;
+}
+
+.materialUI #speedControlOptions {
+  width: 100%;
+  height: 100%;
+}
+
+.materialUI .materialTimelineContainer {
+  background: white;
+  -webkit-appearance: none;
+  box-shadow: 2px 2px 3px rgba(0, 0, 0, 0.3);
+  -webkit-box-shadow: 2px 2px 3px rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  border-radius: 8px;
+  width: 75%;
+  z-index: 200;
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+}
+
+.materialUI .scaleBarContainer {
+  display: none;
+}
+
+.materialTimelineContainer {
+  width: 100%;
+  overflow-x: hidden;
+  overflow-y: hidden;
+  z-index: 200;
+}
+
+.materialTimelineContainer::-webkit-scrollbar {
+  width: 0 !important
+}
+
+.materialTimeline {
+  /* Should be GoogleSans-Regular */
+  font-family: 'Roboto-Regular';
+  overflow-x: hidden;
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-orient: horizontal;
+  -webkit-box-direction: normal;
+  -ms-flex-direction: row;
+  flex-direction: row;
+  padding-bottom: 8px;
+}
+
+.materialTimelineDivider {
+  color: #80868B;
+  font-size: 15px;
+  padding-left: 16px;
+  padding-right: 16px;
+  display: block;
+  -ms-flex-preferred-size: 8px;
+  flex-basis: 8px;
+  -webkit-box-flex: 0;
+  -ms-flex-positive: 0;
+  flex-grow: 0;
+  -ms-flex-negative: 0;
+  flex-shrink: 0;
+  -webkit-transform: translateY(50%);
+  -ms-transform: translateY(50%);
+  transform: translateY(50%);
+  height: 17px;
+  width: 8px;
+  -ms-flex: 0 0 auto;
+  flex: 0 0 auto;
+}
+
+.materialTimeline.isIE .materialTimelineDivider {
+  height: 22px !important;
+}
+
+.materialTimelineTick {
+  color: #80868B;
+  font-size: 14px;
+  padding-right: 16px;
+  padding-left: 16px;
+  display: block;
+  -ms-flex-preferred-size: 36px;
+  flex-basis: 36px;
+  -webkit-box-flex: 0;
+  -ms-flex-positive: 0;
+  flex-grow: 0;
+  -ms-flex-negative: 0;
+  flex-shrink: 0;
+  padding-top: 10px;
+  padding-bottom: 8px;
+  cursor: pointer;
+  -ms-flex: 0 0 auto;
+  flex: 0 0 auto;
+  width: 36px;
+  flex-shrink: 0;
+  font-size:14px;
+  line-height:14px;
+  display: inline-block;
+}
+
+.materialTimeline.isIE .materialTimelineTick {
+  padding-top: 12px !important;
+}
+
+.materialTimelineTickSelected {
+  /* Should be GoogleSans-Medium */
+  font-family: 'Roboto-Medium';
+  border-radius: 16px;
+  background-color: #2979FF;
+  color: white;
+  font-size: 16px;
+  line-height: 16px;
+  display: inline-block;
+  display: block;
+  -ms-flex-negative: 0;
+  flex-shrink: 0;
+}
+
+.materialNowViewingContainer {
+  font-size: 11px;
+  height: auto;
+  bottom: 94px;
+  position: absolute;
+  z-index: 10;
+  color: white;
+  width: calc(100% - 80px);
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-pack: center;
+  -ms-flex-pack: center;
+  justify-content: center;
+  -webkit-box-orient: horizontal;
+  -webkit-box-direction: normal;
+  -ms-flex-direction: row;
+  flex-direction: row;
+  -webkit-transition: width 0.5s;
+  -o-transition: width 0.5s;
+  transition: width 0.5s;
+  right: 0px;
+  margin-left: 40px;
+  margin-right: 40px;
+  pointer-events: none;
+}
+
+.materialTimeline .leftGroup, .materialTimeline .rightGroup {
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -ms-flex-negative: 0;
+  flex-shrink: 0;
+}
+
+.materialUI.waypointDrawerOpen .materialNowViewingContainer {
+  right: 0px;
+  width: calc(100% - 457px);
+  -webkit-transition: width 0.5s;
+  -o-transition: width 0.5s;
+  transition: width 0.5s;
+}
+
+.materialNowViewingContent {
+  width: auto;
+  padding-left: 27px;
+  padding-right: 27px;
+  -ms-flex-pack: center;
+  background: rgba(0, 0, 0, 0.54);
+  padding-top: 11px;
+  padding-bottom: 10px;
+  -ms-flex-wrap: wrap;
+  flex-wrap: wrap;
+  display: none;
+  -ms-flex-pack: center;
+  text-align: center;
+  border-radius: 7px;
+  pointer-events: all;
+}
+
+.materialNowViewingHeader {
+  -ms-flex-preferred-size: 100%;
+  flex-basis: 100%;
+  margin-bottom: 10px;
+  letter-spacing: 1pt;
+}
+
+.materialNowViewingText {
+  font-size: 13px;
+  -ms-flex-preferred-size: 100%;
+  flex-basis: 100%;
+  word-break: break-all;
+}
+
+.materialNowViewingContent .close {
+  background: url(../images/close-white.png) center center no-repeat;
+  background-size: 14px 14px;
+  display: inline-block;
+  width: 14px;
+  height: 14px;
+  cursor: default;
+  opacity: 0.67;
+  cursor: pointer;
+  float: right;
+  margin-right: -19px;
+  margin-top: -2px;
+}
+
+.materialNowViewingContent .close:hover {
+  opacity: 0.9;
+}
+
+.materialNowViewingContent .close:after {
+  content: '';
+  position: absolute;
+  width: 30px;
+  height: 24px;
+  margin-left: -17px;
+  top: 0px;
+}
+
+.materialUI .timeText, .mobileUI .timeText {
+  bottom: 20px;
+  top: auto;
+  border-radius: 8px;
+  display: none;
+}
+
+#static_map_base_layer {
+  width: 100%;
+  height: 100%;
+  display: none;
+}
+
+.hidden {
+  display: none;
+}
+
+.cursorPointer {
+  cursor: pointer;
+}

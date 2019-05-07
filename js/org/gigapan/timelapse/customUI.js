@@ -275,10 +275,6 @@ if (!org.gigapan.timelapse.Timelapse) {
       $customControl = $('<div class="customControl"></div>');
       // Append element
       $viewer.append($customControl);
-      // Create google logo
-      $customControl.append('<div class="googleLogo"></div>');
-      if (useTouchFriendlyUI)
-        $(".googleLogo").addClass("googleLogo-touchFriendly");
       // Create timeline toolbar
       createCustomButtons();
       // Create timeline slider

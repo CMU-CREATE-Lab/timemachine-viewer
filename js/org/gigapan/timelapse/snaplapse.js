@@ -159,7 +159,7 @@ if (!Math.uuid) {
     var defaultLoopTimes = 2;
     var doExtraStartDwell = false;
     var extraStartDwell = 0;
-    var startingPlaybackRate = 1;
+    var startingPlaybackRate;
 
     var _clearSnaplapse = function() {
       if (thisObj.isPlaying) {
@@ -520,6 +520,61 @@ if (!Math.uuid) {
       }
     };
 
+    var unsafeWaypointsJSONtoJSON = function(unsafeWaypointsJSON) {
+      if (!unsafeWaypointsJSON || !unsafeWaypointsJSON['waypoints']) return;
+      var snaplapseJSON = {};
+      var tmJSON = timelapse.getTmJSON();
+      snaplapseJSON['snaplapse'] = {};
+      if (tmJSON['name']) {
+        snaplapseJSON['snaplapse']['dataset-name'] = tmJSON['name'];
+      }
+      if (tmJSON['projection-bounds']) {
+        snaplapseJSON['snaplapse']['projection'] = timelapse.getProjectionType();
+        snaplapseJSON['snaplapse']['projection-bounds'] = tmJSON['projection-bounds'];
+      }
+      snaplapseJSON['snaplapse']['pixel-bounds'] = {
+        xmin: 0,
+        ymin: 0,
+        xmax: timelapse.getPanoWidth(),
+        ymax: timelapse.getPanoHeight()
+      };
+      snaplapseJSON['snaplapse']['source-duration'] = timelapse.getDuration();
+      var fps = timelapse.getFps();
+      snaplapseJSON['snaplapse']['fps'] = fps;
+      var keyframes = [];
+      var keyframesThumbnailUrlList = [];
+      for(var i = 0; i < unsafeWaypointsJSON['waypoints'].length; i++) {
+        var unsafeWaypoint = unsafeWaypointsJSON['waypoints'][i];
+        var keyframe = {};
+        keyframe['id'] = Math.uuid(20);
+        keyframe['loopTimes'] = 2;
+        keyframe['speed'] = typeof(unsafeWaypoint['playback-speed']) != "undefined" ? parseFloat(unsafeWaypoint['playback-speed']) : 50;
+        keyframe['captureTime'] = typeof(unsafeWaypoint['start-capture-time']) != "undefined" ? unsafeWaypoint['start-capture-time'] : timelapse.getCaptureTimes()[0];
+        keyframe['time'] = timelapse.frameNumberToTime(timelapse.findExactOrClosestCaptureTime(keyframe['captureTime']));
+        keyframe['startDwell'] = timelapse.getStartDwell();
+        keyframe['endDwell'] = timelapse.getEndDwell();
+        var view = timelapse.normalizeView(unsafeWaypoint['view']);
+        if (view && view.scale) {
+          var tmpView = timelapse.pixelCenterToPixelBoundingBoxView(view);
+          if (tmpView) {
+            view = tmpView.bbox;
+          }
+        }
+        keyframe['bounds'] = view && view.xmin ? view : timelapse.pixelCenterToPixelBoundingBoxView(timelapse.getHomeView());
+        keyframe['duration'] = null;
+        keyframe['unsafe_string_description'] = typeof(unsafeWaypoint['description']) != "undefined" ? unsafeWaypoint['description'] : null;
+        keyframe['unsafe_string_frameTitle'] = typeof(unsafeWaypoint['title']) != "undefined" ? unsafeWaypoint['title'] : null;
+        keyframe['is-description-visible'] = true;
+        keyframe['originalView'] = unsafeWaypoint['view'];
+        keyframes.push(keyframe);
+        keyframesThumbnailUrlList.push(unsafeWaypoint['thumbnail-path']);
+      }
+      snaplapseJSON['snaplapse']['keyframes'] = keyframes;
+      snaplapseViewer.setThumbnailUrlList(keyframesThumbnailUrlList);
+      return JSON.stringify(snaplapseJSON, null, 3);
+    }
+    this.unsafeWaypointsJSONtoJSON = unsafeWaypointsJSONtoJSON;
+
     // Variables storing the return value of encoder.read_unsafe_string() must follow the convention
     // of being appended with "unsafe_string_" to ensure awareness that they may contain
     // potentially unsafe user inputted data.
@@ -569,6 +624,8 @@ if (!Math.uuid) {
             frame["speed"] = null;
           } else if (frame["buildConstraint"] == "speed") {
             frame["speed"] = encoder.read_uint();
+            // TODOTODO
+            frame["speed"] = 50;
             frame["duration"] = null;
           }
           // Decode frame number
@@ -1328,7 +1385,7 @@ if (!Math.uuid) {
 
       if (currentKeyframeInterval != null) {
         var rate = currentKeyframeInterval.getPlaybackRate();
-        timelapse.setPlaybackRate(rate, null, true);
+        timelapse.setPlaybackRate(rate, true, true);
 
         // When we set the current keyframe interval,
         // ask if we need to do an extra pausing at the beginning of playing the tour

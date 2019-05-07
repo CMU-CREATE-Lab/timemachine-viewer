@@ -1,0 +1,377 @@
+@font-face {
+  font-family: 'Roboto-Regular';
+  src: url('fonts/Roboto-Regular.woff') format('woff');
+}
+
+@font-face {
+  font-family: 'Roboto-Medium';
+  src: url('fonts/Roboto-Medium.woff') format('woff');
+}
+
+/*html.forced-portrait {
+  transform: rotate(-90deg);
+  transform-origin: left top;
+  width: 100vh;
+  height: 100vw;
+  overflow-x: hidden;
+  position: absolute;
+  top: 100%;
+  left: 0;
+}*/
+
+.etMobileTopNav {
+  background-color: #fff;
+}
+
+.etMobileSearchOverlay {
+  position: absolute;
+  width: 100%;
+  height: calc(100% - 61px);
+  background: white;
+  z-index: 9001;
+  display: none;
+}
+
+.etMobileSearchBoxContainer {
+  /* Should be GoogleSans-Regular */
+  font-family: 'Roboto-Regular';
+  margin: 10px;
+  margin-bottom: 8px;
+}
+
+.etMobileSearchBox {
+  width: 100%;
+  height: 34px;
+  -webkit-box-sizing: border-box;
+  box-sizing: border-box;
+  font-size: 14px;
+  text-align: left;
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 10px;
+  padding-right: 32px;
+  border-radius: 18px;
+  border: none;
+  -webkit-appearance: none;
+  border: 1px solid #dadce0;
+  outline: none;
+  -webkit-transition: all 0.6s cubic-bezier(0.165, 0.84, 0.44, 1);
+  -o-transition: all 0.6s cubic-bezier(0.165, 0.84, 0.44, 1);
+  transition: all 0.6s cubic-bezier(0.165, 0.84, 0.44, 1);
+}
+
+.etMobileSearchBox.active {
+  padding-left: 40px;
+}
+
+.etMobileSearchBox.active ~ .etMobileSearchBoxBack {
+  display: block;
+}
+
+.etMobileSearchBoxIcon {
+  background: url(../images/search-black.png) center center no-repeat;
+  background-size: contain;
+  width: 20px;
+  height: 20px;
+  position: absolute;
+  right: 20px;
+  top: 17px;
+  cursor: default;
+  opacity: 0.4;
+}
+
+.etMobileSearchBox:focus {
+  -webkit-appearance: none;
+  -webkit-box-shadow: 0px 0px 3px 0px #6d6d6d;
+  box-shadow: 0px 0px 3px 0px #6d6d6d;
+    -webkit-transition: all 0.6s cubic-bezier(0.165, 0.84, 0.44, 1);
+  -o-transition: all 0.6s cubic-bezier(0.165, 0.84, 0.44, 1);
+  transition: all 0.6s cubic-bezier(0.165, 0.84, 0.44, 1);
+}
+
+.etMobileSearchBox:focus ~ span {
+  opacity: 0.6;
+}
+
+.etMobileSearchBoxBack {
+  background-image: url(../images/back-arrow.png);
+  background-size: contain;
+  width: 20px;
+  height: 20px;
+  position: absolute;
+  left: 20px;
+  top: 17px;
+  cursor: pointer;
+  opacity: 0.4;
+  display: none;
+}
+
+.etMobileSearchBoxBack:after {
+  content:'';
+  position: absolute;
+  top: -10px;
+  bottom: -10px;
+  left: -10px;
+  right: -10px;
+}
+
+.etMobileSearchBoxClear {
+  background: url(../images/close.png) center center no-repeat;
+  background-size: contain;
+  width: 20px;
+  height: 20px;
+  position: absolute;
+  right: 20px;
+  top: 17px;
+  cursor: pointer;
+  opacity: 0.4;
+  display: none;
+}
+
+.etMobileSearchBoxClear:after {
+  content:'';
+  position: absolute;
+  top: -10px;
+  bottom: -10px;
+  left: -10px;
+  right: -10px;
+}
+
+.mobileUI .playbackButton {
+  width: 56px;
+  height: 56px;
+  position: absolute;
+  z-index: 100;
+  border-radius: 30px;
+  opacity: 0.87;
+  background: #1e1e1e;
+  border: none;
+  right: 20px;
+  margin-top: 20px;
+  -webkit-appearance: none;
+  -webkit-box-shadow: 0px 4px 8px 3px rgba(60, 64, 67, 0.3), 0px 1px 3px 0px rgba(60, 64, 67, 0.15);
+  box-shadow: 0px 4px 8px 3px rgba(60, 64, 67, 0.3), 0px 1px 3px 0px rgba(60, 64, 67, 0.15);
+}
+
+.mobileUI .playbackButton.ui-button .ui-icon.ui-icon-custom-pause {
+  background-image: url(../images/buttons/custom_pause_white.png);
+  margin-top: -12px;
+  margin-left: -15px;
+  background-size: 30px 25px;
+  width: 38px;
+  height: 38px;
+  opacity: 1;
+}
+
+.mobileUI .playbackButton.ui-button .ui-icon.ui-icon-custom-play {
+  background-image: url(../images/buttons/custom_play_white.png);
+  margin-top: -16px;
+  margin-left: -16px;
+  width: 32px;
+  height: 32px;
+  background-size: 32px 32px;
+  opacity: 1;
+}
+
+.mobileUI .playbackButton.ui-state-disabled, .mobileUI .share.ui-state-disabled {
+  opacity: 0.35;
+}
+
+.etMobileWaypointDrawerContainerDragIndicator {
+  width: 36px;
+  background: #e0e0e0;
+  border-radius: 2px;
+  position: absolute;
+  height: 3px;
+  top: 8px;
+}
+
+.mobileUI .tiledContentHolder {
+  position: relative;
+  height: calc(100% - 95px);
+}
+
+.mobileUI .waypointDrawerContainer {
+  min-height: 56px;
+  max-height: 65%;
+  height: 56px;
+  width: 100%;
+  border-right: 0px;
+  bottom: 0px;
+  position: absolute;
+  background: white;
+  border-radius: 16px 16px 0px 0px;
+  z-index: 100;
+  display: none;
+  overflow-y: auto;
+  -webkit-appearance: none;
+  -webkit-box-shadow: none;
+  box-shadow: none;
+}
+
+.mobileUI .waypointDrawerContainer.maximized {
+  height: 65%;
+}
+
+.mobileUI .waypointDrawerContainer.maximized .etDrawerContent {
+  display: block;
+}
+
+@media only screen and (max-width: 740px) {
+  .mobileUI .waypointDrawerContainer .presentationSlider.vertical .snaplapse_keyframe_list_item {
+     width: 100%;
+  }
+}
+
+.mobileUI .pac-container {
+  width: calc(100% - 62px) !important;
+  top: 43px !important;
+  left: 31px !important;
+  z-index: 90002;
+  -webkit-appearance: none;
+  -webkit-box-shadow: 0px 3px 6px rgba(0,0,0,0.3);
+  box-shadow: 0px 3px 6px rgba(0,0,0,0.3);
+}
+
+.mobileUI .share {
+  width: 40px;
+  height: 40px;
+  position: absolute;
+  z-index: 100;
+  border-radius: 30px;
+  opacity: 0.87;
+  background: white;
+  border: #1e1e1e;
+  border: none;
+  right: 28px;
+  bottom: initial;
+  margin-top: 100px;
+  -webkit-appearance: none;
+  -webkit-box-shadow: 0px 4px 8px 3px rgba(60, 64, 67, 0.3), 0px 1px 3px 0px rgba(60, 64, 67, 0.15);
+  box-shadow: 0px 4px 8px 3px rgba(60, 64, 67, 0.3), 0px 1px 3px 0px rgba(60, 64, 67, 0.15);
+  display: none;
+}
+
+.mobileUI .share .ui-icon-custom-share-black {
+  background-image: url(../images/buttons/share-black.png);
+  margin-top: -10px;
+  margin-left: -11px;
+  background-size: 20px 20px;
+  width: 20px;
+  height: 20px;
+  opacity: 0.87;
+}
+
+.mobileUI .etMobileLayersButton {
+  width: 40px;
+  height: 40px;
+  position: absolute;
+  z-index: 100;
+  border-radius: 30px;
+  opacity: 0.87;
+  background: white;
+  border: #1e1e1e;
+  border: none;
+  right: 28px;
+  bottom: initial;
+  margin-top: 160px;
+  -webkit-appearance: none;
+  -webkit-box-shadow: 0px 4px 8px 3px rgba(60, 64, 67, 0.3), 0px 1px 3px 0px rgba(60, 64, 67, 0.15);
+  box-shadow: 0px 4px 8px 3px rgba(60, 64, 67, 0.3), 0px 1px 3px 0px rgba(60, 64, 67, 0.15);
+  display: none;
+}
+
+.mobileUI .etMobileLayersButton .ui-icon-custom-contextmap-toggle {
+  background-image: url(../images/buttons/maps-toggle.png);
+  margin-top: -11px;
+  margin-left: -22px;
+  background-size: 45px 22px;
+  width: 40px;
+  height: 22px;
+  opacity: 0.87;
+}
+
+.mobileUI .etMobileLayersButton .ui-icon-custom-contextmap-maps {
+  background-image: url(../images/buttons/maps-toggle.png);
+  margin-top: -11px;
+  margin-left: -22px;
+  background-size: 45px 22px;
+  width: 40px;
+  height: 22px;
+  opacity: 0.87;
+}
+
+.mobileUI .etMobileLayersButton .ui-icon-custom-contextmap-timelapse {
+  background-image: url(../images/buttons/timelapse-toggle.png);
+  margin-top: -13px;
+  margin-left: -13px;
+  background-size: 26px 26px;
+  width: 26px;
+  height: 26px;
+  opacity: 0.87;
+}
+
+.mobileUI .ui-dialog.ui-widget.customDialog {
+  border-radius: 16px;
+  border: 1px solid #fefefe;
+  padding-bottom: 20px;
+}
+
+.mobileUI .customDialog .ui-dialog-titlebar {
+  display: none;
+}
+
+.mobileUI .snaplapseTourPlayBack .tourLoadOverlayPlay:not(.animating) {
+  top: 18px !important;
+}
+
+.mobileUI .snaplapseTourPlayBack  .tourLoadOverlayTitle:not(.animating) {
+  top: 26px !important;
+}
+
+.mobileUI .etMobileOrientationChangeOverlay {
+  width: 100%;
+  height: 100%;
+  background-color: #4a4a4a;
+  position: absolute;
+  z-index: 9010;
+  background-image: url(../images/orientation-invert.png);
+  background-position: center;
+  background-repeat: no-repeat;
+  display: none;
+}
+
+.mobileUI .etMobileOrientationChangeOverlayText {
+  position: relative;
+  color: #9b9b9b;
+  font-size: 24px;
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-align: center;
+  -ms-flex-align: center;
+  align-items: center;
+  -webkit-box-pack: center;
+  -ms-flex-pack: center;
+  justify-content: center;
+  height: 100%;
+  top: 100px;
+}
+
+.pac-container.mobileUI {
+  left: 25px !important;
+  width: calc(100% - 50px) !important;
+}
+
+.mobileUI .materialTimelineDisabled {
+  width: 100%;
+  color: #9e9e9e;
+  background: white;
+  z-index: 9000;
+  position: absolute;
+  height: 35px;
+  text-align: center;
+  padding-top: 10px;
+  top: 52px;
+  display: none;
+}

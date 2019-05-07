@@ -146,8 +146,12 @@ if (!window['$']) {
     var skippedFramesAtStart = ( typeof (settings["skippedFramesAtStart"]) == "undefined" || settings["skippedFramesAtStart"] < 0) ? 0 : settings["skippedFramesAtStart"];
     var enableMetadataCacheBreaker = settings["enableMetadataCacheBreaker"] || false;
     var enableContextMapOnDefaultUI = ( typeof (settings["enableContextMapOnDefaultUI"]) == "undefined") ? false : settings["enableContextMapOnDefaultUI"];
+    // TODO: Remove the need for this?
     var datasetType = settings["datasetType"];
-    var useCustomUI = ( typeof (settings["useCustomUI"]) == "undefined") ? (settings["datasetType"] == "landsat" || settings["datasetType"] == "modis") : settings["useCustomUI"];
+    // TODO: Remove the need for this?
+    var useCustomUI = settings["datasetType"] == "landsat" || settings["datasetType"] == "modis" || settings["uiType"] == "customUI";
+    var uiType = typeof(settings["uiType"]) == "undefined" ? (useCustomUI ? "customUI" : "defaultUI") : settings["uiType"];
+    // TODO: This is probably not working as intended or even fully necessary now
     var useTouchFriendlyUI = ( typeof (settings["useTouchFriendlyUI"]) == "undefined") ? false : settings["useTouchFriendlyUI"];
     var useThumbnailServer = ( typeof (settings["useThumbnailServer"]) == "undefined") ? true : settings["useThumbnailServer"];
     var showSizePicker = settings["showSizePicker"] || false;
@@ -155,9 +159,14 @@ if (!window['$']) {
       width: 250,
       height: 142
     };
+    var waypointSliderOrientation = (settings["presentationSliderSettings"] && typeof(settings["presentationSliderSettings"]["orientation"]) == "undefined") ? "horizontal" : settings["presentationSliderSettings"]["orientation"];
+    // Only relevant for vertical orientation
+    var openWaypointSliderOnFirstLoad =  ( settings["presentationSliderSettings"] && typeof (settings["presentationSliderSettings"]["openDrawerOnLoad"]) != "undefined") ? settings["presentationSliderSettings"]["openDrawerOnLoad"] : false;
+    var browserNotSupportedTemplateName = ( typeof (settings["browserNotSupportedTemplateName"]) == "undefined") ? "browser_not_supported_template.html" : settings["browserNotSupportedTemplateName"];
+
     var minViewportHeight = 370;
     var minViewportWidth = 540;
-    var defaultLoopDwellTime = 0.5;
+    var defaultLoopDwellTime = 1.0;
     var pixelRatio = window.devicePixelRatio || 1;
 
     // If the user requested a tour editor AND has a div in the DOM for the editor,
@@ -181,6 +190,9 @@ if (!window['$']) {
     var annotator;
     var customUI;
     var defaultUI;
+    var mobileUI;
+    var materialUI;
+    var customLayers;
     var visualizer;
     var thumbnailTool;
     var changeDetectionTool;
@@ -224,6 +236,7 @@ if (!window['$']) {
     var didFirstTimeOnLoad = false;
     var isMovingToWaypoint = false;
     var isSpinnerShowing = false;
+    var isMobileDevice = UTIL.isMobileDevice();
 
     // Viewer
     var viewerDivId = timeMachineDivId + " .player";
@@ -250,7 +263,7 @@ if (!window['$']) {
     var currentVideo = null;
     var animateInterval = null;
     var lastAnimationTime;
-    var keyIntervals = [];
+    var keyIntervals = {};
     var targetViewChangeListeners = [];
     var viewChangeListeners = [];
     var resizeListeners = [];
@@ -292,7 +305,7 @@ if (!window['$']) {
     var customMaxScale;
     var keysDown = [];
     var shareViewLoopInterval;
-    var timePadding = isIE ? 0.3 : 0.0;
+    var timePadding = isIE || isChrome ? 0.3 : 0.0;
     // animateRate in milliseconds, 40 means 25 FPS
     var animateRate = 40;
     if (isHyperwall)
@@ -401,6 +414,10 @@ if (!window['$']) {
       return useCustomUI;
     };
 
+    this.getUIType = function() {
+      return uiType;
+    };
+
     this.getStartDwell = function() {
       return startDwell;
     };
@@ -419,7 +436,9 @@ if (!window['$']) {
     };
 
     this.updateShareViewTextbox = function() {
-      defaultUI.updateShareViewTextbox();
+      if (defaultUI) {
+        defaultUI.updateShareViewTextbox();
+      }
     };
 
     this.setMinZoomSpeedPerSecond = function(value) {
@@ -476,6 +495,18 @@ if (!window['$']) {
 
     this.getCustomUI = function() {
       return customUI;
+    };
+
+    this.getMobileUI = function() {
+      return mobileUI;
+    };
+
+    this.getMaterialUI = function() {
+      return materialUI;
+    };
+
+    this.getCustomLayers = function() {
+      return customLayers;
     };
 
     this.getTimelineMetadataVisualizer = function() {
@@ -638,7 +669,9 @@ if (!window['$']) {
         if (customUI) {
           customUI.setPlaybackButtonIcon("pause");
         }
-        defaultUI.setPlaybackButtonIcon("pause");
+        if (defaultUI) {
+          defaultUI.setPlaybackButtonIcon("pause");
+        }
         return;
       }
       if (_isPaused()) {
@@ -772,9 +805,10 @@ if (!window['$']) {
       var newView;
       if (!bboxView || !bboxView['bbox'])
         return;
-      var bboxViewNE = bboxView.bbox.ne;
-      var bboxViewSW = bboxView.bbox.sw;
-      if (( typeof (tmJSON['projection-bounds']) !== 'undefined') && bboxViewNE && bboxViewSW && UTIL.isNumber(bboxViewNE.lat) && UTIL.isNumber(bboxViewNE.lng) && UTIL.isNumber(bboxViewSW.lat) && UTIL.isNumber(bboxViewSW.lng)) {
+      // For years, ne/sw was incorrectly used as the labels for nw/se. It has been corrected, but for current legacy reasons we assumed ne/sw actually refers to nw/se.
+      var bboxViewNW = bboxView.bbox.nw || bboxView.bbox.ne;
+      var bboxViewSE = bboxView.bbox.se || bboxView.bbox.sw;
+      if (( typeof (tmJSON['projection-bounds']) !== 'undefined') && bboxViewNW && bboxViewSE && UTIL.isNumber(bboxViewNW.lat) && UTIL.isNumber(bboxViewNW.lng) && UTIL.isNumber(bboxViewSE.lat) && UTIL.isNumber(bboxViewSE.lng)) {
         newView = latLngBoundingBoxToPixelCenter(bboxView);
       } else if (UTIL.isNumber(bboxView.bbox.xmin) && UTIL.isNumber(bboxView.bbox.xmax) && UTIL.isNumber(bboxView.bbox.ymin) && UTIL.isNumber(bboxView.bbox.ymax)) {
         newView = pixelBoundingBoxToPixelCenter(bboxView);
@@ -813,9 +847,14 @@ if (!window['$']) {
             if (!thisObj.isPaused())
               thisObj.handlePlayPause();
             $(activeElement).removeClass("openHand closedHand");
-            seekToFrame(getCurrentFrameNumber() - 1);
-            if (customUI) {
-              customUI.focusTimeTick(getCurrentFrameNumber() - 1);
+            if (uiType == "materialUI") {
+              materialUI.seekControlAction("left");
+            } else {
+              var previousFrame = getCurrentFrameNumber() - 1;
+              seekToFrame(previousFrame);
+              if (customUI) {
+                customUI.focusTimeTick(previousFrame);
+              }
             }
           }
           event.preventDefault();
@@ -833,9 +872,14 @@ if (!window['$']) {
             if (!thisObj.isPaused())
               thisObj.handlePlayPause();
             $(activeElement).removeClass("openHand closedHand");
-            seekToFrame(getCurrentFrameNumber() + 1);
-            if (customUI) {
-              customUI.focusTimeTick(getCurrentFrameNumber() + 1);
+            if (uiType == "materialUI") {
+              materialUI.seekControlAction("right");
+            } else {
+              var nextFrame = getCurrentFrameNumber() + 1;
+              seekToFrame(nextFrame);
+              if (customUI) {
+                customUI.focusTimeTick(nextFrame);
+              }
             }
           }
           event.preventDefault();
@@ -846,11 +890,7 @@ if (!window['$']) {
             return;
           if (event.shiftKey) {
             moveFn = function() {
-              if (event.shiftKey) {
-                targetView.y -= (translationSpeedConstant * 0.4) / view.scale;
-              } else {
-                targetView.y -= (translationSpeedConstant * 0.8) / view.scale;
-              }
+              targetView.y -= (translationSpeedConstant * 0.4) / view.scale;
               setTargetView(targetView);
             };
           }
@@ -861,11 +901,7 @@ if (!window['$']) {
             return;
           if (event.shiftKey) {
             moveFn = function() {
-              if (event.shiftKey) {
-                targetView.y += (translationSpeedConstant * 0.4) / view.scale;
-              } else {
-                targetView.y += (translationSpeedConstant * 0.8) / view.scale;
-              }
+              targetView.y += (translationSpeedConstant * 0.4) / view.scale;
               setTargetView(targetView);
             };
           }
@@ -875,12 +911,7 @@ if (!window['$']) {
         case 109:
         case 189:
           moveFn = function() {
-            if (event.shiftKey) {
-              targetView.scale *= 0.999;
-            } else {
-              targetView.scale *= 0.94;
-            }
-            setTargetView(targetView);
+            defaultUI.zoomOut(event.shiftKey);
           };
           break;
         // Plus
@@ -888,12 +919,7 @@ if (!window['$']) {
         case 107:
         case 187:
           moveFn = function() {
-            if (event.shiftKey) {
-              targetView.scale /= 0.999;
-            } else {
-              targetView.scale /= 0.94;
-            }
-            setTargetView(targetView);
+            defaultUI.zoomIn(event.shiftKey);
           };
           break;
         // P or Spacebar
@@ -913,22 +939,10 @@ if (!window['$']) {
     };
 
     var handleKeyupEvent = function(event) {
-      var numKeysdown = 1;
-      // This addresses the issue where holding down the command key on a Mac, pressing another key
-      // and then releasing that key won't actually trigger a keyup event. Only when the command
-      // key is finally released is this event triggered. At that point, we need to manually remove
-      // all other keys that may have been pressed during that time or we'll be stuck with their
-      // timers still going. Ugh.
-      // Possible Mac 'command' key values depending upon browser and location on keyboard:
-      if (event.which == 224 || event.which == 17 || event.which == 91 || event.which == 92) {
-        numKeysdown = keysDown.length;
-      }
-      for (var i = 0; i < numKeysdown; i++) {
-        var keyUp = keysDown.pop();
-        if (keyIntervals[keyUp] != undefined) {
-          clearInterval(keyIntervals[keyUp]);
-          keyIntervals[keyUp] = undefined;
-        }
+      var keyUp = event.which;
+      if (keyIntervals[keyUp] != undefined) {
+        clearInterval(keyIntervals[keyUp]);
+        keyIntervals[keyUp] = undefined;
       }
     };
 
@@ -966,6 +980,9 @@ if (!window['$']) {
 
       switch (e.type) {
         case "touchstart":
+          // TODO
+          if ($(e.target).parents("#static_map_base_layer").length) return;
+
           mouseEvent = "mousedown";
           touchStartTargetElement = theTouch;
 
@@ -1001,6 +1018,8 @@ if (!window['$']) {
             theMouse = document.createEvent("MouseEvent");
             theMouse.initMouseEvent('click', true, true, window, 1, theTouch.screenX, theTouch.screenY, theTouch.clientX, theTouch.clientY, false, false, false, false, 0, null);
             theTouch.target.dispatchEvent(theMouse);
+            // Dispatching a mouse click event does not give focus to some elements, such as input fields. Trigger focus ourselves.
+            $(theTouch.target).focus();
           }
 
           isTouchMoving = false;
@@ -1027,6 +1046,8 @@ if (!window['$']) {
           if (thisTouchCount == 1) {
             // Translate
           } else if (thisTouchCount == 2) {
+            if (!$(e.target).hasClass("dataPanesContainer")) return;
+
             var dist = Math.abs(Math.sqrt((e.touches[0].pageX - e.touches[1].pageX) * (e.touches[0].pageX - e.touches[1].pageX) + (e.touches[0].pageY - e.touches[1].pageY) * (e.touches[0].pageY - e.touches[1].pageY)));
             thisLocation = {
               pageX: (e.touches[0].pageX + e.touches[1].pageX) / 2,
@@ -1445,9 +1466,10 @@ if (!window['$']) {
         }
       } else if (newView.bbox) {// Bounding box view
         var newViewBbox = newView.bbox;
-        var newViewBboxNE = newViewBbox.ne;
-        var newViewBboxSW = newViewBbox.sw;
-        if (( typeof (tmJSON['projection-bounds']) !== 'undefined') && newViewBboxNE && newViewBboxSW && UTIL.isNumber(newViewBboxNE.lat) && UTIL.isNumber(newViewBboxNE.lng) && UTIL.isNumber(newViewBboxSW.lat) && UTIL.isNumber(newViewBboxSW.lng)) {
+        // For years, ne/sw was incorrectly used as the labels for nw/se. It has been corrected, but for current legacy reasons we assumed ne/sw actually refers to nw/se.
+        var newViewBboxNW = newViewBbox.nw || newViewBbox.ne;
+        var newViewBboxSE = newViewBbox.se || newViewBbox.sw;
+        if (( typeof (tmJSON['projection-bounds']) !== 'undefined') && newViewBboxNW && newViewBboxSE && UTIL.isNumber(newViewBboxNW.lat) && UTIL.isNumber(newViewBboxNW.lng) && UTIL.isNumber(newViewBboxSE.lat) && UTIL.isNumber(newViewBboxSE.lng)) {
           newView = latLngBoundingBoxToPixelCenter(newView);
         } else if (UTIL.isNumber(newViewBbox.xmin) && UTIL.isNumber(newViewBbox.xmax) && UTIL.isNumber(newViewBbox.ymin) && UTIL.isNumber(newViewBbox.ymax)) {
           newView = pixelBoundingBoxToPixelCenter(newView);
@@ -1618,7 +1640,7 @@ if (!window['$']) {
           var isLatLng = false;
           var bboxView = unsafe_viewParam.bbox;
           for (var key in bboxView) {
-            if (key == "ne" || key == "sw") {
+            if (key == "ne" || key == "sw" || key == "nw" || key == "se") {
               isLatLng = true;
               for (var innerKey in bboxView[key])
                 tmpViewParam.push(bboxView[key][innerKey]);
@@ -1650,11 +1672,11 @@ if (!window['$']) {
           // share view was in the form NWSE
           view = {
             bbox: {
-              "ne": {
+              "nw": {
                 "lat": parseFloat(unsafe_viewParam[0]),
                 "lng": parseFloat(unsafe_viewParam[1])
               },
-              "sw": {
+              "se": {
                 "lat": parseFloat(unsafe_viewParam[2]),
                 "lng": parseFloat(unsafe_viewParam[3])
               }
@@ -1821,7 +1843,7 @@ if (!window['$']) {
     // The function is used for pausing the video for some duration
     // and optionally doing something afterwards
     var waitFor = function(seconds, callBack) {
-      // True means do not save the PlaybackRate
+      // True means do not save the playbackRate being passed in.
       thisObj.setPlaybackRate(0, true);
       return setTimeout(function() {
         if (callBack)
@@ -1858,12 +1880,13 @@ if (!window['$']) {
       }
     };
 
-    this.setPlaybackRate = function(rate, preserveOriginalRate, skipUpdateUI) {
+    this.setPlaybackRate = function(rate, skipPreserveOriginalRate, skipUpdateUI) {
       var newRate = parseFloat(rate);
       if (!isNaN(newRate)) {
-        if (!preserveOriginalRate) {
+        if (!skipPreserveOriginalRate) {
           originalPlaybackRate = newRate;
         }
+
         videoset.setPlaybackRate(newRate);
 
         // Pano video is used for the timewarp map in editor
@@ -2151,9 +2174,9 @@ if (!window['$']) {
       window.onresize = onresize;
     };
 
-    var onresize = function() {
+    var onresize = function(forceResize) {
       var $viewerDiv = $("#" + viewerDivId);
-      if (viewportWidth == $viewerDiv.width() && viewportHeight == $viewerDiv.height())
+      if (!forceResize && viewportWidth == $viewerDiv.width() && viewportHeight == $viewerDiv.height())
         return;
       resizeViewer();
       // TODO implement a resize listener and put this in the snaplapseViewer class
@@ -2208,8 +2231,9 @@ if (!window['$']) {
 
     var resizeViewer = function() {
       var $viewerDiv = $("#" + viewerDivId);
+      var $tiledContentHolder = $("#" + viewerDivId + " .tiledContentHolder");
       viewportWidth = $viewerDiv.width();
-      viewportHeight = $viewerDiv.height();
+      viewportHeight = $viewerDiv.height() - $tiledContentHolder.offset().top;
 
       // TODO: scale might not be correct when we unhide viewport
       if ($( "#" + viewerDivId + ":visible").length == 0) return;
@@ -2528,7 +2552,7 @@ if (!window['$']) {
 
       refresh();
 
-      if (newView.scale != view.scale) {
+      if (newView.scale.toFixed(6) != view.scale.toFixed(6)) {
         for (var i = 0; i < zoomChangeListeners.length; i++) {
           zoomChangeListeners[i](targetView);
         }
@@ -2725,16 +2749,17 @@ if (!window['$']) {
         bbox = bbox.bbox;
 
       var projection = _getProjection();
-      var newViewBboxNE = bbox.ne;
-      var newViewBboxSW = bbox.sw;
+      // For years, ne/sw was incorrectly used as the labels for nw/se. It has been corrected, but for current legacy reasons we assumed ne/sw actually refers to nw/se.
+      var newViewBboxNW = bbox.nw || bbox.ne;
+      var newViewBboxSE = bbox.se || bbox.sw;
 
       var a = projection.latlngToPoint({
-        lat: newViewBboxNE.lat,
-        lng: newViewBboxNE.lng
+        lat: newViewBboxNW.lat,
+        lng: newViewBboxNW.lng
       });
       var b = projection.latlngToPoint({
-        lat: newViewBboxSW.lat,
-        lng: newViewBboxSW.lng
+        lat: newViewBboxSE.lat,
+        lng: newViewBboxSE.lng
       });
 
       var xmax = Math.max(a.x, b.x);
@@ -3003,7 +3028,7 @@ if (!window['$']) {
         if (visualizer || contextMap) {
           var desiredBound = pixelCenterToPixelBoundingBoxView(desiredView).bbox;
           if (videoViewer_projection && contextMap && enableContextMap == true && latlngCenter) {
-            contextMap.setMap(desiredBound, latlngCenter);
+            contextMap.setMiniMap(desiredBound, latlngCenter);
           }
           if (visualizer) {
             visualizer.setMap(desiredBound);
@@ -3029,7 +3054,9 @@ if (!window['$']) {
           unsafe_sharedData = unsafe_sharedVars.presentation;
           snaplapseForSharedData = snaplapseForPresentationSlider;
           var $keyframeContainer = snaplapseForPresentationSlider.getSnaplapseViewer().getKeyframeContainer();
-          addViewerBottomMargin($keyframeContainer.outerHeight() - 1);
+          if (waypointSliderOrientation == "horizontal") {
+            addViewerBottomMargin($keyframeContainer.outerHeight() - 1);
+          }
           UTIL.addGoogleAnalyticEvent('window', 'onHashChange', 'url-load-presentation');
         }
         // Handle the shared data
@@ -3057,6 +3084,87 @@ if (!window['$']) {
       }
     };
     this.loadSharedDataFromUnsafeURL = loadSharedDataFromUnsafeURL;
+
+    var loadUnsafeWaypointsJSON = function(unsafeWaypointsJSON) {
+      if (!unsafeWaypointsJSON || !unsafeWaypointsJSON['waypoints']) return;
+
+      var snaplapseForPresentationSlider = timelapse.getSnaplapseForPresentationSlider();
+      if (snaplapseForPresentationSlider) {
+        var waypointsJSON = snaplapseForPresentationSlider.unsafeWaypointsJSONtoJSON(unsafeWaypointsJSON)
+        var snaplapseViewerForSharedData = snaplapseForPresentationSlider.getSnaplapseViewer();
+        var $keyframeContainer = snaplapseForPresentationSlider.getSnaplapseViewer().getKeyframeContainer();
+
+        var $waypointDrawerContainerMain = $("#" + viewerDivId + " .waypointDrawerContainerMain");
+        var $waypointDrawerContainer = $("#" + viewerDivId + " .waypointDrawerContainer");
+        var $waypointDrawerContainerHeader = $("#" + viewerDivId + " .waypointDrawerContainerHeader");
+
+        if (waypointSliderOrientation == "horizontal") {
+          addViewerBottomMargin($keyframeContainer.outerHeight() - 1);
+        }
+        $(".etDrawerContainerTitle").text(unsafeWaypointsJSON['product-title'] || "My Project");
+        if (unsafeWaypointsJSON['product-about']) {
+          $(".etDrawerProductAboutDescriptionContent").text(unsafeWaypointsJSON['product-about']);
+        } else {
+          $(".etDrawerAbout, .etDrawerAbout + .etDrawerSectionSeparator").hide();
+        }
+        $(".etDrawerProductHighlightsHeading").text(unsafeWaypointsJSON['product-highlights-title'] || "Project Highlights");
+        $(".etDrawerLearnMoreExit").hide();
+        snaplapseViewerForSharedData.loadNewSnaplapse(waypointsJSON, false);
+
+        $(".etDrawerLearnMoreExpand").on("click", function() {
+          var $etDrawerProductLearnMoreContent = $("#" + viewerDivId + " .etDrawerProductLearnMoreContent");
+          if ($etDrawerProductLearnMoreContent.text().length == 0) {
+            UTIL.ajax("html", rootAppURL, "templates/" + unsafeWaypointsJSON['learn-more-template-name'], function(html) {
+              $etDrawerProductLearnMoreContent.html(html);
+              $etDrawerProductLearnMoreContent.show("slide", { direction: "right" }, 250);
+            });
+          } else {
+            $etDrawerProductLearnMoreContent.show("slide", { direction: "right" }, 250);
+          }
+          $(".etDrawerProductAboutDescription, .etDrawerProductHighlightsHeading, .etDrawerSectionSeparator").hide();
+          $(".etDrawerLearnMoreExit").show();
+
+          $(".presentationSlider, .etDrawerLearnMoreExpand").hide();
+          $(".etDrawerProductAboutHeading").addClass("maximized");
+        });
+
+        $(".etDrawerLearnMoreExit").on("click", function() {
+          $(this).hide();
+          $(".etDrawerProductLearnMoreContent").hide();
+          $(".etDrawerLearnMoreExpand, .etDrawerSectionSeparator").show();
+          $(".presentationSlider, .etDrawerProductAboutDescription, .etDrawerProductHighlightsHeading").show("slide", { direction: "left" }, 250);
+          $(".etDrawerProductAboutHeading").removeClass("maximized");
+        });
+
+        if (mobileUI) {
+          $waypointDrawerContainer.show();
+        } else {
+          var hashVars = org.gigapan.Util.getUnsafeHashVars();
+          if (!hashVars.tour && openWaypointSliderOnFirstLoad) {
+            $waypointDrawerContainerMain.removeClass("hidden");
+            setTimeout(function() {
+              $("#" + timeMachineDivId).addClass("waypointDrawerOpen");
+              $waypointDrawerContainerMain.removeClass("waypointDrawerClosed");
+              if (uiType == "materialUI") {
+                setTimeout(function() {
+                  materialUI.refocusTimeline();
+                }, 400);
+              }
+            }, 50);
+          }
+
+          $waypointDrawerContainer.on("scroll", function(e) {
+            if (this.scrollTop == 0) {
+              $waypointDrawerContainerHeader.removeClass("scrolled");
+            } else {
+              $waypointDrawerContainerHeader.addClass("scrolled");
+            }
+          });
+        }
+      }
+    };
+    this.loadUnsafeWaypointsJSON = loadUnsafeWaypointsJSON;
+
 
     var needFirstAncestor = function(tileidx) {
       //UTIL.log("need ancestor for " + dumpTileidx(tileidx));
@@ -3324,7 +3432,9 @@ if (!window['$']) {
         if (customUI) {
           customUI.setPlaybackButtonIcon("pause");
         }
-        defaultUI.setPlaybackButtonIcon("pause");
+        if (defaultUI) {
+          defaultUI.setPlaybackButtonIcon("pause");
+        }
       });
 
       _addVideoPlayListener(function() {
@@ -3334,7 +3444,9 @@ if (!window['$']) {
         if (customUI) {
           customUI.setPlaybackButtonIcon("play");
         }
-        defaultUI.setPlaybackButtonIcon("play");
+        if (defaultUI) {
+          defaultUI.setPlaybackButtonIcon("play");
+        }
       });
 
       _makeVideoVisibleListener(function(videoId) {
@@ -3402,8 +3514,10 @@ if (!window['$']) {
         // Visualizer loads a top level video to be used as a context map in the editor. It seeks when the main video also seeks.
         // Most likely that is at the heart of the problem.
         //
+        // IMPORTANT: Visualizer is not compatible with webgl viewer type.
+        //
         // Timewarp visualizer that shows the location of the current view and transitions between keyframes
-        if (enableContextMapOnDefaultUI && !tmJSON['projection-bounds'])
+        if (enableContextMapOnDefaultUI && !tmJSON['projection-bounds'] && viewerType != "webgl")
           visualizer = new org.gigapan.timelapse.Visualizer(thisObj, snaplapse, visualizerGeometry);
       }
 
@@ -3421,10 +3535,19 @@ if (!window['$']) {
       }
 
       defaultUI = new org.gigapan.timelapse.DefaultUI(thisObj, settings);
-      if (useCustomUI)
-        customUI = new org.gigapan.timelapse.CustomUI(thisObj, settings);
 
-      if(timelineMetadataVisualizerEnabled) {
+      if (uiType == "materialUI" && org.gigapan.timelapse.MaterialUI) {
+        customLayers = new org.gigapan.timelapse.CustomLayers(thisObj, settings);
+        materialUI = new org.gigapan.timelapse.MaterialUI(thisObj, settings);
+      } else if (useCustomUI) {
+        customUI = new org.gigapan.timelapse.CustomUI(thisObj, settings);
+      }
+
+      if (isMobileDevice && org.gigapan.timelapse.MobileUI) {
+        mobileUI = new org.gigapan.timelapse.MobileUI(thisObj, settings);
+      }
+
+      if (timelineMetadataVisualizerEnabled) {
         timelineMetadataVisualizer = new org.gigapan.timelapse.TimelineMetadataVisualizer(thisObj);
       }
 
@@ -3433,13 +3556,13 @@ if (!window['$']) {
       //handlePluginVideoTagOverride();
 
       // Must be placed after customUI is created
-      if (settings["scaleBarOptions"] && tmJSON['projection-bounds'])
+      if (!isMobileDevice && settings["scaleBarOptions"] && tmJSON['projection-bounds'])
         scaleBar = new org.gigapan.timelapse.ScaleBar(settings["scaleBarOptions"], thisObj);
 
       if (isHyperwall)
         customUI.handleHyperwallChangeUI();
 
-      if (settings["contextMapOptions"] && tmJSON['projection-bounds'] /*&& typeof google !== "undefined"*/) {
+      if (!isMobileDevice && settings["contextMapOptions"] && tmJSON['projection-bounds'] /*&& typeof google !== "undefined"*/) {
         if (!isHyperwall || fields.showMap)
           contextMap = new org.gigapan.timelapse.ContextMap(settings["contextMapOptions"], thisObj, settings);
       }
@@ -3589,7 +3712,7 @@ if (!window['$']) {
         var canvasLayer = {
           timelapse: thisObj,
           canvas: canvas,
-          resolutionScale: window.devicePixelRatio || 1
+          resolutionScale: pixelRatio
         };
         var webglTimeMachineLayerOptions = {
           mediaType: mediaType,
@@ -3830,6 +3953,12 @@ if (!window['$']) {
       // Hide the UI because it is not ready yet
       $viewerDiv.css("visibility", "hidden");
 
+      if (isMobileDevice) {
+        $("#" + timeMachineDivId + ", #" + viewerDivId).addClass("mobileUI");
+      } else if (uiType == "materialUI") {
+        $("#" + timeMachineDivId + ", #" + viewerDivId).addClass("materialUI");
+      }
+
       var tmp = document.getElementById("{REPLACE}");
       $(tmp).attr("id", timeMachineDivId + "_timelapse");
       videoDivId = $(tmp).attr("id");
@@ -3969,7 +4098,7 @@ if (!window['$']) {
     browserSupported = UTIL.browserSupported(settings["mediaType"]);
 
     if (!browserSupported) {
-      UTIL.ajax("html", rootAppURL, "templates/browser_not_supported_template.html", function(html) {
+      UTIL.ajax("html", rootAppURL, "templates/" + browserNotSupportedTemplateName, function(html) {
         $("#" + timeMachineDivId).html(html);
       });
       return;
@@ -3981,6 +4110,11 @@ if (!window['$']) {
       UTIL.setViewerType(settings["viewerType"]);
 
     viewerType = UTIL.getViewerType(settings);
+    // Taking retina screen into account for webgl is quite the performance hit, even on very high end machines.
+    // Ignore pixel ratio for now.
+    if (viewerType == "webgl") {
+      pixelRatio = 1;
+    }
 
     // Set default loop dwell time
     // TODO: This should probably be set not just for landsat, but for all short datasets.
@@ -3995,6 +4129,11 @@ if (!window['$']) {
     }
 
     UTIL.log('Timelapse("' + settings["url"] + '")');
-    UTIL.ajax("html", rootAppURL, "templates/player_template.html", loadPlayerControlsTemplate);
+    if (isMobileDevice) {
+      UTIL.ajax("html", rootAppURL, "templates/mobile_player_template.html", loadPlayerControlsTemplate);
+    } else {
+      UTIL.ajax("html", rootAppURL, "templates/player_template.html", loadPlayerControlsTemplate);
+    }
+
   };
 })();

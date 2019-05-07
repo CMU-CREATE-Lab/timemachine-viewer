@@ -11,7 +11,7 @@ open("#{outfile}.tmp", "w") do |out|
   out.puts "var cached_ajax=cached_ajax||{};"
 
   # Pull templates
-  ['templates/browser_not_supported_template.html', 'templates/player_template.html', 'templates/time_warp_composer.html', 'templates/annotation_editor.html'].each do |file|
+  ['templates/browser_not_supported_template.html', 'templates/player_template.html', 'templates/mobile_player_template.html', 'templates/time_warp_composer.html', 'templates/annotation_editor.html'].each do |file|
     contents = open(file, 'r') {|f| f.read}
     contents = contents.gsub('\\', '\\\\').gsub("\n", '\\n').gsub("\r", "").gsub('"', '\\"');
     out.puts "cached_ajax['#{file}']=\"#{contents}\";"

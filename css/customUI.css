@@ -370,7 +370,7 @@
 
 .customHelpLabel.ui-button {
   position: absolute;
-  width: 25px;
+  width: 0px;
   height: 25px;
   bottom: 30px;
   right: 20px;
@@ -378,13 +378,15 @@
   border: 1px solid #656565;
   border-radius: 15px !important;
   box-shadow: 2px 2px 3px rgba(0,0,0,0.3);
+  display: none;
 }
 
 .customHelpLabel-touchFriendly.ui-button {
-  width: 40px;
+  width: 0px;
   height: 40px;
   bottom: 44px;
   border-radius: 21px !important;
+  display: none;
 }
 
 .customHelpLabel .ui-icon {
