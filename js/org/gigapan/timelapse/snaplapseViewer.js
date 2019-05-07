@@ -2000,6 +2000,7 @@ if (!org.gigapan.timelapse.snaplapse) {
           }
         }
       };
+      timelapse.addParabolicMotionStoppedListener(parabolicMotionStoppedListener);
     };
 
     var loadThumbnailFromKeyframe = function(keyframe, listIndex) {
