@@ -51,6 +51,7 @@ body, html {
   height: auto;
   background: black;
   overflow: hidden;
+  touch-action: none;
 }
 
 .tiledContentHolder-touchFriendly {
