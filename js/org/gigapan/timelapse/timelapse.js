@@ -364,7 +364,8 @@ if (!window['$']) {
     var thisLocation;
     var isTouchMoving = false;
     var touchStartTargetElement;
-
+    var currentTouchCount = 0;
+    
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////
     //
     // Public methods
@@ -975,6 +976,11 @@ if (!window['$']) {
 
       var theTouch = e.changedTouches[0];
       var thisTouchCount = e.touches.length;
+      if (thisTouchCount) {
+	currentTouchCount = thisTouchCount;
+      } else {
+	currentTouchCount = 0;
+      }
       var mouseEvent;
       var theMouse;
 
@@ -1082,6 +1088,10 @@ if (!window['$']) {
       theMouse = document.createEvent("MouseEvent");
       theMouse.initMouseEvent(mouseEvent, true, true, window, 1, theTouch.screenX, theTouch.screenY, theTouch.clientX, theTouch.clientY, false, false, false, false, 0, null);
       theTouch.target.dispatchEvent(theMouse);
+    };
+
+    this.getCurrentTouchCount = function() {
+      return currentTouchCount;
     };
 
     var _warpTo = function(newView) {

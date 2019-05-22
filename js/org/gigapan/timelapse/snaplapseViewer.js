@@ -1815,8 +1815,12 @@ if (!org.gigapan.timelapse.snaplapse) {
       }
 
       if (usePresentationSlider) {
-        // Holding down the shift key when a waypoint is clicked will not change the view but still do everything else related to a waypoint change.
-        selectAndGo($("#" + targetId), keyframeId, null, event.shiftKey, null, null);
+        // Set skipGo if user requests to only change layers, but not change view.
+        // There are two ways to request not to change view:
+        // 1) Holding down shift key when clicking waypoint
+        // 2) Have other finger(s) touching screen from before clicking waypoint ("pinning the butterfly")
+        var skipGo = event.shiftKey || timelapse.getCurrentTouchCount();
+        selectAndGo($("#" + targetId), keyframeId, null, skipGo, null, null);
       } else {
         selectAndGo($("#" + targetId), keyframeId, null, null, null, false);
       }
@@ -1888,7 +1892,7 @@ if (!org.gigapan.timelapse.snaplapse) {
           displaySnaplapseFrameAnnotation(keyframe);
           setKeyframeTitleUI(keyframe);
         }
-        if (skipGo != true) {
+        if (!skipGo) {
           var newView;
           if (keyframe['originalView'] && !editorEnabled) {
             newView = keyframe['originalView'];
