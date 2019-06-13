@@ -365,7 +365,7 @@ if (!window['$']) {
     var isTouchMoving = false;
     var touchStartTargetElement;
     var currentTouchCount = 0;
-    
+
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////
     //
     // Public methods
@@ -3107,6 +3107,8 @@ if (!window['$']) {
         var $waypointDrawerContainerMain = $("#" + viewerDivId + " .waypointDrawerContainerMain");
         var $waypointDrawerContainer = $("#" + viewerDivId + " .waypointDrawerContainer");
         var $waypointDrawerContainerHeader = $("#" + viewerDivId + " .waypointDrawerContainerHeader");
+
+        UTIL.verticalTouchScroll($waypointDrawerContainer);
 
         if (waypointSliderOrientation == "horizontal") {
           addViewerBottomMargin($keyframeContainer.outerHeight() - 1);
