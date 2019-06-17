@@ -939,6 +939,11 @@
   width: calc(100% - 24px);
 }
 
+table .presentationSlider.vertical {
+  position: relative;
+  width: calc(100% + 24px);
+}
+
 .presentationSlider.vertical .snaplapse_keyframe_list {
   display: -webkit-flex;
   display: -webkit-box;

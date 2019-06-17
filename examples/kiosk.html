@@ -130,10 +130,11 @@
           showAddressLookup: true,
           playOnLoad: false,
           onTimeMachinePlayerReady: function(viewerDivId, timelapseObj) {
-            timelapseObj.getSnaplapseForPresentationSlider().getSnaplapseViewer().addEventListener("slide-changed", function(waypoint) {
+            var snaplapse = timelapseObj.getSnaplapseForPresentationSlider();
+            snaplapse.getSnaplapseViewer().addEventListener("slide-changed", function(waypoint) {
               post("from-timemachine-slide-changed", waypoint.title);
             });
-            timelapseObj.loadUnsafeWaypointsJSON(EARTH_TIMELAPSE_CONFIG_MIN.waypointJSON);
+            timelapse.loadUnsafePanelContent(EARTH_TIMELAPSE_CONFIG_MIN.panelContent);
           },
           scaleBarOptions: {
             scaleBarDiv: 'scaleBar1'

@@ -93,6 +93,23 @@
   width: 100%;
 }
 
+.waypointDrawerContainer #etDrawerProductHighlightsContent h3 {
+  background: #f2f2f2 !important;
+  width: calc(100% - 72px);
+  border-radius: 4px !important;
+  outline: none !important;
+}
+
+#etDrawerProductHighlightsContent {
+  padding-bottom: 20px;
+  display: none;
+}
+
+.waypointDrawerContainer .ui-accordion-content {
+  width: calc(100% - 22px);
+  margin-top: -1px;
+}
+
 .materialUI .waypointDrawerContainer .waypointDrawerContainerHeader {
   text-align: left;
 }

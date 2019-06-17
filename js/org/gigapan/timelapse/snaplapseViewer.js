@@ -1885,9 +1885,11 @@ if (!org.gigapan.timelapse.snaplapse) {
         };
         // It takes up to 300ms before a loading spinner may come up. Wait a bit longer to check bt/et values
         // We then check if we are still loading inside handleShareViewTimeLoop
-        setTimeout(function() {
-          timelapse.handleShareViewTimeLoop(keyframe['beginTime'], keyframe['endTime'], keyframe['startDwell'], keyframe['endDwell']);
-        }, 400);
+        if (keyframe['speed'] > 0) {
+          setTimeout(function() {
+            timelapse.handleShareViewTimeLoop(keyframe['beginTime'], keyframe['endTime'], keyframe['startDwell'], keyframe['endDwell']);
+          }, 400);
+        }
         if (skipAnnotation != true) {
           displaySnaplapseFrameAnnotation(keyframe);
           setKeyframeTitleUI(keyframe);
@@ -2009,7 +2011,7 @@ if (!org.gigapan.timelapse.snaplapse) {
 
     var loadThumbnailFromKeyframe = function(keyframe, listIndex) {
       var $img = $("#" + timeMachineDivId + "_snaplapse_keyframe_" + keyframe['id'] + "_thumbnail");
-      var thumbnailURL = thumbnailUrlList[listIndex];
+      var thumbnailURL = thumbnailUrlList[listIndex] || keyframe['unsafe_string_thumbnailPath'];
       // If we are not using a hardcoded set of thumbnails, compute one.
       if (!thumbnailURL) {
         var urlSettings = {

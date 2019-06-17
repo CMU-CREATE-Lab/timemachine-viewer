@@ -702,16 +702,16 @@ if (!window['$']) {
         return;
       }
       var maxDuration = thisObj.getDuration();
-      var waypointStartTime = thisObj.playbackTimeFromShareDate(beginTime);
+      var waypointStartTime = thisObj.playbackTimeFromShareDate(String(beginTime));
       if (typeof(waypointStartTime) === "undefined") {
         waypointStartTime = 0;
       }
-      var waypointEndTime = thisObj.playbackTimeFromShareDate(endTime);
+      var waypointEndTime = thisObj.playbackTimeFromShareDate(String(endTime));
       if (typeof(waypointEndTime) === "undefined" || waypointEndTime == ((thisObj.getNumFrames() - 1) / _getFps().toFixed(1))) {
         waypointEndTime = maxDuration;
       }
 
-      if ((waypointStartTime == 0 && waypointEndTime == maxDuration) || beginTime == endTime) {
+      if ((waypointStartTime == 0 && waypointEndTime.toFixed(2) == maxDuration.toFixed(2)) || beginTime == endTime) {
         return;
       }
       startDwell = parseFloat(startDwell) || 0;
@@ -1666,7 +1666,7 @@ if (!window['$']) {
       // If we still have a share URL (e.g. #v=44.96185,59.06233,4.5,latLng&t=0.10)
       // that has not been unpacked into an array of strings, do so now.
       if (typeof (unsafe_viewParam) === "string") {
-        unsafe_viewParam = unsafe_viewParam.split(",");
+        unsafe_viewParam = unsafe_viewParam.replace("#v=", "").split(",");
       }
 
       if (unsafe_viewParam.indexOf("latLng") != -1) {
@@ -3095,88 +3095,140 @@ if (!window['$']) {
     };
     this.loadSharedDataFromUnsafeURL = loadSharedDataFromUnsafeURL;
 
-    var loadUnsafeWaypointsJSON = function(unsafeWaypointsJSON) {
-      if (!unsafeWaypointsJSON || !unsafeWaypointsJSON['waypoints']) return;
+    var loadUnsafePanelContent = function(unsafeJSON) {
+      if (!unsafeJSON || !unsafeJSON['product-highlights-spreadsheet-path']) return;
 
       var snaplapseForPresentationSlider = timelapse.getSnaplapseForPresentationSlider();
-      if (snaplapseForPresentationSlider) {
-        var waypointsJSON = snaplapseForPresentationSlider.unsafeWaypointsJSONtoJSON(unsafeWaypointsJSON)
-        var snaplapseViewerForSharedData = snaplapseForPresentationSlider.getSnaplapseViewer();
-        var $keyframeContainer = snaplapseForPresentationSlider.getSnaplapseViewer().getKeyframeContainer();
 
-        var $waypointDrawerContainerMain = $("#" + viewerDivId + " .waypointDrawerContainerMain");
-        var $waypointDrawerContainer = $("#" + viewerDivId + " .waypointDrawerContainer");
-        var $waypointDrawerContainerHeader = $("#" + viewerDivId + " .waypointDrawerContainerHeader");
+      if (!snaplapseForPresentationSlider) return;
 
-        UTIL.verticalTouchScroll($waypointDrawerContainer);
+      var snaplapseViewerForSharedData = snaplapseForPresentationSlider.getSnaplapseViewer();
 
-        if (waypointSliderOrientation == "horizontal") {
-          addViewerBottomMargin($keyframeContainer.outerHeight() - 1);
-        }
-        $(".etDrawerContainerTitle").text(unsafeWaypointsJSON['product-title'] || "My Project");
-        if (unsafeWaypointsJSON['product-about']) {
-          $(".etDrawerProductAboutDescriptionContent").text(unsafeWaypointsJSON['product-about']);
-        } else {
-          $(".etDrawerAbout, .etDrawerAbout + .etDrawerSectionSeparator").hide();
-        }
-        $(".etDrawerProductHighlightsHeading").text(unsafeWaypointsJSON['product-highlights-title'] || "Project Highlights");
-        $(".etDrawerLearnMoreExit").hide();
-        snaplapseViewerForSharedData.loadNewSnaplapse(waypointsJSON, false);
-
-        $(".etDrawerLearnMoreExpand").on("click", function() {
-          var $etDrawerProductLearnMoreContent = $("#" + viewerDivId + " .etDrawerProductLearnMoreContent");
-          if ($etDrawerProductLearnMoreContent.text().length == 0) {
-            UTIL.ajax("html", rootAppURL, "templates/" + unsafeWaypointsJSON['learn-more-template-name'], function(html) {
-              $etDrawerProductLearnMoreContent.html(html);
-              $etDrawerProductLearnMoreContent.show("slide", { direction: "right" }, 250);
-            });
-          } else {
-            $etDrawerProductLearnMoreContent.show("slide", { direction: "right" }, 250);
-          }
-          $(".etDrawerProductAboutDescription, .etDrawerProductHighlightsHeading, .etDrawerSectionSeparator").hide();
-          $(".etDrawerLearnMoreExit").show();
-
-          $(".presentationSlider, .etDrawerLearnMoreExpand").hide();
-          $(".etDrawerProductAboutHeading").addClass("maximized");
-        });
-
-        $(".etDrawerLearnMoreExit").on("click", function() {
-          $(this).hide();
-          $(".etDrawerProductLearnMoreContent").hide();
-          $(".etDrawerLearnMoreExpand, .etDrawerSectionSeparator").show();
-          $(".presentationSlider, .etDrawerProductAboutDescription, .etDrawerProductHighlightsHeading").show("slide", { direction: "left" }, 250);
-          $(".etDrawerProductAboutHeading").removeClass("maximized");
-        });
-
-        if (mobileUI) {
-          $waypointDrawerContainer.show();
-        } else {
-          var hashVars = org.gigapan.Util.getUnsafeHashVars();
-          if (!hashVars.tour && openWaypointSliderOnFirstLoad) {
-            $waypointDrawerContainerMain.removeClass("hidden");
-            setTimeout(function() {
-              $("#" + timeMachineDivId).addClass("waypointDrawerOpen");
-              $waypointDrawerContainerMain.removeClass("waypointDrawerClosed");
-              if (uiType == "materialUI") {
-                setTimeout(function() {
-                  materialUI.refocusTimeline();
-                }, 400);
+      // TODO: Handle case where JSON is pulled locally?
+      UTIL.gdocToJSON(unsafeJSON['product-highlights-spreadsheet-path'], function(csvdata) {
+        if (csvdata) {
+          var csvRawArray = csvdata.split("\n");
+          if (csvRawArray.length) {
+            var csvHeaders = csvRawArray[0].split("\t");
+            var csvArray = [];
+            for (var i = 1; i < csvRawArray.length; i++) {
+              var rowDataArray = csvRawArray[i].split("\t");
+              var rowDataDic = {};
+              for (var j = 0; j < rowDataArray.length; j++) {
+                if (csvHeaders[j] == "") continue;
+                var headingName = csvHeaders[j].replace(/\r?\n?/g, '').trim();
+                var rowData = rowDataArray[j].replace(/\r?\n?/g, '').trim();
+                rowDataDic[headingName] = rowData;
               }
-            }, 50);
-          }
-
-          $waypointDrawerContainer.on("scroll", function(e) {
-            if (this.scrollTop == 0) {
-              $waypointDrawerContainerHeader.removeClass("scrolled");
-            } else {
-              $waypointDrawerContainerHeader.addClass("scrolled");
+              csvArray.push(rowDataDic);
             }
-          });
+            var waypointJSONList = snaplapseForPresentationSlider.CSVToJSONList(csvArray);
+
+            var themeContentArray = [];
+            for (var themeId in waypointJSONList) {
+              var themeTitle = waypointJSONList[themeId].themeTitle;
+              var themeEnabled = waypointJSONList[themeId].enabled;
+              if (!themeEnabled) continue;
+              var waypointJSONString = waypointJSONList[themeId].stories["default"].waypoints;
+              var $themeContent = $("<h3 id='theme_" + themeId + "'>" + themeTitle + "</h3><table></table>");
+              $themeContent.data("waypoint-json-string", waypointJSONString);
+              themeContentArray.push($themeContent);
+            }
+
+            if (themeContentArray.length > 1) {
+              $("#etDrawerProductHighlightsContent").show().append(themeContentArray).accordion({
+                collapsible: true,
+                active: false,
+                animate: false,
+                heightStyle: 'content',
+                activate: function(event, ui) {
+                  if (ui.newHeader.length) {
+                    var $waypointContainer = ui.newHeader.next("table");
+                    if ($waypointContainer.children().length) return;
+                    var waypointJSON = ui.newHeader.data("waypoint-json-string");
+                    $waypointContainer.html($(".presentationSlider"));
+                    snaplapseViewerForSharedData.loadNewSnaplapse(waypointJSON, false);
+                  }
+                }
+              });
+              // TODO: Pre-select the first group?
+            } else {
+              var waypointJSON = themeContentArray[0].data("waypoint-json-string");
+              snaplapseViewerForSharedData.loadNewSnaplapse(waypointJSON, false);
+            }
+          }
         }
+      }, null, true);
+
+      var $keyframeContainer = snaplapseForPresentationSlider.getSnaplapseViewer().getKeyframeContainer();
+      var $waypointDrawerContainerMain = $("#" + viewerDivId + " .waypointDrawerContainerMain");
+      var $waypointDrawerContainer = $("#" + viewerDivId + " .waypointDrawerContainer");
+      var $waypointDrawerContainerHeader = $("#" + viewerDivId + " .waypointDrawerContainerHeader");
+
+      UTIL.verticalTouchScroll($waypointDrawerContainer);
+
+      if (waypointSliderOrientation == "horizontal") {
+        addViewerBottomMargin($keyframeContainer.outerHeight() - 1);
+      }
+      $(".etDrawerContainerTitle").text(unsafeJSON['product-title'] || "My Project");
+      if (unsafeJSON['product-about']) {
+        $(".etDrawerProductAboutDescriptionContent").text(unsafeJSON['product-about']);
+      } else {
+        $(".etDrawerAbout, .etDrawerAbout + .etDrawerSectionSeparator").hide();
+      }
+      $(".etDrawerProductHighlightsHeading").text(unsafeJSON['product-highlights-title'] || "Project Highlights");
+      $(".etDrawerLearnMoreExit").hide();
+
+      $(".etDrawerLearnMoreExpand").on("click", function() {
+        var $etDrawerProductLearnMoreContent = $("#" + viewerDivId + " .etDrawerProductLearnMoreContent");
+        if ($etDrawerProductLearnMoreContent.text().length == 0) {
+          UTIL.ajax("html", rootAppURL, "templates/" + unsafeJSON['learn-more-template-name'], function(html) {
+            $etDrawerProductLearnMoreContent.html(html);
+            $etDrawerProductLearnMoreContent.show("slide", { direction: "right" }, 250);
+          });
+        } else {
+          $etDrawerProductLearnMoreContent.show("slide", { direction: "right" }, 250);
+        }
+        $(".etDrawerLearnMoreExit").show();
+        $(".etDrawerLearnMoreExpand, .etDrawerProductHighlights, .etDrawerProductAboutDescriptionContent, .etDrawerSectionSeparator").hide();
+        $(".etDrawerProductAboutHeading").addClass("maximized");
+      });
+
+      $(".etDrawerLearnMoreExit").on("click", function() {
+        $(this).hide();
+        $(".etDrawerProductLearnMoreContent").hide();
+        $(".etDrawerLearnMoreExpand, .etDrawerSectionSeparator").show();
+        $(".etDrawerProductHighlights, .etDrawerProductAboutDescriptionContent").show("slide", { direction: "left" }, 250);
+        $(".etDrawerProductAboutHeading").removeClass("maximized");
+      });
+
+      if (mobileUI) {
+        $waypointDrawerContainer.show();
+      } else {
+        var hashVars = org.gigapan.Util.getUnsafeHashVars();
+        if (!hashVars.tour && openWaypointSliderOnFirstLoad) {
+          $waypointDrawerContainerMain.removeClass("hidden");
+          setTimeout(function() {
+            $("#" + timeMachineDivId).addClass("waypointDrawerOpen");
+            $waypointDrawerContainerMain.removeClass("waypointDrawerClosed");
+            if (uiType == "materialUI") {
+              setTimeout(function() {
+                materialUI.refocusTimeline();
+              }, 400);
+            }
+          }, 50);
+        }
+
+        $waypointDrawerContainer.on("scroll", function(e) {
+          if (this.scrollTop == 0) {
+            $waypointDrawerContainerHeader.removeClass("scrolled");
+          } else {
+            $waypointDrawerContainerHeader.addClass("scrolled");
+          }
+        });
       }
     };
-    this.loadUnsafeWaypointsJSON = loadUnsafeWaypointsJSON;
-
+    this.loadUnsafePanelContent = loadUnsafePanelContent;
 
     var needFirstAncestor = function(tileidx) {
       //UTIL.log("need ancestor for " + dumpTileidx(tileidx));
