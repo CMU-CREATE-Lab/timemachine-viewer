@@ -80,7 +80,7 @@
       var defaultPlaybackSpeed = parseConfigOption({optionName: "defaultPlaybackSpeed", optionDefaultValue: 0.5, exposeOptionToUrlHash: true});
 
       function parseConfigOption(settings) {
-        var returnVal = (typeof(EARTH_TIMELAPSE_CONFIG_MIN[settings.optionName]) === "undefined" && typeof(settings.optionDefaultValue) !== "undefined") ? settings.optionDefaultValue : EARTH_TIMELAPSE_CONFIG_MIN[settings.optionName];
+        var returnVal = (typeof(EARTH_TIMELAPSE_CONFIG[settings.optionName]) === "undefined" && typeof(settings.optionDefaultValue) !== "undefined") ? settings.optionDefaultValue : EARTH_TIMELAPSE_CONFIG[settings.optionName];
         if (settings.exposeOptionToUrlHash) {
           var hashVars = UTIL.getUnsafeHashVars(true);
           var configOptionInHash = hashVars.hasOwnProperty(settings.optionName);
@@ -102,7 +102,7 @@
 
       function init() {
         var settings = {
-          apiKeys: {'googleMaps': EARTH_TIMELAPSE_CONFIG_MIN.googleMapsAPIKey},
+          apiKeys: {'googleMaps': EARTH_TIMELAPSE_CONFIG.googleMapsAPIKey},
           newHomeView: {
             'x': 1048576,
             'y': 967260.9999999992,
@@ -134,7 +134,7 @@
             snaplapse.getSnaplapseViewer().addEventListener("slide-changed", function(waypoint) {
               post("from-timemachine-slide-changed", waypoint.title);
             });
-            timelapse.loadUnsafePanelContent(EARTH_TIMELAPSE_CONFIG_MIN.panelContent);
+            timelapse.loadUnsafePanelContent(EARTH_TIMELAPSE_CONFIG.panelContent);
           },
           scaleBarOptions: {
             scaleBarDiv: 'scaleBar1'

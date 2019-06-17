@@ -108,7 +108,7 @@ _computeMaxLevel = function() {
   // Special case for some external drives
   // TODO: Move this to timelapse.js when the maxLevelOvveride param is moved to layer constructor. See below.
   var isExternalDriveWorkaround = false;
-  if (typeof(EARTH_TIMELAPSE_CONFIG_MIN) != "undefined") {
+  if (typeof(EARTH_TIMELAPSE_CONFIG) != "undefined" && EARTH_TIMELAPSE_CONFIG.isMinimal) {
     isExternalDriveWorkaround = true;
   }
   if ((this._panoWidth == 2097152 && this._panoHeight == 1881298 && this.tileWidth == 1424 && this.tileHeight == 800) ||
