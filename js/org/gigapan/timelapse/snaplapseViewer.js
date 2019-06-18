@@ -146,6 +146,8 @@ if (!org.gigapan.timelapse.snaplapse) {
     var isMobileDevice = UTIL.isMobileDevice();
     var forceAutoModeStart = false;
     var isLoadingWaypoints = false;
+    var isEarthTime = UTIL.isEarthTime();
+    var isEarthTimeMinimal = UTIL.isEarthTimeMinimal();
 
     // DOM elements
     var composerDivId = snaplapse.getComposerDivId();
@@ -2016,7 +2018,7 @@ if (!org.gigapan.timelapse.snaplapse) {
       if (!thumbnailURL) {
         var urlSettings = {
           baseMapsNoLabels : true,
-          bound : typeof(EARTH_TIMELAPSE_CONFIG) === "undefined" ? keyframe.bounds : keyframe.originalView,
+          bound : (!isEarthTime || isEarthTimeMinimal) ? keyframe.bounds : keyframe.originalView,
           t : keyframe.time,
           l : (typeof(keyframe.layers) == "object") ? keyframe.layers.join(',') : "",
           bt : keyframe.beginTime,
@@ -2024,7 +2026,8 @@ if (!org.gigapan.timelapse.snaplapse) {
           ps : 0,
           width: Math.floor($img.width()),
           height: Math.floor($img.height()),
-          format : "png"
+          format : "png",
+          thumbnailServerRootTileUrl : settings.thumbnailServerRootTileUrl
         };
         thumbnailURL = timelapse.getThumbnailTool().getURL(urlSettings).url;
       }

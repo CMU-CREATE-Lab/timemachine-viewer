@@ -193,6 +193,8 @@ if (!org.gigapan.timelapse.Timelapse) {
     var isWebglViewer = UTIL.getViewerType() == "webgl";
     var thumbnailLengthWarningMsg = "A large number of frames were selected, which may take <br> awhile to process. Always check start/end times to ensure <br> the right time range was chosen before you click generate.";
     var maxThumbnailLength = 1500;
+    var isEarthTime = UTIL.isEarthTime();
+    var isEarthTimeMinimal = UTIL.isEarthTimeMinimal();
 
     // Parameters
     var mode = "player";
@@ -804,7 +806,7 @@ if (!org.gigapan.timelapse.Timelapse) {
             var snaplapse = timelapse.getSnaplapseForPresentationSlider();
             if (snaplapse) {
               var snaplapseViewer = snaplapse.getSnaplapseViewer();
-              if (snaplapseViewer.getCurrentWaypointIndex() == -1 || typeof(EARTH_TIMELAPSE_CONFIG) === "undefined") {
+              if (snaplapseViewer.getCurrentWaypointIndex() == -1 || !isEarthTime || isEarthTimeMinimal) {
                 $("#" + viewerDivId + " .presentation-mode-share-input").hide();
               } else  {
                 $("#" + viewerDivId + " .presentation-mode-share-input").show();
@@ -1259,7 +1261,7 @@ if (!org.gigapan.timelapse.Timelapse) {
           updateShareViewTextbox();
         });
 
-        if (typeof(EARTH_TIMELAPSE_CONFIG) === "undefined") {
+        if (!isEarthTime || isEarthTimeMinimal) {
           $("#thumbnail-fps-overlay").closest("tr").hide();
         }
         timelapse.addMasterPlaybackRateChangeListener(function() {

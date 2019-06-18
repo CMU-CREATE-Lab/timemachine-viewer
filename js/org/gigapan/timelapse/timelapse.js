@@ -237,6 +237,8 @@ if (!window['$']) {
     var isMovingToWaypoint = false;
     var isSpinnerShowing = false;
     var isMobileDevice = UTIL.isMobileDevice();
+    var isEarthTime = UTIL.isEarthTime();
+    var isEarthTimeMinimal = UTIL.isEarthTimeMinimal();
 
     // Viewer
     var viewerDivId = timeMachineDivId + " .player";
@@ -3772,7 +3774,7 @@ if (!window['$']) {
 
       tileRootPath = settings["url"];
 
-      if (typeof(EARTH_TIMELAPSE_CONFIG) === "undefined" && viewerType == "webgl") {
+      if ((!isEarthTime || isEarthTimeMinimal) && viewerType == "webgl") {
         var canvasLayer = {
           timelapse: thisObj,
           canvas: canvas,

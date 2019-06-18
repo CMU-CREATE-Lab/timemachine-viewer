@@ -105,16 +105,8 @@ _computeMaxLevel = function() {
        (this.tileHeight << this._maxLevel) < this._panoHeight;
        this._maxLevel++) {
   }
-  // Special case for some external drives
-  // TODO: Move this to timelapse.js when the maxLevelOvveride param is moved to layer constructor. See below.
-  var isExternalDriveWorkaround = false;
-  if (typeof(EARTH_TIMELAPSE_CONFIG) != "undefined" && EARTH_TIMELAPSE_CONFIG.isMinimal) {
-    isExternalDriveWorkaround = true;
-  }
-  if ((this._panoWidth == 2097152 && this._panoHeight == 1881298 && this.tileWidth == 1424 && this.tileHeight == 800) ||
-      (isExternalDriveWorkaround && this._panoWidth == 2109212 && this._panoHeight == 2102302 && this.tileWidth == 1424 && this.tileHeight == 800)) {
+  if (this._panoWidth == 2097152 && this._panoHeight == 1881298 && this.tileWidth == 1424 && this.tileHeight == 800) {
     // 2016-v14 missing the highest resolution layer;  override _maxLevel to 11 instead of the correct 12
-    // 2018-v1 missing the highest resolution layer;  override _maxLevel to 11 instead of the correct 12
     // TODO: override this in the layer constructor, stop using the landsat layer as the coordinate system, and stop calling resetDimensions
     this._maxLevelOverride = 11;
   } else {
