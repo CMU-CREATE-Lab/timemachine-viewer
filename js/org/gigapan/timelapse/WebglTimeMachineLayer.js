@@ -151,7 +151,8 @@ WebglTimeMachineLayer.prototype.loadMetadata = function() {
     deleteTile: function(tile) {},
     updateTile: WebglVideoTile.update,
     timelapse: this._canvasLayer.timelapse,
-    projection: this.projection
+    projection: this.projection,
+    maxLevelOverride: this.maxLevelOverride
   });
 
   this.destroy = function() {

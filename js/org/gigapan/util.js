@@ -878,4 +878,9 @@ if (!org.gigapan) {
     return typeof(EARTH_TIMELAPSE_CONFIG) !== "undefined" && EARTH_TIMELAPSE_CONFIG.isMinimal;
   }
 
+  org.gigapan.Util.getEarthTimeConfigVersion = function() {
+    // This is a global data struct that is created for an instance of EarthTime.
+    return EARTH_TIMELAPSE_CONFIG.version;
+  }
+
 })();

@@ -71,6 +71,7 @@ function TileView(settings) {
   this._zoomlock = settings.zoomlock;
   this._timelapse = settings.timelapse;
   this._projection = settings.projection;
+  this._maxLevelOverride = settings.maxLevelOverride;
 
   // levelThreshold sets the quality of display by deciding what level of tile to show for a given level of zoom:
   //
@@ -104,13 +105,6 @@ _computeMaxLevel = function() {
        (this.tileWidth << this._maxLevel) < this._panoWidth ||
        (this.tileHeight << this._maxLevel) < this._panoHeight;
        this._maxLevel++) {
-  }
-  if (this._panoWidth == 2097152 && this._panoHeight == 1881298 && this.tileWidth == 1424 && this.tileHeight == 800) {
-    // 2016-v14 missing the highest resolution layer;  override _maxLevel to 11 instead of the correct 12
-    // TODO: override this in the layer constructor, stop using the landsat layer as the coordinate system, and stop calling resetDimensions
-    this._maxLevelOverride = 11;
-  } else {
-    this._maxLevelOverride = undefined;
   }
 };
 
