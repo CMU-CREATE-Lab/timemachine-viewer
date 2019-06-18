@@ -569,8 +569,6 @@ if (!Math.uuid) {
             frame["speed"] = null;
           } else if (frame["buildConstraint"] == "speed") {
             frame["speed"] = encoder.read_uint();
-            // TODOTODO
-            frame["speed"] = 50;
             frame["duration"] = null;
           }
           // Decode frame number
@@ -957,10 +955,8 @@ if (!Math.uuid) {
           frame["beginTime"] = unsafeHashObj.hasOwnProperty("bt") ? parseFloat(unsafeHashObj.bt) : "";
           frame["endTime"] = unsafeHashObj.hasOwnProperty("et") ? parseFloat(unsafeHashObj.et) : "";
           frame["speed"] = unsafeHashObj.hasOwnProperty("ps") ? parseFloat(unsafeHashObj.ps) : ((frame["beginTime"] == frame["endTime"] && frame["beginTime"] != "") ? 0 : 50);
-
           var frameNumber = Math.floor(frame["time"] * timelapse.getFps());
           frame["captureTime"] = captureTimes[frameNumber];
-
           var view = unsafeHashObj.hasOwnProperty("v") ? timelapse.unsafeViewToView(unsafeHashObj.v.split(",")) : null;
           if (!view) {
             UTIL.error("Invalid view in snaplapse share link at keyframe=[" + (i - 1) + "]. Skipping.");
@@ -976,7 +972,6 @@ if (!Math.uuid) {
           } else {
             bbox = view.bbox;
           }
-
           frame["bounds"] = {};
           frame["bounds"]["xmin"] = bbox.xmin;
           frame["bounds"]["ymin"] = bbox.ymin;
