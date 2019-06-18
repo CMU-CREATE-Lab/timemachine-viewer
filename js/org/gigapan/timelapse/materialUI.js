@@ -196,7 +196,7 @@ if (!org.gigapan.timelapse.Timelapse) {
           if (currentFrameNumber == numFrames - 1 && timelapse.isDoingLoopingDwell()) {
             lastFrameWasGroupEnd = true;
           }
-          if (!lastFrameWasGroupEnd && (parseInt($selectedTimelineTick.attr("data-frame")) == currentFrameNumber || (timelapse.isPaused() && !timelapse.isDoingLoopingDwell()))) return;
+          if (!lastFrameWasGroupEnd && (parseInt($selectedTimelineTick.attr("data-frame")) == currentFrameNumber)) return;
           updateTimelineSlider(currentFrameNumber, null, true);
         });
       }
@@ -294,7 +294,6 @@ if (!org.gigapan.timelapse.Timelapse) {
         position: {
           at: "left bottom",
           collision: 'flip',
-
         }, change: function(e, ui) {
           timelapse.setPlaybackRate(ui.item.value);
         }
