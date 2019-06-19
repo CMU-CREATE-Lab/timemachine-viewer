@@ -142,8 +142,12 @@
           },
           contextMapOptions: {
             contextMapDiv: 'contextMap1'
-          },
+          }
         };
+        // Special case for support of a one-off set of external Landsat drives
+        if (EARTH_TIMELAPSE_CONFIG && EARTH_TIMELAPSE_CONFIG.landsatMaxLevelOverride) {
+          settings.maxLevelOverride = EARTH_TIMELAPSE_CONFIG.landsatMaxLevelOverride;
+        }
         // This var is directly accessed by timelapse code internals running within the iframe.
         timelapse = new org.gigapan.timelapse.Timelapse('timeMachine', settings);
       }

@@ -239,7 +239,6 @@ if (!window['$']) {
     var isMobileDevice = UTIL.isMobileDevice();
     var isEarthTime = UTIL.isEarthTime();
     var isEarthTimeMinimal = UTIL.isEarthTimeMinimal();
-    var earthTimeConfigVersion = UTIL.getEarthTimeConfigVersion();
 
     // Viewer
     var viewerDivId = timeMachineDivId + " .player";
@@ -3800,12 +3799,9 @@ if (!window['$']) {
               video_height: datasetJSON.video_height,
               mediaType: mediaType,
               metadataLoadedCallback: loadVideoSetCallback,
-              tileRootUrl: tileRootPath + datasetId
+              tileRootUrl: tileRootPath + datasetId,
+              maxLevelOverride: settings.maxLevelOverride
             };
-            // Special case for support of a one-off set of external Landsat drives
-            if (typeof(earthTimeConfigVersion) != "undefined" && earthTimeConfigVersion < 11) {
-              webglTimeMachineLayerOptions.maxLevelOverride = 11;
-            }
           }
         }
         webglTimeMachineLayer = new WebglTimeMachineLayer(glb, canvasLayer, webglTimeMachineLayerOptions);
