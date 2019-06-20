@@ -1066,7 +1066,7 @@ if (!Math.uuid) {
       }
       keyframe['originalView'] = keyframeContents['originalView'];
       keyframe['layers'] = keyframeContents['layers'];
-      keyframe['unsafe_string_annotationBoxTitle'] = (typeof(keyframeContents['frameTitle']) == 'undefined') ? '' : keyframeContents['frameAnnotationBoxTitle'];
+      keyframe['unsafe_string_annotationBoxTitle'] = (typeof(keyframeContents['unsafe_string_annotationBoxTitle']) == 'undefined') ? '' : keyframeContents['unsafe_string_annotationBoxTitle'];
 
       // Determine where the new keyframe will be inserted
       var insertionIndex = keyframes.length;
