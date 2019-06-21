@@ -826,7 +826,7 @@ if (!window['$']) {
       var activeElement = document.activeElement;
       var sliderActive = $("#" + timeMachineDivId + " .timelineSlider .ui-slider-handle:focus").length || $("#" + timeMachineDivId + " .zoomSlider .ui-slider-handle:focus").length;
       // If we are focused on a text field or the slider handlers, do not run any player specific controls.
-      if (activeElement == "[object HTMLInputElement]" || activeElement == "[object HTMLTextAreaElement]")
+      if (activeElement == "[object HTMLInputElement]" || activeElement == "[object HTMLTextAreaElement]" || event.metaKey)
         return;
       var moveFn;
       keysDown.push(event.which);
