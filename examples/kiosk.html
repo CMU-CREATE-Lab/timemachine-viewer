@@ -75,9 +75,14 @@
       var UTIL = org.gigapan.Util;
 
       var enableAutoMode = parseConfigOption({optionName: "enableAutoMode", optionDefaultValue: false, exposeOptionToUrlHash: true});
-      var screenTimeoutInMilliseconds = parseConfigOption({optionName: "screenTimeoutInMilliseconds", optionDefaultValue: (8 * 60 * 1000), exposeOptionToUrlHash: true});
-      var waypointDelayInMilliseconds = parseConfigOption({optionName: "waypointDelayInMilliseconds", optionDefaultValue: (1 * 15 * 1000), exposeOptionToUrlHash: true});
+      var screenTimeoutInMilliseconds = parseConfigOption({optionName: "screenTimeoutInMin", optionDefaultValue: 8, exposeOptionToUrlHash: true}) * 60 * 1000;
+      var waypointDelayInMilliseconds = parseConfigOption({optionName: "waypointDelayInSec", optionDefaultValue: 20, exposeOptionToUrlHash: true}) * 1000;
       var defaultPlaybackSpeed = parseConfigOption({optionName: "defaultPlaybackSpeed", optionDefaultValue: 0.5, exposeOptionToUrlHash: true});
+      var waypoints = parseConfigOption({optionName: "waypoints", optionDefaultValue: "", exposeOptionToUrlHash: true});
+
+      if (waypoints) {
+        EARTH_TIMELAPSE_CONFIG.panelContent['product-highlights-spreadsheet-path'] = docTabToGoogleSheetUrl(waypoints);
+      }
 
       function parseConfigOption(settings) {
         var returnVal = (typeof(EARTH_TIMELAPSE_CONFIG[settings.optionName]) === "undefined" && typeof(settings.optionDefaultValue) !== "undefined") ? settings.optionDefaultValue : EARTH_TIMELAPSE_CONFIG[settings.optionName];
@@ -87,6 +92,7 @@
           if (configOptionInHash) {
             returnVal = hashVars[settings.optionName];
             // If option in hash but no value set, assume value is true and return early
+            if (returnVal == "") returnVal = settings.optionDefaultValue;
             if (typeof(returnVal) === "undefined") {
               return true;
             }
@@ -98,6 +104,18 @@
           returnVal = String(returnVal) === "true";
         }
         return returnVal;
+      }
+
+      function docTabToGoogleSheetUrl(doctab) {
+        if (!doctab) return "";
+        if (doctab.indexOf("http") == 0) return doctab;
+
+        var docId = doctab.split('.')[0];
+        var ret = 'https://docs.google.com/spreadsheets/d/' + docId + '/edit';
+        var tabId = doctab.split('.')[1];
+        if (tabId) ret += '#gid=' + tabId;
+
+        return ret;
       }
 
       function init() {
