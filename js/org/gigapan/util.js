@@ -867,15 +867,24 @@ if (!org.gigapan) {
     return isGoogleAPIReady;
   };
 
+  org.gigapan.Util.objectHasNullOrNaN = function(obj) {
+    for (var prop in obj) {
+      if (obj[prop] == null || typeof(obj[prop]) == "undefined" || isNaN(obj[prop])) {
+        return true;
+      }
+    }
+    return false;
+  };
+
   org.gigapan.Util.isEarthTime = function() {
     // This is a global data struct that is created for an instance of EarthTime
     return typeof(EARTH_TIMELAPSE_CONFIG) !== "undefined";
-  }
+  };
 
   org.gigapan.Util.isEarthTimeMinimal = function() {
     // This is a global data struct that is created for an instance of EarthTime.
     // If the property 'isMinimal' is set, this signifies a special instance of an external drive
     return typeof(EARTH_TIMELAPSE_CONFIG) !== "undefined" && EARTH_TIMELAPSE_CONFIG.isMinimal;
-  }
+  };
 
 })();

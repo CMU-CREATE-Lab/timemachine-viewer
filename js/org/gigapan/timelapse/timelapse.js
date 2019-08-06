@@ -1488,6 +1488,8 @@ if (!window['$']) {
         } else {
           newView = view;
         }
+      } else if (UTIL.objectHasNullOrNaN(newView)) {
+        return null;
       }
       return newView;
     };
@@ -2023,6 +2025,7 @@ if (!window['$']) {
     };
 
     this.setScale = function(val) {
+      if (isNaN(val) || !val) return;
       targetView.scale = val;
       setTargetView(targetView);
     };
