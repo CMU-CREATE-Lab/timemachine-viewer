@@ -1543,9 +1543,15 @@ if (!window['$']) {
         // Get the begin time. Often used for looping purposes, but also for thumbnail generation when in screenshot mode
         if (typeof(options.bt) == "undefined") {
           var btFrame = 0;
-          var isStartTimeADate = (thisObj.sanitizedParseTimeGMT(thisObj.getCaptureTimes()[btFrame]) != -1);
+          var firstFrameCaptureTime = thisObj.getCaptureTimes()[btFrame];
+          var isStartTimeADate = (thisObj.sanitizedParseTimeGMT(firstFrameCaptureTime) != -1);
           if (isStartTimeADate) {
-            hashparams.bt = new Date(thisObj.getFrameEpochTime(btFrame)).toISOString().substr(0,10).replace(/-/g, "");
+            var dateDigitString = firstFrameCaptureTime.replace(/[-/:. a-zA-Z]/g, "");
+            // We assume only a year is being shown in this case
+            if (dateDigitString.length == 4) {
+              dateDigitString += "0101";
+            }
+            hashparams.bt = dateDigitString;
           } else {
             hashparams.bt = 0;
           }
@@ -1556,9 +1562,15 @@ if (!window['$']) {
         // Get the end time. Often used for looping purposes, but also for thumbnail generation when in screenshot mode
         if (typeof(options.et) == "undefined") {
           var etFrame = thisObj.getNumFrames() - 1;
-          var isEndTimeADate = (thisObj.sanitizedParseTimeGMT(thisObj.getCaptureTimes()[etFrame]) != -1);
+          var lastFrameCaptureTime = thisObj.getCaptureTimes()[etFrame];
+          var isEndTimeADate = (thisObj.sanitizedParseTimeGMT(lastFrameCaptureTime) != -1);
           if (isEndTimeADate) {
-            hashparams.et = new Date(thisObj.getFrameEpochTime(etFrame)).toISOString().substr(0,10).replace(/-/g, "").replace(/0101/g, "1231");
+            var dateDigitString = lastFrameCaptureTime.replace(/[-/:. a-zA-Z]/g, "");
+            // We assume only a year is being shown in this case
+            if (dateDigitString.length == 4) {
+              dateDigitString += "1231";
+            }
+            hashparams.et = dateDigitString;
           } else {
             hashparams.et = parseFloat(thisObj.getDuration().toFixed(3));
           }
