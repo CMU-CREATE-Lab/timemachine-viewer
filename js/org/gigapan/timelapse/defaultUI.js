@@ -114,7 +114,7 @@ if (!org.gigapan.timelapse.Timelapse) {
     var changeDetectionEnabled = timelapse.isChangeDetectionEnabled();
     var showChangeDetectionOnLoad = ( typeof (settings["showChangeDetectionOnLoad"]) == "undefined") ? false : settings["showChangeDetectionOnLoad"];
     var socialMediaSettings = settings["socialMedia"] || {};
-    var waypointSliderOrientation = (settings["presentationSliderSettings"] && typeof(settings["presentationSliderSettings"]["orientation"]) == "undefined") ? "horizontal" : settings["presentationSliderSettings"]["orientation"];
+    var waypointSliderOrientation = (settings["presentationSliderSettings"] && typeof(settings["presentationSliderSettings"]["orientation"]) != "undefined") ? settings["presentationSliderSettings"]["orientation"] : "horizontal";
     var shareViewDialogType = typeof(settings["shareViewDialogType"]) == "undefined" ? (isMobileDevice ? "modal" : "drawer") : settings["shareViewDialogType"];
 
     // Objects

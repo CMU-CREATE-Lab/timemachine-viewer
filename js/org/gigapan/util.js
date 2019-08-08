@@ -729,7 +729,7 @@ if (!org.gigapan) {
         (isMobileDevice && isPixelC) ||
         (isChromeOS && parseInt(matchChromeVersionString[1]) < 54)) {
           computedViewerType = "video";
-        } else if (isWebGLSupported && !isMobileDevice && !isSafariUserAgent && !isIE11UserAgent) {
+        } else if (isWebGLSupported && !isMobileDevice && !isSafariUserAgent && !isIE11UserAgent && typeof(Glb) != "undefined") {
           computedViewerType = "webgl";
         } else {
           computedViewerType = "canvas";

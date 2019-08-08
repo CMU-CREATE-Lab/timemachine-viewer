@@ -159,7 +159,7 @@ if (!window['$']) {
       width: 250,
       height: 142
     };
-    var waypointSliderOrientation = (settings["presentationSliderSettings"] && typeof(settings["presentationSliderSettings"]["orientation"]) == "undefined") ? "horizontal" : settings["presentationSliderSettings"]["orientation"];
+    var waypointSliderOrientation = (settings["presentationSliderSettings"] && typeof(settings["presentationSliderSettings"]["orientation"]) != "undefined") ? settings["presentationSliderSettings"]["orientation"] : "horizontal";
     // Only relevant for vertical orientation
     var openWaypointSliderOnFirstLoad =  ( settings["presentationSliderSettings"] && typeof (settings["presentationSliderSettings"]["openDrawerOnLoad"]) != "undefined") ? settings["presentationSliderSettings"]["openDrawerOnLoad"] : false;
     var browserNotSupportedTemplateName = ( typeof (settings["browserNotSupportedTemplateName"]) == "undefined") ? "browser_not_supported_template.html" : settings["browserNotSupportedTemplateName"];
