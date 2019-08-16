@@ -1543,10 +1543,10 @@ if (!window['$']) {
         // Get the begin time. Often used for looping purposes, but also for thumbnail generation when in screenshot mode
         if (typeof(options.bt) == "undefined") {
           var btFrame = 0;
-          var firstFrameCaptureTime = thisObj.getCaptureTimes()[btFrame];
-          var isStartTimeADate = (thisObj.sanitizedParseTimeGMT(firstFrameCaptureTime) != -1);
-          if (isStartTimeADate) {
-            var dateDigitString = firstFrameCaptureTime.replace(/[-/:. a-zA-Z]/g, "");
+          var firstFrameCaptureTimeStripped = thisObj.getCaptureTimes()[btFrame].replace(/[-/:. a-zA-Z]/g, "");
+          var firstFrameEpochTime = thisObj.getFrameEpochTime(btFrame);
+          if (firstFrameEpochTime != -1) {
+            var dateDigitString = new Date(firstFrameEpochTime).toISOString().replace(/[-/:. a-zA-Z]/g, "").slice(0, firstFrameCaptureTimeStripped.length);
             // We assume only a year is being shown in this case
             if (dateDigitString.length == 4) {
               dateDigitString += "0101";
@@ -1562,10 +1562,10 @@ if (!window['$']) {
         // Get the end time. Often used for looping purposes, but also for thumbnail generation when in screenshot mode
         if (typeof(options.et) == "undefined") {
           var etFrame = thisObj.getNumFrames() - 1;
-          var lastFrameCaptureTime = thisObj.getCaptureTimes()[etFrame];
-          var isEndTimeADate = (thisObj.sanitizedParseTimeGMT(lastFrameCaptureTime) != -1);
-          if (isEndTimeADate) {
-            var dateDigitString = lastFrameCaptureTime.replace(/[-/:. a-zA-Z]/g, "");
+          var lastFrameCaptureTimeStripped = thisObj.getCaptureTimes()[etFrame].replace(/[-/:. a-zA-Z]/g, "");
+          var lastFrameEpochTime = thisObj.getFrameEpochTime(etFrame);
+          if (lastFrameEpochTime != -1) {
+            var dateDigitString = new Date(lastFrameEpochTime).toISOString().replace(/[-/:. a-zA-Z]/g, "").slice(0, lastFrameCaptureTimeStripped.length);
             // We assume only a year is being shown in this case
             if (dateDigitString.length == 4) {
               dateDigitString += "1231";
@@ -3842,10 +3842,13 @@ if (!window['$']) {
     // 2015-04-08 16:30:25.000
     // 2015-04-08 16:30:25
     // 2015-04-08 16:30
+    // 2019-04-08 4:30 PM
     // 16:30:25
     // 16:30
     // Wed Apr 08 2015 16:30:25 GMT-0400 (Eastern Daylight Time)
     // Wed Apr 08 2015, 16:30:25.000
+    // 2019-04-08 16:30:25 UTC
+    // 2019-04-08 16:30:25 America/New_York
     var findExactOrClosestCaptureTime = function(timeToFind, direction, exactOnly) {
       var low = 0, high = captureTimes.length - 1, i, newCompare;
       if (!timeToFind)
@@ -3886,21 +3889,27 @@ if (!window['$']) {
     this.findExactOrClosestCaptureTime = findExactOrClosestCaptureTime;
 
     var sanitizedParseTimeGMT = function(time) {
-      if (!time) {
+      if (!time || (parseInt(time) - 0 < 1000)) {
         return -1;
       }
+
+      // Ensure time is a string
+      time = String(time);
 
       // Remove milliseconds "Thu Apr 09 2015, 08:52:35.000" (FireFox/IE)
       time = time.replace(/(\d\d)\.\d+/, '$1');
 
-      // Remove leading whitespace
-      time = time.replace(/^\s+/, '');
+      // Remove leading and trailing whitespace
+      time = time.replace(/^\s+|\s+$/g, '');
 
-      // Remove trailing whitespace
-      time = time.replace(/\s+$/, '');
-
-      // Remove timezone
-      time = time.replace(/\s+[A-Z]+([-+]\d+).*$/, '');
+      // If timezone
+      var timeZoneMatch = time.match(/\s+(GMT[-+]\d+|UTC).*|(\s+\D+\/\D+)$/);
+      var hasTimeZoneInfo = false;
+      if (timeZoneMatch) {
+        hasTimeZoneInfo = true;
+        // Remove timezone
+        time = time.slice(0, timeZoneMatch.index);
+      }
 
       // If form HH:MM or HH:MM:SS, add date from capture array
       if (time.match(/^\d\d:\d\d(:\d\d)?$/)) {
@@ -3908,14 +3917,19 @@ if (!window['$']) {
         time = lastCapture.getFullYear() + "-" + (1e2 + (lastCapture.getMonth() + 1) + '').substr(1) + "-" + (1e2 + (lastCapture.getDate()) + '').substr(1) + " " + time;
       }
 
-      // Handle case where our capture times are assumed to be Eastern Time but it is not indicated as such.
-      // Only when we are not showing local time did we actually indicate this in the capture time string, so append
-      // the timezone info if we encounter this.
-      if (captureTimes[0].match(/\d\d:\d\d(:\d\d)?\s*(PM|AM)?$/)) {
-        // Firefox (and maybe others) needs to have the date use slashes if we are appending the following time zone string.
+      // Handle case where we include time zone info or our capture times are assumed to be local but it is not indicated as such.
+      if (hasTimeZoneInfo || time.match(/\d\d:\d\d(:\d\d)?\s*(PM|AM)?$/)) {
+        // Firefox (and maybe others) needs to have the date use slashes if we are appending a time zone string.
         time = time.replace(/-/g,"\/");
-        time += " " + new Date().toString().match(/([A-Z]+[\+-][0-9]+.*)/)[1];
-      } else if (time.match(/\d\d:\d\d:\d\d$/)) {
+        // Proceed if timezone is in a format that Date.parse understands (e.g. UTC or GMT-0400)
+        if (hasTimeZoneInfo && timeZoneMatch[1]) {
+          time += " " + timeZoneMatch[1];
+        } else {
+          // Otherwise either we don't have a timezone or our timezone is in a format not supported by Date.parse (e.g. America/New_York)
+          // Assume local system timezone in this case.
+          time += " " + new Date().toString().match(/([A-Z]+[\+-][0-9]+.*)/)[1];
+        }
+      } else if (time.match(/^(?!\D.*$).*\d\d:\d\d:\d\d$/)) {
         // If HH:MM:SS at the end of string, add GMT timezone in proper format for Date.parse()
         time += '.000Z';
       }
@@ -3952,6 +3966,7 @@ if (!window['$']) {
     // YYYYMMDDHHMM
     //
     // This function also supports old-style share link time in units of seconds in playback time
+    // Note: A share date comes in as UTC if it includes HH(MM:SS)
     var playbackTimeFromShareDate = function(sharedate) {
       if (!sharedate) {
         return 0;
@@ -3967,7 +3982,7 @@ if (!window['$']) {
         parsed = sharedate.substr(0, 4) + '-' + sharedate.substr(4, 2) + '-' + sharedate.substr(6, 2);
       } else if (sharedate.length == 8+6 && sharedate.match(/^\d+$/)) {
         parsed = sharedate.substr(0, 4) + '-' + sharedate.substr(4, 2) + '-' + sharedate.substr(6, 2) + ' ' +
-        sharedate.substr(8, 2) + ':' + sharedate.substr(10, 2) + ':' + sharedate.substr(12, 2);
+        sharedate.substr(8, 2) + ':' + sharedate.substr(10, 2) + ':' + sharedate.substr(12, 2) + " UTC";
       } else {
         // Error parsing;  return beginning of playback
         UTIL.log('Error parsing share date ' + sharedate + '; returning playbackTime = 0');
@@ -3978,7 +3993,7 @@ if (!window['$']) {
     this.playbackTimeFromShareDate = playbackTimeFromShareDate;
 
     var getFrameEpochTime = function(frame) {
-      return Date.parse(new Date(captureTimes[frame].replace(/-/g, "/")));
+      return sanitizedParseTimeGMT(captureTimes[frame]);
     };
     this.getFrameEpochTime = getFrameEpochTime;
 
