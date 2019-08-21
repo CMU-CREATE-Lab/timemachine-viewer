@@ -1543,10 +1543,10 @@ input[type=number]{
 .always-selectable {
   -webkit-user-select: auto;
   -khtml-user-select: auto;
-  -moz-user-select: element;
+  -moz-user-select: text;
   -ms-user-select: element;
   -o-user-select: auto;
-  user-select: element;
+  user-select: auto;
 }
 
 input::-ms-clear {
