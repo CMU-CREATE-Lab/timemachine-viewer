@@ -154,6 +154,8 @@ if (!window['$']) {
     // TODO: This is probably not working as intended or even fully necessary now
     var useTouchFriendlyUI = ( typeof (settings["useTouchFriendlyUI"]) == "undefined") ? false : settings["useTouchFriendlyUI"];
     var useThumbnailServer = ( typeof (settings["useThumbnailServer"]) == "undefined") ? true : settings["useThumbnailServer"];
+    var thumbnailServerHost = settings["thumbnailServerHost"];
+    var headlessClientHost = settings["headlessClientHost"];
     var showSizePicker = settings["showSizePicker"] || false;
     var visualizerGeometry = {
       width: 250,
@@ -3583,7 +3585,7 @@ if (!window['$']) {
       if (annotatorEnabled)
         annotator = new org.gigapan.timelapse.Annotator(thisObj);
       if (useThumbnailServer) {
-        var thumbnailToolOptions = {};
+        var thumbnailToolOptions = {thumbnailServerHost: thumbnailServerHost, headlessClientHost: headlessClientHost};
         thumbnailTool = new ThumbnailTool(thisObj, thumbnailToolOptions);
       }
       if (changeDetectionEnabled) {
