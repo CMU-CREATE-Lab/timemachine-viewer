@@ -1542,38 +1542,14 @@ if (!window['$']) {
       } else {
         // Get the begin time. Often used for looping purposes, but also for thumbnail generation when in screenshot mode
         if (typeof(options.bt) == "undefined") {
-          var btFrame = 0;
-          var firstFrameCaptureTimeStripped = thisObj.getCaptureTimes()[btFrame].replace(/[-/:. a-zA-Z]/g, "");
-          var firstFrameEpochTime = thisObj.getFrameEpochTime(btFrame);
-          if (firstFrameEpochTime != -1) {
-            var dateDigitString = new Date(firstFrameEpochTime).toISOString().replace(/[-/:. a-zA-Z]/g, "").slice(0, firstFrameCaptureTimeStripped.length);
-            // We assume only a year is being shown in this case
-            if (dateDigitString.length == 4) {
-              dateDigitString += "0101";
-            }
-            hashparams.bt = dateDigitString;
-          } else {
-            hashparams.bt = 0;
-          }
+          hashparams.bt = shareDateFromFrame(0, true);
         } else {
           hashparams.bt = options.bt;
         }
 
         // Get the end time. Often used for looping purposes, but also for thumbnail generation when in screenshot mode
         if (typeof(options.et) == "undefined") {
-          var etFrame = thisObj.getNumFrames() - 1;
-          var lastFrameCaptureTimeStripped = thisObj.getCaptureTimes()[etFrame].replace(/[-/:. a-zA-Z]/g, "");
-          var lastFrameEpochTime = thisObj.getFrameEpochTime(etFrame);
-          if (lastFrameEpochTime != -1) {
-            var dateDigitString = new Date(lastFrameEpochTime).toISOString().replace(/[-/:. a-zA-Z]/g, "").slice(0, lastFrameCaptureTimeStripped.length);
-            // We assume only a year is being shown in this case
-            if (dateDigitString.length == 4) {
-              dateDigitString += "1231";
-            }
-            hashparams.et = dateDigitString;
-          } else {
-            hashparams.et = parseFloat(thisObj.getDuration().toFixed(3));
-          }
+          hashparams.et = shareDateFromFrame(thisObj.getNumFrames() - 1, false);
         } else {
           hashparams.et = options.et;
         }
@@ -3991,6 +3967,30 @@ if (!window['$']) {
       return playbackTimeFromDate(parsed);
     };
     this.playbackTimeFromShareDate = playbackTimeFromShareDate;
+
+    var shareDateFromFrame = function(frame, isStartOfFrame) {
+      var frameCaptureTimeStripped = thisObj.getCaptureTimes()[frame].replace(/[-/:. a-zA-Z]/g, "");
+      var frameEpochTime = thisObj.getFrameEpochTime(frame);
+      if (frameEpochTime != -1) {
+        var dateDigitString = new Date(frameEpochTime).toISOString().replace(/[-/:. a-zA-Z]/g, "").slice(0, frameCaptureTimeStripped.length);
+        // We assume only a year is being shown if the date is 4 characters
+        if (dateDigitString.length == 4) {
+          if (isStartOfFrame) {
+            dateDigitString += "0101";
+          } else {
+            dateDigitString += "1231";
+          }
+        }
+        return dateDigitString;
+      } else {
+        if (isStartOfFrame) {
+          return 0;
+        } else {
+          return parseFloat(thisObj.getDuration().toFixed(3));
+        }
+      }
+    };
+    this.shareDateFromFrame = shareDateFromFrame;
 
     var getFrameEpochTime = function(frame) {
       return sanitizedParseTimeGMT(captureTimes[frame]);
