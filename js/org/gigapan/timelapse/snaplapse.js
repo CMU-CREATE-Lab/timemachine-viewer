@@ -124,7 +124,6 @@ if (!Math.uuid) {
     // Settings
     var useCustomUI = timelapse.useCustomUI();
     var usePresentationSlider = (mode == "presentation") ? true : false;
-    var disableKeyframeTitle = false;
     var uiEnabled = (mode == "noUI") ? false : true;
     var editorEnabled = settings.editorEnabled;
 
@@ -143,8 +142,6 @@ if (!Math.uuid) {
     var loadKeyframesLength;
     var rootAppURL = org.gigapan.Util.getRootAppURL();
 
-    // Because the viewer on Google Earth Engine is not updated yet,
-    // we need to use disableKeyframeTitle flag for backward compatibility.
     var TOUR_SHARING_VERSION = 7;
 
     // Loop Dwell
@@ -438,7 +435,7 @@ if (!Math.uuid) {
           encoder.write_udecimal(desiredKeyframes[i]['time'], 2);
           var viewCenter, zoom;
           // Bounds & Zoom
-          if (desiredKeyframes[i].originalView.center) {
+          if (typeof(desiredKeyframes[i].originalView) !== "undefined" && desiredKeyframes[i].originalView.center) {
             if (TOUR_SHARING_VERSION >= 7) {
               // Did we encode a bounding box? False
               encoder.write_uint(0);
@@ -485,10 +482,8 @@ if (!Math.uuid) {
           }
           // Keyframe description
           encoder.write_string(desiredKeyframes[i]['unsafe_string_description']);
-          if (!disableKeyframeTitle) {
-            // Keyframe title
-            encoder.write_string(desiredKeyframes[i]['unsafe_string_frameTitle']);
-          }
+          // Keyframe title
+          encoder.write_string(desiredKeyframes[i]['unsafe_string_frameTitle']);
           // Keframe annotation box title
           // The title above is what is shown on the waypoint slider, whereas this one
           // is what appears in the annotation box.
@@ -1001,12 +996,9 @@ if (!Math.uuid) {
 
     this.setKeyframeTitleState = function(state) {
       if (state == "disable") {
-        disableKeyframeTitle = true;
-        TOUR_SHARING_VERSION = 3;
         $("#" + composerDivId + " .keyframe_title_container").hide();
         $("#" + composerDivId + " .snaplapse_keyframe_list_item_title").hide();
       } else {
-        disableKeyframeTitle = false;
         $("#" + composerDivId + " .keyframe_title_container").show();
         $("#" + composerDivId + " .snaplapse_keyframe_list_item_title").show();
       }
@@ -1018,8 +1010,9 @@ if (!Math.uuid) {
     };
 
     this.recordKeyframe = function(idOfKeyframeToAppendAfter, isFromLoad, loadKeyframesLength, keyframeContents) {
+      keyframeContents = keyframeContents ? keyframeContents : {};
       if (typeof(keyframeContents['bounds']) == 'undefined') {
-        bounds = timelapse.getBoundingBoxForCurrentView();
+        keyframeContents['bounds'] = timelapse.getBoundingBoxForCurrentView();
       }
       var isKeyframeFromLoad = ( typeof isFromLoad == 'undefined') ? false : isFromLoad;
       // Create the new keyframe
@@ -1030,10 +1023,10 @@ if (!Math.uuid) {
       keyframe['loopTimes'] = keyframeContents['loopTimes'];
       keyframe['speed'] = keyframeContents['speed'];
       keyframe['time'] = org.gigapan.timelapse.Snaplapse.normalizeTime((typeof(keyframeContents['time']) == 'undefined') ? timelapse.getCurrentTime() : keyframeContents['time']);
-      keyframe['beginTime'] = keyframeContents['beginTime'];
-      keyframe['endTime'] = keyframeContents['endTime'];
-      keyframe['startDwell'] = keyframeContents['startDwell'];
-      keyframe['endDwell'] = keyframeContents['endDwell'];
+      keyframe['beginTime'] = keyframeContents['beginTime'] || "";
+      keyframe['endTime'] = keyframeContents['endTime'] || "";
+      keyframe['startDwell'] = keyframeContents['startDwell'] || "";
+      keyframe['endDwell'] = keyframeContents['endDwell'] || "";
       var frameNumber = Math.floor(keyframe['time'] * timelapse.getFps());
       keyframe['captureTime'] = captureTimes[frameNumber];
       keyframe['bounds'] = {};
@@ -1048,7 +1041,8 @@ if (!Math.uuid) {
       // NOTE: if is-description-visible is undefined, then we define it as *true* in order to maintain
       // backward compatibility with older time warps which don't have this property.
       keyframe['is-description-visible'] = (typeof(keyframeContents['is-description-visible']) == 'undefined') ? true : keyframeContents['is-description-visible'];
-      if (!keyframeContents['originalView']) {
+      var originalView = keyframeContents['originalView'];
+      if (!originalView) {
         if (timelapse.getTmJSON()['projection-bounds']) {
           var projection = timelapse.getProjection();
           var viewCenter = timelapse.pixelBoundingBoxToPixelCenter(keyframe['bounds']);
@@ -1057,15 +1051,15 @@ if (!Math.uuid) {
             y: viewCenter.y
           });
           var zoom = timelapse.scaleToZoom(viewCenter.scale);
-          var originalView = {center : {lat : latLng.lat, lng : latLng.lng}, zoom : zoom};
+          originalView = {center : {lat : latLng.lat, lng : latLng.lng}, zoom : zoom};
         } else {
           var viewCenter = timelapse.pixelBoundingBoxToPixelCenter(keyframe['bounds']);
           var zoom = timelapse.scaleToZoom(viewCenter.scale);
-          var originalView = {center : {x : viewCenter.x, y : viewCenter.y}, zoom : zoom};
+          originalView = {center : {x : viewCenter.x, y : viewCenter.y}, zoom : zoom};
         }
       }
-      keyframe['originalView'] = keyframeContents['originalView'];
-      keyframe['layers'] = keyframeContents['layers'];
+      keyframe['originalView'] = originalView;
+      keyframe['layers'] = keyframeContents['layers'] || "";
       keyframe['unsafe_string_annotationBoxTitle'] = (typeof(keyframeContents['unsafe_string_annotationBoxTitle']) == 'undefined') ? '' : keyframeContents['unsafe_string_annotationBoxTitle'];
 
       // Determine where the new keyframe will be inserted

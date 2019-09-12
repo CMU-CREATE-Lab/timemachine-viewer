@@ -532,6 +532,10 @@ if (!window['$']) {
       return defaultUI.getMode();
     };
 
+    this.setMode = function(newMode) {
+      defaultUI.setMode(newMode);
+    };
+
     this.getTimelapseCurrentCaptureTimeIndex = function() {
       return timelapseCurrentCaptureTimeIndex;
     };
@@ -3091,69 +3095,71 @@ if (!window['$']) {
     this.loadSharedDataFromUnsafeURL = loadSharedDataFromUnsafeURL;
 
     var loadUnsafePanelContent = function(unsafeJSON) {
-      if (!unsafeJSON || !unsafeJSON['product-highlights-spreadsheet-path']) return;
-
       var snaplapseForPresentationSlider = timelapse.getSnaplapseForPresentationSlider();
 
       if (!snaplapseForPresentationSlider) return;
 
+      var hashVars = org.gigapan.Util.getUnsafeHashVars();
+
       var snaplapseViewerForSharedData = snaplapseForPresentationSlider.getSnaplapseViewer();
 
       // TODO: Handle case where JSON is pulled locally?
-      UTIL.gdocToJSON(unsafeJSON['product-highlights-spreadsheet-path'], function(csvdata) {
-        if (csvdata) {
-          var csvRawArray = csvdata.split("\n");
-          if (csvRawArray.length) {
-            var csvHeaders = csvRawArray[0].split("\t");
-            var csvArray = [];
-            for (var i = 1; i < csvRawArray.length; i++) {
-              var rowDataArray = csvRawArray[i].split("\t");
-              var rowDataDic = {};
-              for (var j = 0; j < rowDataArray.length; j++) {
-                if (csvHeaders[j] == "") continue;
-                var headingName = csvHeaders[j].replace(/\r?\n?/g, '').trim();
-                var rowData = rowDataArray[j].replace(/\r?\n?/g, '').trim();
-                rowDataDic[headingName] = rowData;
-              }
-              csvArray.push(rowDataDic);
-            }
-            var waypointJSONList = snaplapseForPresentationSlider.CSVToJSONList(csvArray);
-
-            var themeContentArray = [];
-            for (var themeId in waypointJSONList) {
-              var themeTitle = waypointJSONList[themeId].themeTitle;
-              var themeEnabled = waypointJSONList[themeId].enabled;
-              if (!themeEnabled) continue;
-              var waypointJSONString = waypointJSONList[themeId].stories["default"].waypoints;
-              var $themeContent = $("<h3 id='theme_" + themeId + "'>" + themeTitle + "</h3><table></table>");
-              $themeContent.data("waypoint-json-string", waypointJSONString);
-              themeContentArray.push($themeContent);
-            }
-
-            if (themeContentArray.length > 1) {
-              $("#etDrawerProductHighlightsContent").show().append(themeContentArray).accordion({
-                collapsible: true,
-                active: false,
-                animate: false,
-                heightStyle: 'content',
-                activate: function(event, ui) {
-                  if (ui.newHeader.length) {
-                    var $waypointContainer = ui.newHeader.next("table");
-                    if ($waypointContainer.children().length) return;
-                    var waypointJSON = ui.newHeader.data("waypoint-json-string");
-                    $waypointContainer.html($(".presentationSlider"));
-                    snaplapseViewerForSharedData.loadNewSnaplapse(waypointJSON, false);
-                  }
+      if (!hashVars.presentation && unsafeJSON && unsafeJSON['product-highlights-spreadsheet-path']) {
+        UTIL.gdocToJSON(unsafeJSON['product-highlights-spreadsheet-path'], function(csvdata) {
+          if (csvdata) {
+            var csvRawArray = csvdata.split("\n");
+            if (csvRawArray.length) {
+              var csvHeaders = csvRawArray[0].split("\t");
+              var csvArray = [];
+              for (var i = 1; i < csvRawArray.length; i++) {
+                var rowDataArray = csvRawArray[i].split("\t");
+                var rowDataDic = {};
+                for (var j = 0; j < rowDataArray.length; j++) {
+                  if (csvHeaders[j] == "") continue;
+                  var headingName = csvHeaders[j].replace(/\r?\n?/g, '').trim();
+                  var rowData = rowDataArray[j].replace(/\r?\n?/g, '').trim();
+                  rowDataDic[headingName] = rowData;
                 }
-              });
-              // TODO: Pre-select the first group?
-            } else {
-              var waypointJSON = themeContentArray[0].data("waypoint-json-string");
-              snaplapseViewerForSharedData.loadNewSnaplapse(waypointJSON, false);
+                csvArray.push(rowDataDic);
+              }
+              var waypointJSONList = snaplapseForPresentationSlider.CSVToJSONList(csvArray);
+
+              var themeContentArray = [];
+              for (var themeId in waypointJSONList) {
+                var themeTitle = waypointJSONList[themeId].themeTitle;
+                var themeEnabled = waypointJSONList[themeId].enabled;
+                if (!themeEnabled) continue;
+                var waypointJSONString = waypointJSONList[themeId].stories["default"].waypoints;
+                var $themeContent = $("<h3 id='theme_" + themeId + "'>" + themeTitle + "</h3><table></table>");
+                $themeContent.data("waypoint-json-string", waypointJSONString);
+                themeContentArray.push($themeContent);
+              }
+
+              if (themeContentArray.length > 1) {
+                $("#etDrawerProductHighlightsContent").show().append(themeContentArray).accordion({
+                  collapsible: true,
+                  active: false,
+                  animate: false,
+                  heightStyle: 'content',
+                  activate: function(event, ui) {
+                    if (ui.newHeader.length) {
+                      var $waypointContainer = ui.newHeader.next("table");
+                      if ($waypointContainer.children().length) return;
+                      var waypointJSON = ui.newHeader.data("waypoint-json-string");
+                      $waypointContainer.html($(".presentationSlider"));
+                      snaplapseViewerForSharedData.loadNewSnaplapse(waypointJSON, false);
+                    }
+                  }
+                });
+                // TODO: Pre-select the first group?
+              } else {
+                var waypointJSON = themeContentArray[0].data("waypoint-json-string");
+                snaplapseViewerForSharedData.loadNewSnaplapse(waypointJSON, false);
+              }
             }
           }
-        }
-      }, null, true);
+        }, null, true);
+      }
 
       var $keyframeContainer = snaplapseForPresentationSlider.getSnaplapseViewer().getKeyframeContainer();
       var $waypointDrawerContainerMain = $("#" + viewerDivId + " .waypointDrawerContainerMain");
@@ -3171,6 +3177,7 @@ if (!window['$']) {
       } else {
         $(".etDrawerAbout, .etDrawerAbout + .etDrawerSectionSeparator").hide();
       }
+
       $(".etDrawerProductHighlightsHeading").text(unsafeJSON['product-highlights-title'] || "Project Highlights");
       $(".etDrawerLearnMoreExit").hide();
 
@@ -3200,7 +3207,6 @@ if (!window['$']) {
       if (mobileUI) {
         $waypointDrawerContainer.show();
       } else {
-        var hashVars = org.gigapan.Util.getUnsafeHashVars();
         if (!hashVars.tour && openWaypointSliderOnFirstLoad) {
           $waypointDrawerContainerMain.removeClass("hidden");
           setTimeout(function() {
@@ -3594,6 +3600,10 @@ if (!window['$']) {
       }
 
       defaultUI = new org.gigapan.timelapse.DefaultUI(thisObj, settings);
+
+      if (editorEnabled) {
+        thisObj.setMode("editor");
+      }
 
       if (uiType == "materialUI" && org.gigapan.timelapse.MaterialUI) {
         customLayers = new org.gigapan.timelapse.CustomLayers(thisObj, settings);
