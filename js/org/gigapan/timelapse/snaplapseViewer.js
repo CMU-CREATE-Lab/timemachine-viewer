@@ -1178,9 +1178,7 @@ if (!org.gigapan.timelapse.snaplapse) {
                         timelapse.setNewView(newView, true, presentationSliderPlayAfterAnimation);
                       }
                       // TODO (20190423): Before we skipped event listeners in this case. Not sure why, but for now we allow them again.
-                      if (UTIL.isEarthTime() && !UTIL.isEarthTimeMinimal()) {
-                        selectAndGo($("#" + timeMachineDivId + "_snaplapse_keyframe_" + keyframeId), keyframeId, true, false, false);
-                      }
+                      selectAndGo($("#" + timeMachineDivId + "_snaplapse_keyframe_" + keyframeId), keyframeId, true, false, false);
                     }
                   } else {
                     if (currentAutoModeWaypointIdx != -1) currentAutoModeWaypointIdx--;
