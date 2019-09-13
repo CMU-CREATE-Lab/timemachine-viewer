@@ -165,8 +165,9 @@ if (!org.gigapan.timelapse.Timelapse) {
     var $searchBoxClear = $("#" + timeMachineDivId + " .searchBoxClearIcon");
     var $searchBox = $("#" + timeMachineDivId + " .searchBox");
     var $searchBoxIcon = $("#" + timeMachineDivId + " .searchBoxIcon");
-    var $shareButton = $("#" + viewerDivId + " .share")
+    var $shareButton = $("#" + viewerDivId + " .share");
     var $shareDialogClose = $("#" + viewerDivId + " .close-share");
+    var $shareSidePanelClose = $("#" + viewerDivId + " .close-right-panel");
     var $shareUrl = $("#" + viewerDivId + " .shareurl");
     var $shareEmbedUrl = $("#" + viewerDivId + " .shareembed")
     var $shareUrlCopyTextButton = $("#" + viewerDivId + " .shareurl-copy-text-button");
@@ -190,7 +191,6 @@ if (!org.gigapan.timelapse.Timelapse) {
     var timePadding = timelapse.getTimePadding();
     var isStartingTimeSpinnerBlurAdded = false;
     var isEndingTimeSpinnerBlurAdded = false;
-    var isWebglViewer = UTIL.getViewerType() == "webgl";
     var thumbnailLengthWarningMsg = "A large number of frames were selected, which may take <br> awhile to process. Always check start/end times to ensure <br> the right time range was chosen before you click generate.";
     var maxThumbnailLength = 1500;
     var isEarthTime = UTIL.isEarthTime();
@@ -476,7 +476,7 @@ if (!org.gigapan.timelapse.Timelapse) {
       if (typeof google === "undefined")
         return;
 
-      if (waypointSliderOrientation == "vertical") {
+      if (uiType == "materialUI") {
         $waypointDrawerSideControlsContainer.prepend($searchBoxContainer);
       }
 
@@ -740,8 +740,7 @@ if (!org.gigapan.timelapse.Timelapse) {
     };
 
     var createShareButton = function() {
-
-      if (waypointSliderOrientation == "vertical") {
+      if (uiType == "materialUI") {
         $waypointDrawerSideControlsContainer.append($shareButton);
       }
 
@@ -792,11 +791,11 @@ if (!org.gigapan.timelapse.Timelapse) {
         });
       } else {
         // Create share button for panel
-        $shareButton.show().addClass('customButton').button({
+        $shareButton.show().button({
           icons: {
-            primary: "ui-icon-person"
+            primary: "ui-icon-custom-share-black"
           },
-          text: true
+          text: false
         }).click(function() {
           $("#" + viewerDivId + ' .shareView').toggle("slide", { direction: "right" }, 1);
           $("#" + viewerDivId + ", #" + viewerDivId + " .shareView").toggleClass("right-panel-active");
@@ -824,7 +823,7 @@ if (!org.gigapan.timelapse.Timelapse) {
             $("#" + timeMachineDivId + " .shareView .waypoint-index, #" + timeMachineDivId + " .shareView .waypoint-only").prop("checked", false);
           }
         });
-        $shareDialogClose.on("click", function() {
+        $shareDialogClose.add($shareSidePanelClose).on("click", function() {
           $shareButton.trigger("click");
         });
         $shareUrl.focus(function() {
@@ -1106,7 +1105,7 @@ if (!org.gigapan.timelapse.Timelapse) {
           thumbnailPlaybackSpeed = (parseFloat($("#" + viewerDivId + " .custom-thumbnail-playback-rate").val()) * 100) || ($thumbnailPlaybackRate.data("rate") * 100);
 
           var desiredFps;
-          if (isWebglViewer) {
+          if (isEarthTime && !isEarthTimeMinimal) {
             desiredFps = $("#" + viewerDivId + " .thumbnail-fps").val();
           } else {
             desiredFps = Math.max(1, ($("#" + viewerDivId + " .custom-thumbnail-playback-rate").val() || (Math.max(1, timelapse.getMaxPlaybackRate()) * $thumbnailPlaybackRate.data("rate"))) * timelapse.getFps());
@@ -1133,7 +1132,7 @@ if (!org.gigapan.timelapse.Timelapse) {
             format: format
           };
 
-          if (!isWebglViewer) {
+          if (!isEarthTime) {
             urlSettings.nframes = thumbnailDurationInFrames;
           }
 
@@ -1292,7 +1291,7 @@ if (!org.gigapan.timelapse.Timelapse) {
           $thumbnailPlaybackRate.button("enable");
         }
 
-        if (!isWebglViewer) {
+        if (!isEarthTime) {
           $(".thumbnail-start-delay, .thumbnail-end-delay, .thumbnail-fps").prop('disabled', true);
           $thumbnailPlaybackRate.button("disable");
           $thumbnailVideoSelector.addClass("disabled");
@@ -1312,7 +1311,7 @@ if (!org.gigapan.timelapse.Timelapse) {
         $thumbnailImageSelector.children().text("GIF");
         $(".thumbnail-start-delay, .thumbnail-end-delay").prop('disabled', false);
         $thumbnailPlaybackRate.button("enable");
-        if (!isWebglViewer) {
+        if (isEarthTime) {
           $thumbnailVideoSelector.removeClass("disabled");
         }
         //$(".smooth-playback").prop("disabled", false);
@@ -1839,7 +1838,7 @@ if (!org.gigapan.timelapse.Timelapse) {
     this.setMode = setMode;
 
     var updateShareViewTextbox = function() {
-      var parentUrl = UTIL.getParentURL();
+      var parentUrl = timelapse.getSettings()['rootShareViewUrl'] ? timelapse.getSettings()['rootShareViewUrl'] : UTIL.getParentURL();
       // EarthTime specific
       var $shareViewWaypointOnlyCheckbox = $("#" + viewerDivId + " .waypoint-only");
       if ($shareViewWaypointOnlyCheckbox.is(":visible") && $shareViewWaypointOnlyCheckbox.prop("checked")) {

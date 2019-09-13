@@ -655,12 +655,6 @@ _:-moz-tree-row(hover), .helpPlayerLabel .ui-button-text {
   display: none;
 }
 
-.verticalWaypointDrawerContainer .searchBoxContainer {
-  position: relative;
-  top: auto;
-  left: auto;
-}
-
 .player:not(.mobileUI) .searchBox {
   z-index: 136;
   width: 0px;
@@ -1581,6 +1575,14 @@ input::-ms-clear {
 
 .shareView.right-panel-active {
   right: -418px !important;
+}
+
+#shareViewPanelTitle {
+  display: none;
+}
+
+.close-right-panel {
+  display: none;
 }
 
 .shareViewModal.ui-dialog-content {

@@ -1041,3 +1041,7 @@ table .presentationSlider.vertical {
   top: 10px;
   cursor: pointer;
 }
+
+.composer .saveTimewarpWindow_titlePresentation {
+  display: none;
+}

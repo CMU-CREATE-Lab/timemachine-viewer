@@ -593,7 +593,7 @@ if (!org.gigapan.timelapse.snaplapse) {
         UTIL.addGoogleAnalyticEvent('button', 'click', 'editor-add-keyframe');
       });
       // Create save button
-      $editorModeToolbar.append('<button class="saveTimewarp" title="Share a tour or slideshow">Share</button>');
+      $editorModeToolbar.append('<button class="saveTimewarp" title="Share a tour or waypoint collection">Share</button>');
       $("#" + composerDivId + " .toolbar .saveTimewarp").button({
         icons: {
           primary: "ui-icon-person"
@@ -605,7 +605,7 @@ if (!org.gigapan.timelapse.snaplapse) {
         UTIL.addGoogleAnalyticEvent('button', 'click', 'editor-show-share-dialog');
       });
       // Create load button
-      $editorModeToolbar.append('<button class="loadTimewarp" title="Load a tour or slideshow">Load</button>');
+      $editorModeToolbar.append('<button class="loadTimewarp" title="Load a tour or waypoint collection">Load</button>');
       $("#" + composerDivId + " .toolbar .loadTimewarp").button({
         icons: {
           primary: "ui-icon-folder-open"
@@ -732,7 +732,7 @@ if (!org.gigapan.timelapse.snaplapse) {
       if (mode == "tour")
         return "Tour Editor";
       else if (mode == "presentation")
-        return "Slideshow Editor";
+        return "Waypoints Editor";
     };
 
     // Change the status of the editor toolbar
@@ -873,6 +873,8 @@ if (!org.gigapan.timelapse.snaplapse) {
       if (status == true) {
         snaplapse.setKeyframeTitleState("enable");
         startEditorFromPresentationMode = true;
+        $("#" + composerDivId + " .saveTimewarpWindow_title_presentation").show();
+        $("#" + composerDivId + " .saveTimewarpWindow_title_tour").hide();
         $("#" + composerDivId + " .toolbar .playStopTimewarp").hide();
         $("#" + viewerDivId + " .videoQualityContainer").hide();
         $snaplapseContainer.find(".snaplapse_keyframe_list_item").css("margin-left", "-1px");
@@ -883,6 +885,8 @@ if (!org.gigapan.timelapse.snaplapse) {
       } else {
         snaplapse.setKeyframeTitleState("disable");
         startEditorFromPresentationMode = false;
+        $("#" + composerDivId + " .saveTimewarpWindow_title_presentation").hide();
+        $("#" + composerDivId + " .saveTimewarpWindow_title_tour").show();
         $("#" + composerDivId + " .toolbar .playStopTimewarp").show();
         $("#" + viewerDivId + " .videoQualityContainer").show();
         $snaplapseContainer.find(".snaplapse_keyframe_list_item").css("margin-left", "0px");
@@ -1096,7 +1100,7 @@ if (!org.gigapan.timelapse.snaplapse) {
           }
           if (uiType == "materialUI") {
             $("#" + viewerDivId + " .contextMapContainer").removeClass("playingTour");
-            if (!$waypointDrawerContainerMain.hasClass("hidden")) {
+            if (!$waypointDrawerContainerMain.hasClass("hidden") || ($waypointDrawerContainerMain.hasClass("hidden") && !$waypointDrawerContainerToggle.is(":visible"))) {
               $waypointDrawerContainerMain.show();
             }
             if (!isMobileDevice) {

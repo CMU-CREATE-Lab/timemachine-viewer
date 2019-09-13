@@ -154,8 +154,11 @@ if (!window['$']) {
     // TODO: This is probably not working as intended or even fully necessary now
     var useTouchFriendlyUI = ( typeof (settings["useTouchFriendlyUI"]) == "undefined") ? false : settings["useTouchFriendlyUI"];
     var useThumbnailServer = ( typeof (settings["useThumbnailServer"]) == "undefined") ? true : settings["useThumbnailServer"];
-    var thumbnailServerHost = settings["thumbnailServerHost"];
-    var headlessClientHost = settings["headlessClientHost"];
+    var thumbnailToolOptions = settings["thumbnailToolOptions"] || {};
+    // TODO: Legacy
+    thumbnailToolOptions.thumbnailServerHost = settings["thumbnailServerHost"];
+    thumbnailToolOptions.headlessClientHost = settings["headlessClientHost"];
+
     var showSizePicker = settings["showSizePicker"] || false;
     var visualizerGeometry = {
       width: 250,
@@ -1613,7 +1616,7 @@ if (!window['$']) {
           } else {
             shareStr = '#';
           }
-          shareStr += prop + '=' + hashparams[prop];
+          shareStr += prop + '=' + String(hashparams[prop]).replace("=","");
         }
       }
       return shareStr;
@@ -2151,7 +2154,7 @@ if (!window['$']) {
 
       var viewerBottomPx = 0;
       if (editorEnabled && UTIL.getSharedDataType() != "presentation")
-        viewerBottomPx = 210;
+        viewerBottomPx = 213;
 
       var userDefinedtimeMachineDivWidth = UTIL.getElementStyle("#" + timeMachineDivId, "width");
       var userDefinedtimeMachineDivHeight = UTIL.getElementStyle("#" + timeMachineDivId, "height");
@@ -3207,17 +3210,19 @@ if (!window['$']) {
       if (mobileUI) {
         $waypointDrawerContainer.show();
       } else {
-        if (!hashVars.tour && openWaypointSliderOnFirstLoad) {
+        if (!hashVars.tour) {
           $waypointDrawerContainerMain.removeClass("hidden");
-          setTimeout(function() {
-            $("#" + timeMachineDivId).addClass("waypointDrawerOpen");
-            $waypointDrawerContainerMain.removeClass("waypointDrawerClosed");
-            if (uiType == "materialUI") {
-              setTimeout(function() {
-                materialUI.refocusTimeline();
-              }, 400);
-            }
-          }, 50);
+          if (openWaypointSliderOnFirstLoad) {
+            setTimeout(function() {
+              $("#" + timeMachineDivId).addClass("waypointDrawerOpen");
+              $waypointDrawerContainerMain.removeClass("waypointDrawerClosed");
+              if (uiType == "materialUI") {
+                setTimeout(function() {
+                  materialUI.refocusTimeline();
+                }, 400);
+              }
+            }, 50);
+          }
         }
 
         $waypointDrawerContainer.on("scroll", function(e) {
@@ -3591,7 +3596,6 @@ if (!window['$']) {
       if (annotatorEnabled)
         annotator = new org.gigapan.timelapse.Annotator(thisObj);
       if (useThumbnailServer) {
-        var thumbnailToolOptions = {thumbnailServerHost: thumbnailServerHost, headlessClientHost: headlessClientHost};
         thumbnailTool = new ThumbnailTool(thisObj, thumbnailToolOptions);
       }
       if (changeDetectionEnabled) {

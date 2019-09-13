@@ -1,6 +1,6 @@
 <div class="toolbar">
   <div class="editorModeToolbar"></div>
-  <button class="toggleMode" title="Toggle between tour and slideshow editor">Change Mode</button>
+  <button class="toggleMode" title="Toggle between tour and waypoint collection editor">Change Mode</button>
   <ul class="editorModeOptions"></ul>
 </div>
 
@@ -30,13 +30,14 @@
   </table>
 </div>
 
-<div class="loadTimewarpWindow" title="Load a Tour or Slideshow">
+<div class="loadTimewarpWindow" title="Load a Tour or Waypoint Collection">
+  <span class="close-dialog" title="Close"></span>
   <table class="loadTimewarpWindowTable">
     <tr>
       <td><div id="loadSnaplapseButton" class="customDialogButton">Load</div></td>
       <td>
         <div class="loadTimewarpWindow_txt">
-          Paste the share link into the text box below and then click the Load button.
+          Paste the tour or waypoint collection share link below and then click Load.
         </div>
       </td>
     </tr>
@@ -46,7 +47,10 @@
   </table>
 </div>
 
-<div class="saveTimewarpWindow" title="Share a Tour or Slideshow">
+<div class="saveTimewarpWindow" title="Share a Tour">
+  <span class="close-dialog" title="Close"></span>
+  <h2 class="saveTimewarpWindow_title_tour">Share a Tour</h2>
+  <h2 class="saveTimewarpWindow_title_presentation">Share a Waypoint Collection</h2>
   <table class="saveTimewarpWindowTable">
     <tr>
       <td>Title:&nbsp;<input type="text" value="Untitled" class="saveTimewarpWindow_tourTitleInput" maxlength="30"></td>
@@ -57,7 +61,7 @@
     <tr>
       <td>
         <div class="saveTimewarpWindow_txt">
-          Copy the link below and share it on the web. Everyone who visits it will see the tour or slideshow you made.
+          Copy the link below and share it on the web. Keep this URL handy though, since this is what will be required to load and make future changes to your work.
         </div>
       </td>
     </tr>
@@ -70,7 +74,7 @@
     <tr>
       <td>
         <div class="saveTimewarpWindow_txt2">
-          You can also copy the iframe code below and embed this tour or slideshow on your own website or blog.
+          You can also copy the iframe code below and embed this on your own website or blog.
         </div>
       </td>
     </tr>
@@ -79,7 +83,7 @@
     </tr>
     <tr>
       <td>
-        Video Size:&nbsp;
+        Embed Size:&nbsp;
         <select class="saveTimewarpWindow_JSON2_sizes">
           <option value="720,394">720 x 394</option>
           <option value="750,530">750 x 530</option>

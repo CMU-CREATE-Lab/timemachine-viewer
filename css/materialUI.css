@@ -6,6 +6,7 @@
   -webkit-transition: 0.5s;
   -o-transition: 0.5s;
   transition: 0.5s;
+  display: block;
 }
 
 .materialUI .waypointDrawerContainer {
@@ -140,10 +141,17 @@
   display: none;
 }
 
-
-.materialUI.verticalWaypointDrawerContainer .share {
+.materialUI .share {
   left: auto;
   right: auto;
+}
+
+.materialUI .waypointDrawerContainerMain.hidden .waypointDrawerSideControlsContainer {
+  margin-left: -20px;
+}
+
+.materialUI .waypointDrawerContainerMain.hidden .waypointDrawerContainerToggle {
+  display: none;
 }
 
 .materialUI .share .ui-button {
@@ -629,4 +637,44 @@
 
 .cursorPointer {
   cursor: pointer;
+}
+
+.materialUI .searchBoxContainer {
+  position: relative;
+  top: auto;
+  left: auto;
+}
+
+.materialUI .shareView.customDialog {
+  padding-top: 20px;
+}
+
+.materialUI .shareView {
+  height: calc(100% - 20px);
+}
+
+.materialUI div.ui-dialog.ui-widget {
+  z-index: 200 !important;
+}
+
+.materialUI #shareViewPanelTitle {
+  display: block;
+  color: #222;
+  margin-left: 20px;
+  margin-top: -5px;
+}
+
+.materialUI .close-right-panel {
+  background: url(../images/close.png) center center no-repeat;
+  background-size: 20px 20px;
+  display: inline-block;
+  width: 20px;
+  height: 20px;
+  cursor: default;
+  opacity: 0.67;
+  position: absolute;
+  right: 10px;
+  top: 10px;
+  cursor: pointer;
+  display: block;
 }
