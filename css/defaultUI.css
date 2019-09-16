@@ -1540,7 +1540,7 @@ input[type=number]{
   -moz-user-select: text;
   -ms-user-select: element;
   -o-user-select: auto;
-  user-select: auto;
+  user-select: text;
 }
 
 input::-ms-clear {
