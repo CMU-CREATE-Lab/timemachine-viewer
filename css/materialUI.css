@@ -654,7 +654,7 @@
 }
 
 .materialUI div.ui-dialog.ui-widget {
-  z-index: 200 !important;
+  z-index: 2002 !important;
 }
 
 .materialUI #shareViewPanelTitle {
