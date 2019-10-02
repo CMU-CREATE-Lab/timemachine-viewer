@@ -749,6 +749,22 @@ if (!org.gigapan) {
     return rootUrl;
   }
 
+  org.gigapan.Util.docTabToGoogleSheetUrl = function docTabToGoogleSheetUrl(doctab) {
+    var docId = doctab.split('.')[0];
+    var ret = 'https://docs.google.com/spreadsheets/d/' + docId + '/edit';
+    var tabId = doctab.split('.')[1];
+    if (tabId) ret += '#gid=' + tabId;
+    return ret;
+  };
+
+  org.gigapan.Util.googleSheetUrlToDocTab = function googleSheetUrlToDocTab(url) {
+    var match = /spreadsheets\/d\/(.*?)\/(.*?[#&]gid=(\d+))?/.exec(url);
+    if (!match || match[1].len < 20) return null;
+    var ret = match[1];
+    if (match[3]) ret += '.' + match[3];
+    return ret;
+  };
+
   org.gigapan.Util.gdocToJSON = function(gdocUrl, successCallback, errorCallback, skipProxy) {
     var ROOT_GDOC_URL = skipProxy ? "https://docs.google.com/spreadsheets/d" : "https://docs-proxy.cmucreatelab.org/spreadsheets/d";
     var gdocId = gdocUrl.split("/d/")[1].split("/")[0];
@@ -766,6 +782,28 @@ if (!org.gigapan) {
         }
       }
     });
+  };
+
+  org.gigapan.Util.loadTsvData = function loadTsvData(path, callback, callerContext) {
+    if (!path || typeof(callback) !== "function") return;
+    if (path.endsWith(".tsv")) {
+      $.ajax({
+        url: path,
+        dataType: "text",
+        success: function(csvdata) {
+          callback.call(callerContext, csvdata);
+        }
+      });
+    } else {
+      // If necessary, expand docTab shared path
+      if (path.indexOf("http") != 0) {
+        path = org.gigapan.Util.docTabToGoogleSheetUrl(path);
+      }
+      // Load data from Google Sheets style URL
+      org.gigapan.Util.gdocToJSON(path, function(tsvdata) {
+        callback.call(callerContext, tsvdata);
+      });
+    }
   };
 
   org.gigapan.Util.setDrawState = function(newDoDraw) {
