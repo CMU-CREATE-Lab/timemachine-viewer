@@ -762,8 +762,11 @@ if (!org.gigapan.timelapse.Timelapse) {
           },
           text: false
         }).on("click", function() {
-          $shareUrl.text(timelapse.getSettings()['rootShareViewUrl'] + timelapse.getShareView());
-          $shareEmbedUrl.text('<iframe width="1080" height="600" src="' + timelapse.getSettings()['rootShareEmbedUrl'] + timelapse.getShareView() + '" frameborder="0" allowfullscreen></iframe>');
+          var rootShareViewUrl = timelapse.getSettings()['rootShareViewUrl'] ? timelapse.getSettings()['rootShareViewUrl'] : UTIL.getParentURL();
+          var rootShareEmbedUrl = timelapse.getSettings()['rootShareEmbedUrl'] ? timelapse.getSettings()['rootShareEmbedUrl'] : UTIL.getParentURL();
+          var shareViewParams = timelapse.getShareView();
+          $shareUrl.text(rootShareViewUrl + shareViewParams);
+          $shareEmbedUrl.text('<iframe width="1080" height="600" src="' + rootShareEmbedUrl + shareViewParams + '" frameborder="0" allowfullscreen></iframe>');
           $shareDialog.dialog('open');
         });
         $shareDialogClose.on("click", function() {
