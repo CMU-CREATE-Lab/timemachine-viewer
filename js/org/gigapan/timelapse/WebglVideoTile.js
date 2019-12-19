@@ -124,9 +124,8 @@ function WebglVideoTile(glb, tileidx, bounds, url, defaultUrl, numFrames, fps, g
     });
   }
   this._ready = false;
-  // TODO: Are these hardcoded dimensions still being used?
-  this._width = 1424;
-  this._height = 800;
+  this._width = layer.video_width;
+  this._height = layer.video_height;
   this._bounds = bounds;
   // This min/max playback rate is specified by Chrome/FireFox and clamping to it has
   // become a requirement with latest browser updates or we suffer video playback glitches.

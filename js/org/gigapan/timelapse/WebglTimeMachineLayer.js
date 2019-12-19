@@ -73,11 +73,15 @@ function WebglTimeMachineLayer(glb, canvasLayer, options) {
     // Request metadata asynchronously from tm.json
     var tmPath = this.rootUrl + '/tm.json';
     tmPath = tmPath.replace(/([^:]\/)\/+/g, "$1");
-    $.ajax({
-      url: tmPath,
-      dataType: 'json',
-      success: this.loadTm.bind(this)
-    });
+    if (cached_ajax[tmPath]) {
+      this.loadTm(cached_ajax[tmPath])
+    } else {
+      $.ajax({
+        url: tmPath,
+        dataType: 'json',
+        success: this.loadTm.bind(this)
+      });
+    }
   } else if (!this.rootUrl && this.tileRootUrl) {
     // Assume we've been given all the metadata
     this.video_width = this.video_width || 1424;
@@ -104,11 +108,15 @@ WebglTimeMachineLayer.prototype.loadTm = function(tm) {
   this.tileRootUrl = this.tileRootUrl.replace(/([^:]\/)\/+/g, "$1");
   var rPath = this.tileRootUrl + '/r.json';
   rPath = rPath.replace(/([^:]\/)\/+/g, "$1");
-  $.ajax({
-    url: rPath,
-    dataType: 'json',
-    success: this.loadR.bind(this)
-  });
+  if (cached_ajax[rPath]) {
+    this.loadR(cached_ajax[rPath]);
+  } else {
+    $.ajax({
+      url: rPath,
+      dataType: 'json',
+      success: this.loadR.bind(this)
+    });
+  }
 };
 
 // Load metadata from r.json
