@@ -1287,8 +1287,7 @@ _:-moz-tree-row(hover), .customDialog .customDialogButton .ui-button-text {
   height: 100%;
   position: absolute;
   top: 0px;
-  display: inline-block;
-  /*pointer-events: auto;*/
+  display: block;
   z-index: 1;
 }
 
