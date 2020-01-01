@@ -1069,11 +1069,11 @@ if (!org.gigapan.timelapse.Timelapse) {
           var isNumber = !isNaN(startCaptureTime);
           if (!(isNumber && startCaptureTime - 0 < 1000)) {
             if (captureTimes[0].match(/PM|AM/)) {
-              var startEpochTime = timelapse.sanitizedParseTimeGMT(startCaptureTime);
+              var startEpochTime = timelapse.sanitizedParseTimeEpoch(startCaptureTime);
               var startTimeDate = new Date(startEpochTime);
               startCaptureTime = startTimeDate.getFullYear() + "-" + ("0" + (startTimeDate.getMonth() + 1)).slice(-2) + "-" + (("0" + startTimeDate.getDate()).slice(-2)) + " " + ("0" + startTimeDate.getHours()).slice(-2) + ":" + ("0" + startTimeDate.getMinutes()).slice(-2) + ":" + ("0" + startTimeDate.getSeconds()).slice(-2);
 
-              var endEpochTime = timelapse.sanitizedParseTimeGMT(endCaptureTime);
+              var endEpochTime = timelapse.sanitizedParseTimeEpoch(endCaptureTime);
               var endTimeDate = new Date(endEpochTime);
               endCaptureTime = endTimeDate.getFullYear() + "-" + ("0" + (endTimeDate.getMonth() + 1)).slice(-2) + "-" + (("0" + endTimeDate.getDate()).slice(-2)) + " " + ("0" + endTimeDate.getHours()).slice(-2) + ":" + ("0" + endTimeDate.getMinutes()).slice(-2) + ":" + ("0" + endTimeDate.getSeconds()).slice(-2);
             }

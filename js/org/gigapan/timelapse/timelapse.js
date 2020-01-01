@@ -3519,55 +3519,7 @@ if (!window['$']) {
         }
       });
 
-      _makeVideoVisibleListener(function(videoId) {
-        // This is the first video of the dataset being displayed
-        if (videoId == firstVideoId) {
-          if (desiredInitialDate) {
-            initialTime = findExactOrClosestCaptureTime(String(desiredInitialDate)) / _getFps();
-          }
-          if (initialTime == 0) {
-            timelapseCurrentTimeInSeconds = 0;
-            // Fixes Safari/IE bug which causes the video to not be displayed if the video has no leader and the initial
-            // time is zero (the video seeked event is never fired, so videoset never gets the cue that the video
-            // should be displayed).  The fix is to simply seek half a frame in.  Yeah, the video won't be starting at
-            // *zero*, but the displayed frame will still be the right one, so...good enough.  :-)
-            //if (videoset.getLeader() <= 0 && (isSafari || isIE)) {
-            if (isSafari || isIE) {
-              var halfOfAFrame = 1 / _getFps() / 2;
-              _seek(halfOfAFrame);
-            }
-          } else {
-            timelapseCurrentTimeInSeconds = initialTime;
-            _seek(initialTime);
-          }
-
-          if (didFirstTimeOnLoad) {
-            timelapseCurrentCaptureTimeIndex = Math.min(frames - 1, Math.floor(timelapseCurrentTimeInSeconds * _getFps()));
-            // Recreate timeline slider.
-            // There seems to be an issue with the jQuery UI slider widget, since just changing the max value and refreshing
-            // the slider does not proplerly update the available range. So we have to manually recreate it...
-            if (customUI) {
-              customUI.resetCustomTimeline();
-            } else {
-              defaultUI.resetTimelineSlider();
-            }
-          } else {
-            loadSharedDataFromUnsafeURL(UTIL.getUnsafeHashString());
-            didFirstTimeOnLoad = true;
-            // Fire onTimeMachinePlayerReady the first time the page is loaded.
-            if (typeof (settings["onTimeMachinePlayerReady"]) === "function") {
-              settings["onTimeMachinePlayerReady"](timeMachineDivId, thisObj);
-            }
-          }
-          hideSpinner(viewerDivId);
-          if (typeof onNewTimelapseLoadCompleteCallBack === "function")
-            onNewTimelapseLoadCompleteCallBack();
-
-          for (var i = 0; i < datasetLoadedListeners.length; i++)
-            datasetLoadedListeners[i]();
-
-        }
-      });
+      _makeVideoVisibleListener(handleDatasetFirstVideoVisible);
 
       snaplapseForSharedTour = new org.gigapan.timelapse.Snaplapse(thisObj, settings, "noUI");
 
@@ -3651,28 +3603,11 @@ if (!window['$']) {
       // The UI is now ready and we can display it
       $("#" + viewerDivId).css("visibility", "visible");
 
-      // There is no _makeVideoVisibleListener callback for webgl, so we have to do this here.
-      // TODO: webglVideoTile should tell us more about ready status besides initial metadata loading.
-      if (viewerType == "webgl") {
-        hideSpinner(viewerDivId);
-      }
-
       // Force initial focus on viewer only if we are not inside an iframe
       if (window && (window.self === window.top)) {
         $(videoDiv).focus();
       }
-
-      // If webgl, we need to force trigger this since no video tags will fire this.
-      if (viewerType == "webgl") {
-        setTimeout(function() {
-          loadSharedDataFromUnsafeURL(UTIL.getUnsafeHashString());
-          didFirstTimeOnLoad = true;
-          // Fire onTimeMachinePlayerReady the first time the page is loaded.
-          if (typeof (settings["onTimeMachinePlayerReady"]) === "function") {
-            settings["onTimeMachinePlayerReady"](timeMachineDivId, thisObj);
-          }
-        }, 50);
-      }
+      // End of setupTimelapse()
     }
 
     var switchLayer = function(layerNum) {
@@ -3765,11 +3700,13 @@ if (!window['$']) {
       }
       settings["initialView"] = initialView;
 
-      // Set the initial desired date
-      desiredInitialDate = desiredDate;
-
-      // If the user specifies a starting time, use it.
-      if (desiredTime && typeof (desiredTime) === "number") {
+      if (desiredDate && typeof(desiredDate) === "string") {
+        // If the user specifies a date string, use it.
+        // However, need to wait until the timeline data has loaded for this dataset.
+        // See end of loadVideoSetCallback() for the next step.
+        desiredInitialDate = desiredDate;
+      } else if (desiredTime && typeof(desiredTime) === "number") {
+        // If the user specifies a starting time, use it
         initialTime = desiredTime;
         settings["initialTime"] = initialTime;
       } else {
@@ -3845,10 +3782,10 @@ if (!window['$']) {
       var low = 0, high = captureTimes.length - 1, i, newCompare;
       if (!timeToFind)
         return null;
-      var sanitized_timeToFind = sanitizedParseTimeGMT(timeToFind);
+      var sanitized_timeToFind = sanitizedParseTimeEpoch(timeToFind);
       while (low <= high) {
         i = Math.floor((low + high) / 2);
-        newCompare = sanitizedParseTimeGMT(captureTimes[i]);
+        newCompare = sanitizedParseTimeEpoch(captureTimes[i]);
         if (newCompare < sanitized_timeToFind) {
           low = i + 1;
           continue;
@@ -3870,8 +3807,8 @@ if (!window['$']) {
       if (direction === 'down') return Math.min(low, high);
       if (direction === 'up') return Math.max(low, high);
       // Otherwise, select closest
-      var lowCompare = sanitizedParseTimeGMT(captureTimes[low]);
-      var highCompare = sanitizedParseTimeGMT(captureTimes[high]);
+      var lowCompare = sanitizedParseTimeEpoch(captureTimes[low]);
+      var highCompare = sanitizedParseTimeEpoch(captureTimes[high]);
       if (Math.abs(lowCompare - sanitized_timeToFind) > Math.abs(highCompare - sanitized_timeToFind)) {
         return high;
       } else {
@@ -3880,8 +3817,8 @@ if (!window['$']) {
     };
     this.findExactOrClosestCaptureTime = findExactOrClosestCaptureTime;
 
-    var sanitizedParseTimeGMT = function(time) {
-      if (!time || (parseInt(time) - 0 < 1000)) {
+    var sanitizedParseTimeEpoch = function(time) {
+      if (!time) {
         return -1;
       }
 
@@ -3903,9 +3840,9 @@ if (!window['$']) {
         time = time.slice(0, timeZoneMatch.index);
       }
 
-      // If form HH:MM or HH:MM:SS, add date from capture array
-      if (time.match(/^\d\d:\d\d(:\d\d)?$/)) {
-        var lastCapture = new Date(sanitizedParseTimeGMT(captureTimes[Math.max(0, frames - 1)]));
+      // If form HH:MM or HH:MM:SS, add full date from capture array
+      if (time.match(/^\d\d:\d\d(:\d\d)?\s*(PM|AM)?$/)) {
+        var lastCapture = new Date(sanitizedParseTimeEpoch(captureTimes[Math.max(0, frames - 1)]));
         time = lastCapture.getFullYear() + "-" + (1e2 + (lastCapture.getMonth() + 1) + '').substr(1) + "-" + (1e2 + (lastCapture.getDate()) + '').substr(1) + " " + time;
       }
 
@@ -3919,19 +3856,27 @@ if (!window['$']) {
         } else {
           // Otherwise either we don't have a timezone or our timezone is in a format not supported by Date.parse (e.g. America/New_York)
           // Assume local system timezone in this case.
-          time += " " + new Date().toString().match(/([A-Z]+[\+-][0-9]+.*)/)[1];
+          time += " " + new Date(time).toString().match(/([A-Z]+[\+-][0-9]+.*)/)[1];
         }
-      } else if (time.match(/^(?!\D.*$).*\d\d:\d\d:\d\d$/)) {
-        // If HH:MM:SS at the end of string, add GMT timezone in proper format for Date.parse()
-        time += '.000Z';
       }
-      var epoch = Date.parse(time);
+
+      // ISO 8601 expanded representation requires dates in calendar years outside the range [0000] till [9999] to have two leading zeros.
+      // A negative sign indicates BC and a positive indcates AD. Technically the positive sign can be omitted.
+      if (time < 0) {
+        time = "-00" + UTIL.padLeft(time.substr(1), 4);
+      } else if (time > 9999) {
+        time = "+00" + time.replace("+", "");
+      } else if (time.length < 4) {
+        // If this is true, then we only have a year as a date string and we need to ensure it at least 4 characters long (ISO 8601), so pad left if necessary.
+        time = UTIL.padLeft(time, 4);
+      }
+      var epoch = (new Date(time)).getTime();
       if (epoch != 0 && (!epoch || isNaN(epoch))) {
         return -1;
       }
       return epoch;
     };
-    this.sanitizedParseTimeGMT = sanitizedParseTimeGMT;
+    this.sanitizedParseTimeEpoch = sanitizedParseTimeEpoch;
 
     var playbackTimeFromDate = function(time) {
       var b = findExactOrClosestCaptureTime(time, 'down');
@@ -3942,7 +3887,7 @@ if (!window['$']) {
       } else {
         var b_epoch = getFrameEpochTime(b);
         var e_epoch = getFrameEpochTime(e);
-        var time_epoch = sanitizedParseTimeGMT(time);
+        var time_epoch = sanitizedParseTimeEpoch(time);
         if (Math.abs(b_epoch - e_epoch) < 1e-10) {
           frameno = b;
         } else {
@@ -3954,27 +3899,37 @@ if (!window['$']) {
     this.playbackTimeFromDate = playbackTimeFromDate;
 
     // t= bt= et= from share should be of form
-    // YYYYMMDD
-    // YYYYMMDDHHMM
+    // Note that: (+-YY) is for ISO 8601 extended set (i.e. years less/more than 4 digits
+    // (+-YY)YYYYMMDD
+    // (+-YY)YYYYMMDDHHMMSS
     //
     // This function also supports old-style share link time in units of seconds in playback time
     // Note: A share date comes in as UTC if it includes HH(MM:SS)
     var playbackTimeFromShareDate = function(sharedate) {
-      if (!sharedate) {
+      var sharedateAsFloat = parseFloat(sharedate);
+      if (isNaN(sharedateAsFloat) || sharedateAsFloat == -1) {
         return 0;
       }
       // Might be an old-style # of seconds
-      if (sharedate - 0 < 1000) {
+      // We still support this old-style, but we also now support dates less than the year 1000 (the previous cuttoff for assuming old style).
+      // The old-style is actually fractional, so we take advantage of that.
+      // One edge case is the year 0. This could mean an old-style of 0 (or 0.0) seconds or the actual year 0. If it is the year, it will be passed in
+      // as "0000", which is converted to 0 by parseFloat. So we check for that difference in string length.
+      if ((sharedateAsFloat % 1 !== 0) || (sharedateAsFloat == 0 && sharedate.length <= 3)) {
         UTIL.log('DEPRECATED: Old-style share link using playback seconds: "' + sharedate + '"', 2);
-        return sharedate - 0;
+        return sharedateAsFloat;
       }
-
       var parsed;
-      if (sharedate.length == 8 && sharedate.match(/^\d+$/)) {
-        parsed = sharedate.substr(0, 4) + '-' + sharedate.substr(4, 2) + '-' + sharedate.substr(6, 2);
-      } else if (sharedate.length == 8+6 && sharedate.match(/^\d+$/)) {
-        parsed = sharedate.substr(0, 4) + '-' + sharedate.substr(4, 2) + '-' + sharedate.substr(6, 2) + ' ' +
-        sharedate.substr(8, 2) + ':' + sharedate.substr(10, 2) + ':' + sharedate.substr(12, 2) + " UTC";
+      var extendedYearOffset = 0;
+      if (sharedate.match(/^[-+]\d{6}/)) {
+        // Extended years < 0 or > 9999 are 6 digits and preceded with a - OR + respectively
+        extendedYearOffset = 3;
+      }
+      if (sharedate.length == 8+extendedYearOffset && sharedate.match(/^[-+]*\d+$/)) {
+        parsed = sharedate.substr(0, 4+extendedYearOffset) + '-' + sharedate.substr(4+extendedYearOffset, 2) + '-' + sharedate.substr(6+extendedYearOffset, 2);
+      } else if (sharedate.length == 8+extendedYearOffset+6 && sharedate.match(/^[-+]*\d+$/)) {
+        parsed = sharedate.substr(0, 4+extendedYearOffset) + '-' + sharedate.substr(4+extendedYearOffset, 2) + '-' + sharedate.substr(6+extendedYearOffset, 2) + ' ' +
+        sharedate.substr(8+extendedYearOffset, 2) + ':' + sharedate.substr(10+extendedYearOffset, 2) + ':' + sharedate.substr(12+extendedYearOffset, 2) + " UTC";
       } else {
         // Error parsing;  return beginning of playback
         UTIL.log('Error parsing share date ' + sharedate + '; returning playbackTime = 0');
@@ -3985,16 +3940,33 @@ if (!window['$']) {
     this.playbackTimeFromShareDate = playbackTimeFromShareDate;
 
     var shareDateFromFrame = function(frame, isStartOfFrame) {
-      var frameCaptureTimeStripped = thisObj.getCaptureTimes()[frame].replace(/[-/:. a-zA-Z]/g, "");
+      // Assumes capture times are of the forms (YYYY[/-]MM[/-]DD HH:MM:SS), with time precision varying (i.e. no HH:MM:SS, etc)
+      var frameCaptureTime = thisObj.getCaptureTimes()[frame];
+      var frameCaptureTimeStripped = frameCaptureTime.replace(/[-+/:. a-zA-Z]/g, "");
       var frameEpochTime = thisObj.getFrameEpochTime(frame);
+      var sliceEndIndex = frameCaptureTimeStripped.length;
+      var isExtendedYear = false;
+      if (frameCaptureTime.match(/^[+-]/)) {
+        // Extended years are six digits
+        sliceEndIndex += 2;
+        isExtendedYear = true;
+      }
       if (frameEpochTime != -1) {
-        var dateDigitString = new Date(frameEpochTime).toISOString().replace(/[-/:. a-zA-Z]/g, "").slice(0, frameCaptureTimeStripped.length);
-        // We assume only a year is being shown if the date is 4 characters
-        if (dateDigitString.length == 4) {
+        var frameEpochTimeAsIsoString = new Date(frameEpochTime).toISOString();
+        var dateDigitString = frameEpochTimeAsIsoString.replace(/[-+/:. a-zA-Z]/g, "").slice(0, sliceEndIndex);
+        // We assume only a year is being shown if the date is 4 characters OR is an expanded set with leading double zeros
+        if (dateDigitString.length == 4 || (dateDigitString.length == 6 && isExtendedYear)) {
           if (isStartOfFrame) {
             dateDigitString += "0101";
           } else {
             dateDigitString += "1231";
+          }
+        }
+        if (isExtendedYear) {
+          if (frameEpochTimeAsIsoString.indexOf("-") == 0) {
+            dateDigitString = "-" + dateDigitString;
+          } else if (frameEpochTimeAsIsoString.indexOf("+") == 0) {
+            dateDigitString = "-" + dateDigitString;
           }
         }
         return dateDigitString;
@@ -4009,7 +3981,7 @@ if (!window['$']) {
     this.shareDateFromFrame = shareDateFromFrame;
 
     var getFrameEpochTime = function(frame) {
-      return sanitizedParseTimeGMT(captureTimes[frame]);
+      return sanitizedParseTimeEpoch(captureTimes[frame]);
     };
     this.getFrameEpochTime = getFrameEpochTime;
 
@@ -4034,13 +4006,11 @@ if (!window['$']) {
       if (didFirstTimeOnLoad) {
         // Reset home view
         computeHomeView();
-
         setInitialView();
-
-        if (!view)
+        if (!view) {
           view = $.extend({}, homeView);
+        }
         _warpTo(view);
-        timelapseCurrentCaptureTimeIndex = Math.min(frames - 1, Math.floor(videoset.getCurrentTime() * _getFps()));
       } else {
         initializeUI();
         setupTimelapse();
@@ -4055,6 +4025,59 @@ if (!window['$']) {
         leader = videoset.getLeader();
         visualizer.loadContextMap();
         panoVideo = visualizer.clonePanoVideo(topLevelVideo);
+      }
+
+      // We use a short, probably unnecessary, timeout to let previous loading settle down before moving on to other things.
+      setTimeout(function() {
+        if (desiredInitialDate) {
+          initialTime = findExactOrClosestCaptureTime(String(desiredInitialDate)) / _getFps();
+          desiredInitialDate = null;
+        }
+
+        if (initialTime == 0) {
+          // Seek half a frame in to work around browser issues where seeking to zero doesn't properly fire events.
+          initialTime = 1 / _getFps() / 2;
+        }
+
+        timelapseCurrentTimeInSeconds = initialTime;
+        timelapseCurrentCaptureTimeIndex = Math.min(frames - 1, Math.floor(timelapseCurrentTimeInSeconds * _getFps()));
+
+        if (didFirstTimeOnLoad) {
+          // Reset timeline slider.
+          if (customUI) {
+            customUI.resetCustomTimeline();
+          } else {
+            defaultUI.resetTimelineSlider();
+          }
+        } else {
+          didFirstTimeOnLoad = true;
+          loadSharedDataFromUnsafeURL(UTIL.getUnsafeHashString());
+          // Fire the first time the page is loaded.
+          if (typeof(settings["onTimeMachinePlayerReady"]) === "function") {
+            settings["onTimeMachinePlayerReady"](timeMachineDivId, thisObj);
+          }
+        }
+
+        _seek(timelapseCurrentTimeInSeconds);
+
+        // There is no _makeVideoVisibleListener callback for webgl, so we have to do this here.
+        // TODO: webglVideoTile should tell us more about ready status besides initial metadata loading.
+        if (viewerType == "webgl") {
+          handleDatasetFirstVideoVisible(firstVideoId);
+        }
+      }, 50);
+    };
+
+    var handleDatasetFirstVideoVisible = function(videoId) {
+      // This is the first video of the dataset being displayed
+      if (videoId == firstVideoId) {
+        hideSpinner(viewerDivId);
+        if (typeof(onNewTimelapseLoadCompleteCallBack) === "function") {
+          onNewTimelapseLoadCompleteCallBack();
+        }
+        for (var i = 0; i < datasetLoadedListeners.length; i++) {
+          datasetLoadedListeners[i]();
+        }
       }
     };
 
