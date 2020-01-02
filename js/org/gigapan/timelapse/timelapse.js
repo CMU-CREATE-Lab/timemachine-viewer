@@ -3863,9 +3863,9 @@ if (!window['$']) {
       // ISO 8601 expanded representation requires dates in calendar years outside the range [0000] till [9999] to have two leading zeros.
       // A negative sign indicates BC and a positive indcates AD. Technically the positive sign can be omitted.
       if (time < 0) {
-        time = "-00" + UTIL.padLeft(time.substr(1), 4);
+        time = "-" + UTIL.padLeft(time.substr(1), 6);
       } else if (time > 9999) {
-        time = "+00" + time.replace("+", "");
+        time = "+" + UTIL.padLeft(time.replace("+", ""), 6);
       } else if (time.length < 4) {
         // If this is true, then we only have a year as a date string and we need to ensure it at least 4 characters long (ISO 8601), so pad left if necessary.
         time = UTIL.padLeft(time, 4);
@@ -3915,7 +3915,7 @@ if (!window['$']) {
       // The old-style is actually fractional, so we take advantage of that.
       // One edge case is the year 0. This could mean an old-style of 0 (or 0.0) seconds or the actual year 0. If it is the year, it will be passed in
       // as "0000", which is converted to 0 by parseFloat. So we check for that difference in string length.
-      if ((sharedateAsFloat % 1 !== 0) || (sharedateAsFloat == 0 && sharedate.length <= 3)) {
+      if (sharedateAsFloat % 1 !== 0 || (sharedateAsFloat == 0 && sharedate.length <= 3)) {
         UTIL.log('DEPRECATED: Old-style share link using playback seconds: "' + sharedate + '"', 2);
         return sharedateAsFloat;
       }
@@ -3942,13 +3942,14 @@ if (!window['$']) {
     var shareDateFromFrame = function(frame, isStartOfFrame) {
       // Assumes capture times are of the forms (YYYY[/-]MM[/-]DD HH:MM:SS), with time precision varying (i.e. no HH:MM:SS, etc)
       var frameCaptureTime = thisObj.getCaptureTimes()[frame];
+      var frameYearDigitLength = frameCaptureTime.split(/(?<!^)[-/]+/)[0].replace(/[+-]/,"").length;
       var frameCaptureTimeStripped = frameCaptureTime.replace(/[-+/:. a-zA-Z]/g, "");
       var frameEpochTime = thisObj.getFrameEpochTime(frame);
       var sliceEndIndex = frameCaptureTimeStripped.length;
       var isExtendedYear = false;
-      if (frameCaptureTime.match(/^[+-]/)) {
+      if (frameCaptureTime.match(/^[+-]/) || frameYearDigitLength > 4) {
         // Extended years are six digits
-        sliceEndIndex += 2;
+        sliceEndIndex += Math.max((6 - frameYearDigitLength), 0);
         isExtendedYear = true;
       }
       if (frameEpochTime != -1) {
@@ -3966,7 +3967,7 @@ if (!window['$']) {
           if (frameEpochTimeAsIsoString.indexOf("-") == 0) {
             dateDigitString = "-" + dateDigitString;
           } else if (frameEpochTimeAsIsoString.indexOf("+") == 0) {
-            dateDigitString = "-" + dateDigitString;
+            dateDigitString = "+" + dateDigitString;
           }
         }
         return dateDigitString;
@@ -3981,7 +3982,12 @@ if (!window['$']) {
     this.shareDateFromFrame = shareDateFromFrame;
 
     var getFrameEpochTime = function(frame) {
-      return sanitizedParseTimeEpoch(captureTimes[frame]);
+      var frameCaptureTime = captureTimes[frame];
+      // Check for edge case of datasets not based on time
+      if (parseFloat(frameCaptureTime) % 1 !== 0 || parseFloat(captureTimes[captureTimes.length - 1]) % 1 !== 0) {
+        return -1;
+      }
+      return sanitizedParseTimeEpoch(frameCaptureTime);
     };
     this.getFrameEpochTime = getFrameEpochTime;
 
