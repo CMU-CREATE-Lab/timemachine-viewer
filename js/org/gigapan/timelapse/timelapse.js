@@ -361,6 +361,8 @@ if (!window['$']) {
     this.CONSTANTS = CONSTANTS;
 
     var rootAppURL = org.gigapan.Util.getRootAppURL();
+    var currentLoopingParams = {};
+
 
     // Touch support
     var hasTouchSupport = UTIL.isTouchDevice();
@@ -701,32 +703,39 @@ if (!window['$']) {
     var clearShareViewTimeLoop = function() {
       clearInterval(shareViewLoopInterval);
       shareViewLoopInterval = null;
+      currentLoopingParams = {};
     };
     this.clearShareViewTimeLoop = clearShareViewTimeLoop;
 
-    var handleShareViewTimeLoop = function(beginTime, endTime, startDwell, endDwell) {
+    var handleShareViewTimeLoop = function(loopBeginTime, loopEndTime, loopStartDwell, loopEndDwell) {
       clearShareViewTimeLoop();
+
+      currentLoopingParams.beginTime = loopBeginTime;
+      currentLoopingParams.endTime = loopEndTime;
+      currentLoopingParams.startDwell = loopStartDwell;
+      currentLoopingParams.endDwell = loopEndDwell;
+
       if (thisObj.isLoading()) {
         setTimeout(function() {
-          handleShareViewTimeLoop(beginTime, endTime, startDwell, endDwell);
+          handleShareViewTimeLoop(loopBeginTime, loopEndTime, loopStartDwell, loopEndDwell);
         }, 100);
         return;
       }
       var maxDuration = thisObj.getDuration();
-      var waypointStartTime = thisObj.playbackTimeFromShareDate(String(beginTime));
+      var waypointStartTime = thisObj.playbackTimeFromShareDate(String(loopBeginTime));
       if (typeof(waypointStartTime) === "undefined") {
         waypointStartTime = 0;
       }
-      var waypointEndTime = thisObj.playbackTimeFromShareDate(String(endTime));
+      var waypointEndTime = thisObj.playbackTimeFromShareDate(String(loopEndTime));
       if (typeof(waypointEndTime) === "undefined" || waypointEndTime == ((thisObj.getNumFrames() - 1) / _getFps().toFixed(1))) {
         waypointEndTime = maxDuration;
       }
 
-      if ((waypointStartTime == 0 && waypointEndTime.toFixed(2) == maxDuration.toFixed(2)) || beginTime == endTime) {
+      if ((waypointStartTime == 0 && waypointEndTime.toFixed(2) == maxDuration.toFixed(2)) || loopBeginTime == loopEndTime) {
         return;
       }
-      startDwell = parseFloat(startDwell) || 0;
-      endDwell = parseFloat(endDwell) || 0;
+      loopStartDwell = parseFloat(loopStartDwell) || 0;
+      loopEndDwell = parseFloat(loopEndDwell) || 0;
       shareViewLoopInterval = setInterval(function() {
         if (thisObj.isPaused()) return;
         var t = thisObj.getCurrentTime();
@@ -741,8 +750,8 @@ if (!window['$']) {
             setTimeout(function() {
               thisObj.play();
               doingLoopingDwell = false;
-            }, startDwell * 1000);
-          }, endDwell * 1000);
+            }, loopStartDwell * 1000);
+          }, loopEndDwell * 1000);
         }
       }, 0);
     };
@@ -3666,6 +3675,14 @@ if (!window['$']) {
           $("#" + timeMachineDivId + " .captureTime").hide();
         }
       }
+
+      // If there are looping params currently set, this implies there is a waypoint active that is using them.
+      // It is possible a waypoint loaded before this new timeline finished loading, which would mean the duration used was incorrect.
+      // So, we need to re-run timelapse.handleShareViewTimeLoop() with the current waypoint's looping params.
+      if (Object.keys(currentLoopingParams)) {
+        timelapse.handleShareViewTimeLoop(currentLoopingParams.beginTime, currentLoopingParams.endTime, currentLoopingParams.startDwell, currentLoopingParams.endDwell);
+      }
+
       for (var i = 0; i < timelineUIChangeListeners.length; i++)
         timelineUIChangeListeners[i]();
     };

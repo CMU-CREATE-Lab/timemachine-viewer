@@ -1886,10 +1886,13 @@ if (!org.gigapan.timelapse.snaplapse) {
         };
         // It takes up to 300ms before a loading spinner may come up. Wait a bit longer to check bt/et values
         // We then check if we are still loading inside handleShareViewTimeLoop
+        // Note that timelapse.handleShareViewTimeLoop() will again if the timeline changes and this waypoint is still active.
         if (keyframe['speed'] > 0) {
           setTimeout(function() {
             timelapse.handleShareViewTimeLoop(keyframe['beginTime'], keyframe['endTime'], keyframe['startDwell'], keyframe['endDwell']);
           }, 400);
+        } else {
+          timelapse.clearShareViewTimeLoop();
         }
         if (skipAnnotation != true) {
           displaySnaplapseFrameAnnotation(keyframe);
