@@ -1181,8 +1181,14 @@ if (!org.gigapan.timelapse.snaplapse) {
                       selectAndGo($("#" + timeMachineDivId + "_snaplapse_keyframe_" + keyframeId), keyframeId, true, false, false);
                     }
                   } else {
-                    if (currentAutoModeWaypointIdx != -1) currentAutoModeWaypointIdx--;
-                  }
+                    if (isAutoModeRunning) {
+                      currentAutoModeWaypointIdx = 0;
+                    } else if (currentAutoModeWaypointIdx != -1) {
+                      // triggerAutoModeClick() increments this index counter before it goes to a waypoint,
+                      // so we need to subtract 1 here if we are not already set to do the first slide (index 0, aka -1 here).
+                      currentAutoModeWaypointIdx--;
+                    }
+                   }
                   // Check if there are not enough slides to fit into the slider
                   //var firstFrame = snaplapse.getKeyframes()[0];
                   //var $firstFrameThumbnailButton = $("#" + timeMachineDivId + "_snaplapse_keyframe_" + firstFrame.id).children(".snaplapse_keyframe_list_item_thumbnail_container_presentation");
@@ -2286,6 +2292,14 @@ if (!org.gigapan.timelapse.snaplapse) {
       // We count from 0
       return currentSelectedWaypointIndex;
     };
+
+    this.setCurrentAutoModeWaypointIdx = function(newCurrentAutoModeWaypointIdx) {
+      if (newCurrentAutoModeWaypointIdx < 0) return;
+      // triggerAutoModeClick() increments this index counter before it goes to a waypoint,
+      // so we need to subtract 1 here.
+      currentAutoModeWaypointIdx = newCurrentAutoModeWaypointIdx - 1;
+    }
+
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////
     //
