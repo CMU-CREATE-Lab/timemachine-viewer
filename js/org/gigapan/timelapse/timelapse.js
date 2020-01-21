@@ -3959,7 +3959,13 @@ if (!window['$']) {
     var shareDateFromFrame = function(frame, isStartOfFrame) {
       // Assumes capture times are of the forms (YYYY[/-]MM[/-]DD HH:MM:SS), with time precision varying (i.e. no HH:MM:SS, etc)
       var frameCaptureTime = thisObj.getCaptureTimes()[frame];
-      var frameYearDigitLength = frameCaptureTime.split(/(?<!^)[-/]+/)[0].replace(/[+-]/,"").length;
+      // Get the number of digits of the capture time year.
+      // If the first encountered '-' is at the start, replace with an '@' to ensure we don't split on it.
+      // We could do this with a negative regex lookbehind, but not all browsers support that yet.
+      if (frameCaptureTime.indexOf("-") == 0) {
+        frameCaptureTime.replace("-", "@");
+      }
+      var frameYearDigitLength = frameCaptureTime.split(/[-/]+/)[0].replace(/[@+-]/,"").length;
       var frameCaptureTimeStripped = frameCaptureTime.replace(/[-+/:. a-zA-Z]/g, "");
       var frameEpochTime = thisObj.getFrameEpochTime(frame);
       var sliceEndIndex = frameCaptureTimeStripped.length;
