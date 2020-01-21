@@ -1066,10 +1066,10 @@ if (!org.gigapan.timelapse.Timelapse) {
           var startCaptureTime = captureTimes[$startingTimeSpinner.captureTimeSpinner("value")];
           var endCaptureTime = captureTimes[$endingTimeSpinner.captureTimeSpinner("value")];
 
-          var isNumber = !isNaN(startCaptureTime);
-          if (!(isNumber && startCaptureTime - 0 < 1000)) {
+          var startEpochTime = timelapse.sanitizedParseTimeEpoch(startCaptureTime);
+
+          if (startEpochTime != -1) {
             if (captureTimes[0].match(/PM|AM/)) {
-              var startEpochTime = timelapse.sanitizedParseTimeEpoch(startCaptureTime);
               var startTimeDate = new Date(startEpochTime);
               startCaptureTime = startTimeDate.getFullYear() + "-" + ("0" + (startTimeDate.getMonth() + 1)).slice(-2) + "-" + (("0" + startTimeDate.getDate()).slice(-2)) + " " + ("0" + startTimeDate.getHours()).slice(-2) + ":" + ("0" + startTimeDate.getMinutes()).slice(-2) + ":" + ("0" + startTimeDate.getSeconds()).slice(-2);
 
