@@ -883,13 +883,11 @@ if (!org.gigapan.timelapse.Timelapse) {
                 }
               }
               var newIndex = captureTimes.indexOf(value);
-              // TODO: If it's not a number, assume a date. What if our labels are all text or some combintation of text and numbers?
               if (!isNumber) {
-                var minTime = new Date(captureTimes[0].replace(/-/g, "/")).getTime();
-                var maxTime = new Date(captureTimes[captureTimes.length - 1].replace(/-/g, "/")).getTime();
-                var dateObj = new Date(value.replace(/-/g, "/"));
-                var dateObjTime = dateObj.getTime();
-                if (dateObj != "Invalid Date") {
+                var minTime = timelapse.getFrameEpochTime(0);
+                var maxTime = timelapse.getFrameEpochTime(captureTimes.length - 1);
+                var dateObjTime = timelapse.getFrameEpochTime(newIndex);
+                if (dateObjTime != -1) {
                   if (dateObjTime > maxTime)  {
                     newIndex = this.options.max;
                   } else if (dateObjTime < minTime) {
@@ -899,9 +897,9 @@ if (!org.gigapan.timelapse.Timelapse) {
                   }
                 }
               } else {
-                if (value < captureTimes[this.options.min]) {
+                if (parseInt(value) < parseInt(captureTimes[this.options.min])) {
                   newIndex = this.options.min;
-                } else if (value > captureTimes[this.options.max]) {
+                } else if (parseInt(value) > parseInt(captureTimes[this.options.max])) {
                   newIndex = this.options.max;
                 }
               }
@@ -1069,38 +1067,8 @@ if (!org.gigapan.timelapse.Timelapse) {
           var startEpochTime = timelapse.sanitizedParseTimeEpoch(startCaptureTime);
 
           if (startEpochTime != -1) {
-            if (captureTimes[0].match(/PM|AM/)) {
-              var startTimeDate = new Date(startEpochTime);
-              startCaptureTime = startTimeDate.getFullYear() + "-" + ("0" + (startTimeDate.getMonth() + 1)).slice(-2) + "-" + (("0" + startTimeDate.getDate()).slice(-2)) + " " + ("0" + startTimeDate.getHours()).slice(-2) + ":" + ("0" + startTimeDate.getMinutes()).slice(-2) + ":" + ("0" + startTimeDate.getSeconds()).slice(-2);
-
-              var endEpochTime = timelapse.sanitizedParseTimeEpoch(endCaptureTime);
-              var endTimeDate = new Date(endEpochTime);
-              endCaptureTime = endTimeDate.getFullYear() + "-" + ("0" + (endTimeDate.getMonth() + 1)).slice(-2) + "-" + (("0" + endTimeDate.getDate()).slice(-2)) + " " + ("0" + endTimeDate.getHours()).slice(-2) + ":" + ("0" + endTimeDate.getMinutes()).slice(-2) + ":" + ("0" + endTimeDate.getSeconds()).slice(-2);
-            }
-            var startCaptureTimeArray = startCaptureTime.replace("UTC", "").replace(/[ T:]/g, "-").replace(".00Z", "").split("-");
-            var endCaptureTimeArray = endCaptureTime.replace("UTC", "").replace(/[ T:]/g, "-").replace(".00Z", "").split("-");
-
-            var startYear = parseInt(startCaptureTimeArray[0]);
-            var startMonth = parseInt(startCaptureTimeArray[1]) || 1;
-            var startDay = parseInt(startCaptureTimeArray[2]) || 1;
-            var startHour = parseInt(startCaptureTimeArray[3]) || 0;
-            var startMinute = parseInt(startCaptureTimeArray[4]) || 0;
-            var startSecond = parseInt(startCaptureTimeArray[5]) || 0;
-
-            var endYear = parseInt(endCaptureTimeArray[0]);
-            var endMonth = parseInt(endCaptureTimeArray[1]) || 12;
-            var endDay = parseInt(endCaptureTimeArray[2]) || 31;
-            var endHour = parseInt(endCaptureTimeArray[3]) || 0;
-            var endMinute = parseInt(endCaptureTimeArray[4]) || 0;
-            var endSecond = parseInt(endCaptureTimeArray[5]) || 0;
-
-            var initialISOStringLength = 19;
-            if (startHour == 0 && startMinute == 0 && startSecond == 0 && endHour == 0 && endMinute == 0 && endSecond == 0) {
-              initialISOStringLength = 10;
-            }
-
-            thumbnailBeginTime = new Date(Date.UTC(startYear, (startMonth - 1), startDay, startHour, startMinute, startSecond)).toISOString().substr(0, initialISOStringLength).replace(/[-T:]/g, "");
-            thumbnailEndTime = new Date(Date.UTC(endYear, (endMonth - 1), endDay, endHour, endMinute, endSecond)).toISOString().substr(0, initialISOStringLength).replace(/[-T:]/g, "");
+            thumbnailBeginTime = timelapse.shareDateFromFrame(captureTimes.indexOf(startCaptureTime));
+            thumbnailEndTime = timelapse.shareDateFromFrame(captureTimes.indexOf(endCaptureTime));
           } else {
             thumbnailBeginTime = timelapse.frameNumberToTime(captureTimes.indexOf(startCaptureTime));
             thumbnailEndTime = timelapse.frameNumberToTime(captureTimes.indexOf(endCaptureTime));

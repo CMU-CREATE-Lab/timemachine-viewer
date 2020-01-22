@@ -3960,12 +3960,13 @@ if (!window['$']) {
       // Assumes capture times are of the forms (YYYY[/-]MM[/-]DD HH:MM:SS), with time precision varying (i.e. no HH:MM:SS, etc)
       var frameCaptureTime = thisObj.getCaptureTimes()[frame];
       // Get the number of digits of the capture time year.
-      // If the first encountered '-' is at the start, replace with an '@' to ensure we don't split on it.
-      // We could do this with a negative regex lookbehind, but not all browsers support that yet.
+      // If the first encountered '-' is at the start, remove it to ensure we don't split on it.
+      // We could handle the split with a negative regex lookbehind, but not all browsers support that yet.
       if (frameCaptureTime.indexOf("-") == 0) {
-        frameCaptureTime.replace("-", "@");
+        frameCaptureTime.replace("-", "");
       }
-      var frameYearDigitLength = frameCaptureTime.split(/[-/]+/)[0].replace(/[@+-]/,"").length;
+      // Split on the typical year,month,day separator (- or /) and replace a '+' if it exists (i.e. an extended date past the year 9999)
+      var frameYearDigitLength = frameCaptureTime.split(/[-/]+/)[0].replace("+","").length;
       var frameCaptureTimeStripped = frameCaptureTime.replace(/[-+/:. a-zA-Z]/g, "");
       var frameEpochTime = thisObj.getFrameEpochTime(frame);
       var sliceEndIndex = frameCaptureTimeStripped.length;
