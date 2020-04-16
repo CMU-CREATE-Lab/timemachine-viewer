@@ -569,6 +569,10 @@ if (!window['$']) {
       return contextMap;
     };
 
+    this.getScale = function() {
+      return view.scale;
+    };
+
     this.getScaleBar = function() {
       return scaleBar;
     };
