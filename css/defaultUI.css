@@ -179,19 +179,48 @@ _:-moz-tree-row(hover), .customButton .ui-button-text {
 }
 
 .share {
-  position: absolute;
-  bottom: 9px;
-  right: 89px;
+  position: relative;
+  float: right;
+  right: 20px;
+  bottom: -20px;
+  margin-left: 10px;
+  background: white;
+  border: 1px solid #656565;
+  border-radius: 2px !important;
+  box-shadow: 2px 2px 3px rgba(0, 0, 0, 0.3);
+  z-index: 30;
+  outline: none;
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 11px;
+  height: 30px;
+  width: 70px;
 }
 
 .share .ui-button-text {
   margin-left: -1px;
 }
 
+.share .ui-icon-custom-share-black {
+  background: url(../images/buttons/share-black.png);
+  width: 15px;
+  height: 15px;
+  opacity: 0.5;
+  background-size: contain;
+  -webkit-background-size: contain;
+  margin-left: -1px;
+  margin-top: -8px;
+}
+
+.share:hover .ui-icon-custom-share-black {
+  opacity: 0.8;
+}
+
 .tool {
-  position: absolute;
-  bottom: 9px;
-  right: 158px;
+  position: relative;
+  float: right;
+  bottom: -20px;
+  margin-left: -10px;
+  right: 20px;
 }
 
 .tool .ui-button-text {
@@ -199,11 +228,13 @@ _:-moz-tree-row(hover), .customButton .ui-button-text {
 }
 
 .helpPlayerLabel.ui-button {
-  position: absolute;
+  position: relative;
   height: 28px;
-  bottom: 9px;
   width: 58px;
+  float: right;
   right: 20px;
+  bottom: -20px;
+  margin-left: 10px;
   background: white;
   border: 1px solid #656565;
   border-radius: 2px !important;
@@ -1030,7 +1061,7 @@ _:-moz-tree-row(hover), .customDialog .customDialogButton .ui-button-text {
 
 .customDialog .ui-dialog-title {
   position: absolute;
-  top: 6px;
+  top: 11px;
   -webkit-user-select: none;
   -khtml-user-select: none;
   -moz-user-select: none;
@@ -1044,15 +1075,15 @@ _:-moz-tree-row(hover), .customDialog .customDialogButton .ui-button-text {
   border-radius: 2px;
   background-image: none;
   position: absolute;
-  right: 0px;
-  top: 3px;
+  right: 10px;
+  top: 17px;
   width: 23px;
   height: 23px;
 }
 
-.shareView.customDialog .ui-button-icon-only .ui-icon {
+.ui-button-icon-only .ui-icon {
   margin-left: -9px;
-  margin-top: -9px;
+  margin-top: -8px;
 }
 
 .customDialog .ui-dialog-titlebar-close:focus {
@@ -1146,11 +1177,11 @@ _:-moz-tree-row(hover), .customDialog .customDialogButton .ui-button-text {
   height: 29px;
   border-radius: 0px;
   padding-left: 10px;
-  position: fixed;
+  position: sticky;
+  width: auto;
   top: 0px;
   box-shadow: 0px 0px 10px rgba(0,0,0,0.5);
   z-index: 9000;
-  width: 408px;
   margin-left: -1px;
 }
 
@@ -1805,6 +1836,7 @@ input::-ms-clear {
 
 .shareView.customDialog .accordion {
   margin: 20px;
+  height: auto;
 }
 
 .shareView.customDialog .ui-dialog-title {
@@ -1815,7 +1847,7 @@ input::-ms-clear {
 
 .shareView.customDialog .ui-dialog-titlebar-close {
   right: 12px;
-  top: 26px !important;
+  top: 14px !important;
 }
 
 .shareView.customDialog {

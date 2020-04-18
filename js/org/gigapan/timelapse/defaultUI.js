@@ -103,6 +103,7 @@ if (!org.gigapan.timelapse.Timelapse) {
     var useCustomUI = timelapse.useCustomUI();
     var showShareBtn = ( typeof (settings["showShareBtn"]) == "undefined") ? ( useCustomUI ? false : true) : settings["showShareBtn"];
     var showHomeBtn = ( typeof (settings["showHomeBtn"]) == "undefined") ? false : settings["showHomeBtn"];
+    var showHelpButton = ( typeof (settings["showHelpButton"]) == "undefined") ? ( useCustomUI ? false : true) : settings["showHelpButton"];
     var showFullScreenBtn = ( typeof (settings["showFullScreenBtn"]) == "undefined") ? true : settings["showFullScreenBtn"];
     var showMainControls = ( typeof (settings["showMainControls"]) == "undefined") ? true : settings["showMainControls"];
     var showZoomControls = ( typeof (settings["showZoomControls"]) == "undefined") ? true : settings["showZoomControls"];
@@ -166,6 +167,7 @@ if (!org.gigapan.timelapse.Timelapse) {
     var $searchBox = $("#" + timeMachineDivId + " .searchBox");
     var $searchBoxIcon = $("#" + timeMachineDivId + " .searchBoxIcon");
     var $shareButton = $("#" + viewerDivId + " .share");
+    var $playerHelpButton = $("#" + viewerDivId + " .helpPlayerLabel");
     var $shareDialogClose = $("#" + viewerDivId + " .close-share");
     var $shareSidePanelClose = $("#" + viewerDivId + " .close-right-panel");
     var $shareUrl = $("#" + viewerDivId + " .shareurl");
@@ -233,21 +235,20 @@ if (!org.gigapan.timelapse.Timelapse) {
         $playbackButton.addClass("playbackButton-touchFriendly");
       }
       // Create help button
-      var helpPlayerCheckbox = $("#" + viewerDivId + " .helpPlayerCheckbox");
-      helpPlayerCheckbox.attr("id", timeMachineDivId + "_helpPlayerCheckbox");
-      var $helpPlayerLabel = $("#" + viewerDivId + " .helpPlayerLabel");
-      $helpPlayerLabel.attr("for", timeMachineDivId + "_helpPlayerCheckbox");
-      helpPlayerCheckbox.button({
+      var $playerHelpCheckbox = $("#" + viewerDivId + " .helpPlayerCheckbox");
+      $playerHelpCheckbox.attr("id", timeMachineDivId + "_helpPlayerCheckbox");
+      $playerHelpButton.attr("for", timeMachineDivId + "_helpPlayerCheckbox");
+      $playerHelpCheckbox.button({
         icons: {
           primary: useTouchFriendlyUI ? "ui-icon-custom-help" : "ui-icon-help"
         },
         text: true
       }).change(function() {
-        if (helpPlayerCheckbox.is(":checked")) {
+        if ($playerHelpCheckbox.is(":checked")) {
           doHelpOverlay();
           $(document).one("mouseup", function(e) {
-            if ($helpPlayerLabel.has(e.target).length == 0)
-              helpPlayerCheckbox.prop("checked", false).button("refresh").change();
+            if ($playerHelpButton.has(e.target).length == 0)
+              $playerHelpCheckbox.prop("checked", false).button("refresh").change();
           });
           UTIL.addGoogleAnalyticEvent('button', 'click', 'viewer-show-help');
         } else {
@@ -301,6 +302,9 @@ if (!org.gigapan.timelapse.Timelapse) {
       if (!showShareBtn) {
         $shareButton.hide();
         $shareDialog.hide();
+      }
+      if (!showHelpButton) {
+        $playerHelpButton.hide();
       }
       // Create tool button
       if (editorEnabled || annotatorEnabled || changeDetectionEnabled) {
@@ -447,8 +451,11 @@ if (!org.gigapan.timelapse.Timelapse) {
 
     var enableShareThumbnail = function() {
       resetShareThumbnailUI();
-      setThumbnailToolAspectRatio();
-      timelapse.getThumbnailTool().showCropBox();
+      var thumbnailTool = timelapse.getThumbnailTool();
+      if (thumbnailTool) {
+        setThumbnailToolAspectRatio();
+        thumbnailTool.showCropBox();
+      }
     };
 
     var createSizePicker = function() {
@@ -721,8 +728,11 @@ if (!org.gigapan.timelapse.Timelapse) {
     this.showThumbnailToolWindow = showThumbnailToolWindow;
 
     var disableShareThumbnail = function() {
-      timelapse.getThumbnailTool().hideCropBox();
-      $timelineSelectorFiller.hide();
+      var thumbnailTool = timelapse.getThumbnailTool();
+      if (thumbnailTool) {
+        thumbnailTool.hideCropBox();
+        $timelineSelectorFiller.hide();
+      }
     };
 
     var sliderValueToTime = function(value) {
@@ -798,7 +808,7 @@ if (!org.gigapan.timelapse.Timelapse) {
           icons: {
             primary: "ui-icon-custom-share-black"
           },
-          text: false
+          text: true
         }).click(function() {
           $("#" + viewerDivId + ' .shareView').toggle("slide", { direction: "right" }, 1);
           $("#" + viewerDivId + ", #" + viewerDivId + " .shareView").toggleClass("right-panel-active");
