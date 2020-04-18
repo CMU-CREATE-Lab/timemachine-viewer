@@ -853,6 +853,14 @@ if (!window['$']) {
       var moveFn;
       keysDown.push(event.which);
       switch (event.which) {
+        // A key
+        case 65:
+          thisObj.seekToFrame(0);
+          break;
+        // S key
+        case 83:
+          thisObj.seekToFrame(thisObj.getNumFrames() - 1);
+          break
         // Escape key
         case 27:
           if (fullScreen && !browserSupportsFullScreen) {
