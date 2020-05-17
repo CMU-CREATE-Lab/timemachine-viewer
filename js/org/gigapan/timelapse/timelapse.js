@@ -704,6 +704,13 @@ if (!window['$']) {
       }
     };
 
+    var clearDefaultTimeLoop = function() {
+      window.clearTimeout(customPlaybackTimeout);
+      window.clearTimeout(loopStartTimeoutId);
+      window.clearTimeout(loopEndTimeoutId);
+    };
+    this.clearDefaultTimeLoop = clearDefaultTimeLoop;
+
     var clearShareViewTimeLoop = function() {
       clearInterval(shareViewLoopInterval);
       shareViewLoopInterval = null;
@@ -711,8 +718,14 @@ if (!window['$']) {
     };
     this.clearShareViewTimeLoop = clearShareViewTimeLoop;
 
-    var handleShareViewTimeLoop = function(loopBeginTime, loopEndTime, loopStartDwell, loopEndDwell) {
+    var clearAllTimeLoops = function() {
+      clearDefaultTimeLoop();
       clearShareViewTimeLoop();
+    };
+    this.clearAllTimeLoops = clearAllTimeLoops;
+
+    var handleShareViewTimeLoop = function(loopBeginTime, loopEndTime, loopStartDwell, loopEndDwell) {
+      clearAllTimeLoops();
 
       currentLoopingParams.beginTime = loopBeginTime;
       currentLoopingParams.endTime = loopEndTime;
@@ -748,10 +761,12 @@ if (!window['$']) {
           whichDwell = 'end';
           thisObj.pause();
           setTimeout(function() {
+            if (!doingLoopingDwell) return;
             // Seek back to the desired 'begin time'
             thisObj.seek(waypointStartTime);
             whichDwell = 'start';
             setTimeout(function() {
+              if (!doingLoopingDwell) return;
               thisObj.play();
               doingLoopingDwell = false;
             }, loopStartDwell * 1000);
@@ -830,7 +845,7 @@ if (!window['$']) {
       var newView;
       if (!bboxView || !bboxView['bbox'])
         return;
-      // For years, ne/sw was incorrectly used as the labels for nw/se. It has been corrected, but for current legacy reasons we assumed ne/sw actually refers to nw/se.
+      // For many years ne/sw was incorrectly used as the labels for nw/se. It has been corrected, but for current legacy reasons we assumed ne/sw actually refers to nw/se.
       var bboxViewNW = bboxView.bbox.nw || bboxView.bbox.ne;
       var bboxViewSE = bboxView.bbox.se || bboxView.bbox.sw;
       if (( typeof (tmJSON['projection-bounds']) !== 'undefined') && bboxViewNW && bboxViewSE && UTIL.isNumber(bboxViewNW.lat) && UTIL.isNumber(bboxViewNW.lng) && UTIL.isNumber(bboxViewSE.lat) && UTIL.isNumber(bboxViewSE.lng)) {
@@ -1486,8 +1501,8 @@ if (!window['$']) {
           var a = parabolicMotionObj.viewToPixelPoint(viewportWidth, viewportHeight, view);
           var b = parabolicMotionObj.viewToPixelPoint(viewportWidth, viewportHeight, newView);
           var path = org.gigapan.timelapse.parabolicMotion.computeParabolicPath(a, b);
-          parabolicMotionController.moveAlongPath(path);
           isMovingToWaypoint = true;
+          parabolicMotionController.moveAlongPath(path);
         }
       }
     };
@@ -1508,7 +1523,7 @@ if (!window['$']) {
         }
       } else if (newView.bbox) {// Bounding box view
         var newViewBbox = newView.bbox;
-        // For years, ne/sw was incorrectly used as the labels for nw/se. It has been corrected, but for current legacy reasons we assumed ne/sw actually refers to nw/se.
+        // For many years ne/sw was incorrectly used as the labels for nw/se. It has been corrected, but for legacy reasons we assume ne/sw actually refers to nw/se.
         var newViewBboxNW = newViewBbox.nw || newViewBbox.ne;
         var newViewBboxSE = newViewBbox.se || newViewBbox.sw;
         if (( typeof (tmJSON['projection-bounds']) !== 'undefined') && newViewBboxNW && newViewBboxSE && UTIL.isNumber(newViewBboxNW.lat) && UTIL.isNumber(newViewBboxNW.lng) && UTIL.isNumber(newViewBboxSE.lat) && UTIL.isNumber(newViewBboxSE.lng)) {
@@ -1567,8 +1582,16 @@ if (!window['$']) {
       if (hashparams.ps == 0) {
         // Really this should just set 'et' to 'bt' but since we may want an exported video/gif that spans full start to end time, and yet have the
         // ability to get a frozen frame from somewhere inbetween that range, we make use of 't' to do just that.
-        hashparams.bt = hashparams.t;
-        hashparams.et = hashparams.t;
+        var pausedTime;
+        if (options.forceToBt) {
+          pausedTime = hashparams.bt || options.bt;
+        } else if (options.isForCurrentView) {
+          pausedTime = shareDateFromFrame(thisObj.timeToFrameNumber(hashparams.t), false);
+        } else {
+          pausedTime = hashparams.t;
+        }
+        hashparams.bt = pausedTime;
+        hashparams.et = pausedTime;
       } else {
         // Get the begin time. Often used for looping purposes, but also for thumbnail generation when in screenshot mode
         if (typeof(options.bt) == "undefined") {
@@ -1576,7 +1599,6 @@ if (!window['$']) {
         } else {
           hashparams.bt = options.bt;
         }
-
         // Get the end time. Often used for looping purposes, but also for thumbnail generation when in screenshot mode
         if (typeof(options.et) == "undefined") {
           hashparams.et = shareDateFromFrame(thisObj.getNumFrames() - 1, false);
@@ -1747,7 +1769,9 @@ if (!window['$']) {
     //
     // Public methods
     //
-    this.getThumbnailOfView = function(view, width, height) {
+    this.getThumbnailOfView = function(view, width, height, isForCurrentView) {
+      isForCurrentView = typeof(isForCurrentView) == "undefined" ? true : isForCurrentView;
+
       var snaplapse = thisObj.getSnaplapse() || thisObj.getSnaplapseForPresentationSlider();
       if (snaplapse) {
         var snaplapseViewer = snaplapse.getSnaplapseViewer();
@@ -1765,7 +1789,8 @@ if (!window['$']) {
           ps : 0,
           width: width,
           height: height,
-          format : "png"
+          format : "png",
+          isForCurrentView : isForCurrentView
         };
 
         // If view is a string then it's either a share view or garbage.
@@ -2782,7 +2807,7 @@ if (!window['$']) {
         bbox = bbox.bbox;
 
       var projection = _getProjection();
-      // For years, ne/sw was incorrectly used as the labels for nw/se. It has been corrected, but for current legacy reasons we assumed ne/sw actually refers to nw/se.
+      // For many years ne/sw was incorrectly used as the labels for nw/se. It has been corrected, but for legacy reasons we assume ne/sw actually refers to nw/se.
       var newViewBboxNW = bbox.nw || bbox.ne;
       var newViewBboxSE = bbox.se || bbox.sw;
 
@@ -3658,6 +3683,7 @@ if (!window['$']) {
     this.loadNewTimelineFromObj = loadNewTimelineFromObj;
 
     var loadNewTimelineCallback = function(json) {
+      var previousCaptureTime = shareDateFromFrame(thisObj.getCurrentFrameNumber());
       setCaptureTimes(json["capture-times"]);
       var timelineVisible = $("#" + timeMachineDivId + " .controls").is(":visible") || $("#" + timeMachineDivId + " .customTimeline").is(":visible");
       if (currentTimelineStyle == "customUI") {
@@ -3688,6 +3714,10 @@ if (!window['$']) {
         }
       }
 
+      // Need to update the internal time counter. We seek to the start of the new timeline.
+      // If a different timestamp is desired, this seek will happen later in that callback or similar.
+      thisObj.seek(0);
+
       // If there are looping params currently set, this implies there is a waypoint active that is using them.
       // It is possible a waypoint loaded before this new timeline finished loading, which would mean the duration used was incorrect.
       // So, we need to re-run timelapse.handleShareViewTimeLoop() with the current waypoint's looping params.
@@ -3696,7 +3726,7 @@ if (!window['$']) {
       }
 
       for (var i = 0; i < timelineUIChangeListeners.length; i++)
-        timelineUIChangeListeners[i]();
+        timelineUIChangeListeners[i]({captureTimeBeforeTimelineChange: previousCaptureTime});
     };
 
     var loadTimelapse = function(url, desiredView, desiredTime, preserveViewAndTime, desiredDate, onLoadCompleteCallBack) {
@@ -3944,7 +3974,7 @@ if (!window['$']) {
       // The old-style is actually fractional, so we take advantage of that.
       // One edge case is the year 0. This could mean an old-style of 0 (or 0.0) seconds or the actual year 0. If it is the year, it will be passed in
       // as "0000", which is converted to 0 by parseFloat. So we check for that difference in string length.
-      if (sharedateAsFloat % 1 !== 0 || (sharedateAsFloat == 0 && sharedate.length <= 3)) {
+      if (sharedateAsFloat % 1 !== 0 || (sharedateAsFloat == 0 && String(sharedate).length <= 3)) {
         UTIL.log('DEPRECATED: Old-style share link using playback seconds: "' + sharedate + '"', 2);
         return sharedateAsFloat;
       }
@@ -4008,11 +4038,7 @@ if (!window['$']) {
         }
         return dateDigitString;
       } else {
-        if (isStartOfFrame) {
-          return 0;
-        } else {
-          return parseFloat(thisObj.getDuration().toFixed(3));
-        }
+        return timelapse.frameNumberToTime(frame);
       }
     };
     this.shareDateFromFrame = shareDateFromFrame;
