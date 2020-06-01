@@ -3684,6 +3684,11 @@ if (!window['$']) {
 
     var loadNewTimelineCallback = function(json) {
       var previousCaptureTime = shareDateFromFrame(thisObj.getCurrentFrameNumber());
+
+      json["capture-times"] = json["capture-times"].map(function (captureTime) {
+        return captureTime.replace("<", "&lt;").replace(">", "&gt;");
+      });
+
       setCaptureTimes(json["capture-times"]);
       var timelineVisible = $("#" + timeMachineDivId + " .controls").is(":visible") || $("#" + timeMachineDivId + " .customTimeline").is(":visible");
       if (currentTimelineStyle == "customUI") {

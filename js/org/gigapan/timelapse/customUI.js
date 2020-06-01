@@ -879,18 +879,18 @@ if (!org.gigapan.timelapse.Timelapse) {
         $customTimeline.append($endTimeDotContainer);
       }
       var firstFrameForFirstYear = frameDictionary[0];
-      $timeTextLeft.text(firstFrameForFirstYear["year"]).css({
+      $timeTextLeft.html(firstFrameForFirstYear["year"]).css({
         "left": firstFrameForFirstYear["x"] + "%",
         "top": currentTimeTick_height + (useTouchFriendlyUI ? 8 : 5) + "px",
         "margin-left": ($timeTextLeft.width() / -2) + "px"
       });
       var firstFrameForEndYear = frameDictionary[yearDictionary[endYear]["previousStackEndIdx"] + 1];
-      $timeTextRight.text(firstFrameForEndYear["year"]).css({
+      $timeTextRight.html(firstFrameForEndYear["year"]).css({
         "left": firstFrameForEndYear["x"] + "%",
         "top": currentTimeTick_height + (useTouchFriendlyUI ? 8 : 5) + "px",
         "margin-left": ($timeTextRight.width() / -2) + "px"
       });
-      $timeTextHover.text(firstFrameForFirstYear["year"]).css({
+      $timeTextHover.html(firstFrameForFirstYear["year"]).css({
         "left": "50%",
         "top": currentTimeTick_height + (useTouchFriendlyUI ? 8 : 5) + "px",
         "margin-left": ($timeTextHover.width() / -2) + "px"
@@ -1033,7 +1033,7 @@ if (!org.gigapan.timelapse.Timelapse) {
         var $timeTick = $timeTickContainer.children("#" + viewerDivId + " .timeTick");
         growTimeTick($timeTick);
         if (currentYearIdx != firstYear && currentYearIdx != endYear)
-          $timeTickContainer.append($timeTextHover.text(frameDictionary[currentFrameIdx]["year"]).stop(true, true).fadeIn(200));
+          $timeTickContainer.append($timeTextHover.html(frameDictionary[currentFrameIdx]["year"]).stop(true, true).fadeIn(200));
       } else
         $(event.target).addClass("closedHand");
     };
@@ -1296,7 +1296,7 @@ if (!org.gigapan.timelapse.Timelapse) {
         $monthSpinner.val(frameDictionary[frameIdx]["monthFrameIdx"]).trigger('change');
       }
       $currentTimeTick.css("left", frameDictionary[frameIdx]["x"] + "%");
-      $timeText.text(currentYear);
+      $timeText.html(currentYear);
     };
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////
