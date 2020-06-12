@@ -3685,8 +3685,9 @@ if (!window['$']) {
     var loadNewTimelineCallback = function(json) {
       var previousCaptureTime = shareDateFromFrame(thisObj.getCurrentFrameNumber());
 
+      // Sanitize capture times to exclude html tags
       json["capture-times"] = json["capture-times"].map(function (captureTime) {
-        return captureTime.replace("<", "&lt;").replace(">", "&gt;");
+        return captureTime.replace(/</g, "&lt;").replace(/>/g, "&gt;");
       });
 
       setCaptureTimes(json["capture-times"]);
