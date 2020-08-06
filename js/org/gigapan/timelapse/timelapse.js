@@ -1,4 +1,4 @@
-/**
+  /**
  * @license
  * Redistribution and use in source and binary forms ...
  * Class for managing a timelapse.
@@ -122,6 +122,11 @@ if (!window['$']) {
     // TODO: revist in regards to name spacing, though legacy support still depends upon this global state
     if (settings["enablePostMessageAPI"] && typeof(setupPostMessageHandlers) === "function") {
       setupPostMessageHandlers();
+    }
+   
+    var constrainVerticalCover = false;
+    if (settings.constrainVerticalCover) {
+      constrainVerticalCover = true;
     }
 
     // Settings
@@ -2079,7 +2084,13 @@ if (!window['$']) {
     };
 
     var _getMinScale = function() {
-      return panoView.scale * 0.5;
+      if (constrainVerticalCover) {
+	// Constraint on view is that we never show pixels above the top of web-mercator, or below the bottom
+	// Minimum scale is that at which the full web-mercator covers the viewport vertically
+	return viewportHeight / panoHeight;
+      } else {
+	return panoView.scale * 0.5;
+      }
     };
     this.getMinScale = _getMinScale;
 
@@ -2580,7 +2591,16 @@ if (!window['$']) {
       if (newView && !isNaN(newView.x) && !isNaN(newView.y) && !isNaN(newView.scale)) {
         var tempView = {};
         tempView.scale = limitScale(newView.scale);
-        if (isHyperwall) {
+	if (constrainVerticalCover) {
+	  tempView.x = Math.max(0, Math.min(panoWidth, newView.x));
+	  tempView.y = newView.y;
+          var topGap = (viewportHeight / 2 / tempView.scale ) - newView.y;
+          if (topGap > 0) tempView.y += topGap;
+          var botGap = (viewportHeight / 2 / tempView.scale) - (panoHeight - newView.y);
+          if (botGap > 0) tempView.y -= botGap;
+	  targetView.x = tempView.x;
+	  targetView.y = tempView.y;
+	} else if (isHyperwall) {
           targetView.x = newView.x;
           targetView.y = newView.y;
         } else {
