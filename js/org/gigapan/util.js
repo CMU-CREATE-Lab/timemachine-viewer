@@ -769,8 +769,13 @@ if (!org.gigapan) {
     var ROOT_GDOC_URL = skipProxy ? "https://docs.google.com/spreadsheets/d" : "https://docs-proxy.cmucreatelab.org/spreadsheets/d";
     var gdocId = gdocUrl.split("/d/")[1].split("/")[0];
     var gdocTabId = gdocUrl.split("#gid=")[1] || "0";
+    var exportPath = "/export?format=tsv&id=" + gdocId + "&gid=" + gdocTabId;
+    if (timelapse.getSettings().sheetsExportProtocol == "gviz") {
+      exportPath = "/gviz/tq?tqx=out:csv&gid=" + gdocTabId;
+    }
+
     $.ajax({
-      url: ROOT_GDOC_URL + "/" + gdocId + "/export?format=tsv&id=" + gdocId + "&gid=" + gdocTabId,
+      url: ROOT_GDOC_URL + "/" + gdocId + exportPath,
       success: function(csvData) {
         if (typeof successCallback === "function") {
           successCallback(csvData);

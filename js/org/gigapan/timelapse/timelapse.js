@@ -123,11 +123,6 @@ if (!window['$']) {
     if (settings["enablePostMessageAPI"] && typeof(setupPostMessageHandlers) === "function") {
       setupPostMessageHandlers();
     }
-   
-    var constrainVerticalCover = false;
-    if (settings.constrainVerticalCover) {
-      constrainVerticalCover = true;
-    }
 
     // Settings
     var isHyperwall = settings["isHyperwall"] || false;
@@ -189,6 +184,8 @@ if (!window['$']) {
     var annotatorEnabled = ( typeof (settings["enableAnnotator"]) == "undefined") ? false : settings["enableAnnotator"];
     var changeDetectionEnabled = ( typeof (settings["enableChangeDetection"]) == "undefined") ? false : settings["enableChangeDetection"];
     var timelineMetadataVisualizerEnabled = ( typeof (settings["enableTimelineMetadataVisualizer"]) == "undefined") ? false : settings["enableTimelineMetadataVisualizer"];
+    var constrainVerticalCover = ( typeof (settings["constrainVerticalCover"]) == "undefined") ? false : settings["constrainVerticalCover"];
+
 
     // Objects
     var videoset;
@@ -2085,11 +2082,11 @@ if (!window['$']) {
 
     var _getMinScale = function() {
       if (constrainVerticalCover) {
-	// Constraint on view is that we never show pixels above the top of web-mercator, or below the bottom
-	// Minimum scale is that at which the full web-mercator covers the viewport vertically
-	return viewportHeight / panoHeight;
+        // Constraint on view is that we never show pixels above the top of web-mercator, or below the bottom
+        // Minimum scale is that at which the full web-mercator covers the viewport vertically
+        return viewportHeight / panoHeight;
       } else {
-	return panoView.scale * 0.5;
+        return panoView.scale * 0.5;
       }
     };
     this.getMinScale = _getMinScale;
@@ -2591,16 +2588,20 @@ if (!window['$']) {
       if (newView && !isNaN(newView.x) && !isNaN(newView.y) && !isNaN(newView.scale)) {
         var tempView = {};
         tempView.scale = limitScale(newView.scale);
-	if (constrainVerticalCover) {
-	  tempView.x = Math.max(0, Math.min(panoWidth, newView.x));
-	  tempView.y = newView.y;
+        if (constrainVerticalCover) {
+          tempView.x = Math.max(0, Math.min(panoWidth, newView.x));
+          tempView.y = newView.y;
           var topGap = (viewportHeight / 2 / tempView.scale ) - newView.y;
-          if (topGap > 0) tempView.y += topGap;
+          if (topGap > 0) {
+            tempView.y += topGap;
+          }
           var botGap = (viewportHeight / 2 / tempView.scale) - (panoHeight - newView.y);
-          if (botGap > 0) tempView.y -= botGap;
-	  targetView.x = tempView.x;
-	  targetView.y = tempView.y;
-	} else if (isHyperwall) {
+          if (botGap > 0) {
+            tempView.y -= botGap;
+          }
+          targetView.x = tempView.x;
+          targetView.y = tempView.y;
+        } else if (isHyperwall) {
           targetView.x = newView.x;
           targetView.y = newView.y;
         } else {
@@ -3176,15 +3177,15 @@ if (!window['$']) {
       if (!hashVars.presentation && unsafeJSON && unsafeJSON['product-highlights-spreadsheet-path']) {
         UTIL.gdocToJSON(unsafeJSON['product-highlights-spreadsheet-path'], function(csvdata) {
           if (csvdata) {
-            var csvRawArray = csvdata.split("\n");
+            var csvRawArray = csvdata.replace(/"/g,"\t").split("\n");
             if (csvRawArray.length) {
-              var csvHeaders = csvRawArray[0].split("\t");
+              var csvHeaders = csvRawArray[0].split(/\t?,?\t/);
               var csvArray = [];
               for (var i = 1; i < csvRawArray.length; i++) {
-                var rowDataArray = csvRawArray[i].split("\t");
+                var rowDataArray = csvRawArray[i].split(/\t?,?\t/);
                 var rowDataDic = {};
                 for (var j = 0; j < rowDataArray.length; j++) {
-                  if (csvHeaders[j] == "") continue;
+                  if (!csvHeaders[j]) continue;
                   var headingName = csvHeaders[j].replace(/\r?\n?/g, '').trim();
                   var rowData = rowDataArray[j].replace(/\r?\n?/g, '').trim();
                   rowDataDic[headingName] = rowData;
