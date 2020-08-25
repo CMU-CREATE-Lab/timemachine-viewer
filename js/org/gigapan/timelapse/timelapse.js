@@ -3992,6 +3992,7 @@ if (!window['$']) {
     // This function also supports old-style share link time in units of seconds in playback time
     // Note: A share date comes in as UTC if it includes HH(MM:SS)
     var playbackTimeFromShareDate = function(sharedate) {
+      sharedate = String(sharedate);
       var sharedateAsFloat = parseFloat(sharedate);
       if (isNaN(sharedateAsFloat) || sharedateAsFloat == -1) {
         return 0;
@@ -4001,7 +4002,7 @@ if (!window['$']) {
       // The old-style is actually fractional, so we take advantage of that.
       // One edge case is the year 0. This could mean an old-style of 0 (or 0.0) seconds or the actual year 0. If it is the year, it will be passed in
       // as "0000", which is converted to 0 by parseFloat. So we check for that difference in string length.
-      if (sharedateAsFloat % 1 !== 0 || (sharedateAsFloat == 0 && String(sharedate).length <= 3)) {
+      if (sharedateAsFloat % 1 !== 0 || (sharedateAsFloat == 0 && sharedate.length <= 3)) {
         UTIL.log('DEPRECATED: Old-style share link using playback seconds: "' + sharedate + '"', 2);
         return sharedateAsFloat;
       }
