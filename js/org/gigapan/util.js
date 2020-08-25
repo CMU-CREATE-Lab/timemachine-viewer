@@ -770,7 +770,7 @@ if (!org.gigapan) {
     var gdocId = gdocUrl.split("/d/")[1].split("/")[0];
     var gdocTabId = gdocUrl.split("#gid=")[1] || "0";
     var exportPath = "/gviz/tq?tqx=out:csv&gid=" + gdocTabId;
-    if (timelapse && timelapse.getSettings().sheetsExportProtocol == "legacy") {
+    if ((timelapse && timelapse.getSettings().sheetsExportProtocol == "legacy") || org.gigapan.Util.isEarthTime()) {
       exportPath = "/export?format=tsv&id=" + gdocId + "&gid=" + gdocTabId;
     }
 
