@@ -186,7 +186,7 @@ _:-moz-tree-row(hover), .customButton .ui-button-text {
   margin-left: 10px;
   background: white;
   border: 1px solid #656565;
-  border-radius: 2px !important;
+  border-radius: 2px;
   box-shadow: 2px 2px 3px rgba(0, 0, 0, 0.3);
   z-index: 30;
   outline: none;
