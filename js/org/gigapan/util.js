@@ -769,9 +769,9 @@ if (!org.gigapan) {
     var ROOT_GDOC_URL = skipProxy ? "https://docs.google.com/spreadsheets/d" : "https://docs-proxy.cmucreatelab.org/spreadsheets/d";
     var gdocId = gdocUrl.split("/d/")[1].split("/")[0];
     var gdocTabId = gdocUrl.split("#gid=")[1] || "0";
-    var exportPath = "/export?format=tsv&id=" + gdocId + "&gid=" + gdocTabId;
-    if (timelapse && timelapse.getSettings().sheetsExportProtocol == "gviz") {
-      exportPath = "/gviz/tq?tqx=out:csv&gid=" + gdocTabId;
+    var exportPath = "/gviz/tq?tqx=out:csv&gid=" + gdocTabId;
+    if (timelapse && timelapse.getSettings().sheetsExportProtocol == "legacy") {
+      exportPath = "/export?format=tsv&id=" + gdocId + "&gid=" + gdocTabId;
     }
 
     $.ajax({
