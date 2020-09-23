@@ -1579,6 +1579,8 @@ if (!window['$']) {
         hashparams.l = options.l;
       } else if (typeof(activeEarthTimeLayers) != "undefined") {
         hashparams.l = activeEarthTimeLayers.join(",");
+      } else if (typeof(gEarthTime) != "undefined") {
+        hashparams.l = gEarthTime.layerDB.visibleLayerIds().join(",");
       }
 
       if (hashparams.ps == 0) {
