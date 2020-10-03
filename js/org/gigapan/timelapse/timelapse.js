@@ -1,4 +1,4 @@
-  /**
+/**
  * @license
  * Redistribution and use in source and binary forms ...
  * Class for managing a timelapse.
@@ -123,6 +123,7 @@ if (!window['$']) {
     if (settings["enablePostMessageAPI"] && typeof(setupPostMessageHandlers) === "function") {
       setupPostMessageHandlers();
     }
+    var verticalCoverConstraint = null;
 
     // Settings
     var isHyperwall = settings["isHyperwall"] || false;
@@ -184,8 +185,6 @@ if (!window['$']) {
     var annotatorEnabled = ( typeof (settings["enableAnnotator"]) == "undefined") ? false : settings["enableAnnotator"];
     var changeDetectionEnabled = ( typeof (settings["enableChangeDetection"]) == "undefined") ? false : settings["enableChangeDetection"];
     var timelineMetadataVisualizerEnabled = ( typeof (settings["enableTimelineMetadataVisualizer"]) == "undefined") ? false : settings["enableTimelineMetadataVisualizer"];
-    var constrainVerticalCover = ( typeof (settings["constrainVerticalCover"]) == "undefined") ? false : settings["constrainVerticalCover"];
-
 
     // Objects
     var videoset;
@@ -1026,9 +1025,9 @@ if (!window['$']) {
       var theTouch = e.changedTouches[0];
       var thisTouchCount = e.touches.length;
       if (thisTouchCount) {
-	currentTouchCount = thisTouchCount;
+        currentTouchCount = thisTouchCount;
       } else {
-	currentTouchCount = 0;
+        currentTouchCount = 0;
       }
       var mouseEvent;
       var theMouse;
@@ -2082,11 +2081,15 @@ if (!window['$']) {
       setTargetView(targetView);
     };
 
+    this.setVerticalCoverConstraint = function(ymin, ymax) {
+      verticalCoverConstraint = {ymin: ymin, ymax: ymax};
+    }
+
     var _getMinScale = function() {
-      if (constrainVerticalCover) {
-        // Constraint on view is that we never show pixels above the top of web-mercator, or below the bottom
-        // Minimum scale is that at which the full web-mercator covers the viewport vertically
-        return viewportHeight / panoHeight;
+      if (verticalCoverConstraint) {
+        // Constraint on view is that we never show pixels above the top of ymin, or below the bottom of ymax
+        // Minimum scale is that at which the ymin...ymax covers the viewport vertically
+        return viewportHeight / (verticalCoverConstraint.ymax - verticalCoverConstraint.ymin);
       } else {
         return panoView.scale * 0.5;
       }
@@ -2590,16 +2593,16 @@ if (!window['$']) {
       if (newView && !isNaN(newView.x) && !isNaN(newView.y) && !isNaN(newView.scale)) {
         var tempView = {};
         tempView.scale = limitScale(newView.scale);
-        if (constrainVerticalCover) {
+        if (verticalCoverConstraint) {
           tempView.x = Math.max(0, Math.min(panoWidth, newView.x));
           tempView.y = newView.y;
-          var topGap = (viewportHeight / 2 / tempView.scale ) - newView.y;
-          if (topGap > 0) {
-            tempView.y += topGap;
+          var top = newView.y - (viewportHeight / 2 / tempView.scale );
+          if (top < verticalCoverConstraint.ymin) {
+            tempView.y += (verticalCoverConstraint.ymin - top);
           }
-          var botGap = (viewportHeight / 2 / tempView.scale) - (panoHeight - newView.y);
-          if (botGap > 0) {
-            tempView.y -= botGap;
+          var bot = newView.y + (viewportHeight / 2 / tempView.scale);
+          if (bot > verticalCoverConstraint.ymax) {
+            tempView.y -= (bot - verticalCoverConstraint.ymax);
           }
           targetView.x = tempView.x;
           targetView.y = tempView.y;
