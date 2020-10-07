@@ -2304,7 +2304,7 @@ if (!window['$']) {
       var $viewerDiv = $("#" + viewerDivId);
       var $tiledContentHolder = $("#" + viewerDivId + " .tiledContentHolder");
       viewportWidth = $viewerDiv.width();
-      viewportHeight = $viewerDiv.height() - $tiledContentHolder.offset().top;
+      viewportHeight = $viewerDiv.height() + $viewerDiv.offset().top - $tiledContentHolder.offset().top;
 
       // TODO: scale might not be correct when we unhide viewport
       if ($( "#" + viewerDivId + ":visible").length == 0) return;
