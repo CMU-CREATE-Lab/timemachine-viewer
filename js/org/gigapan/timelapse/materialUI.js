@@ -126,7 +126,6 @@ if (!org.gigapan.timelapse.Timelapse) {
     var timelineGroupHTML = "";
     var timelineGroupSeparator = "<span class='materialTimelineDivider'>&#8226;</span>";
     var leftTimelineGroupWidth;
-    var rightTimelineGroupWidth;
     var timelineTickWidth;
     var lastSelectedGroup;
     var $tourTimeText;
@@ -186,7 +185,6 @@ if (!org.gigapan.timelapse.Timelapse) {
       $timelineTicks = $("#" + viewerDivId + " .materialTimelineTick");
 
       leftTimelineGroupWidth = $leftGroup.outerWidth(true);
-      rightTimelineGroupWidth = $rightGroup.outerWidth(true);
       lastSelectedGroup = $rightGroup;
 
       if (!addedTimelineSliderListener) {
