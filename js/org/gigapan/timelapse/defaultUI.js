@@ -1819,6 +1819,9 @@ if (!org.gigapan.timelapse.Timelapse) {
     this.setMode = setMode;
 
     var updateShareViewTextbox = function() {
+      if (!$shareDialog.is(':visible')) {
+        return;
+      }
       var parentUrl = timelapse.getSettings()['rootShareViewUrl'] ? timelapse.getSettings()['rootShareViewUrl'] : UTIL.getParentURL();
       // EarthTime specific
       var $shareViewWaypointOnlyCheckbox = $("#" + viewerDivId + " .waypoint-only");
@@ -2064,8 +2067,8 @@ if (!org.gigapan.timelapse.Timelapse) {
     if (useCustomUI) { // custom UI is being used, alter main UI accordingly
       // Create share button
       if (!showShareBtn) {
-        $("#" + viewerDivId + " .controls").hide();
-        $("#" + viewerDivId + " .shareView").hide();
+        $controls.hide();
+        $shareDialog.hide();
       }
       $captureTime.hide();
       $("#" + viewerDivId + " .toolDialog").hide();

@@ -4044,6 +4044,9 @@ if (!window['$']) {
     var shareDateFromFrame = function(frame, isStartOfFrame) {
       // Assumes capture times are of the forms (YYYY[/-]MM[/-]DD HH:MM:SS), with time precision varying (i.e. no HH:MM:SS, etc)
       var frameCaptureTime = thisObj.getCaptureTimes()[frame];
+      if (!frameCaptureTime) {
+        return 0;
+      }
       // Get the number of digits of the capture time year.
       // If the first encountered '-' is at the start, remove it to ensure we don't split on it.
       // We could handle the split with a negative regex lookbehind, but not all browsers support that yet.
