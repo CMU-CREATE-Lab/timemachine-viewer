@@ -311,6 +311,7 @@ if (!window['$']) {
     var onNewTimelapseLoadCompleteCallBack;
     var currentTimelineStyle;
     var customMaxScale;
+    var gmapsMaxLevelOverride = null;
     var keysDown = [];
     var shareViewLoopInterval;
     var timePadding = isIE || isChrome ? 0.3 : 0.0;
@@ -391,6 +392,11 @@ if (!window['$']) {
 
     this.setMaxScale = function(newMaxScale) {
       customMaxScale = newMaxScale;
+    };
+
+    // set to null to disable this override
+    this.setGmapsMaxLevel = function(maxLevel) {
+      gmapsMaxLevelOverride = maxLevel;
     };
 
     this.setDoDwell = function(state) {
@@ -2097,6 +2103,10 @@ if (!window['$']) {
     this.getMinScale = _getMinScale;
 
     var _getMaxScale = function() {
+      if (gmapsMaxLevelOverride !== null) {
+        let pixelWidthAtOverride = 256 * (2 ** gmapsMaxLevelOverride);
+        return pixelWidthAtOverride / panoWidth;
+      }
       var extraScale = 1;
       if (levelThreshold < 0) {
         // If levelThreshold is less than 0, we'll show a video that's always
