@@ -392,6 +392,7 @@ if (!window['$']) {
 
     this.setMaxScale = function(newMaxScale) {
       customMaxScale = newMaxScale;
+      gmapsMaxLevelOverride = null;
     };
 
     // set to null to disable this override
