@@ -748,14 +748,17 @@ if (!window['$']) {
       }
       var maxDuration = thisObj.getDuration();
       var waypointStartTime = thisObj.playbackTimeFromShareDate(String(loopBeginTime));
+      var maxShareDateEndTime = (thisObj.getNumFrames() - 1) / _getFps().toFixed(1);
       if (typeof(waypointStartTime) === "undefined") {
         waypointStartTime = 0;
+      } else if (waypointStartTime >= maxShareDateEndTime) {
+        waypointStartTime = maxDuration;
       }
       var waypointEndTime = thisObj.playbackTimeFromShareDate(String(loopEndTime));
-      if (typeof(waypointEndTime) === "undefined" || waypointEndTime == ((thisObj.getNumFrames() - 1) / _getFps().toFixed(1))) {
+      if (typeof(waypointEndTime) === "undefined" || waypointEndTime >= maxShareDateEndTime) {
         waypointEndTime = maxDuration;
       }
-
+      // If the bt/et range is the full time spectrum or bt/et are the same value, skip any looping.
       if ((waypointStartTime == 0 && waypointEndTime.toFixed(2) == maxDuration.toFixed(2)) || loopBeginTime == loopEndTime) {
         return;
       }
@@ -3764,7 +3767,7 @@ if (!window['$']) {
       // If there are looping params currently set, this implies there is a waypoint active that is using them.
       // It is possible a waypoint loaded before this new timeline finished loading, which would mean the duration used was incorrect.
       // So, we need to re-run timelapse.handleShareViewTimeLoop() with the current waypoint's looping params.
-      if (Object.keys(currentLoopingParams)) {
+      if (Object.keys(currentLoopingParams).length > 0) {
         timelapse.handleShareViewTimeLoop(currentLoopingParams.beginTime, currentLoopingParams.endTime, currentLoopingParams.startDwell, currentLoopingParams.endDwell);
       }
 
