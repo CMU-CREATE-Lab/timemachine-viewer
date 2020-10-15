@@ -2437,7 +2437,7 @@ if (!window['$']) {
           if (didFirstTimeOnLoad) {
             _seek(newTime);
           } else {
-            initialTime = newTime;
+            initialTime = timelapseCurrentTimeInSeconds = newTime;
           }
         }
         if (newPlaybackSpeed != null && !isNaN(newPlaybackSpeed)) {
@@ -2453,9 +2453,8 @@ if (!window['$']) {
           }
         }
         return true;
-      } else {
-        return false;
       }
+      return false;
     };
     this.loadSharedViewFromUnsafeURL = loadSharedViewFromUnsafeURL;
 
@@ -4132,9 +4131,6 @@ if (!window['$']) {
       } else {
         initializeUI();
         setupTimelapse();
-        if (playOnLoad) {
-          thisObj.play();
-        }
       }
 
       if (visualizer) {
@@ -4173,6 +4169,9 @@ if (!window['$']) {
           // Fire the first time the page is loaded.
           if (typeof(settings["onTimeMachinePlayerReady"]) === "function") {
             settings["onTimeMachinePlayerReady"](timeMachineDivId, thisObj);
+          }
+          if (playOnLoad) {
+            thisObj.play();
           }
         }
 
