@@ -400,6 +400,10 @@ if (!window['$']) {
       gmapsMaxLevelOverride = maxLevel;
     };
 
+    this.getLoopDwell = function() {
+      return loopDwell;
+    };
+
     this.setDoDwell = function(state) {
       loopDwell = state;
     };
