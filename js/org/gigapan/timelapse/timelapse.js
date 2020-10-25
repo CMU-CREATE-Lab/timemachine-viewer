@@ -3730,7 +3730,7 @@ if (!window['$']) {
 
       // Sanitize capture times to exclude html tags
       json["capture-times"] = json["capture-times"].map(function (captureTime) {
-        return captureTime.replace(/</g, "&lt;").replace(/>/g, "&gt;");
+        return String(captureTime).replace(/</g, "&lt;").replace(/>/g, "&gt;");
       });
 
       setCaptureTimes(json["capture-times"]);
