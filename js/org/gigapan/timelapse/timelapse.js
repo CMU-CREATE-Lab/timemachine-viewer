@@ -272,17 +272,7 @@ if (!window['$']) {
     var animateInterval = null;
     var lastAnimationTime;
     var keyIntervals = {};
-    var targetViewChangeListeners = [];
-    var viewChangeListeners = [];
-    var resizeListeners = [];
-    var viewEndChangeListeners = [];
-    var playbackRateChangeListeners = [];
-    var masterPlaybackRateChangeListeners = [];
-    var zoomChangeListeners = [];
-    var fullScreenChangeListeners = [];
-    var datasetLoadedListeners = [];
-    var timelineUIChangeListeners = [];
-    var parabolicMotionStoppedListeners = [];
+    var eventListeners = {};
     var thisObj = this;
     var tmJSON;
     var datasetJSON = null;
@@ -685,8 +675,10 @@ if (!window['$']) {
 
     this.changeFullScreenState = function() {
       fullScreen = !fullScreen;
-      for (var i = 0; i < fullScreenChangeListeners.length; i++)
+      var fullScreenChangeListeners = thisObj.getLisentersForEvent("fullscreen");
+      for (var i = 0; i < fullScreenChangeListeners.length; i++) {
         fullScreenChangeListeners[i](browserSupportsFullScreen);
+      }
     };
 
     this.handlePlayPause = function() {
@@ -797,6 +789,7 @@ if (!window['$']) {
         parabolicMotionController._disableAnimation();
         parabolicMotionController = null;
         if (!opts || opts && opts.doCallback) {
+          var parabolicMotionStoppedListeners = thisObj.getLisentersForEvent("parabolicmotion");
           for (var i = parabolicMotionStoppedListeners.length - 1; i >= 0; i--) {
             parabolicMotionStoppedListeners[i]();
           }
@@ -1214,95 +1207,149 @@ if (!window['$']) {
       return videoset;
     };
 
+    this.getLisentersForEvent = function(eventName) {
+      return eventListeners[eventName] || [];
+    }
+
+    this.addEventListener = function(eventName, listener) {
+      if (eventName && listener && typeof (listener) === "function") {
+        if (!eventListeners[eventName]) {
+          eventListeners[eventName] = [];
+        }
+        eventListeners[eventName].push(listener);
+      }
+    };
+
+    this.removeEventListener = function(eventName, listener) {
+      if (eventName && eventListeners[eventName] && listener && typeof (listener) === "function") {
+        for (var i = 0; i < eventListeners[eventName].length; i++) {
+          if (listener == eventListeners[eventName][i]) {
+            eventListeners[eventName].splice(i, 1);
+            return;
+          }
+        }
+      }
+    };
+
     var _addFullScreenChangeListener = function(listener) {
-      fullScreenChangeListeners.push(listener);
+      thisObj.addEventListener("fullscreen", listener);
     };
     this.addFullScreenChangeListener = _addFullScreenChangeListener;
 
     var _removeFullScreenChangeListener = function(listener) {
-      for (var i = 0; i < fullScreenChangeListeners.length; i++) {
-        if (fullScreenChangeListeners[i] == listener) {
-          fullScreenChangeListeners.splice(i, 1);
-          break;
-        }
-      }
+      thisObj.removeEventListener("fullscreen", listener);
     };
     this.removeFullScreenChangeListener = _removeFullScreenChangeListener;
 
     var _addTargetViewChangeListener = function(listener) {
-      targetViewChangeListeners.push(listener);
+      thisObj.addEventListener("targetview", listener);
     };
     this.addTargetViewChangeListener = _addTargetViewChangeListener;
 
     var _removeTargetViewChangeListener = function(listener) {
-      for (var i = 0; i < targetViewChangeListeners.length; i++) {
-        if (targetViewChangeListeners[i] == listener) {
-          targetViewChangeListeners.splice(i, 1);
-          break;
-        }
-      }
+      thisObj.removeEventListener("targetview", listener);
     };
     this.removeTargetViewChangeListener = _removeTargetViewChangeListener;
 
     var _addViewChangeListener = function(listener) {
-      viewChangeListeners.push(listener);
+      thisObj.addEventListener("view", listener);
     };
     this.addViewChangeListener = _addViewChangeListener;
 
     var _removeViewChangeListener = function(listener) {
-      for (var i = 0; i < viewChangeListeners.length; i++) {
-        if (viewChangeListeners[i] == listener) {
-          viewChangeListeners.splice(i, 1);
-          break;
-        }
-      }
+      thisObj.removeEventListener("view", listener);
     };
     this.removeViewChangeListener = _removeViewChangeListener;
 
     var addResizeListener = function(listener) {
-      resizeListeners.push(listener);
+      thisObj.addEventListener("resize", listener);
     };
     this.addResizeListener = addResizeListener;
 
     var removeResizeListener = function(listener) {
-      for (var i = 0; i < resizeListeners.length; i++) {
-        if (resizeListeners[i] == listener) {
-          resizeListeners.splice(i, 1);
-          break;
-        }
-      }
+      thisObj.removeEventListener("resize", listener);
     };
     this.removeResizeListener = removeResizeListener;
 
     var _addViewEndChangeListener = function(listener) {
-      viewEndChangeListeners.push(listener);
+      thisObj.addEventListener("viewend", listener);
     };
     this.addViewEndChangeListener = _addViewEndChangeListener;
 
     var _removeViewEndChangeListener = function(listener) {
-      for (var i = 0; i < viewEndChangeListeners.length; i++) {
-        if (viewEndChangeListeners[i] == listener) {
-          viewEndChangeListeners.splice(i, 1);
-          break;
-        }
-      }
+      thisObj.removeEventListener("viewend", listener);
     };
     this.removeViewEndChangeListener = _removeViewEndChangeListener;
 
     var _addZoomChangeListener = function(listener) {
-      zoomChangeListeners.push(listener);
+      thisObj.addEventListener("zoom", listener);
     };
     this.addZoomChangeListener = _addZoomChangeListener;
 
     var _removeZoomChangeListener = function(listener) {
-      for (var i = 0; i < zoomChangeListeners.length; i++) {
-        if (zoomChangeListeners[i] == listener) {
-          zoomChangeListeners.splice(i, 1);
-          break;
-        }
-      }
+      thisObj.removeEventListener("zoom", listener);
     };
     this.removeZoomChangeListener = _removeZoomChangeListener;
+
+    var _addPlaybackRateChangeListener = function(listener) {
+      thisObj.addEventListener("playbackrate", listener);
+    };
+    this.addPlaybackRateChangeListener = _addPlaybackRateChangeListener;
+
+    var _removePlaybackRateChangeListener = function(listener) {
+      thisObj.removeEventListener("playbackrate", listener);
+    };
+    this.removePlaybackRateChangeListener = _removePlaybackRateChangeListener;
+
+    var _addMasterPlaybackRateChangeListener = function(listener) {
+      thisObj.addEventListener("masterplaybackrate", listener);
+    };
+    this.addMasterPlaybackRateChangeListener = _addMasterPlaybackRateChangeListener;
+
+    var _removeMasterPlaybackRateChangeListener = function(listener) {
+      thisObj.removeEventListener("masterplaybackrate", listener);
+    };
+    this.removeMasterPlaybackRateChangeListener = _removeMasterPlaybackRateChangeListener;
+
+    var _addDatasetLoadedListener = function(listener) {
+      thisObj.addEventListener("datasetloaded", listener);
+    };
+    this.addDatasetLoadedListener = _addDatasetLoadedListener;
+
+    var _removeDatasetLoadedListener = function(listener) {
+      thisObj.removeEventListener("datasetloaded", listener);
+    };
+    this.removeDatasetLoadedListener = _removeDatasetLoadedListener;
+
+    var _addTimelineUIChangeListener = function(listener) {
+      thisObj.addEventListener("timelineui", listener);
+    };
+    this.addTimelineUIChangeListener = _addTimelineUIChangeListener;
+
+    var _removeTimelineUIChangeListener = function(listener) {
+      thisObj.removeEventListener("timelineui", listener);
+    };
+    this.removeTimelineUIChangeListener = _removeTimelineUIChangeListener;
+
+    var _addParabolicMotionStoppedListener = function(listener) {
+      thisObj.addEventListener("parabolicmotion", listener);
+    };
+    this.addParabolicMotionStoppedListener = _addParabolicMotionStoppedListener;
+
+    var _removeParabolicMotionStoppedListener = function(listener) {
+      thisObj.removeEventListener("parabolicmotion", listener);
+    };
+    this.removeParabolicMotionStoppedListener = _removeParabolicMotionStoppedListener;
+
+    var _addHashChangeListener = function(listener) {
+      thisObj.addEventListener("hashchange", listener);
+    };
+    this.addHashChangeListener = _addHashChangeListener;
+
+    var _removeHashChangeListener = function(listener) {
+      thisObj.removeEventListener("hashchange", listener);
+    };
+    this.removeHashChangeListener = _removeHashChangeListener;
 
     var _addVideoPauseListener = function(listener) {
       videoset.addEventListener('videoset-pause', listener);
@@ -1334,36 +1381,6 @@ if (!window['$']) {
     };
     this.removeVideoVisibleListener = _removeVideoVisibleListener;
 
-    var _addPlaybackRateChangeListener = function(listener) {
-      playbackRateChangeListeners.push(listener);
-    };
-    this.addPlaybackRateChangeListener = _addPlaybackRateChangeListener;
-
-    var _removePlaybackRateChangeListener = function(listener) {
-      for (var i = 0; i < playbackRateChangeListeners.length; i++) {
-        if (playbackRateChangeListeners[i] == listener) {
-          playbackRateChangeListeners.splice(i, 1);
-          break;
-        }
-      }
-    };
-    this.removePlaybackRateChangeListener = _removePlaybackRateChangeListener;
-
-    var _addMasterPlaybackRateChangeListener = function(listener) {
-      masterPlaybackRateChangeListeners.push(listener);
-    };
-    this.addMasterPlaybackRateChangeListener = _addMasterPlaybackRateChangeListener;
-
-    var _removeMasterPlaybackRateChangeListener = function(listener) {
-      for (var i = 0; i < masterPlaybackRateChangeListeners.length; i++) {
-        if (masterPlaybackRateChangeListeners[i] == listener) {
-          masterPlaybackRateChangeListeners.splice(i, 1);
-          break;
-        }
-      }
-    };
-    this.removeMasterPlaybackRateChangeListener = _removeMasterPlaybackRateChangeListener;
-
     var _addVideoDrawListener = function(listener) {
       videoset.addEventListener('videoset-draw', listener);
     };
@@ -1373,51 +1390,6 @@ if (!window['$']) {
       videoset.removeEventListener('videoset-draw', listener);
     };
     this.removeVideoDrawListener = _removeVideoDrawListener;
-
-    var _addDatasetLoadedListener = function(listener) {
-      datasetLoadedListeners.push(listener);
-    };
-    this.addDatasetLoadedListener = _addDatasetLoadedListener;
-
-    var _removeDatasetLoadedListener = function(listener) {
-      for (var i = 0; i < datasetLoadedListeners.length; i++) {
-        if (datasetLoadedListeners[i] == listener) {
-          datasetLoadedListeners.splice(i, 1);
-          break;
-        }
-      }
-    };
-    this.removeDatasetLoadedListener = _removeDatasetLoadedListener;
-
-    var _addTimelineUIChangeListener = function(listener) {
-      timelineUIChangeListeners.push(listener);
-    };
-    this.addTimelineUIChangeListener = _addTimelineUIChangeListener;
-
-    var _removeTimelineUIChangeListener = function(listener) {
-      for (var i = 0; i < timelineUIChangeListeners.length; i++) {
-        if (timelineUIChangeListeners[i] == listener) {
-          timelineUIChangeListeners.splice(i, 1);
-          break;
-        }
-      }
-    };
-    this.removeTimelineUIChangeListener = _removeTimelineUIChangeListener;
-
-    var _addParabolicMotionStoppedListener = function(listener) {
-      parabolicMotionStoppedListeners.push(listener);
-    };
-    this.addParabolicMotionStoppedListener = _addParabolicMotionStoppedListener;
-
-    var _removeParabolicMotionStoppedListener = function(listener) {
-      for (var i = 0; i < parabolicMotionStoppedListeners.length; i++) {
-        if (parabolicMotionStoppedListeners[i] == listener) {
-          parabolicMotionStoppedListeners.splice(i, 1);
-          break;
-        }
-      }
-    };
-    this.removeParabolicMotionStoppedListener = _removeParabolicMotionStoppedListener;
 
     var _getProjection = function(desiredProjectionType) {
       projectionType = typeof (desiredProjectionType) != 'undefined' ? desiredProjectionType : "mercator";
@@ -1483,6 +1455,7 @@ if (!window['$']) {
 
       var defaultParabolicMotionEndCallback = function() {
         defaultEndViewCallback();
+        var parabolicMotionStoppedListeners = thisObj.getLisentersForEvent("parabolicmotion");
         for (var i = parabolicMotionStoppedListeners.length - 1; i >= 0; i--) {
           parabolicMotionStoppedListeners[i]();
         }
@@ -1938,6 +1911,7 @@ if (!window['$']) {
         if (customUI) {
           customUI.setMaxPlaybackRate(newRate);
         }
+        var masterPlaybackRateChangeListeners = thisObj.getLisentersForEvent("masterplaybackrate");
         for (var i = 0; i < masterPlaybackRateChangeListeners.length; i++) {
           masterPlaybackRateChangeListeners[i](newRate);
         }
@@ -1969,6 +1943,7 @@ if (!window['$']) {
           panoVideo.playbackRate = newRate;
         }
 
+        var playbackRateChangeListeners = thisObj.getLisentersForEvent("playbackrate");
         for (var i = 0; i < playbackRateChangeListeners.length; i++) {
           playbackRateChangeListeners[i](newRate, skipUpdateUI);
         }
@@ -2288,6 +2263,7 @@ if (!window['$']) {
         changeDetectionTool.resizeUI();
       updateLocationContextUI();
       // Run listeners
+      var resizeListeners = thisObj.getLisentersForEvent("resize");
       for (var i = 0; i < resizeListeners.length; i++)
         resizeListeners[i](viewportWidth, viewportHeight);
     };
@@ -2653,12 +2629,14 @@ if (!window['$']) {
 
       refresh();
 
+      var zoomChangeListeners = thisObj.getLisentersForEvent("zoom");
       if (newView.scale.toFixed(6) != view.scale.toFixed(6)) {
         for (var i = 0; i < zoomChangeListeners.length; i++) {
           zoomChangeListeners[i](targetView);
         }
       }
 
+      var targetViewChangeListeners = thisObj.getLisentersForEvent("targetview");
       for (var i = 0; i < targetViewChangeListeners.length; i++) {
         targetViewChangeListeners[i](targetView);
       }
@@ -2808,6 +2786,7 @@ if (!window['$']) {
         animateInterval = null;
         //}
         // We are done changing the view, run listeners specific to this.
+        var viewEndChangeListeners = thisObj.getLisentersForEvent("viewend");
         for (var i = 0; i < viewEndChangeListeners.length; i++)
           viewEndChangeListeners[i](view);
       } else {
@@ -2815,6 +2794,7 @@ if (!window['$']) {
       }
       refresh();
       // Run listeners as the view changes
+      var viewChangeListeners = thisObj.getLisentersForEvent("view");
       for (var i = 0; i < viewChangeListeners.length; i++)
         viewChangeListeners[i](view);
     };
@@ -3498,8 +3478,16 @@ if (!window['$']) {
         $(window).on('beforeunload', handleLeavePageWithEditor);
       }
 
-      // On URL hash change, do share view related stuff
-      window.onhashchange = handleHashChange;
+      _addHashChangeListener(handleHashChange);
+
+      // On URL hash change, handle any relevant changes, e.g. share view related stuff
+      window.onhashchange = function() {
+        // Run hash changes in reverse order of being added, so that last added is run first.
+        var hashChangeListeners = thisObj.getLisentersForEvent("hashchange");
+        for (var i = hashChangeListeners.length - 1; i >= 0; i--) {
+          hashChangeListeners[i]();
+        }
+      };
     }
 
     var isCurrentTimeAtOrPastDuration = function() {
@@ -3774,6 +3762,7 @@ if (!window['$']) {
         timelapse.handleShareViewTimeLoop(currentLoopingParams.beginTime, currentLoopingParams.endTime, currentLoopingParams.startDwell, currentLoopingParams.endDwell);
       }
 
+      var timelineUIChangeListeners = thisObj.getLisentersForEvent("timelineui");
       for (var i = 0; i < timelineUIChangeListeners.length; i++)
         timelineUIChangeListeners[i]({captureTimeBeforeTimelineChange: previousCaptureTime});
     };
@@ -4196,6 +4185,7 @@ if (!window['$']) {
         if (typeof(onNewTimelapseLoadCompleteCallBack) === "function") {
           onNewTimelapseLoadCompleteCallBack();
         }
+        var datasetLoadedListeners = thisObj.getLisentersForEvent("datasetloaded");
         for (var i = 0; i < datasetLoadedListeners.length; i++) {
           datasetLoadedListeners[i]();
         }
