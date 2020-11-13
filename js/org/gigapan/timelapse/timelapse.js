@@ -675,7 +675,7 @@ if (!window['$']) {
 
     this.changeFullScreenState = function() {
       fullScreen = !fullScreen;
-      var fullScreenChangeListeners = thisObj.getLisentersForEvent("fullscreen");
+      var fullScreenChangeListeners = thisObj.getListenersForEvent("fullscreen");
       for (var i = 0; i < fullScreenChangeListeners.length; i++) {
         fullScreenChangeListeners[i](browserSupportsFullScreen);
       }
@@ -789,7 +789,7 @@ if (!window['$']) {
         parabolicMotionController._disableAnimation();
         parabolicMotionController = null;
         if (!opts || opts && opts.doCallback) {
-          var parabolicMotionStoppedListeners = thisObj.getLisentersForEvent("parabolicmotion");
+          var parabolicMotionStoppedListeners = thisObj.getListenersForEvent("parabolicmotion");
           for (var i = parabolicMotionStoppedListeners.length - 1; i >= 0; i--) {
             parabolicMotionStoppedListeners[i]();
           }
@@ -1207,7 +1207,7 @@ if (!window['$']) {
       return videoset;
     };
 
-    this.getLisentersForEvent = function(eventName) {
+    this.getListenersForEvent = function(eventName) {
       return eventListeners[eventName] || [];
     }
 
@@ -1455,7 +1455,7 @@ if (!window['$']) {
 
       var defaultParabolicMotionEndCallback = function() {
         defaultEndViewCallback();
-        var parabolicMotionStoppedListeners = thisObj.getLisentersForEvent("parabolicmotion");
+        var parabolicMotionStoppedListeners = thisObj.getListenersForEvent("parabolicmotion");
         for (var i = parabolicMotionStoppedListeners.length - 1; i >= 0; i--) {
           parabolicMotionStoppedListeners[i]();
         }
@@ -1911,7 +1911,7 @@ if (!window['$']) {
         if (customUI) {
           customUI.setMaxPlaybackRate(newRate);
         }
-        var masterPlaybackRateChangeListeners = thisObj.getLisentersForEvent("masterplaybackrate");
+        var masterPlaybackRateChangeListeners = thisObj.getListenersForEvent("masterplaybackrate");
         for (var i = 0; i < masterPlaybackRateChangeListeners.length; i++) {
           masterPlaybackRateChangeListeners[i](newRate);
         }
@@ -1943,7 +1943,7 @@ if (!window['$']) {
           panoVideo.playbackRate = newRate;
         }
 
-        var playbackRateChangeListeners = thisObj.getLisentersForEvent("playbackrate");
+        var playbackRateChangeListeners = thisObj.getListenersForEvent("playbackrate");
         for (var i = 0; i < playbackRateChangeListeners.length; i++) {
           playbackRateChangeListeners[i](newRate, skipUpdateUI);
         }
@@ -2263,7 +2263,7 @@ if (!window['$']) {
         changeDetectionTool.resizeUI();
       updateLocationContextUI();
       // Run listeners
-      var resizeListeners = thisObj.getLisentersForEvent("resize");
+      var resizeListeners = thisObj.getListenersForEvent("resize");
       for (var i = 0; i < resizeListeners.length; i++)
         resizeListeners[i](viewportWidth, viewportHeight);
     };
@@ -2629,14 +2629,14 @@ if (!window['$']) {
 
       refresh();
 
-      var zoomChangeListeners = thisObj.getLisentersForEvent("zoom");
+      var zoomChangeListeners = thisObj.getListenersForEvent("zoom");
       if (newView.scale.toFixed(6) != view.scale.toFixed(6)) {
         for (var i = 0; i < zoomChangeListeners.length; i++) {
           zoomChangeListeners[i](targetView);
         }
       }
 
-      var targetViewChangeListeners = thisObj.getLisentersForEvent("targetview");
+      var targetViewChangeListeners = thisObj.getListenersForEvent("targetview");
       for (var i = 0; i < targetViewChangeListeners.length; i++) {
         targetViewChangeListeners[i](targetView);
       }
@@ -2786,7 +2786,7 @@ if (!window['$']) {
         animateInterval = null;
         //}
         // We are done changing the view, run listeners specific to this.
-        var viewEndChangeListeners = thisObj.getLisentersForEvent("viewend");
+        var viewEndChangeListeners = thisObj.getListenersForEvent("viewend");
         for (var i = 0; i < viewEndChangeListeners.length; i++)
           viewEndChangeListeners[i](view);
       } else {
@@ -2794,7 +2794,7 @@ if (!window['$']) {
       }
       refresh();
       // Run listeners as the view changes
-      var viewChangeListeners = thisObj.getLisentersForEvent("view");
+      var viewChangeListeners = thisObj.getListenersForEvent("view");
       for (var i = 0; i < viewChangeListeners.length; i++)
         viewChangeListeners[i](view);
     };
@@ -3483,7 +3483,7 @@ if (!window['$']) {
       // On URL hash change, handle any relevant changes, e.g. share view related stuff
       window.onhashchange = function() {
         // Run hash changes in reverse order of being added, so that last added is run first.
-        var hashChangeListeners = thisObj.getLisentersForEvent("hashchange");
+        var hashChangeListeners = thisObj.getListenersForEvent("hashchange");
         for (var i = hashChangeListeners.length - 1; i >= 0; i--) {
           hashChangeListeners[i]();
         }
@@ -3762,7 +3762,7 @@ if (!window['$']) {
         handleShareViewTimeLoop(currentLoopingParams.beginTime, currentLoopingParams.endTime, currentLoopingParams.startDwell, currentLoopingParams.endDwell);
       }
 
-      var timelineUIChangeListeners = thisObj.getLisentersForEvent("timelineui");
+      var timelineUIChangeListeners = thisObj.getListenersForEvent("timelineui");
       for (var i = 0; i < timelineUIChangeListeners.length; i++)
         timelineUIChangeListeners[i]({captureTimeBeforeTimelineChange: previousCaptureTime});
     };
@@ -4185,7 +4185,7 @@ if (!window['$']) {
         if (typeof(onNewTimelapseLoadCompleteCallBack) === "function") {
           onNewTimelapseLoadCompleteCallBack();
         }
-        var datasetLoadedListeners = thisObj.getLisentersForEvent("datasetloaded");
+        var datasetLoadedListeners = thisObj.getListenersForEvent("datasetloaded");
         for (var i = 0; i < datasetLoadedListeners.length; i++) {
           datasetLoadedListeners[i]();
         }
