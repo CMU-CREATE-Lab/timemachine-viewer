@@ -3042,8 +3042,8 @@ if (!window['$']) {
 
     var drawToWebgl = function() {
       gl.clear(gl.COLOR_BUFFER_BIT);
-      timelapse.lastFrameCompletelyDrawn = true;
-      webglTimeMachineLayer.draw(timelapse.getView(), { videoTile: true, vectorTile: false });
+      thisObj.lastFrameCompletelyDrawn = true;
+      webglTimeMachineLayer.draw(thisObj.getView(), { videoTile: true, vectorTile: false });
       org.gigapan.Util.requestAnimationFrame.call(window, drawToWebgl);
     };
 
@@ -3167,7 +3167,7 @@ if (!window['$']) {
     this.loadSharedDataFromUnsafeURL = loadSharedDataFromUnsafeURL;
 
     var loadUnsafePanelContent = function(unsafeJSON) {
-      var snaplapseForPresentationSlider = timelapse.getSnaplapseForPresentationSlider();
+      var snaplapseForPresentationSlider = thisObj.getSnaplapseForPresentationSlider();
 
       if (!snaplapseForPresentationSlider) return;
 
@@ -3759,7 +3759,7 @@ if (!window['$']) {
       // It is possible a waypoint loaded before this new timeline finished loading, which would mean the duration used was incorrect.
       // So, we need to re-run timelapse.handleShareViewTimeLoop() with the current waypoint's looping params.
       if (Object.keys(currentLoopingParams).length > 0) {
-        timelapse.handleShareViewTimeLoop(currentLoopingParams.beginTime, currentLoopingParams.endTime, currentLoopingParams.startDwell, currentLoopingParams.endDwell);
+        handleShareViewTimeLoop(currentLoopingParams.beginTime, currentLoopingParams.endTime, currentLoopingParams.startDwell, currentLoopingParams.endDwell);
       }
 
       var timelineUIChangeListeners = thisObj.getLisentersForEvent("timelineui");
@@ -4080,7 +4080,7 @@ if (!window['$']) {
         }
         return dateDigitString;
       } else {
-        return timelapse.frameNumberToTime(frame);
+        return frameNumberToTime(frame);
       }
     };
     this.shareDateFromFrame = shareDateFromFrame;
