@@ -615,10 +615,11 @@ if (!org.gigapan) {
 
   org.gigapan.Util.addGoogleAnalyticEvent = function(category, action, label) {
     var settings, isGoogleAnalyticEventTrackingEnabled;
-    if ( typeof timelapse != "undefined") {
+    if (typeof(timelapse) != "undefined") {
       settings = timelapse.getSettings();
-      if ( typeof settings != "undefined")
+      if (typeof(settings) != "undefined") {
         isGoogleAnalyticEventTrackingEnabled = ( typeof (settings["isGoogleAnalyticEventTrackingEnabled"]) == "undefined") ? false : settings["isGoogleAnalyticEventTrackingEnabled"];
+      }
     }
     if ( typeof (ga) != "undefined" && isGoogleAnalyticEventTrackingEnabled)
       ga('send', 'event', category, action, label);
@@ -770,7 +771,7 @@ if (!org.gigapan) {
     var gdocId = gdocUrl.split("/d/")[1].split("/")[0];
     var gdocTabId = gdocUrl.split("#gid=")[1] || "0";
     var exportPath = "/gviz/tq?tqx=out:csv&gid=" + gdocTabId;
-    if ((timelapse && timelapse.getSettings().sheetsExportProtocol == "legacy") || org.gigapan.Util.isEarthTime()) {
+    if ((typeof(timelapse) != "undefined" && timelapse.getSettings().sheetsExportProtocol == "legacy") || org.gigapan.Util.isEarthTime()) {
       exportPath = "/export?format=tsv&id=" + gdocId + "&gid=" + gdocTabId;
     }
 
@@ -813,7 +814,7 @@ if (!org.gigapan) {
 
   org.gigapan.Util.setDrawState = function(newDoDraw) {
     doDraw = newDoDraw;
-    if (timelapse && !doDraw) {
+    if (typeof(timelapse) != "undefined" && !doDraw) {
       var videoset = timelapse.getVideoset();
       var canvasContext = videoset.getCanvasContext();
       var canvas = videoset.getCanvas();
