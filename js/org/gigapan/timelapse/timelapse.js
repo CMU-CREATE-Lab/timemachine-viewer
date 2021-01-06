@@ -3751,20 +3751,26 @@ if (!window['$']) {
         }
       }
 
-      // Need to update the internal time counter. We seek to the start of the new timeline.
-      // If a different timestamp is desired, this seek will happen later in that callback or similar.
-      thisObj.seek(0);
+      // Need short delay for the UI to update above
+      setTimeout(function() {
+        // Need to update the internal time counter. We seek to the start of the new timeline.
+        // If a different timestamp is desired, this seek will happen later in that callback or similar.
+        thisObj.seek(0);
 
-      // If there are looping params currently set, this implies there is a waypoint active that is using them.
-      // It is possible a waypoint loaded before this new timeline finished loading, which would mean the duration used was incorrect.
-      // So, we need to re-run timelapse.handleShareViewTimeLoop() with the current waypoint's looping params.
-      if (Object.keys(currentLoopingParams).length > 0) {
-        handleShareViewTimeLoop(currentLoopingParams.beginTime, currentLoopingParams.endTime, currentLoopingParams.startDwell, currentLoopingParams.endDwell);
-      }
+        // The playback rate may have changed between the timeline changing, so set the playback rate again to ensure the UI shows the correct state.
+        thisObj.setPlaybackRate(thisObj.getPlaybackRate());
 
-      var timelineUIChangeListeners = thisObj.getListenersForEvent("timelineui");
-      for (var i = 0; i < timelineUIChangeListeners.length; i++)
-        timelineUIChangeListeners[i]({captureTimeBeforeTimelineChange: previousCaptureTime});
+        // If there are looping params currently set, this implies there is a waypoint active that is using them.
+        // It is possible a waypoint loaded before this new timeline finished loading, which would mean the duration used was incorrect.
+        // So, we need to re-run timelapse.handleShareViewTimeLoop() with the current waypoint's looping params.
+        if (Object.keys(currentLoopingParams).length > 0) {
+          handleShareViewTimeLoop(currentLoopingParams.beginTime, currentLoopingParams.endTime, currentLoopingParams.startDwell, currentLoopingParams.endDwell);
+        }
+
+        var timelineUIChangeListeners = thisObj.getListenersForEvent("timelineui");
+        for (var i = 0; i < timelineUIChangeListeners.length; i++)
+          timelineUIChangeListeners[i]({captureTimeBeforeTimelineChange: previousCaptureTime});
+      }, 10);
     };
 
     var loadTimelapse = function(url, desiredView, desiredTime, preserveViewAndTime, desiredDate, onLoadCompleteCallBack) {
