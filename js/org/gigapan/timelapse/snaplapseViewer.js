@@ -182,7 +182,7 @@ if (!org.gigapan.timelapse.snaplapse) {
     var scrollBarWidth = UTIL.getScrollBarWidth();
     var KEYFRAME_THUMBNAIL_WIDTH = 126;
     var KEYFRAME_THUMBNAIL_HEIGHT = 73;
-    var currentSelectedWaypointIndex;
+    var currentSelectedWaypointIndex = -1;
 
     this.addEventListener = function(eventName, listener) {
       if (eventName && listener && typeof (listener) == "function") {
@@ -2291,6 +2291,10 @@ if (!org.gigapan.timelapse.snaplapse) {
     this.getCurrentWaypointIndex = function() {
       // We count from 0
       return currentSelectedWaypointIndex;
+    };
+
+    this.isWaypointContainerVisible = function() {
+      return $("#" + timeMachineDivId + " .presentationSlider").is(":visible");
     };
 
     this.setCurrentAutoModeWaypointIdx = function(newCurrentAutoModeWaypointIdx) {

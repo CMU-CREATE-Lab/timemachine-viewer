@@ -818,7 +818,7 @@ if (!org.gigapan.timelapse.Timelapse) {
             var snaplapse = timelapse.getSnaplapseForPresentationSlider();
             if (snaplapse) {
               var snaplapseViewer = snaplapse.getSnaplapseViewer();
-              if (snaplapseViewer.getCurrentWaypointIndex() == -1 || !isEarthTime || isEarthTimeMinimal) {
+              if (!snaplapseViewer.isWaypointContainerVisible() || !isEarthTime || isEarthTimeMinimal) {
                 $("#" + viewerDivId + " .presentation-mode-share-input").hide();
               } else  {
                 $("#" + viewerDivId + " .presentation-mode-share-input").show();
