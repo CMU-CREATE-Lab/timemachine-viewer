@@ -863,7 +863,7 @@ if (!Math.uuid) {
 
           if (storyDescription && mainShareView) {
             rowCount++;
-            csvRow['Waypoint Title'] = csvRow['Waypoint Title'].replace('#', '');
+            csvRow['Waypoint Title'] = csvRow['Waypoint Title'].replace(/#/g, '');
             waypointCSVCollection.push(csvRow);
           }
         } else {
