@@ -3245,7 +3245,8 @@ if (!window['$']) {
       }
       $(".etDrawerContainerTitle").text(unsafeJSON['product-title'] || "My Project");
       if (unsafeJSON['product-about']) {
-        $(".etDrawerProductAboutDescriptionContent").text(unsafeJSON['product-about']);
+        var sanitizedHTML = UTIL.sanitizeHTMLStr(unsafeJSON['product-about']);
+        $(".etDrawerProductAboutDescriptionContent").html(sanitizedHTML);
       } else {
         $(".etDrawerAbout, .etDrawerAbout + .etDrawerSectionSeparator").hide();
       }
