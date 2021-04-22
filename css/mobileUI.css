@@ -25,8 +25,9 @@
 
 .etMobileSearchOverlay {
   position: absolute;
+  top: 52px;
   width: 100%;
-  height: calc(100% - 61px);
+  height: calc(100% - 52px);
   background: white;
   z-index: 9001;
   display: none;
