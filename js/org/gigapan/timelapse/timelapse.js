@@ -2145,7 +2145,7 @@ if (!window['$']) {
     this.isSpinnerShowing = _isSpinnerShowing;
 
     var _fullScreen = function() {
-      var viewerDiv = $('#' + viewerDivId)[0];
+      var timeMachineDiv = $('#' + timeMachineDivId)[0];
       if (browserSupportsFullScreen) {
         if (fullScreen) {
           if (document.exitFullscreen) {
@@ -2160,14 +2160,14 @@ if (!window['$']) {
             document.webkitCancelFullScreen();
           }
         } else {
-          if (viewerDiv.requestFullscreen) {
-            viewerDiv.requestFullscreen();
-          } else if (viewerDiv.msRequestFullscreen) {
-            viewerDiv.msRequestFullscreen();
-          } else if (viewerDiv.mozRequestFullScreen) {
-            viewerDiv.mozRequestFullScreen();
-          } else if (viewerDiv.webkitRequestFullScreen) {
-            viewerDiv.webkitRequestFullScreen();
+          if (timeMachineDiv.requestFullscreen) {
+            timeMachineDiv.requestFullscreen();
+          } else if (timeMachineDiv.msRequestFullscreen) {
+            timeMachineDiv.msRequestFullscreen();
+          } else if (timeMachineDiv.mozRequestFullScreen) {
+            timeMachineDiv.mozRequestFullScreen();
+          } else if (timeMachineDiv.webkitRequestFullScreen) {
+            timeMachineDiv.webkitRequestFullScreen();
           }
         }
       } else {
