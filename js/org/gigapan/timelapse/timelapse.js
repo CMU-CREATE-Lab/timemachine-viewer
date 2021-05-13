@@ -371,6 +371,14 @@ if (!window['$']) {
     //
     // Public methods
     //
+    this.setCaptureTimes = function(newCaptureTimes) {
+      captureTimes = newCaptureTimes;
+      frames = captureTimes.length;
+      timelapseDurationInSeconds = Math.max(0, (frames - 0.7) / _getFps());
+      videoset.setDuration((1 / _getFps()) * frames);
+      timelapseCurrentCaptureTimeIndex = Math.max(0, Math.min(frames - 1, Math.floor(timelapseCurrentTimeInSeconds * _getFps())));
+    };
+
     this.getUtil = function () {
       return UTIL;
     };
@@ -2380,14 +2388,6 @@ if (!window['$']) {
     // Private methods
     //
 
-    var setCaptureTimes = function(newCaptureTimes) {
-      captureTimes = newCaptureTimes;
-      frames = captureTimes.length;
-      timelapseDurationInSeconds = (frames - 0.7) / _getFps();
-      videoset.setDuration((1 / _getFps()) * frames);
-      timelapseCurrentCaptureTimeIndex = Math.min(frames - 1, Math.floor(timelapseCurrentTimeInSeconds * _getFps()));
-    };
-
     // Handle any hash variables related to time machines
     var handleHashChange = function() {
       var unsafeHashString = UTIL.getUnsafeHashString();
@@ -3037,7 +3037,7 @@ if (!window['$']) {
           tmJSON["capture-times"].push("--");
         }
       }
-      setCaptureTimes(tmJSON["capture-times"]);
+      thisObj.setCaptureTimes(tmJSON["capture-times"]);
     };
 
     var drawToWebgl = function() {
@@ -3722,7 +3722,7 @@ if (!window['$']) {
         return String(captureTime).replace(/</g, "&lt;").replace(/>/g, "&gt;");
       });
 
-      setCaptureTimes(json["capture-times"]);
+      thisObj.setCaptureTimes(json["capture-times"]);
       var timelineVisible = $("#" + timeMachineDivId + " .controls").is(":visible") || $("#" + timeMachineDivId + " .customTimeline").is(":visible");
       if (currentTimelineStyle == "customUI") {
         $("#" + timeMachineDivId + " .controls").hide();
