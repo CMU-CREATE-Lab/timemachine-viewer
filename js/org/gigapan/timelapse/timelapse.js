@@ -159,6 +159,8 @@ if (!window['$']) {
     // TODO: Legacy
     thumbnailToolOptions.thumbnailServerHost = settings["thumbnailServerHost"];
     thumbnailToolOptions.headlessClientHost = settings["headlessClientHost"];
+    // This allows exports using the legacy thumbnail export code to set a start/end time (note does not include date information; e.g. HHMMSS only)
+    thumbnailToolOptions.thumbnailsSupportStartEndTimes = settings["thumbnailsSupportStartEndTimes"];
 
     var showSizePicker = settings["showSizePicker"] || false;
     var visualizerGeometry = {
@@ -3921,7 +3923,7 @@ if (!window['$']) {
     };
     this.findExactOrClosestCaptureTime = findExactOrClosestCaptureTime;
 
-    var sanitizedParseTimeEpoch = function(time) {
+    var sanitizedParseTimeEpoch = function(time, forceInputAsUTC) {
       if (!time) {
         return -1;
       }
@@ -3936,7 +3938,7 @@ if (!window['$']) {
       time = time.replace(/^\s+|\s+$/g, '');
 
       // If timezone
-      var timeZoneMatch = time.match(/\s+(GMT[-+]\d+|UTC).*|(\s+\D+\/\D+)$/);
+      var timeZoneMatch = forceInputAsUTC ? [""," UTC"] : time.match(/\s+(GMT[-+]\d+|UTC).*|(\s+\D+\/\D+)$/);
       var hasTimeZoneInfo = false;
       if (timeZoneMatch) {
         hasTimeZoneInfo = true;
@@ -4044,7 +4046,7 @@ if (!window['$']) {
     };
     this.playbackTimeFromShareDate = playbackTimeFromShareDate;
 
-    var shareDateFromFrame = function(frame, isStartOfFrame) {
+    var shareDateFromFrame = function(frame, isStartOfFrame, forceFrameTimeAsUTC) {
       // Assumes capture times are of the forms (YYYY[/-]MM[/-]DD HH:MM:SS), with time precision varying (i.e. no HH:MM:SS, etc)
       var frameCaptureTime = thisObj.getCaptureTimes()[frame];
       if (!frameCaptureTime) {
@@ -4059,7 +4061,7 @@ if (!window['$']) {
       // Split on the typical year,month,day separator (- or /) and replace a '+' if it exists (i.e. an extended date past the year 9999)
       var frameYearDigitLength = frameCaptureTime.split(/[-/]+/)[0].replace("+","").length;
       var frameCaptureTimeStripped = frameCaptureTime.replace(/[-+/:. a-zA-Z]/g, "");
-      var frameEpochTime = thisObj.getFrameEpochTime(frame);
+      var frameEpochTime = thisObj.getFrameEpochTime(frame, forceFrameTimeAsUTC);
       var sliceEndIndex = frameCaptureTimeStripped.length;
       var isExtendedYear = false;
       if (frameCaptureTime.match(/^[+-]/) || frameYearDigitLength > 4) {
@@ -4085,6 +4087,10 @@ if (!window['$']) {
             dateDigitString = "+" + dateDigitString;
           }
         }
+        // If string includes HHMM, ensure SS is always part of it too
+        if (dateDigitString.length == 12 && dateDigitString.length < 14) {
+          dateDigitString += "00";
+        }
         return dateDigitString;
       } else {
         return frameNumberToTime(frame);
@@ -4092,13 +4098,13 @@ if (!window['$']) {
     };
     this.shareDateFromFrame = shareDateFromFrame;
 
-    var getFrameEpochTime = function(frame) {
+    var getFrameEpochTime = function(frame, forceFrameTimeAsUTC) {
       var frameCaptureTime = captureTimes[frame];
       // Check for edge case of datasets not based on time
       if (parseFloat(frameCaptureTime) % 1 !== 0 || parseFloat(captureTimes[captureTimes.length - 1]) % 1 !== 0) {
         return -1;
       }
-      return sanitizedParseTimeEpoch(frameCaptureTime);
+      return sanitizedParseTimeEpoch(frameCaptureTime, forceFrameTimeAsUTC);
     };
     this.getFrameEpochTime = getFrameEpochTime;
 
