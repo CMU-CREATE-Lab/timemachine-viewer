@@ -977,7 +977,7 @@ _:-moz-tree-row(hover), .ui-spinner-input {
 
 .customDialog .customDialogButton {
   height: 20px;
-  min-width: 60px;
+  min-width: 58px;
   border-radius: 1px;
   background-image: none;
 }

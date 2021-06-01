@@ -799,7 +799,7 @@ if (!org.gigapan.timelapse.Timelapse) {
             select.addRange(range);
           }
           document.execCommand('copy');
-          setButtonTooltip("Copied", $this, 750);
+          setButtonTooltip("Copied", $this, 1000);
           window.getSelection().removeAllRanges();
         });
       } else {
@@ -846,14 +846,10 @@ if (!org.gigapan.timelapse.Timelapse) {
         }).mouseup(function(e) {
           e.preventDefault();
         });
-        $shareUrlCopyTextButton.button().click(function(event) {
+        $shareUrlCopyTextButton.button().on("click", function(event) {
           $shareUrl.select();
           document.execCommand('copy');
-          setButtonTooltip("Copied", $shareUrlCopyTextButton);
-        }).hover(function() {
-          setButtonTooltip("Copy to clipboard", $shareUrlCopyTextButton);
-        }, function() {
-          setButtonTooltip("", $shareUrlCopyTextButton);
+          setButtonTooltip("Copied", $(this), 1000);
         });
         // Share view accordion
         if (!showThumbnailTool) {
@@ -1164,8 +1160,9 @@ if (!org.gigapan.timelapse.Timelapse) {
           handleThumbnailDurationChange();
           $(".generate-thumbnail .ui-button-text").text("Generate Video");
         }).on("mouseover", function() {
-          if ($(this).hasClass("disabled")) {
-            setButtonTooltip("Duration needs to be longer", $(this));
+          var $this = $(this);
+          if ($this.hasClass("disabled")) {
+            setButtonTooltip("Duration needs to be longer", $this);
           }
         }).on("mouseout", function() {
           setButtonTooltip("", $(this));
@@ -1198,11 +1195,7 @@ if (!org.gigapan.timelapse.Timelapse) {
           tempInput.select();
           document.execCommand("copy");
           document.body.removeChild(tempInput);
-          setButtonTooltip("Copied", $thumbnailPreviewCopyTextButton);
-        }).hover(function() {
-          setButtonTooltip("Copy to clipboard", $thumbnailPreviewCopyTextButton);
-        }, function() {
-          setButtonTooltip("", $thumbnailPreviewCopyTextButton);
+          setButtonTooltip("Copied", $(this), 1000);
         });
 
         $thumbnailPreviewCopyDataButton.button().click(function(event) {
@@ -1220,21 +1213,13 @@ if (!org.gigapan.timelapse.Timelapse) {
             select.addRange(range);
           }
           document.execCommand('copy');
-          setButtonTooltip("Copied", $thumbnailPreviewCopyDataButton);
+          setButtonTooltip("Copied", $(this), 1000);
           window.getSelection().removeAllRanges();
-        }).hover(function() {
-          setButtonTooltip("Copy to clipboard", $thumbnailPreviewCopyDataButton);
-        }, function() {
-          setButtonTooltip("", $thumbnailPreviewCopyDataButton);
         });
 
         $thumbnailPreviewCopyDownloadButton.button().click(function(event) {
           download($(this).data("download-url"), "export." + $(this).data("download-type"), null);
-          setButtonTooltip("Downloading", $thumbnailPreviewCopyDownloadButton);
-        }).hover(function() {
-          setButtonTooltip("Download to your computer", $thumbnailPreviewCopyDownloadButton);
-        }, function() {
-          setButtonTooltip("", $thumbnailPreviewCopyDownloadButton);
+          setButtonTooltip("Downloading...", $(this), 1000);
         });
 
         timelapse.addViewEndChangeListener(function() {
@@ -1260,7 +1245,6 @@ if (!org.gigapan.timelapse.Timelapse) {
 
     var handleThumbnailDurationChange = function() {
       thumbnailDurationInFrames = Math.max(1, $endingTimeSpinner.captureTimeSpinner("value") - $startingTimeSpinner.captureTimeSpinner("value") + 1);
-
       if (thumbnailDurationInFrames == 1) {
         $thumbnailImageSelector.children().text("Image");
 
@@ -1292,7 +1276,7 @@ if (!org.gigapan.timelapse.Timelapse) {
         $thumbnailImageSelector.children().text("GIF");
         $(".thumbnail-start-delay, .thumbnail-end-delay").prop('disabled', false);
         $thumbnailPlaybackRate.button("enable");
-        if (isEarthTime) {
+        if (!isEarthTime) {
           $thumbnailVideoSelector.removeClass("disabled");
         }
         //$(".smooth-playback").prop("disabled", false);
