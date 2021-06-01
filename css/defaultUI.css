@@ -140,7 +140,7 @@ body, html {
   right: 20px;
   background: white;
   border: 1px solid #656565;
-  border-radius: 2px !important;
+  border-radius: 4px;
   box-shadow: 2px 2px 3px rgba(0, 0, 0, 0.3);
   z-index: 30;
   outline: none;
@@ -632,7 +632,6 @@ _:-moz-tree-row(hover), .helpPlayerLabel .ui-button-text {
 }
 
 .pan .ui-button {
-  display: none;
   position: absolute;
   width: 20px;
   height: 20px;
@@ -646,6 +645,11 @@ _:-moz-tree-row(hover), .helpPlayerLabel .ui-button-text {
   top: 20px;
   right: 20px;
   z-index: 15;
+}
+
+.sideToolBar.top-left-align {
+  right: unset;
+  left: 20px;
 }
 
 .verticalWaypointDrawerContainer .sideToolBar {
@@ -821,6 +825,7 @@ _:-moz-tree-row(hover), .helpPlayerLabel .ui-button-text {
 
 .zoomall.ui-button {
   margin-top: 20px !important;
+  border-radius: 4px;
 }
 
 .zoomall .ui-icon {

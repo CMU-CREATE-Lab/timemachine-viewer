@@ -101,13 +101,15 @@ if (!org.gigapan.timelapse.Timelapse) {
 
     // Settings
     var useCustomUI = timelapse.useCustomUI();
-    var showShareBtn = ( typeof (settings["showShareBtn"]) == "undefined") ? ( useCustomUI ? false : true) : settings["showShareBtn"];
-    var showHomeBtn = ( typeof (settings["showHomeBtn"]) == "undefined") ? false : settings["showHomeBtn"];
-    var showHelpButton = ( typeof (settings["showHelpButton"]) == "undefined") ? ( useCustomUI ? false : true) : settings["showHelpButton"];
-    var showFullScreenBtn = ( typeof (settings["showFullScreenBtn"]) == "undefined") ? true : settings["showFullScreenBtn"];
-    var showMainControls = ( typeof (settings["showMainControls"]) == "undefined") ? true : settings["showMainControls"];
-    var showZoomControls = ( typeof (settings["showZoomControls"]) == "undefined") ? true : settings["showZoomControls"];
-    var showPanControls = ( typeof (settings["showPanControls"]) == "undefined") ? true : settings["showPanControls"];
+    var showShareBtn = (typeof(settings["showShareBtn"]) == "undefined") ? ( useCustomUI ? false : true) : settings["showShareBtn"];
+    var showHelpButton = (typeof(settings["showHelpButton"]) == "undefined") ? ( useCustomUI ? false : true) : settings["showHelpButton"];
+    var showFullScreenBtn = (typeof(settings["showFullScreenBtn"]) == "undefined") ? true : settings["showFullScreenBtn"];
+    var showMainControls = (typeof(settings["showMainControls"]) == "undefined") ? true : settings["showMainControls"];
+    var sideControlsInfo = settings["sideControlsInfo"] || {};
+    sideControlsInfo.position = (typeof(settings["sideControlsInfo"]["position"]) == "undefined") ? "top-right" : sideControlsInfo.position;
+    sideControlsInfo.showZoomControls = (typeof(settings["sideControlsInfo"]["showZoomControls"]) == "undefined") ? ((typeof(settings["showZoomControls"]) == "undefined") ? true : settings["showZoomControls"]) : sideControlsInfo.showZoomControls;
+    sideControlsInfo.showPanControls = (typeof(settings["sideControlsInfo"]["showPanControls"]) == "undefined") ? ((typeof(settings["showPanControls"]) == "undefined") ? false : settings["showPanControls"]) : sideControlsInfo.showPanControls;
+    sideControlsInfo.showHomeBtn = (typeof(settings["sideControlsInfo"]["showHomeBtn"]) == "undefined") ? ((typeof(settings["showHomeBtn"]) == "undefined") ? false : settings["showHomeBtn"]) : sideControlsInfo.showHomeBtn;
     var showEditorOnLoad = ( typeof (settings["showEditorOnLoad"]) == "undefined") ? false : settings["showEditorOnLoad"];
     var showThumbnailTool = ( typeof (settings["showThumbnailTool"]) == "undefined") ? false : settings["showThumbnailTool"];
     var editorEnabled = timelapse.isEditorEnabled();
@@ -1448,14 +1450,20 @@ if (!org.gigapan.timelapse.Timelapse) {
     };
 
     var createSideToolBar = function() {
-      if (showPanControls)
+      if (sideControlsInfo.position == "top-left") {
+        $("#" + viewerDivId + " .sideToolBar").addClass("top-left-align");
+      }
+      if (sideControlsInfo.showPanControls) {
         createPanControl();
-      if (showZoomControls)
+      }
+      if (sideControlsInfo.showZoomControls) {
         createZoomControl();
+      }
     };
 
     var createPanControl = function() {
       var $pan = $("#" + viewerDivId + " .pan");
+      $pan.css("display", "block");
       // Create pan left button
       $pan.append('<div class="panLeft"></div>');
       $("#" + viewerDivId + " .panLeft").button({
@@ -1602,7 +1610,7 @@ if (!org.gigapan.timelapse.Timelapse) {
         clearInterval(intervalId);
       });
       // Create zoom all button
-      if (showHomeBtn) {
+      if (sideControlsInfo.showHomeBtn) {
         $zoom.append('<button class="zoomall" title="Home"></button>');
         $("#" + viewerDivId + " .zoomall").button({
           icons: {
@@ -1911,13 +1919,13 @@ if (!org.gigapan.timelapse.Timelapse) {
     this.toggleMainControls = _toggleMainControls;
 
     var _toggleZoomControls = function() {
-      showZoomControls = !showZoomControls;
+      sideControlsInfo.showZoomControls = !sideControlsInfo.showZoomControls;
       $("#" + viewerDivId + " .zoom").toggle();
     };
     this.toggleZoomControls = _toggleZoomControls;
 
     var _togglePanControls = function() {
-      showPanControls = !showPanControls;
+      sideControlsInfo.showPanControls = !sideControlsInfo.showPanControls;
       $("#" + viewerDivId + " .pan").toggle();
     };
     this.togglePanControls = _togglePanControls;
