@@ -132,7 +132,7 @@ body, html {
   margin-top: -11px;
 }
 
-.fullScreen {
+.fullScreen.ui-button {
   position: absolute;
   width: 36px;
   height: 36px;
