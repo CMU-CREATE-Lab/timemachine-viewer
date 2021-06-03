@@ -120,7 +120,7 @@ if (!org.gigapan.timelapse.Timelapse) {
     var $materialNowViewingClose = $("#" + viewerDivId + " .materialNowViewingContent .close");
     var $timelineTicks;
     var $selectedTimelineTick;
-    var $shareButton = $("#" + viewerDivId + " .share");
+    var $shareButton = $("#" + viewerDivId + " .sharePicker");
     var $timelineDisabledContainer = $("#" + viewerDivId + " .materialTimelineDisabled");
     var $waypointDrawerContainerToggle = $("#" + viewerDivId + " .waypointDrawerContainerToggle");
     var timelineGroupHTML = "";

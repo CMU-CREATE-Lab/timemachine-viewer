@@ -127,7 +127,7 @@ if (!org.gigapan.timelapse.Timelapse) {
     var $searchBoxAutoCompleteContainer;
     var $layerButton = $("#" + viewerDivId + " .etMobileLayersButton");
     var $playbackButton = $("#" + viewerDivId + " .playbackButton");
-    var $shareButton = $("#" + viewerDivId + " .share");
+    var $shareButton = $("#" + viewerDivId + " .sharePicker");
     var $timelineDisabledContainer = $("#" + viewerDivId + " .materialTimelineDisabled");
 
 

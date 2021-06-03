@@ -178,7 +178,7 @@ _:-moz-tree-row(hover), .customButton .ui-button-text {
   margin-top: -2px;
 }
 
-.share {
+.sharePicker.ui-button {
   position: relative;
   float: right;
   right: 20px;
@@ -196,12 +196,12 @@ _:-moz-tree-row(hover), .customButton .ui-button-text {
   width: 70px;
 }
 
-.share .ui-button-text {
+.sharePicker .ui-button-text {
   margin-left: -1px;
 }
 
-.share .ui-icon-custom-share-black {
-  background: url(../images/buttons/share-black.png);
+.sharePicker .ui-icon-custom-share-black {
+  background: url(../images/buttons/sharing-icon-black.png);
   width: 15px;
   height: 15px;
   opacity: 0.5;
@@ -211,7 +211,7 @@ _:-moz-tree-row(hover), .customButton .ui-button-text {
   margin-top: -8px;
 }
 
-.share:hover .ui-icon-custom-share-black {
+.sharePicker:hover .ui-icon-custom-share-black {
   opacity: 0.8;
 }
 
@@ -1625,7 +1625,7 @@ input::-ms-clear {
   padding-bottom: 20px;
 }
 
-.shareViewModal .share-link-container, .shareViewModal .embed-link-container {
+.shareViewModal .share-link-container-content, .shareViewModal .embed-link-container-content {
   font-size: 13px;
   border: 1px solid #f4f4f4;
   background-color: #f4f4f4;

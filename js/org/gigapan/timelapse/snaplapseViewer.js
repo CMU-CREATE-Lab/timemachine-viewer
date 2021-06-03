@@ -1008,7 +1008,7 @@ if (!org.gigapan.timelapse.snaplapse) {
           }
 
           if (isMobileDevice) {
-            $(".waypointDrawerContainer, .etMobileLayersButton, .share").hide();
+            $(".waypointDrawerContainer, .etMobileLayersButton, .sharePicker").hide();
             $playbackButton.hide();
           } else if (!useCustomUI) {
             $sideToolbar.hide();
@@ -1078,7 +1078,7 @@ if (!org.gigapan.timelapse.snaplapse) {
           }
 
           if (isMobileDevice) {
-            $(".waypointDrawerContainer, .etMobileLayersButton, .share").show();
+            $(".waypointDrawerContainer, .etMobileLayersButton, .sharePicker").show();
             $playbackButton.show();
           } else if (!useCustomUI) {
             $sideToolbar.show();

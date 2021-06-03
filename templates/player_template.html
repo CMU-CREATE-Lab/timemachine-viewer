@@ -99,7 +99,7 @@
     <button class="toggleSpeed" id="slowSpeed" title="Toggle playback speed">
       Slow
     </button>
-    <button class="share" title="Share">
+    <button class="sharePicker" title="Share content">
       Share
     </button>
     <button class="tool customButton" title="Tools">
@@ -175,7 +175,7 @@
   <div class="shareViewModal">
     <div id="share-link-container-main">
       <p class="heading">Share Current View</p>
-      <div class="share-link-container">
+      <div class="share-link-container-content">
         <div class="shareurl always-selectable"></div>
         <span class="copy-text-button shareurl-copy-text-button"></span>
       </div>
@@ -183,7 +183,7 @@
     <div id="embed-link-container-main">
       <br>
       <p class="heading">Embed Current View</p>
-      <div class="embed-link-container">
+      <div class="embed-link-container-content">
         <div class="shareembed always-selectable"></div>
         <span class="copy-text-button shareembed-copy-text-button"></span>
       </div>
@@ -203,8 +203,8 @@
     </div>
     <div class="accordion">
       <h3>Share as link</h3>
-      <div id="share-link-container">
-        <table class="share-link">
+      <div id="share-link-container-main">
+        <table class="share-link-container-content">
           <tr>
             <td><input type="text" class="shareurl" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"></td>
             <td><div class="shareurl-copy-text-button customDialogButton">Copy</div></td>

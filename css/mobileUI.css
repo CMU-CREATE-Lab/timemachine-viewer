@@ -174,7 +174,7 @@
   opacity: 1;
 }
 
-.mobileUI .playbackButton.ui-state-disabled, .mobileUI .share.ui-state-disabled {
+.mobileUI .playbackButton.ui-state-disabled, .mobileUI .sharePicker.ui-state-disabled {
   opacity: 0.35;
 }
 
@@ -234,7 +234,7 @@
   box-shadow: 0px 3px 6px rgba(0,0,0,0.3);
 }
 
-.mobileUI .share {
+.mobileUI .sharePicker {
   width: 40px;
   height: 40px;
   position: absolute;
@@ -253,8 +253,8 @@
   display: none;
 }
 
-.mobileUI .share .ui-icon-custom-share-black {
-  background-image: url(../images/buttons/share-black.png);
+.mobileUI .sharePicker .ui-icon-custom-share-black {
+  background-image: url(../images/buttons/sharing-icon-black.png);
   margin-top: -10px;
   margin-left: -11px;
   background-size: 20px 20px;

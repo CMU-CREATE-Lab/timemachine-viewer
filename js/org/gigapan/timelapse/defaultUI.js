@@ -168,7 +168,7 @@ if (!org.gigapan.timelapse.Timelapse) {
     var $searchBoxClear = $("#" + timeMachineDivId + " .searchBoxClearIcon");
     var $searchBox = $("#" + timeMachineDivId + " .searchBox");
     var $searchBoxIcon = $("#" + timeMachineDivId + " .searchBoxIcon");
-    var $shareButton = $("#" + viewerDivId + " .share");
+    var $shareButton = $("#" + viewerDivId + " .sharePicker");
     var $playerHelpButton = $("#" + viewerDivId + " .helpPlayerLabel");
     var $shareDialogClose = $("#" + viewerDivId + " .close-share");
     var $shareSidePanelClose = $("#" + viewerDivId + " .close-right-panel");
