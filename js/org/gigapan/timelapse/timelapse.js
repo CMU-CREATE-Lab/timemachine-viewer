@@ -1218,7 +1218,7 @@ if (!window['$']) {
     };
 
     this.getListenersForEvent = function(eventName) {
-      return eventListeners[eventName] || [];
+      return eventListeners[eventName] ? eventListeners[eventName].slice() : [];
     }
 
     this.addEventListener = function(eventName, listener) {
@@ -1232,7 +1232,7 @@ if (!window['$']) {
 
     this.removeEventListener = function(eventName, listener) {
       if (eventName && eventListeners[eventName] && listener && typeof (listener) === "function") {
-        for (var i = 0; i < eventListeners[eventName].length; i++) {
+        for (var i = eventListeners[eventName].length - 1; i >= 0; i--) {
           if (listener == eventListeners[eventName][i]) {
             eventListeners[eventName].splice(i, 1);
             return;
@@ -2274,8 +2274,9 @@ if (!window['$']) {
       updateLocationContextUI();
       // Run listeners
       var resizeListeners = thisObj.getListenersForEvent("resize");
-      for (var i = 0; i < resizeListeners.length; i++)
+      for (var i = 0; i < resizeListeners.length; i++) {
         resizeListeners[i](viewportWidth, viewportHeight);
+      }
     };
     this.onresize = onresize;
 
@@ -2789,16 +2790,18 @@ if (!window['$']) {
         //}
         // We are done changing the view, run listeners specific to this.
         var viewEndChangeListeners = thisObj.getListenersForEvent("viewend");
-        for (var i = 0; i < viewEndChangeListeners.length; i++)
+        for (var i = 0; i < viewEndChangeListeners.length; i++) {
           viewEndChangeListeners[i](view);
+        }
       } else {
         view = pixelBoundingBoxToPixelCenter(_computeMotion(pixelCenterToPixelBoundingBoxView(view).bbox, pixelCenterToPixelBoundingBoxView(targetView).bbox, t));
       }
       refresh();
       // Run listeners as the view changes
       var viewChangeListeners = thisObj.getListenersForEvent("view");
-      for (var i = 0; i < viewChangeListeners.length; i++)
+      for (var i = 0; i < viewChangeListeners.length; i++) {
         viewChangeListeners[i](view);
+      }
     };
 
     //// Views with scale ////
@@ -3771,8 +3774,9 @@ if (!window['$']) {
         }
 
         var timelineUIChangeListeners = thisObj.getListenersForEvent("timelineui");
-        for (var i = 0; i < timelineUIChangeListeners.length; i++)
+        for (var i = 0; i < timelineUIChangeListeners.length; i++) {
           timelineUIChangeListeners[i]({captureTimeBeforeTimelineChange: previousCaptureTime});
+        }
       }, 10);
     };
 
