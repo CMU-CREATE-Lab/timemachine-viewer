@@ -1608,16 +1608,12 @@ if (!window['$']) {
       }
 
       // Get the start dwell. Relevant for looping with begin time and end time
-      if (typeof(options.startDwell) == "undefined") {
-        hashparams.startDwell = 0;
-      } else {
+      if (typeof(options.startDwell) != "undefined") {
         hashparams.startDwell = options.startDwell;
       }
 
       // Get the end dwell. Relevant for looping with begin time and end time
-      if (typeof(options.endDwell) == "undefined") {
-        hashparams.endDwell = 0;
-      } else {
+      if (typeof(options.endDwell) != "undefined") {
         hashparams.endDwell = options.endDwell;
       }
 
