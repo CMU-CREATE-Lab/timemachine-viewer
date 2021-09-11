@@ -306,6 +306,8 @@ if (!window['$']) {
     var gmapsMaxLevelOverride = null;
     var keysDown = [];
     var shareViewLoopInterval;
+    var shareViewLoopStartTimeoutId;
+    var shareViewLoopEndTimeoutId
     var timePadding = isIE || isChrome ? 0.3 : 0.0;
     // animateRate in milliseconds, 40 means 25 FPS
     var animateRate = 40;
@@ -709,16 +711,18 @@ if (!window['$']) {
       if (_isPaused()) {
         if (isCurrentTimeAtOrPastDuration() && thisObj.getPlaybackRate() > 0) {
           _seek(0);
-          _play();
-        } else {
-          _play();
         }
+        _play();
       } else {
         _pause();
       }
     };
 
     var clearDefaultTimeLoop = function() {
+      if (doingLoopingDwell) {
+        doingLoopingDwell = false;
+        _play();
+      }
       window.clearTimeout(customPlaybackTimeout);
       window.clearTimeout(loopStartTimeoutId);
       window.clearTimeout(loopEndTimeoutId);
@@ -726,7 +730,13 @@ if (!window['$']) {
     this.clearDefaultTimeLoop = clearDefaultTimeLoop;
 
     var clearShareViewTimeLoop = function() {
-      clearInterval(shareViewLoopInterval);
+      if (doingLoopingDwell) {
+        doingLoopingDwell = false;
+        _play();
+      }
+      window.clearInterval(shareViewLoopInterval);
+      window.clearTimeout(shareViewLoopStartTimeoutId);
+      window.clearTimeout(shareViewLoopEndTimeoutId);
       shareViewLoopInterval = null;
       currentLoopingParams = {};
     };
@@ -777,12 +787,12 @@ if (!window['$']) {
           doingLoopingDwell = true;
           whichDwell = 'end';
           thisObj.pause();
-          setTimeout(function() {
+          loopStartTimeoutId = setTimeout(function() {
             if (!doingLoopingDwell) return;
             // Seek back to the desired 'begin time'
             thisObj.seek(waypointStartTime);
             whichDwell = 'start';
-            setTimeout(function() {
+            loopEndTimeoutId = setTimeout(function() {
               if (!doingLoopingDwell) return;
               thisObj.play();
               doingLoopingDwell = false;
@@ -800,6 +810,9 @@ if (!window['$']) {
         parabolicMotionController = null;
         if (!opts || opts && opts.doCallback) {
           var parabolicMotionStoppedListeners = thisObj.getListenersForEvent("parabolicmotion");
+          // Run through listeners in reverse order of being added, so that last added is run first.
+          // At the time of writing this comment, long after this code was written, it is not clear
+          // why this was the intent.
           for (var i = parabolicMotionStoppedListeners.length - 1; i >= 0; i--) {
             parabolicMotionStoppedListeners[i]();
           }
@@ -1457,8 +1470,9 @@ if (!window['$']) {
         isMovingToWaypoint = false;
         _removeViewEndChangeListener(defaultEndViewCallback);
         parabolicMotionController = null;
-        if (doPlay)
-          _play();
+        if (doPlay && thisObj.isPaused() && !thisObj.isDoingLoopingDwell()) {
+          thisObj.handlePlayPause();
+        }
         if (typeof (callBack) === "function")
           callBack();
       };

@@ -1864,6 +1864,8 @@ if (!org.gigapan.timelapse.snaplapse) {
 
       if (typeof (keyframeId) != "undefined") {
         var keyframe = snaplapse.cloneFrame(snaplapse.getKeyframeById(keyframeId));
+        var keyframeHasBt = typeof(keyframe['beginTime']) != "undefined";
+        var keyframeHasEt = typeof(keyframe['endTime']) != "undefined";
         setViewCallback = function() {
           // Set playbackrate
           if (keyframe['speed'] > 0) {
@@ -1878,7 +1880,7 @@ if (!org.gigapan.timelapse.snaplapse) {
           }
           var seekTime = keyframe['time'] || 0;
           // Override with beginTime if present
-          if (keyframe['beginTime']) {
+          if (keyframeHasBt) {
             seekTime = timelapse.playbackTimeFromShareDate(keyframe['beginTime']);
           }
           timelapse.seek(seekTime);
