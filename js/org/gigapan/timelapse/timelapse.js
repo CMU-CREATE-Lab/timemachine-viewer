@@ -1470,7 +1470,7 @@ if (!window['$']) {
         isMovingToWaypoint = false;
         _removeViewEndChangeListener(defaultEndViewCallback);
         parabolicMotionController = null;
-        if (doPlay && thisObj.isPaused() && !thisObj.isDoingLoopingDwell()) {
+        if (doPlay && thisObj.isPaused() && !thisObj.isDoingLoopingDwell() && thisObj.getNumFrames() > 1) {
           thisObj.handlePlayPause();
         }
         if (typeof (callBack) === "function")
