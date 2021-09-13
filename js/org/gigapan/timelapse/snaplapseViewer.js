@@ -1867,16 +1867,15 @@ if (!org.gigapan.timelapse.snaplapse) {
         var keyframeHasBt = typeof(keyframe['beginTime']) != "undefined";
         var keyframeHasEt = typeof(keyframe['endTime']) != "undefined";
         setViewCallback = function() {
-          // Set playbackrate
-          if (keyframe['speed'] > 0) {
+          // Set playback rate and play state
+          if (keyframe['speed'] > 0 && timelapse.getNumFrames() > 1) {
             var playbackRate = timelapse.getMaxPlaybackRate() * (keyframe['speed'] / 100.0);
             timelapse.setPlaybackRate(playbackRate, true);
-          } else {
-            if (timelapse.isDoingLoopingDwell()) {
-              timelapse.handlePlayPause();
-            } else {
-              timelapse.pause();
+            if (timelapse.isPaused() && !timelapse.isDoingLoopingDwell()) {
+              timelapse.play();
             }
+          } else {
+            timelapse.pause();
           }
           var seekTime = keyframe['time'] || 0;
           // Override with beginTime if present
