@@ -4019,7 +4019,7 @@ if (!window['$']) {
     this.playbackTimeFromDate = playbackTimeFromDate;
 
     // t= bt= et= from share should be of form
-    // Note that: (+-YY) is for ISO 8601 extended set (i.e. years less/more than 4 digits
+    // Note that: (+-YY) is for ISO 8601 extended set (i.e. years less/more than 4 digits)
     // (+-YY)YYYYMMDD
     // (+-YY)YYYYMMDDHHMMSS
     //
@@ -4046,6 +4046,7 @@ if (!window['$']) {
         // Extended years < 0 or > 9999 are 6 digits and preceded with a - OR + respectively
         extendedYearOffset = 3;
       }
+      // This assumes that share dates are at least YYYYMMDD
       if (sharedate.length == 8+extendedYearOffset && sharedate.match(/^[-+]*\d+$/)) {
         parsed = sharedate.substr(0, 4+extendedYearOffset) + '-' + sharedate.substr(4+extendedYearOffset, 2) + '-' + sharedate.substr(6+extendedYearOffset, 2);
       } else if (sharedate.length == 8+extendedYearOffset+6 && sharedate.match(/^[-+]*\d+$/)) {
@@ -4053,7 +4054,7 @@ if (!window['$']) {
         sharedate.substr(8+extendedYearOffset, 2) + ':' + sharedate.substr(10+extendedYearOffset, 2) + ':' + sharedate.substr(12+extendedYearOffset, 2) + " UTC";
       } else {
         // Error parsing;  return beginning of playback
-        UTIL.log('Error parsing share date ' + sharedate + '; returning playbackTime = 0');
+        UTIL.error('Error parsing share date ' + sharedate + '; returning playbackTime = 0');
         return 0;
       }
       return playbackTimeFromDate(parsed);
@@ -4066,33 +4067,43 @@ if (!window['$']) {
       if (!frameCaptureTime) {
         return 0;
       }
-      // Get the number of digits of the capture time year.
-      // If the first encountered '-' is at the start, remove it to ensure we don't split on it.
-      // We could handle the split with a negative regex lookbehind, but not all browsers support that yet.
-      if (frameCaptureTime.indexOf("-") == 0) {
-        frameCaptureTime.replace("-", "");
-      }
-      // Split on the typical year,month,day separator (- or /) and replace a '+' if it exists (i.e. an extended date past the year 9999)
-      var frameYearDigitLength = frameCaptureTime.split(/[-/]+/)[0].replace("+","").length;
-      var frameCaptureTimeStripped = frameCaptureTime.replace(/[-+/:. a-zA-Z]/g, "");
-      var frameEpochTime = thisObj.getFrameEpochTime(frame, forceFrameTimeAsUTC);
-      var sliceEndIndex = frameCaptureTimeStripped.length;
       var isExtendedYear = false;
-      if (frameCaptureTime.match(/^[+-]/) || frameYearDigitLength > 4) {
-        // Extended years are six digits
-        sliceEndIndex += Math.max((6 - frameYearDigitLength), 0);
+      // If the first character is a - or +, then this is an extended year.
+      if (frameCaptureTime.match(/^[+-]/)) {
         isExtendedYear = true;
+        // Remove this first character so it does not intefere with the rest of the logic below.
+        frameCaptureTime = frameCaptureTime.replace(/[-+]/,"");
       }
+      var frameEpochTime = thisObj.getFrameEpochTime(frame, forceFrameTimeAsUTC);
       if (frameEpochTime != -1) {
+        var frameYearDigitLength = frameCaptureTime.split(/[-/]+/)[0].length;
+        var frameCaptureTimeStripped = frameCaptureTime.replace(/[-+/:. a-zA-Z]/g, "");
+        var sliceEndIndex = frameCaptureTimeStripped.length;
+        // Ensure when we parse the ISOString that we are grabbing a minimum 4 digits, since that is the minium digits for ISO 8601.
+        sliceEndIndex += Math.max(0, (4 - frameYearDigitLength));
+        if (isExtendedYear) {
+          // Extended years (years < 0 or > 9999) are padded with 00 according to ISO 8601
+          sliceEndIndex += 2;
+        }
         var frameEpochTimeAsIsoString = new Date(frameEpochTime).toISOString();
         var dateDigitString = frameEpochTimeAsIsoString.replace(/[-+/:. a-zA-Z]/g, "").slice(0, sliceEndIndex);
         // We assume only a year is being shown if the date is 4 characters OR is an expanded set with leading double zeros
-        if (dateDigitString.length == 4 || (dateDigitString.length == 6 && isExtendedYear)) {
+        if (dateDigitString.length == 4 || (isExtendedYear && dateDigitString.length == 6)) {
           if (isStartOfFrame) {
             dateDigitString += "0101";
           } else {
             dateDigitString += "1231";
           }
+        } else if (dateDigitString.length == 6) { // If the date is YYYYMM
+          if (isStartOfFrame) {
+            dateDigitString += "01";
+          } else {
+            dateDigitString += "31";
+          }
+        }
+        // If string includes HHMM, ensure SS is always part of it too
+        if (dateDigitString.length == 12 && dateDigitString.length < 14 || (isExtendedYear && dateDigitString.length == 14 && dateDigitString.length < 16)) {
+          dateDigitString += "00";
         }
         if (isExtendedYear) {
           if (frameEpochTimeAsIsoString.indexOf("-") == 0) {
@@ -4100,10 +4111,6 @@ if (!window['$']) {
           } else if (frameEpochTimeAsIsoString.indexOf("+") == 0) {
             dateDigitString = "+" + dateDigitString;
           }
-        }
-        // If string includes HHMM, ensure SS is always part of it too
-        if (dateDigitString.length == 12 && dateDigitString.length < 14) {
-          dateDigitString += "00";
         }
         return dateDigitString;
       } else {
