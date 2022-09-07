@@ -308,7 +308,7 @@ if (!window['$']) {
     var shareViewLoopInterval;
     var shareViewLoopStartTimeoutId;
     var shareViewLoopEndTimeoutId
-    var timePadding = isIE || isChrome ? 0.3 : 0.0;
+    var timePadding = 0.3;
     // animateRate in milliseconds, 40 means 25 FPS
     var animateRate = 40;
     if (isHyperwall)
