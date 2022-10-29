@@ -3784,8 +3784,24 @@ if (!window['$']) {
         }
 
         var timelineUIChangeListeners = thisObj.getListenersForEvent("timelineui");
+
+        if (timelineUIChangeListeners.length == 0) return;
+
+        var snaplapseForPresentationSlider = thisObj.getSnaplapseForPresentationSlider();
+        var waypoint = null;
+        if (snaplapseForPresentationSlider) {
+          var snaplapseViewerForPresentationSlider = snaplapseForPresentationSlider.getSnaplapseViewer();
+          if (snaplapseViewerForPresentationSlider && snaplapseViewerForPresentationSlider.getCurrentWaypointIndex() >= 0) {
+            var currentSelectedWaypointIndex = snaplapseViewerForPresentationSlider.getCurrentWaypointIndex();
+            var keyframe = snaplapseForPresentationSlider.getKeyframes()[currentSelectedWaypointIndex];
+            if (keyframe) {
+              var waypoint = {index: currentSelectedWaypointIndex, title: keyframe.unsafe_string_frameTitle, annotationBoxTitle: keyframe.unsafe_string_annotationBoxTitle, description: keyframe.unsafe_string_description, bounds: keyframe.bounds, layers: keyframe.layers, time: keyframe.time, beginTime: keyframe.beginTime, endTime: keyframe.endTime, speed: keyframe.speed};
+            }
+          }
+        }
+
         for (var i = 0; i < timelineUIChangeListeners.length; i++) {
-          timelineUIChangeListeners[i]({captureTimeBeforeTimelineChange: previousCaptureTime});
+          timelineUIChangeListeners[i]({captureTimeBeforeTimelineChange: previousCaptureTime, waypoint: waypoint});
         }
       }, 10);
     };

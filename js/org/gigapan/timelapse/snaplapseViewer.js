@@ -946,6 +946,13 @@ if (!org.gigapan.timelapse.snaplapse) {
       }
     };
 
+    var clearSnaplapse = function() {
+      currentSelectedWaypointIndex = -1;
+      snaplapse.clearSnaplapse();
+      timelapse.stopParabolicMotion();
+    }
+    this.clearSnaplapse = clearSnaplapse;
+
     var loadNewSnaplapse = function(json, noPlaybackOverlay) {
       snaplapse.clearSnaplapse();
       timelapse.stopParabolicMotion();
@@ -2294,6 +2301,11 @@ if (!org.gigapan.timelapse.snaplapse) {
       return currentSelectedWaypointIndex;
     };
 
+    this.setCurrentWaypointIndex = function(newCurrentSelectedWaypointIndex) {
+      if (typeof(newCurrentSelectedWaypointIndex) !== 'number' || newCurrentSelectedWaypointIndex < 0) return;
+      currentSelectedWaypointIndex = newCurrentSelectedWaypointIndex
+    };
+
     this.isWaypointContainerVisible = function() {
       return $("#" + timeMachineDivId + " .presentationSlider").is(":visible");
     };
@@ -2303,7 +2315,7 @@ if (!org.gigapan.timelapse.snaplapse) {
       // triggerAutoModeClick() increments this index counter before it goes to a waypoint,
       // so we need to subtract 1 here.
       currentAutoModeWaypointIdx = newCurrentAutoModeWaypointIdx - 1;
-    }
+    };
 
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////
