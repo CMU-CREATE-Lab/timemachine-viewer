@@ -119,6 +119,7 @@ if (!org.gigapan.timelapse.Timelapse) {
     var socialMediaSettings = settings["socialMedia"] || {};
     var waypointSliderOrientation = (settings["presentationSliderSettings"] && typeof(settings["presentationSliderSettings"]["orientation"]) != "undefined") ? settings["presentationSliderSettings"]["orientation"] : "horizontal";
     var shareViewDialogType = typeof(settings["shareViewDialogType"]) == "undefined" ? (isMobileDevice ? "modal" : "drawer") : settings["shareViewDialogType"];
+    var thumbnailToolOptions = settings["thumbnailToolOptions"] || {};
 
     // Objects
     var visualizer = timelapse.getVisualizer();
@@ -1111,6 +1112,10 @@ if (!org.gigapan.timelapse.Timelapse) {
             format: format
           };
 
+          if (thumbnailToolOptions.watermark) {
+            urlSettings.watermark = thumbnailToolOptions.watermark;
+          }
+
           if (!isEarthTime) {
             urlSettings.nframes = thumbnailDurationInFrames;
           }
@@ -1419,6 +1424,7 @@ if (!org.gigapan.timelapse.Timelapse) {
             previewImage = previewImage.replace("width=" + $thumbnailCustomBoundsWidth.val(), "width=" + previewWidth);
             previewImage = previewImage.replace("height=" + $thumbnailCustomBoundsHeight.val(), "height=" + previewHeight);
             previewImage = previewImage.replace("nframes=" + response.args.nframes, "nframes=1");
+            previewImage = previewImage.replace("endTime=" + response.args.endTime, "endTime=" + response.args.startTime);
             previewImage = previewImage.replace("&labelsFromDataset", "&preview");
             // We treat gifs as videos because we make use of the poster attribute in the video tag to get a gif to play on social media, specifically twitter.
             socialMediaShareLink = "https://share.createlab.org/video?site=" + encodeURIComponent(shareView) + "&title=" + encodeURIComponent(shareTitle) + "&description=" + encodeURIComponent(shareDescription) + "&site_name=" + encodeURIComponent(document.title) + "&fb_app_id=" + socialMediaSettings.facebookAppId + "&handle=" + encodeURIComponent(socialMediaSettings.twitterHandle) + "&image=" + encodeURIComponent(previewImage) + "&video=" + encodeURIComponent(response.url);
