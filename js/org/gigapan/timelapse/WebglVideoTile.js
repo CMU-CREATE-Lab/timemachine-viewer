@@ -62,8 +62,7 @@ function WebglVideoTile(glb, tileidx, bounds, url, defaultUrl, numFrames, fps, g
   this.glb = glb;
   this.gl = glb.gl;
   this._UTIL = org.gigapan.Util;
-  this._lineProgram = glb.programFromSources(Glb.fixedSizePointVertexShader,
-                                             Glb.solidColorFragmentShader);
+
   this._textureProgram = glb.programFromSources(WebglVideoTile.textureVertexShader,
                                                 WebglVideoTile.textureFragmentShader);
 
@@ -82,14 +81,21 @@ function WebglVideoTile(glb, tileidx, bounds, url, defaultUrl, numFrames, fps, g
   this._textureGreenScreenFaderProgram = glb.programFromSources(WebglVideoTile.textureVertexShader,
                                                 WebglVideoTile.textureGreenScreenFragmentFaderShader);
 
-  this._insetRectangle = glb.createBuffer(new Float32Array([0.01, 0.01,
-                                                            0.99, 0.01,
-                                                            0.99, 0.99,
-                                                            0.01, 0.99]));
-  this._triangles = glb.createBuffer(new Float32Array([0, 0,
-                                                       1, 0,
-                                                       0, 1,
-                                                       1, 1]));
+  // Create triangle strip of two triangles to cover the tile
+  // If we're showing the entirety of a video frame, we'd go from 0 to 1 in X and Y both
+  // If our video extends beyond the edge of our layer domain, e.g. the topmost video in a layer
+  // that's not a perfect power of 2 times the video width, the time machine generator will generate
+  // videos that have a black margin on the right and/or bottom which we need to suppress.
+
+  // When tile bounds exceed layer bounds, reduce x/y extent from 1 proportionally.
+  let xExtent = (Math.min(bounds.max.x, layer.width) - bounds.min.x) / (bounds.max.x - bounds.min.x);
+  let yExtent = (Math.min(bounds.max.y, layer.height) - bounds.min.y) / (bounds.max.y - bounds.min.y);
+  this._triangles = glb.createBuffer(new Float32Array([
+    0, 0, // upper left first triangle
+    xExtent, 0, // upper right first and second triangle
+    0, yExtent, // lower left for first triangle and second triangle
+    xExtent, yExtent // lower right for second triangle
+  ]));
 
   this._video = document.createElement('video');
   // If tile 404's, replace with defaultUrl.  This lets us remove e.g. all the
@@ -380,10 +386,16 @@ _computeNextCaptureFrame = function(displayFrameDiscrete, isPaused) {
   return (displayFrameDiscrete + future) % this._nframes;
 };
 
-WebglVideoTile.prototype.
+/*WebglVideoTile.prototype.
 _computeCapturePriority = function(displayFrameDiscrete, actualVideoFrame,
                                    actualVideoFrameDiscrete) {
   return 1;
+};*/
+
+WebglVideoTile.prototype.
+flagIncompletion = function() {
+    this._timelapse.lastFrameCompletelyDrawn = false;
+    this.layer.nextFrameNeedsRedraw = true;
 };
 
 // First phase of update
@@ -391,7 +403,7 @@ _computeCapturePriority = function(displayFrameDiscrete, actualVideoFrame,
 // Computes priority of capture
 WebglVideoTile.prototype.
 updatePhase1 = function(displayFrame) {
-  this._capturePriority = 0;
+  //this._capturePriority = 0;
   var displayFrameDiscrete = Math.min(Math.floor(displayFrame), this._nframes - 1);
 
   this._uAlpha = displayFrame - displayFrameDiscrete;
@@ -412,6 +424,7 @@ updatePhase1 = function(displayFrame) {
     if (WebglVideoTile.verbose) {
       console.log(this._id + ': loading');
     }
+    this.flagIncompletion();
     return;
   }
 
@@ -420,9 +433,9 @@ updatePhase1 = function(displayFrame) {
 
   this._flushUnneededFrames(displayFrameDiscrete);
   this._tryAdvancePipeline(displayFrameDiscrete);
-  if (readyState > 1) {
+  /*if (readyState > 1) {
     this._capturePriority = this._computeCapturePriority(displayFrameDiscrete, actualVideoFrame, actualVideoFrameDiscrete);
-  }
+  }*/
 };
 
 // Second phase of update
@@ -433,45 +446,14 @@ updatePhase2 = function(displayFrame) {
   var r2 = WebglVideoTile.r2;
   var displayFrameDiscrete = Math.min(Math.floor(displayFrame), this._nframes - 1);
   var readyState = this._video.readyState;
+
   // Set isPaused true if:
   //    Timelapse is actually paused (as in play/pause button)
   //    We're playing, but within the start dwell period (not end dwell period)
-  //    (hack) we're showing some layers that make landsat playback especially slow
-  //           TODO: we should measure the speed, instead of naming layers that cause playback to be slow
   var isPaused = this._timelapse.isPaused() && !this._timelapse.isDuringEndDwell();
 
-  if (this._timelapse.isPaused()) {
-    this._timelapse.isDuringStartDwell();
-    if (WebglVideoTile.verbose) {
-      console.log('isPaused', this._timelapse.isDuringStartDwell(), this._timelapse.isDuringEndDwell());
-    }
-  }
-
-
-  // TODO: Hack for frames with fixed year or range of Landsat years to be shown.
-  // Any layer where we set a fixed frame (or range of frames) needs to set isPaused or no new tiles are brought in until you pause.
-  if (typeof showUrbanFragilityLayer != "undefined" && showUrbanFragilityLayer) {
-    isPaused = true;
-  }
-
-  if (typeof showAnnualRefugeesLayer != "undefined" && showAnnualRefugeesLayer) {
-    isPaused = true;
-  }
-
-  if (typeof showViirsLayer != "undefined" && showViirsLayer) {
-    isPaused = true;
-  }
-
-  if (typeof showDrillingLayer != "undefined" && showDrillingLayer) {
-    isPaused = true;
-  }
-
-  if (typeof showSeaLevelRiseLayer != "undefined" && showSeaLevelRiseLayer) {
-    isPaused = true;
-  }
-
   if (readyState == 0) {
-    this._timelapse.lastFrameCompletelyDrawn = false;
+    this.flagIncompletion();
     return;
   }
 
@@ -480,7 +462,7 @@ updatePhase2 = function(displayFrame) {
     if (WebglVideoTile.verbose) {
       console.log(this._id + ': seeking for ' + this._seekingFrameCount + ' frames');
     }
-    this._timelapse.lastFrameCompletelyDrawn = false;
+    this.flagIncompletion();
     return;
   }
 
@@ -503,7 +485,7 @@ updatePhase2 = function(displayFrame) {
     if (Math.abs(this._video.currentTime - videoTime) > epsilon) {
       //console.log('Wrong spot (' + this._video.currentTime + ' so seeking source to ' + videoTime);
       this._video.currentTime = videoTime;
-      this._timelapse.lastFrameCompletelyDrawn = false;
+      this.flagIncompletion();
     } else if (this._pipeline[0].frameno != displayFrameDiscrete ||
                Math.abs(this._pipeline[0].texture.before - videoTime) > epsilon ||
                Math.abs(this._pipeline[0].texture.after - videoTime) > epsilon) {
@@ -532,23 +514,32 @@ updatePhase2 = function(displayFrame) {
 
   var webglFps = 60;
   // Imagine we're going to drop a frame.  Aim to be at the right place in 3 frames
+
+  // Compute future as the number of frames per webgl frame, times 3
+  // Example: Landsat @ 5fps yields (5/60)*3 = 0.25
   var future = (this._timelapse.getPlaybackRate() * this._fps / webglFps) * 3;
 
   // Desired video tile time leads display by frameOffset+1.3
+  // Does this compute the current desired video frame?
   var targetVideoFrame = (displayFrame + this._frameOffset + 1.2) % this._nframes;
 
+  // Future target video frame -- quarter frame in the future (for the example above of 5fps video)
   var futureTargetVideoFrame = (targetVideoFrame + future) % this._nframes;
 
   // Slow down by up to half a frame to make sure to get the next requested frame
   futureTargetVideoFrame = Math.min(futureTargetVideoFrame,
-                                    nextNeededFrame + 0.5);
+    nextNeededFrame + 0.5);
 
   // Set speed so that in one webgl frame, we'll be exactly at the right time
   var speed = (futureTargetVideoFrame - actualVideoFrame) / future;
 
-  if (isNaN(speed)) speed = 0.5;
-  if (speed < 0) speed = 0;
-  if (speed > 5) speed = 5;
+  if (isNaN(speed))
+    speed = 0.5;
+  else if (speed < 0)
+    speed = 0;
+  else if (speed > 5)
+    speed = 5;
+
   if (speed > 0 && this._video.paused) {
     this._videoPlayPromise = this._video.play();
   } else if (speed == 0 && !this._video.paused) {
@@ -562,7 +553,7 @@ updatePhase2 = function(displayFrame) {
       (isPaused && futureFrameError < -0.3)) {
     // If we need to go back any or forward a lot, seek instead of changing speed
     var seekTime = nextNeededFrame + 0.5;
-    this._video.currentTime = (nextNeededFrame + 0.5) / this._fps;
+    this._video.currentTime = seekTime / this._fps;
     if (WebglVideoTile.verbose) {
       console.log(this._id + ': onscreen=' + this._pipeline[0].frameno +
                   ', display=' + r2(displayFrame) +
@@ -587,7 +578,7 @@ updatePhase2 = function(displayFrame) {
     }
   }
   if (!this._ready) {
-    this._timelapse.lastFrameCompletelyDrawn = false;
+    this.flagIncompletion();
   }
 };
 
@@ -655,18 +646,6 @@ draw = function(transform) {
               this._bounds.max.x - this._bounds.min.x,
               this._bounds.max.y - this._bounds.min.y);
 
-  var drawRectangle = false;
-
-  if (drawRectangle) {
-    // Draw rectangle
-    gl.useProgram(this._lineProgram);
-    gl.uniformMatrix4fv(this._lineProgram.uTransform, false, tileTransform);
-    gl.bindBuffer(gl.ARRAY_BUFFER, this._insetRectangle);
-    gl.vertexAttribPointer(this._lineProgram.aWorldCoord, 2, gl.FLOAT, false, 0, 0);
-    gl.enableVertexAttribArray(this._lineProgram.aWorldCoord);
-    gl.drawArrays(gl.LINE_LOOP, 0, 4);
-  }
-
   // Draw video
   if (this._ready) {
     var activeProgram;
@@ -684,19 +663,18 @@ draw = function(transform) {
 
       gl.useProgram(activeProgram);
       gl.enable(gl.BLEND);
-      gl.blendFunc( gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA );
+      gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
 
-      var alphaLocation = gl.getUniformLocation(activeProgram, "uAlpha");
-      gl.uniform1f(alphaLocation, this._uAlpha);
+      gl.uniform1f(activeProgram.uAlpha, this._uAlpha);
 
-      var u_image0Location = gl.getUniformLocation(activeProgram, "uSampler");
-      var u_image1Location = gl.getUniformLocation(activeProgram, "uSampler2");
+      var u_image0Location = activeProgram.uSampler;
+      var u_image1Location = activeProgram.uSampler2;
 
-      gl.uniform1i(u_image0Location, 0);  // texture unit 0
-      gl.uniform1i(u_image1Location, 1);  // texture unit 1
+      gl.uniform1i(u_image0Location, 0); // texture unit 0
+      gl.uniform1i(u_image1Location, 1); // texture unit 1
 
       if (this.layer._colormap) {
-        gl.uniform1i(gl.getUniformLocation(activeProgram, "uColormap"), 2); // texture unit 2
+        gl.uniform1i(activeProgram.uColormap, 2); // texture unit 2
         gl.activeTexture(gl.TEXTURE2);
         gl.bindTexture(gl.TEXTURE_2D, this.layer._colormap);
       }
@@ -710,28 +688,6 @@ draw = function(transform) {
       gl.bindTexture(gl.TEXTURE_2D, this._pipeline[0].texture);
 
       gl.activeTexture(gl.TEXTURE1);
-
-      var isPaused = this._timelapse.isPaused();
-
-      if (typeof showUrbanFragilityLayer != "undefined" && showUrbanFragilityLayer) {
-        isPaused = true;
-      }
-
-      if (typeof showAnnualRefugeesLayer != "undefined" && showAnnualRefugeesLayer) {
-        isPaused = true;
-      }
-
-      if (typeof showViirsLayer != "undefined" && showViirsLayer) {
-        isPaused = true;
-      }
-
-      if (typeof showDrillingLayer != "undefined" && showDrillingLayer) {
-        isPaused = true;
-      }
-
-      if (typeof showSeaLevelRiseLayer != "undefined" && showSeaLevelRiseLayer) {
-        isPaused = true;
-      }
 
       var numTimelapseFrames = this._nframes;
       // TODO -- why is there a texture still in pipeline[1] that isn't usable when the timelapse is paused?

@@ -88,6 +88,7 @@ if (!org.gigapan) {
   var matchChromeVersionString = navigatorUserAgent.match(/Chrome\/([0-9.]+)/);
   // The Chrome and Edge (IE 12+) user agents actually have the word "Safari" in it.
   var isSafariUserAgent = navigatorUserAgent.match(/Safari/) != null && !isChromeUserAgent && !isMSIEUserAgent;
+  var matchSafariVersionString = navigatorUserAgent.match(/Macintosh.*Version\/([0-9.]+) Safari/) || [];
   var isFirefoxUserAgent = navigatorUserAgent.match(/Firefox/) != null;
   var isSilkUserAgent = navigatorUserAgent.match(/Silk/) != null;
   var isMobileIEEdgeUserAgent = navigatorUserAgent.match(/EdgA/) != null;
@@ -718,7 +719,7 @@ if (!org.gigapan) {
     var computedViewerType;
     var isWebGLSupported = settings && settings['ignoreWebGLSupport'] ? false : org.gigapan.Util.isWebGLSupported();
 
-    // Force Safari to use canvas. Strange jitter/zoom with video tag and webgl performance is questionable. (20190303)
+    // Force Safari <=12 to use canvas. Strange jitter/zoom with video tag and webgl performance is questionable. (20190303)
     // Force Firefox on mobile to use video tag: Throws an "exception component is not available" error when drawing a video to canvas. (20190303)
     // Even with video tag, Firefox mobile still flickers.
     // Force MS Edge mobile to use video tag. Seems to be less flicker when doing that. (20190303)
@@ -730,7 +731,7 @@ if (!org.gigapan) {
         (isMobileDevice && isPixelC) ||
         (isChromeOS && parseInt(matchChromeVersionString[1]) < 54)) {
           computedViewerType = "video";
-        } else if (isWebGLSupported && !isMobileDevice && !isSafariUserAgent && !isIE11UserAgent && typeof(Glb) != "undefined") {
+        } else if (isWebGLSupported && !isMobileDevice && !parseInt(matchSafariVersionString[1]) <= 12 && !isIE11UserAgent && typeof(Glb) != "undefined") {
           computedViewerType = "webgl";
         } else {
           computedViewerType = "canvas";

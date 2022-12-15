@@ -213,7 +213,13 @@ WebglTimeMachineLayer.prototype.getHeight = function() {
 };
 
 WebglTimeMachineLayer.prototype.draw = function(view, tileViewVisibility) {
-  if (!this._ready) return;
+  if (!this._ready) {
+    this._timelapse.lastFrameCompletelyDrawn = false;
+    return;
+  }
+
+  this.nextFrameNeedsRedraw = false;
+
   var width = this._canvasLayer.canvas.width / this._canvasLayer.resolutionScale;
   var height = this._canvasLayer.canvas.height / this._canvasLayer.resolutionScale;
 
@@ -251,3 +257,33 @@ WebglTimeMachineLayer.prototype.getTiles = function() {
 WebglTimeMachineLayer.prototype.abortLoading = function() {
   this._tileView._abort();
 };
+
+WebglTimeMachineLayer.prototype.isLoaded = function() {
+  return !this._waitingForMetadata;
+}
+
+WebglTimeMachineLayer.prototype.allTilesLoaded = function() {
+  var tiles = this._tileView._tiles;
+  if (!tiles || Object.keys(tiles).length == 0) {
+    return false;
+  }
+  for (var tile in tiles) {
+    if (!tiles[tile]._ready) {
+      return false;
+    }
+  }
+  return true;
+}
+
+WebglTimeMachineLayer.prototype.anyTilesLoaded = function() {
+  var tiles = this._tileView._tiles;
+  if (!tiles || Object.keys(tiles).length == 0) {
+    return false;
+  }
+  for (var tile in tiles) {
+    if (tiles[tile]._ready) {
+      return true;
+    }
+  }
+  return false;
+}

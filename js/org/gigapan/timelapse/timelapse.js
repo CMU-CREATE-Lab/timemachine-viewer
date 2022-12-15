@@ -242,6 +242,7 @@ if (!window['$']) {
     var enablePanoVideo = true;
     var isChrome = UTIL.isChrome();
     var didFirstTimeOnLoad = false;
+    var didFirstTimeOnLoadAndPlayerReadyCallback = false;
     var isMovingToWaypoint = false;
     var isSpinnerShowing = false;
     var isMobileDevice = UTIL.isMobileDevice();
@@ -324,6 +325,9 @@ if (!window['$']) {
     var minZoomSpeedPerSecond = isHyperwall ? 0.0001 : 0.125;
     // How fast we move the camera along the parabolic path
     var parabolicMotionPathSpeed = 1.35;
+    // In milliseconds. Amount of time before showing the spinner in webgl mode.
+    var spinnerWaitTime = 1000;
+
 
     // Joystick Variables
     var isJoystickButtonPressed = [false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false];
@@ -641,6 +645,10 @@ if (!window['$']) {
 
     this.getCanvas = function() {
       return canvas;
+    };
+
+    this.getWebglTimeMachineLayer = function() {
+      return webglTimeMachineLayer;
     };
 
     this.getAnnotator = function() {
@@ -3056,9 +3064,58 @@ if (!window['$']) {
     };
 
     var drawToWebgl = function() {
-      gl.clear(gl.COLOR_BUFFER_BIT);
+      var currentTimelapseView = thisObj.getView();
+      var currentViewportWidth = thisObj.getViewportWidth();
+      var currentViewportHeight = thisObj.getViewportHeight();
+      var currentPlaybackTime = thisObj.getCurrentTime();
+
+      var needRedraw = false;
+
+      if (webglTimeMachineLayer.lastPlaybackTime != currentPlaybackTime) {
+        needRedraw = true;
+      } else if (webglTimeMachineLayer.lastView.x != currentTimelapseView.x ||
+                 webglTimeMachineLayer.lastView.y != currentTimelapseView.y ||
+                 webglTimeMachineLayer.lastView.scale != currentTimelapseView.scale) {
+        needRedraw = true;
+      } else if (webglTimeMachineLayer.lastClientDimensions.height != currentViewportHeight ||
+                 webglTimeMachineLayer.lastClientDimensions.width != currentViewportWidth) {
+        needRedraw = true;
+      } else if (webglTimeMachineLayer.nextFrameNeedsRedraw) {
+        needRedraw = true;
+      }
+
+      webglTimeMachineLayer.lastPlaybackTime = currentPlaybackTime;
+      webglTimeMachineLayer.lastView = currentTimelapseView;
+      webglTimeMachineLayer.lastClientDimensions = {width: currentViewportWidth, height: currentViewportHeight};
+
       thisObj.lastFrameCompletelyDrawn = true;
-      webglTimeMachineLayer.draw(thisObj.getView(), { videoTile: true, vectorTile: false });
+      //thisObj.frameno = (thisObj.frameno || 0) + 1;
+
+      if (needRedraw) {
+        gl.clear(gl.COLOR_BUFFER_BIT);
+        thisObj.lastFrameCompletelyDrawn = true;
+        webglTimeMachineLayer.draw(thisObj.getView(), { videoTile: true, vectorTile: false });
+
+        var waiting = false;
+
+        // If any selected layer (and associated tiles) not yet loaded, set lastFrameCompletelyDrawn to false
+        if (!webglTimeMachineLayer.isLoaded() || !webglTimeMachineLayer.allTilesLoaded()) {
+          thisObj.lastFrameCompletelyDrawn = false;
+          waiting = true;
+        }
+
+        // If we have waited at least {spinnerWaitTime} seconds in a row, show the spinner
+        if (!waiting) {
+          webglTimeMachineLayer.lastTimeNotWaiting = new Date().getTime();
+          hideSpinner(viewerDivId);
+        } else {
+          let waiting = new Date().getTime() - webglTimeMachineLayer.lastTimeNotWaiting;
+          if (waiting > spinnerWaitTime) {
+            showSpinner(viewerDivId);
+          }
+        }
+      }
+
       org.gigapan.Util.requestAnimationFrame.call(window, drawToWebgl);
     };
 
@@ -4216,6 +4273,7 @@ if (!window['$']) {
           if (playOnLoad) {
             thisObj.play();
           }
+          didFirstTimeOnLoadAndPlayerReadyCallback = true;
         }
 
         _seek(timelapseCurrentTimeInSeconds);
@@ -4386,6 +4444,11 @@ if (!window['$']) {
       return $("#" + viewerDivId + " .spinnerOverlay").is(":visible");
     };
     this.isLoading = isLoading;
+
+    var didFirstTimeLoadAndPlayerReadyCallback = function() {
+      return didFirstTimeOnLoadAndPlayerReadyCallback;
+    };
+    this.didFirstTimeLoadAndPlayerReadyCallback = didFirstTimeLoadAndPlayerReadyCallback;
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////
     //
