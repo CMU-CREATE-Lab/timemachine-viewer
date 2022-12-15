@@ -1594,6 +1594,7 @@ input::-ms-clear {
   overflow-y: auto;
   width: 418px;
   border-left: 1px solid black;
+  text-align: left;
 }
 
 .shareViewModal {
