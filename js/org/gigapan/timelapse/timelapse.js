@@ -219,6 +219,7 @@ if (!window['$']) {
     var gl;
     var glb;
     var webglTimeMachineLayer;
+    var doManualWebglDraw = false;
 
     // Full screen variables
     var fullScreen = false;
@@ -3116,8 +3117,12 @@ if (!window['$']) {
         }
       }
 
-      org.gigapan.Util.requestAnimationFrame.call(window, drawToWebgl);
+      if (!doManualWebglDraw) {
+        org.gigapan.Util.requestAnimationFrame.call(window, drawToWebgl);
+      }
+
     };
+    this.drawToWebgl = drawToWebgl;
 
     var refresh = function() {
       if (viewerType == "webgl" || !isFinite(view.scale))
@@ -3135,6 +3140,11 @@ if (!window['$']) {
         repositionVideo(video);
       }
     };
+
+    var setDoManualWebglDraw = function() {
+      doManualWebglDraw = true;
+    };
+    this.setDoManualWebglDraw = setDoManualWebglDraw;
 
     var getCurrentFrameNumber = function() {
       return Math.floor(timelapseCurrentTimeInSeconds * _getFps());
@@ -3942,7 +3952,9 @@ if (!window['$']) {
           }
         }
         webglTimeMachineLayer = new WebglTimeMachineLayer(glb, canvasLayer, webglTimeMachineLayerOptions);
-        org.gigapan.Util.requestAnimationFrame.call(window, drawToWebgl);
+        if (!doManualWebglDraw) {
+          org.gigapan.Util.requestAnimationFrame.call(window, drawToWebgl);
+        }
       } else {
         UTIL.ajax("json", settings["url"], "tm.json" + getMetadataCacheBreaker(), loadTimelapseCallback);
       }
