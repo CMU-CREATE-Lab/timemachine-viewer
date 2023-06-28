@@ -148,6 +148,7 @@ if (!org.gigapan.timelapse.snaplapse) {
     var isLoadingWaypoints = false;
     var isEarthTime = UTIL.isEarthTime();
     var isEarthTimeMinimal = UTIL.isEarthTimeMinimal();
+    var isAutoModePromptActive = false;
 
     // DOM elements
     var composerDivId = snaplapse.getComposerDivId();
@@ -461,6 +462,14 @@ if (!org.gigapan.timelapse.snaplapse) {
           clickWaypoint(event, customData);
         });
       }
+
+      $("body").on("click", function(e) {
+        if (isAutoModePromptActive && typeof(e.originalEvent) != "undefined" && e.originalEvent.isTrusted) {
+          isAutoModePromptActive = false;
+          $("#" + timeMachineDivId + " .autoModePrompt").addClass("hidden");
+        }
+      });
+      $("#" + timeMachineDivId + " .autoModePrompt").appendTo("#" + timeMachineDivId);
     };
 
     var createDialogWindows = function() {
@@ -1799,7 +1808,7 @@ if (!org.gigapan.timelapse.snaplapse) {
 
       if (customData && customData.fromKeyboard) {
         wayPointClickedByAutoMode = false;
-      } else if (!event.pageX && !event.pageY) {
+      } else if (typeof(event.originalEvent) != "undefined" && !event.originalEvent.isTrusted) {
         wayPointClickedByAutoMode = true;
       } else {
         wayPointClickedByAutoMode = false;
@@ -2239,6 +2248,10 @@ if (!org.gigapan.timelapse.snaplapse) {
         currentAutoModeWaypointIdx++;
       } else {
         runAutoMode();
+      }
+      if (!isAutoModePromptActive) {
+        isAutoModePromptActive = true;
+        $("#" + timeMachineDivId + " .autoModePrompt").removeClass("hidden");
       }
     };
     this.initializeAndRunAutoMode = initializeAndRunAutoMode;
