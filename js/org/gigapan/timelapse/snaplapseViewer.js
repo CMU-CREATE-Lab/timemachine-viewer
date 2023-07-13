@@ -184,6 +184,7 @@ if (!org.gigapan.timelapse.snaplapse) {
     var KEYFRAME_THUMBNAIL_WIDTH = 126;
     var KEYFRAME_THUMBNAIL_HEIGHT = 73;
     var currentSelectedWaypointIndex = -1;
+    var previousSelectedWaypointIndex = -1;
 
     this.addEventListener = function(eventName, listener) {
       if (eventName && listener && typeof (listener) == "function") {
@@ -360,6 +361,7 @@ if (!org.gigapan.timelapse.snaplapse) {
     this.animateTourOverlayAndPlay = animateTourOverlayAndPlay;
 
     var initializeSnaplapseUI = function() {
+      // Note that initializeSnaplapseUI is called more than once, based on creation of different internal snaplapseViewer objects.
       if (uiEnabled && orientation == "vertical") {
         $waypointDrawerContainerMain.show();
         $waypointDrawerContainerToggle.on("click", function() {
@@ -461,14 +463,14 @@ if (!org.gigapan.timelapse.snaplapse) {
           if (timelapse.getMode() == "editor" && $("#" + composerDivId + " .presentation_mode").length == 0 && !$(event.target).hasClass('snaplapse_keyframe_list_item_thumbnail_overlay')) return;
           clickWaypoint(event, customData);
         });
+        $("body").on("click touchend", function(e) {
+          if (isAutoModePromptActive && typeof(e.originalEvent) != "undefined" && e.originalEvent.isTrusted) {
+            isAutoModePromptActive = false;
+            $("#" + timeMachineDivId + " .autoModePrompt").addClass("hidden");
+          }
+        });
       }
 
-      $("body").on("click", function(e) {
-        if (isAutoModePromptActive && typeof(e.originalEvent) != "undefined" && e.originalEvent.isTrusted) {
-          isAutoModePromptActive = false;
-          $("#" + timeMachineDivId + " .autoModePrompt").addClass("hidden");
-        }
-      });
       $("#" + timeMachineDivId + " .autoModePrompt").appendTo("#" + timeMachineDivId);
     };
 
@@ -957,6 +959,7 @@ if (!org.gigapan.timelapse.snaplapse) {
 
     var clearSnaplapse = function() {
       currentSelectedWaypointIndex = -1;
+      previousSelectedWaypointIndex = -1;
       snaplapse.clearSnaplapse();
       timelapse.stopParabolicMotion();
     }
@@ -1199,6 +1202,7 @@ if (!org.gigapan.timelapse.snaplapse) {
                   } else {
                     if (isAutoModeRunning) {
                       currentAutoModeWaypointIdx = 0;
+                      previousSelectedWaypointIndex = 0;
                     } else if (currentAutoModeWaypointIdx != -1) {
                       // triggerAutoModeClick() increments this index counter before it goes to a waypoint,
                       // so we need to subtract 1 here if we are not already set to do the first slide (index 0, aka -1 here).
@@ -1215,7 +1219,9 @@ if (!org.gigapan.timelapse.snaplapse) {
                     //$("#" + timeMachineDivId + " .presentationSlider .snaplapse_keyframe_container").css("right", "auto");
                     //timelapse.addViewerBottomMargin(80);
                   //}
-                  startAutoModeIdleTimeout();
+                  if (!isAutoModeRunning) {
+                    startAutoModeIdleTimeout();
+                  }
                 } else {
                   // Set the value of the last keyframe to null (need to use reference but not clone)
                   // so swaping it with other keyframes will give a default value
@@ -1240,7 +1246,7 @@ if (!org.gigapan.timelapse.snaplapse) {
                 var listeners = eventListeners["snaplapse-loaded"];
                 if (listeners) {
                   for (var i = 0; i < listeners.length; i++)
-                    listeners[i](keyframes.length);
+                    listeners[i](keyframes.length, isAutoModeRunning);
                 }
               } else {
                 // Load the next keyframe
@@ -1808,7 +1814,7 @@ if (!org.gigapan.timelapse.snaplapse) {
 
       if (customData && customData.fromKeyboard) {
         wayPointClickedByAutoMode = false;
-      } else if (typeof(event.originalEvent) != "undefined" && !event.originalEvent.isTrusted) {
+      } else if ((customData && customData.fromAutoMode) || (typeof(event.originalEvent) != "undefined" && !event.originalEvent.isTrusted)) {
         wayPointClickedByAutoMode = true;
       } else {
         wayPointClickedByAutoMode = false;
@@ -1823,9 +1829,13 @@ if (!org.gigapan.timelapse.snaplapse) {
       timelapse.removeParabolicMotionStoppedListener(parabolicMotionStoppedListener);
 
       var listeners = eventListeners["slide-before-changed"];
-      currentSelectedWaypointIndex = $("#" + targetId).index();
+      var newSelectedIndex = $("#" + targetId).index();
+      if (newSelectedIndex != currentSelectedWaypointIndex) {
+        previousSelectedWaypointIndex = currentSelectedWaypointIndex;
+      }
+      currentSelectedWaypointIndex = newSelectedIndex;
       if (listeners) {
-        var waypoint = {index: currentSelectedWaypointIndex, title: keyframe.unsafe_string_frameTitle, annotationBoxTitle: keyframe.unsafe_string_annotationBoxTitle, description: keyframe.unsafe_string_description, bounds: keyframe.bounds, layers: keyframe.layers, time: keyframe.time, beginTime: keyframe.beginTime, endTime: keyframe.endTime, speed: keyframe.speed};
+        var waypoint = {previousIndex: previousSelectedWaypointIndex,  index: currentSelectedWaypointIndex, title: keyframe.unsafe_string_frameTitle, annotationBoxTitle: keyframe.unsafe_string_annotationBoxTitle, description: keyframe.unsafe_string_description, bounds: keyframe.bounds, layers: keyframe.layers, time: keyframe.time, beginTime: keyframe.beginTime, endTime: keyframe.endTime, speed: keyframe.speed};
         for (var i = 0; i < listeners.length; i++) {
           try {
             listeners[i](waypoint);
@@ -2234,6 +2244,7 @@ if (!org.gigapan.timelapse.snaplapse) {
 
     var initializeAndRunAutoMode = function() {
       clearAutoModeTimeout();
+      isAutoModeRunning = true;
       var listeners = eventListeners["automode-start"];
       if (listeners) {
         for (var i = 0; i < listeners.length; i++) {
@@ -2316,7 +2327,7 @@ if (!org.gigapan.timelapse.snaplapse) {
 
     this.setCurrentWaypointIndex = function(newCurrentSelectedWaypointIndex) {
       if (typeof(newCurrentSelectedWaypointIndex) !== 'number' || newCurrentSelectedWaypointIndex < 0) return;
-      currentSelectedWaypointIndex = newCurrentSelectedWaypointIndex
+      currentSelectedWaypointIndex = newCurrentSelectedWaypointIndex;
     };
 
     this.isWaypointContainerVisible = function() {
