@@ -1217,6 +1217,14 @@ if (!window['$']) {
         return bboxView.bbox;
     };
 
+    this.getLatLngBoundingBoxForCurrentView = function() {
+      var bboxView = pixelBoundingBoxToLatLngBoundingBoxView(timelapse.getBoundingBoxForCurrentView(view));
+      if (bboxView == null)
+        return null;
+      else
+        return bboxView.bbox;
+    };
+
     this.warpToBoundingBox = function(bbox) {
       this.warpTo(pixelBoundingBoxToPixelCenter(bbox));
     };
