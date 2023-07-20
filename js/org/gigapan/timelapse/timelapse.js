@@ -305,7 +305,7 @@ if (!window['$']) {
     var onNewTimelapseLoadCompleteCallBack;
     var currentTimelineStyle;
     var customMaxScale;
-    var gmapsMaxLevelOverride = null;
+    var gmapsMaxLevelOverride = (typeof(settings["gmapsMaxLevelOverride"]) == "undefined") ? null : settings["gmapsMaxLevelOverride"];
     var keysDown = [];
     var shareViewLoopInterval;
     var shareViewLoopStartTimeoutId;
