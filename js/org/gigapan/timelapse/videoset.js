@@ -184,6 +184,7 @@ if (!window['$']) {
     var isSafari = UTIL.isSafari();
     var isFirefox = UTIL.isFirefox();
     var isMobileSupported = UTIL.isMobileSupported();
+    var isIOSDevice = UTIL.isIOSDevice();
     //var doChromeSeekableHack = timelapse.doChromeSeekableHack();
     //var doChromeBufferedHack = timelapse.doChromeBufferedHack();
     var doChromeCacheBreaker = timelapse.doChromeCacheBreaker();
@@ -345,7 +346,7 @@ if (!window['$']) {
       video.ready = false;
       video.muted = true;
       video.disableRemotePlayback = true;
-      if (isMobileSupported) {
+      if (isMobileSupported && !_isPaused()) {
         video.autoplay = true;
       }
       video.playsinline = true;

@@ -95,12 +95,16 @@ if (!org.gigapan) {
   var isChromeOS = navigatorUserAgent.match(/CrOS/) != null;
   var isPixelC = navigatorUserAgent.match(/Pixel C/) != null;
   var isSamsungInternetUserAgent = navigatorUserAgent.match(/SamsungBrowser/) != null;
-  var isMobileDevice = !isChromeOS && (navigatorUserAgent.match(/Android/i) || navigatorUserAgent.match(/webOS/i) || navigatorUserAgent.match(/iPhone/i) || navigatorUserAgent.match(/iPad/i) || navigatorUserAgent.match(/iPod/i) || navigatorUserAgent.match(/BlackBerry/i) || navigatorUserAgent.match(/Windows Phone/i) || navigatorUserAgent.match(/Mobile/i)) != null;
-  var isIOSDevice = navigatorUserAgent.match(/iPad|iPhone|iPod/) != null;
+  // Desktop mode is default for IPads using iOS >= 13, which means that 'iPad' won't be in the user agent string.
+  // So, we check that it's a Mac with touch support, which indicates a mobile Apple device.
+  var isIPadIOS13OrGreater = (navigatorUserAgent.match(/Mac/) != null && "ontouchend" in document);
+  // While likely not relevant in 2023, IE 11 on Windows Phones would fake being an iOS device, so we need to catch that via the MSStream property.
+  var isIOSDevice = !window.MSStream && (navigatorUserAgent.match(/iPad|iPhone|iPod/) != null || isIPadIOS13OrGreater);
   var matchIOSVersionString = navigatorUserAgent.match(/OS (\d+)_(\d+)_?(\d+)?/);
   // iOS 10 is the first version to support auto play of videos.
   // That said, I've confirmed that v9.3.5 does autoplay, but devices running that version just don't have the hardware power for a good user experience.
-  var isSupportedIOSVersion = isIOSDevice && parseInt(matchIOSVersionString[1]) >= 10;
+  var isSupportedIOSVersion = isIPadIOS13OrGreater || (isIOSDevice && matchIOSVersionString && parseInt(matchIOSVersionString[1]) >= 10);
+  var isMobileDevice = !isChromeOS && (navigatorUserAgent.match(/Android/i) || navigatorUserAgent.match(/webOS/i) || isIOSDevice || navigatorUserAgent.match(/BlackBerry/i) || navigatorUserAgent.match(/Windows Phone/i) || navigatorUserAgent.match(/Mobile/i)) != null;
   // Chrome 53 is the first version to support autoplay of videos on mobile.
   // Chrome 54 added background playback of media, which shouldn't be relevant to our needs but it might be.
   var isSupportedChromeMobileVersion = matchChromeVersionString && matchChromeVersionString.length > 1 && parseInt(matchChromeVersionString[1]) >= 54;
