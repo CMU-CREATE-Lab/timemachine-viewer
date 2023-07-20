@@ -526,8 +526,8 @@ if (!org.gigapan.timelapse.Timelapse) {
       maxView.scale = timelapse.getMaxScale();
       var maxViewBound = timelapse.pixelCenterToLatLngBoundingBoxView(maxView).bbox;
       var bounds = [
-        [maxViewBound.sw.lat, maxViewBound.sw.lng],
-        [maxViewBound.ne.lat, maxViewBound.ne.lng]
+        [maxViewBound.se.lat, maxViewBound.se.lng],
+        [maxViewBound.nw.lat, maxViewBound.nw.lng]
       ];
       contextMap.once('moveend', function(e) {
         if (typeof(oldMapZoom) !== "undefined") return;

@@ -3015,8 +3015,8 @@ if (!window['$']) {
       });
       return {
         bbox: {
-          ne: min,
-          sw: max
+          nw: min,
+          se: max
         }
       };
     };
