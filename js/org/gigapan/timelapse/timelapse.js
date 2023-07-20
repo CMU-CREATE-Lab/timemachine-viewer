@@ -1218,7 +1218,7 @@ if (!window['$']) {
     };
 
     this.getLatLngBoundingBoxForCurrentView = function() {
-      var bboxView = pixelBoundingBoxToLatLngBoundingBoxView(timelapse.getBoundingBoxForCurrentView(view));
+      var bboxView = pixelBoundingBoxToLatLngBoundingBoxView(thisObj.getBoundingBoxForCurrentView());
       if (bboxView == null)
         return null;
       else
