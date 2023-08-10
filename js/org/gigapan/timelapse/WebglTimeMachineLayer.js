@@ -129,7 +129,7 @@ WebglTimeMachineLayer.prototype.loadR = function(r) {
   this.video_width = r.video_width;
   this.width = r.width;
   this.height = r.height;
-  this.mod_tile = r.mod_tile || 1;
+  this.tileStride = r.tileStride || 1;
   this.loadMetadata();
 };
 
