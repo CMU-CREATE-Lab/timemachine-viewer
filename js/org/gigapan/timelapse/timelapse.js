@@ -3883,8 +3883,8 @@ if (!window['$']) {
 
     var loadTimelapse = function(url, desiredView, desiredTime, preserveViewAndTime, desiredDate, onLoadCompleteCallBack) {
       if (preserveViewAndTime) {
-        // TODO: Assumes dates of the form yyyy-mm-dd hh:mm:ss
-        desiredDate = thisObj.getCurrentCaptureTime().substr(11, 8);
+        // Assumes capture times are dates and of the form supported in 'findExactOrClosestCaptureTime()'
+        desiredDate = thisObj.getCurrentCaptureTime().substr(11);
         desiredView = thisObj.getView();
       }
 
@@ -4045,7 +4045,7 @@ if (!window['$']) {
       time = time.replace(/^\s+|\s+$/g, '');
 
       // If timezone
-      var timeZoneMatch = forceInputAsUTC ? [""," UTC"] : time.match(/\s+(GMT[-+]\d+|UTC).*|(\s+\D+\/\D+)$/);
+      var timeZoneMatch = forceInputAsUTC ? [""," UTC"] : time.match(/\s+(GMT[-+]\d+|\w{3}).*|(\s+\D+\/\D+)$/);
       var hasTimeZoneInfo = false;
       if (timeZoneMatch) {
         hasTimeZoneInfo = true;
@@ -4055,8 +4055,14 @@ if (!window['$']) {
 
       // If form HH:MM or HH:MM:SS, add full date from capture array
       if (time.match(/^\d\d:\d\d(:\d\d)?\s*(PM|AM)?$/)) {
-        var lastCapture = new Date(sanitizedParseTimeEpoch(captureTimes[Math.max(0, frames - 1)]));
-        time = lastCapture.getFullYear() + "-" + (1e2 + (lastCapture.getMonth() + 1) + '').substr(1) + "-" + (1e2 + (lastCapture.getDate()) + '').substr(1) + " " + time;
+        // It would be best if the capture time included IANA timezone info (e.g. America/New_York) but we aren't guaranteed that.
+        // Trying to take a timestamp from the list of capture times and computing the epoch time from it is risky, since the time
+        // zone we are viewing and the time zone of the capture time may differ. Without a library, it's complicated.
+        // What we can assume though is that if the time string we are trying to convert to epoch time is of the format that entered this
+        // conditional, then the proceeding part of the capture times will be YYYY-MM-DD (with potentially differing dividers), so we can
+        // just extract that out. And while it is possible that a timemachine timeline may span multiple days (hence IANA timezone greatly
+        // simplifying all this), this conditional pertains to a specific category of timemachines that only span a single day.
+        time = captureTimes[Math.max(0, frames - 1)].substr(0, 11) + time;
       }
 
       // Handle case where we include time zone info or our capture times are assumed to be local but it is not indicated as such.
