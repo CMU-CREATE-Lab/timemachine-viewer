@@ -463,8 +463,9 @@ if (!org.gigapan.timelapse.snaplapse) {
           if (timelapse.getMode() == "editor" && $("#" + composerDivId + " .presentation_mode").length == 0 && !$(event.target).hasClass('snaplapse_keyframe_list_item_thumbnail_overlay')) return;
           clickWaypoint(event, customData);
         });
-        $("body").on("click touchend", function(e) {
-          if (isAutoModePromptActive && typeof(e.originalEvent) != "undefined" && e.originalEvent.isTrusted) {
+        $("body").on("click touchend", function(e, customData) {
+          var forceHide = customData && customData.forceHide;
+          if (isAutoModePromptActive && forceHide || (typeof(e.originalEvent) != "undefined" && e.originalEvent.isTrusted)) {
             isAutoModePromptActive = false;
             $("#" + timeMachineDivId + " .autoModePrompt").addClass("hidden");
           }
@@ -2268,7 +2269,7 @@ if (!org.gigapan.timelapse.snaplapse) {
     this.initializeAndRunAutoMode = initializeAndRunAutoMode;
 
     var startAutoModeIdleTimeout = function() {
-      isAutoModeRunning = false;
+      if (isAutoModeRunning) return;
       if (!doAutoMode)
         return;
       clearAutoModeTimeout();
@@ -2278,18 +2279,22 @@ if (!org.gigapan.timelapse.snaplapse) {
     };
     this.startAutoModeIdleTimeout = startAutoModeIdleTimeout;
 
-    var startAutoModeWaypointTimeout = function() {
-      isAutoModeRunning = true;
+    var startAutoModeWaypointTimeout = function(timeoutTime) {
       if (!doAutoMode)
         return;
       clearAutoModeTimeout();
+      isAutoModeRunning = true;
+      if (typeof(timeoutTime) == "undefined") {
+        timeoutTime = waypointDelayTime;
+      }
       autoModeTimeout = setTimeout(function() {
         runAutoMode();
-      }, waypointDelayTime);
+      }, timeoutTime);
     };
     this.startAutoModeWaypointTimeout = startAutoModeWaypointTimeout;
 
     var clearAutoModeTimeout = function() {
+      isAutoModeRunning = false;
       clearTimeout(autoModeTimeout);
       autoModeTimeout = null;
       $("#" + composerDivId + " .keyframeSubtitleBoxForHovering").fadeOut(200);
