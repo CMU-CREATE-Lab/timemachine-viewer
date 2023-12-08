@@ -1065,7 +1065,6 @@ table .presentationSlider.vertical {
   width: 100%;
   font-size: 38px;
   pointer-events: none;
-  background-color: rgb(0 0 0 / 40%);
 }
 
 .autoModePrompt .autoModePromptMessage {
