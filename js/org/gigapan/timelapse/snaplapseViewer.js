@@ -144,7 +144,6 @@ if (!org.gigapan.timelapse.snaplapse) {
     var useRecordingMode = false;
     var isAutoModeRunning = false;
     var isMobileDevice = UTIL.isMobileDevice();
-    var forceAutoModeStart = false;
     var isLoadingWaypoints = false;
     var isEarthTime = UTIL.isEarthTime();
     var isEarthTimeMinimal = UTIL.isEarthTimeMinimal();
@@ -166,6 +165,7 @@ if (!org.gigapan.timelapse.snaplapse) {
     var $searchBoxContainer = $("#" + timeMachineDivId + " .searchBoxContainer");
     var $waypointDrawerHighlights = $("#" + timeMachineDivId + " .etDrawerProductHighlights");
     var $materialTimelineContainerMain = $("#" + viewerDivId + " .materialTimelineContainerMain");
+    var $autoModePrompt = $("#" + timeMachineDivId + " .autoModePrompt");
 
 
     // Parameters
@@ -466,13 +466,12 @@ if (!org.gigapan.timelapse.snaplapse) {
         $("body").on("click touchend", function(e, customData) {
           var forceHide = customData && customData.forceHide;
           if (isAutoModePromptActive && forceHide || (typeof(e.originalEvent) != "undefined" && e.originalEvent.isTrusted)) {
-            isAutoModePromptActive = false;
-            $("#" + timeMachineDivId + " .autoModePrompt").addClass("hidden");
+            setAutoModePrompt(false);
           }
         });
       }
 
-      $("#" + timeMachineDivId + " .autoModePrompt").appendTo("#" + timeMachineDivId);
+      $autoModePrompt.appendTo("#" + timeMachineDivId);
     };
 
     var createDialogWindows = function() {
@@ -974,7 +973,7 @@ if (!org.gigapan.timelapse.snaplapse) {
 
         if (usePresentationSlider) {
           setToPresentationViewOnlyMode();
-          $("#" + timeMachineDivId).on("mousedown", clearAutoModeTimeout).on("mouseup", startAutoModeIdleTimeout);
+          $("body").on("mousedown", clearAutoModeTimeout).on("mouseup", startAutoModeIdleTimeout);
           timelapse.addZoomChangeListener(startAutoModeIdleTimeout);
         }
         var $playbackButton = $("#" + viewerDivId + ' .playbackButton');
@@ -1811,7 +1810,9 @@ if (!org.gigapan.timelapse.snaplapse) {
       var $target = $(event.currentTarget);
       var targetId = $target[0].id;
 
-      clearAutoModeTimeout();
+      if (isAutoModeEnabled) {
+        clearAutoModeTimeout();
+      }
 
       if (customData && customData.fromKeyboard) {
         wayPointClickedByAutoMode = false;
@@ -2243,6 +2244,11 @@ if (!org.gigapan.timelapse.snaplapse) {
     };
     this.setAutoModeEnableState = setAutoModeEnableState;
 
+    var isAutoModeEnabled = function() {
+      return doAutoMode;
+    };
+    this.isAutoModeEnabled = isAutoModeEnabled;
+
     var initializeAndRunAutoMode = function() {
       clearAutoModeTimeout();
       isAutoModeRunning = true;
@@ -2262,26 +2268,25 @@ if (!org.gigapan.timelapse.snaplapse) {
         runAutoMode();
       }
       if (!isAutoModePromptActive) {
-        isAutoModePromptActive = true;
-        $("#" + timeMachineDivId + " .autoModePrompt").removeClass("hidden");
+        setAutoModePrompt(true);
       }
     };
     this.initializeAndRunAutoMode = initializeAndRunAutoMode;
 
     var startAutoModeIdleTimeout = function() {
-      if (isAutoModeRunning) return;
-      if (!doAutoMode)
-        return;
+      if (!doAutoMode) return;
       clearAutoModeTimeout();
       autoModeTimeout = setTimeout(function() {
-        initializeAndRunAutoMode();
+          initializeAndRunAutoMode();
       }, screenIdleTime);
     };
     this.startAutoModeIdleTimeout = startAutoModeIdleTimeout;
 
     var startAutoModeWaypointTimeout = function(timeoutTime) {
-      if (!doAutoMode)
-        return;
+      if (!doAutoMode) return;
+      if (!isAutoModePromptActive) {
+        setAutoModePrompt(true);
+      }
       clearAutoModeTimeout();
       isAutoModeRunning = true;
       if (typeof(timeoutTime) == "undefined") {
@@ -2315,6 +2320,26 @@ if (!org.gigapan.timelapse.snaplapse) {
       if (waypoint) {
         waypoint.click();
       }
+    };
+
+    var setAutoModePrompt = function(doShow) {
+      if (doShow) {
+        isAutoModePromptActive = true;
+        $autoModePrompt.removeClass("hidden");
+      } else {
+        isAutoModePromptActive = false;
+        $autoModePrompt.addClass("hidden");
+      }
+    };
+    this.setAutoModePrompt = setAutoModePrompt;
+
+    var setIsAutoModeRunning = function(state) {
+      isAutoModeRunning = state;
+    };
+    this.setIsAutoModeRunning = setIsAutoModeRunning;
+
+    this.isAutoModePromptActive = function() {
+      return isAutoModePromptActive;
     };
 
     this.getKeyframeContainer = function() {
