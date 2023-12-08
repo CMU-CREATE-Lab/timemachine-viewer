@@ -628,6 +628,10 @@ if (!window['$']) {
       return $('#' + videoDivId)[0];
     };
 
+    this.getTiledContentHolderDiv = function() {
+      return $("#" + viewerDivId + " .tiledContentHolder")[0];
+    };
+
     this.getMediaType = function() {
       return mediaType;
     };
@@ -2333,10 +2337,9 @@ if (!window['$']) {
     this.addViewerBottomMargin = addViewerBottomMargin;
 
     var resizeViewer = function() {
-      var $viewerDiv = $("#" + viewerDivId);
       var $tiledContentHolder = $("#" + viewerDivId + " .tiledContentHolder");
-      viewportWidth = $viewerDiv.width();
-      viewportHeight = $viewerDiv.height() + $viewerDiv.offset().top - $tiledContentHolder.offset().top;
+      viewportWidth = $tiledContentHolder.width();
+      viewportHeight = $tiledContentHolder.height();
 
       // TODO: scale might not be correct when we unhide viewport
       if ($( "#" + viewerDivId + ":visible").length == 0) return;
