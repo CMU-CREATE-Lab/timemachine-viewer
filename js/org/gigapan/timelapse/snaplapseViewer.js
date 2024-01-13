@@ -1837,7 +1837,7 @@ if (!org.gigapan.timelapse.snaplapse) {
       }
       currentSelectedWaypointIndex = newSelectedIndex;
       if (listeners) {
-        var waypoint = {previousIndex: previousSelectedWaypointIndex,  index: currentSelectedWaypointIndex, title: keyframe.unsafe_string_frameTitle, annotationBoxTitle: keyframe.unsafe_string_annotationBoxTitle, description: keyframe.unsafe_string_description, bounds: keyframe.bounds, layers: keyframe.layers, time: keyframe.time, beginTime: keyframe.beginTime, endTime: keyframe.endTime, speed: keyframe.speed};
+        var waypoint = {previousIndex: previousSelectedWaypointIndex,  index: currentSelectedWaypointIndex, title: keyframe.unsafe_string_frameTitle, annotationBoxTitle: keyframe.unsafe_string_annotationBoxTitle, description: keyframe.unsafe_string_description, bounds: keyframe.bounds, layers: keyframe.layers, time: keyframe.time, beginTime: keyframe.beginTime, endTime: keyframe.endTime, speed: keyframe.speed, dwellTimes: {startDwell: keyframe.startDwell, endDwell: keyframe.endDwell}};
         for (var i = 0; i < listeners.length; i++) {
           try {
             listeners[i](waypoint);
