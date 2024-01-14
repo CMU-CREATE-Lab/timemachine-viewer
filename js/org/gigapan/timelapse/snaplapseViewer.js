@@ -185,6 +185,7 @@ if (!org.gigapan.timelapse.snaplapse) {
     var KEYFRAME_THUMBNAIL_HEIGHT = 73;
     var currentSelectedWaypointIndex = -1;
     var previousSelectedWaypointIndex = -1;
+    var keyframeElmIdPrefix = "#" + timeMachineDivId + "_snaplapse_keyframe_";
 
     this.addEventListener = function(eventName, listener) {
       if (eventName && listener && typeof (listener) == "function") {
@@ -814,7 +815,7 @@ if (!org.gigapan.timelapse.snaplapse) {
 
     var setKeyframeCaptionUI = function(keyframe, element, wantToHide) {
       if (keyframe && orientation == "vertical") {
-        var $thisKeyframeDescription = $("#" + timeMachineDivId + "_snaplapse_keyframe_" + keyframe.id + "_description");
+        var $thisKeyframeDescription = $(keyframeElmIdPrefix + keyframe.id + "_description");
         if (isTextNonEmpty(keyframe['unsafe_string_description'])) {
           $thisKeyframeDescription.text(keyframe["unsafe_string_description"]);
         }
@@ -865,7 +866,7 @@ if (!org.gigapan.timelapse.snaplapse) {
     };
 
     var setKeyframeTitleUI = function(keyframe, wantToHide) {
-      var $thisKeyframeTitle = $("#" + timeMachineDivId + "_snaplapse_keyframe_" + keyframe.id + "_title");
+      var $thisKeyframeTitle = $(keyframeElmIdPrefix + keyframe.id + "_title");
       if (wantToHide == true)
         $thisKeyframeTitle.hide();
       else {
@@ -1197,7 +1198,7 @@ if (!org.gigapan.timelapse.snaplapse) {
                         timelapse.setNewView(newView, true, presentationSliderPlayAfterAnimation);
                       }
                       // TODO (20190423): Before we skipped event listeners in this case. Not sure why, but for now we allow them again.
-                      selectAndGo($("#" + timeMachineDivId + "_snaplapse_keyframe_" + keyframeId), keyframeId, true, false, false);
+                      selectAndGo($(keyframeElmIdPrefix + keyframeId), keyframeId, true, false, false);
                     }
                   } else {
                     if (isAutoModeRunning) {
@@ -1211,7 +1212,7 @@ if (!org.gigapan.timelapse.snaplapse) {
                    }
                   // Check if there are not enough slides to fit into the slider
                   //var firstFrame = snaplapse.getKeyframes()[0];
-                  //var $firstFrameThumbnailButton = $("#" + timeMachineDivId + "_snaplapse_keyframe_" + firstFrame.id).children(".snaplapse_keyframe_list_item_thumbnail_container_presentation");
+                  //var $firstFrameThumbnailButton = $(keyframeIdPrefix + firstFrame.id).children(".snaplapse_keyframe_list_item_thumbnail_container_presentation");
                   //var slideWidth = $firstFrameThumbnailButton.width() + 2;
                   //var stripWidth = slideWidth * keyframes.length;
                   //var maxWidth = $("#" + timeMachineDivId + " .player").width();
@@ -1265,7 +1266,7 @@ if (!org.gigapan.timelapse.snaplapse) {
         });
 
         snaplapse.addEventListener('keyframe-modified', function(keyframe) {
-          $("#" + timeMachineDivId + "_snaplapse_keyframe_" + keyframe['id'] + "_timestamp").text(keyframe['captureTime']);
+          $(keyframeElmIdPrefix + keyframe['id'] + "_timestamp").text(keyframe['captureTime']);
           // TODO: check if the thumbnail server is down and set the flag automatically
           if (useThumbnailServer)
             loadThumbnailFromKeyframe(keyframe);
@@ -1382,7 +1383,7 @@ if (!org.gigapan.timelapse.snaplapse) {
         var videoElement = videoset.getCurrentActiveVideo();
         if (videoElement != null) {
           var scale = KEYFRAME_THUMBNAIL_WIDTH / timelapse.getViewportWidth();
-          var thumbnailCanvas = $("#" + timeMachineDivId + "_snaplapse_keyframe_" + keyframe['id'] + "_thumbnail").get(0);
+          var thumbnailCanvas = $(keyframeElmIdPrefix + keyframe['id'] + "_thumbnail").get(0);
           var ctx = thumbnailCanvas.getContext("2d");
           ctx.clearRect(0, 0, KEYFRAME_THUMBNAIL_WIDTH, KEYFRAME_THUMBNAIL_HEIGHT);
 
@@ -1837,7 +1838,8 @@ if (!org.gigapan.timelapse.snaplapse) {
       }
       currentSelectedWaypointIndex = newSelectedIndex;
       if (listeners) {
-        var waypoint = {previousIndex: previousSelectedWaypointIndex,  index: currentSelectedWaypointIndex, title: keyframe.unsafe_string_frameTitle, annotationBoxTitle: keyframe.unsafe_string_annotationBoxTitle, description: keyframe.unsafe_string_description, bounds: keyframe.bounds, layers: keyframe.layers, time: keyframe.time, beginTime: keyframe.beginTime, endTime: keyframe.endTime, speed: keyframe.speed, dwellTimes: {startDwell: keyframe.startDwell, endDwell: keyframe.endDwell}};
+
+        var waypoint = {keyframeElmId: keyframeElmIdPrefix + keyframe.id, previousIndex: previousSelectedWaypointIndex, index: currentSelectedWaypointIndex, title: keyframe.unsafe_string_frameTitle, annotationBoxTitle: keyframe.unsafe_string_annotationBoxTitle, description: keyframe.unsafe_string_description, bounds: keyframe.bounds, layers: keyframe.layers, time: keyframe.time, beginTime: keyframe.beginTime, endTime: keyframe.endTime, speed: keyframe.speed, dwellTimes: {startDwell: keyframe.startDwell, endDwell: keyframe.endDwell}};
         for (var i = 0; i < listeners.length; i++) {
           try {
             listeners[i](waypoint);
@@ -1885,7 +1887,7 @@ if (!org.gigapan.timelapse.snaplapse) {
       if (orientation != "vertical") {
         UTIL.selectSortableElements($sortable, $select, autoScroll, function() {
           if (doAutoMode && showAnnotations) {
-            setKeyframeCaptionUI(keyframe, $("#timeMachine_snaplapse_keyframe_" + keyframeId));
+            setKeyframeCaptionUI(keyframe, $(keyframeElmIdPrefix + keyframeId));
           }
         });
       }
@@ -1973,8 +1975,7 @@ if (!org.gigapan.timelapse.snaplapse) {
         }
         currentSelectedWaypointIndex = $select.index();
         if (usePresentationSlider && doNotFireListener != true) {
-          var waypoint = {index: currentSelectedWaypointIndex, title: keyframe.unsafe_string_frameTitle, annotationBoxTitle: keyframe.unsafe_string_annotationBoxTitle, description: keyframe.unsafe_string_description, bounds: keyframe.bounds, layers: keyframe.layers, time: keyframe.time, beginTime: keyframe.beginTime, endTime: keyframe.endTime, speed: keyframe.speed};
-
+          var waypoint = {keyframeElmId: keyframeElmIdPrefix + keyframe.id, previousIndex: previousSelectedWaypointIndex, index: currentSelectedWaypointIndex, title: keyframe.unsafe_string_frameTitle, annotationBoxTitle: keyframe.unsafe_string_annotationBoxTitle, description: keyframe.unsafe_string_description, bounds: keyframe.bounds, layers: keyframe.layers, time: keyframe.time, beginTime: keyframe.beginTime, endTime: keyframe.endTime, speed: keyframe.speed, dwellTimes: {startDwell: keyframe.startDwell, endDwell: keyframe.endDwell}};
           var listeners = eventListeners['left-waypoint-view-threshold'];
           if (listeners) {
             handleLeaveWaypointView(waypoint);
@@ -2049,7 +2050,7 @@ if (!org.gigapan.timelapse.snaplapse) {
     };
 
     var loadThumbnailFromKeyframe = function(keyframe, listIndex) {
-      var $img = $("#" + timeMachineDivId + "_snaplapse_keyframe_" + keyframe['id'] + "_thumbnail");
+      var $img = $(keyframeElmIdPrefix + keyframe['id'] + "_thumbnail");
       var thumbnailURL = thumbnailUrlList[listIndex] || keyframe['unsafe_string_thumbnailPath'];
       // If we are not using a hardcoded set of thumbnails, compute one.
       if (!thumbnailURL) {
