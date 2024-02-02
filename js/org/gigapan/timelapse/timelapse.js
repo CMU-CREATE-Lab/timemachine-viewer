@@ -4048,7 +4048,7 @@ if (!window['$']) {
       time = time.replace(/^\s+|\s+$/g, '');
 
       // If timezone
-      var timeZoneMatch = forceInputAsUTC ? [""," UTC"] : time.match(/\s+(GMT[-+]\d+|\w{3}).*|(\s+\D+\/\D+)$/);
+      var timeZoneMatch = forceInputAsUTC ? [""," UTC"] : time.match(/\s+(GMT[-+]\d+|\w{3}$)|(\s+\D+\/\D+)$/);
       var hasTimeZoneInfo = false;
       if (timeZoneMatch) {
         hasTimeZoneInfo = true;
