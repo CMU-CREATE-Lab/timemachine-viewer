@@ -904,11 +904,12 @@ if (!org.gigapan) {
     }
 
     var newScript = document.createElement('script');
-    var mapSrc = 'https://maps.google.com/maps/api/js?libraries=places&callback=org.gigapan.Util.googleMapsAPILoadedCallback';
+    var mapSrc = 'https://maps.google.com/maps/api/js?libraries=places&loading=async&callback=org.gigapan.Util.googleMapsAPILoadedCallback';
     if (apiKeys["googleMaps"])
       mapSrc += '&key=' + apiKeys["googleMaps"];
     newScript.setAttribute('src', mapSrc);
     newScript.setAttribute('type', 'text/javascript');
+    newScript.setAttribute('async', '');
     document.getElementsByTagName('head')[0].appendChild(newScript);
   };
 
