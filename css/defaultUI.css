@@ -1012,7 +1012,7 @@ _:-moz-tree-row(hover), .customDialog .customDialogButton .ui-button-text {
   border-color: #529952;
 }
 
-.customDialog .customHighlightDialogButton:hover {
+.customDialog .customHighlightDialogButton:hover:not(.ui-state-disabled)  {
   background-color: #529952;
 }
 

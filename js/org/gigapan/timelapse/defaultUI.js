@@ -1141,7 +1141,6 @@ if (!org.gigapan.timelapse.Timelapse) {
           $thumbnailVideoSelector.removeClass('selected');
           $(this).addClass('selected');
           $(".thumbnail-fps").prop('disabled', true);
-          handleThumbnailDurationChange();
           var buttonText;
           if (thumbnailDurationInFrames == 1) {
             buttonText = "Generate Image";
@@ -1164,7 +1163,6 @@ if (!org.gigapan.timelapse.Timelapse) {
           $thumbnailImageSelector.removeClass('selected');
           $(".thumbnail-fps").prop('disabled', false);
           $(this).addClass('selected');
-          handleThumbnailDurationChange();
           $(".generate-thumbnail .ui-button-text").text("Generate Video");
         }).on("mouseover", function() {
           var $this = $(this);
