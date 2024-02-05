@@ -964,4 +964,8 @@ if (!org.gigapan) {
     return sanitizedHTMLStr;
   };
 
+  org.gigapan.Util.roundToX = function(num, decimals) {
+    return +(Math.round(num + "e" + decimals) + "e-" + decimals);
+  };
+
 })();
