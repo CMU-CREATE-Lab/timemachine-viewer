@@ -310,6 +310,8 @@ if (!window['$']) {
     var shareViewLoopInterval;
     var shareViewLoopStartTimeoutId;
     var shareViewLoopEndTimeoutId
+    // Go N% extra into a frame. 30% seemed to be a safe value.
+    // Seeking directly to the start of a frame often doesn't show that frame but rather still shows the prior frame.
     var timePadding = 0.3;
     // animateRate in milliseconds, 40 means 25 FPS
     var animateRate = 40;
@@ -4116,7 +4118,8 @@ if (!window['$']) {
           frameno = b + (time_epoch - b_epoch) / (e_epoch - b_epoch);
         }
       }
-      return frameno / _getFps();
+      var playbackTime = (frameno + timePadding) / _getFps();
+      return playbackTime;
     };
     this.playbackTimeFromDate = playbackTimeFromDate;
 
