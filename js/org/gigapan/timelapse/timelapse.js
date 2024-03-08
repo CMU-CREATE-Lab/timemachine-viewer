@@ -312,7 +312,7 @@ if (!window['$']) {
     var shareViewLoopEndTimeoutId
     // Go N% extra into a frame. 30% seemed to be a safe value.
     // Seeking directly to the start of a frame often doesn't show that frame but rather still shows the prior frame.
-    var timePadding = 0.3;
+    var framePadding = 0.3;
     // animateRate in milliseconds, 40 means 25 FPS
     var animateRate = 40;
     if (isHyperwall)
@@ -417,8 +417,8 @@ if (!window['$']) {
       loopDwell = state;
     };
 
-    this.getTimePadding = function() {
-      return timePadding;
+    this.getFramePadding = function() {
+      return framePadding;
     };
 
     this.isMovingToWaypoint = function() {
@@ -1894,7 +1894,7 @@ if (!window['$']) {
     var seekToFrame = function(frameIdx) {
       if (frameIdx < 0 || frameIdx > frames - 1)
         return;
-      var seekTime = (frameIdx + timePadding) / _getFps();
+      var seekTime = (frameIdx + framePadding) / _getFps();
       _seek(seekTime);
       seek_panoVideo(seekTime);
     };
@@ -3165,7 +3165,7 @@ if (!window['$']) {
     this.getCurrentFrameNumber = getCurrentFrameNumber;
 
     var frameNumberToTime = function(value) {
-      return parseFloat(((value + timePadding) / _getFps()).toFixed(2));
+      return parseFloat(((value + framePadding) / _getFps()).toFixed(2));
     };
     this.frameNumberToTime = frameNumberToTime;
 
@@ -3646,7 +3646,7 @@ if (!window['$']) {
         }
         $("#" + timeMachineDivId + " .currentTime").html(UTIL.formatTime(timelapseCurrentTimeInSeconds, true));
         $("#" + timeMachineDivId + " .currentCaptureTime").html(UTIL.htmlForTextWithEmbeddedNewlines(captureTimes[timelapseCurrentCaptureTimeIndex]));
-        $("#" + timeMachineDivId + " .timelineSlider").slider("value", (timelapseCurrentTimeInSeconds * _getFps() - timePadding));
+        $("#" + timeMachineDivId + " .timelineSlider").slider("value", (timelapseCurrentTimeInSeconds * _getFps() - framePadding));
         thisObj.updateShareViewTextbox();
       });
 
@@ -4118,7 +4118,11 @@ if (!window['$']) {
           frameno = b + (time_epoch - b_epoch) / (e_epoch - b_epoch);
         }
       }
-      var playbackTime = (frameno + timePadding) / _getFps();
+      // Ensure we are at least 30% into a frame
+      if (frameno < (Math.floor(frameno) + framePadding)) {
+        frameno = frameno + framePadding;
+      }
+      var playbackTime = frameno / _getFps();
       return playbackTime;
     };
     this.playbackTimeFromDate = playbackTimeFromDate;

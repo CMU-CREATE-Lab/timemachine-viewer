@@ -193,7 +193,7 @@ if (!org.gigapan.timelapse.Timelapse) {
     var isMobileDevice = UTIL.isMobileDevice();
     var originalIsPaused;
     var useTouchFriendlyUI = timelapse.useTouchFriendlyUI();
-    var timePadding = timelapse.getTimePadding();
+    var framePadding = timelapse.getFramePadding();
     var isStartingTimeSpinnerBlurAdded = false;
     var isEndingTimeSpinnerBlurAdded = false;
     var thumbnailLengthWarningMsg = "A large number of frames were selected, which may take <br> awhile to process. Always check start/end times to ensure <br> the right time range was chosen before you click generate.";
@@ -739,11 +739,11 @@ if (!org.gigapan.timelapse.Timelapse) {
     };
 
     var sliderValueToTime = function(value) {
-      return (value + timePadding) / timelapse.getFps();
+      return (value + framePadding) / timelapse.getFps();
     };
 
     var timeToSliderValue = function(time) {
-      return time * timelapse.getFps() - timePadding;
+      return time * timelapse.getFps() - framePadding;
     };
 
     var setThumbnailToolAspectRatio = function() {
@@ -1048,7 +1048,6 @@ if (!org.gigapan.timelapse.Timelapse) {
         $("#" + viewerDivId + " .generate-thumbnail").button().click(function(event) {
           $(this).button("disable");
           $(".thumbnail-preview-container").addClass("loading");
-          handleThumbnailDurationChange();
           //$thumbnailPreviewCopyTextButton.button("disable");
           $thumbnailPreviewCopyDataButton.button("disable");
           $thumbnailPreviewCopyDownloadButton.button("disable");
@@ -1143,6 +1142,8 @@ if (!org.gigapan.timelapse.Timelapse) {
           $(".thumbnail-fps").prop('disabled', true);
           var buttonText;
           if (thumbnailDurationInFrames == 1) {
+            $(".thumbnail-start-delay, .thumbnail-end-delay").prop('disabled', true);
+            $thumbnailPlaybackRate.button("disable");
             buttonText = "Generate Image";
           } else {
             buttonText = "Generate GIF";
@@ -1161,7 +1162,8 @@ if (!org.gigapan.timelapse.Timelapse) {
         $thumbnailVideoSelector.button().on("click", function() {
           if ($(this).hasClass("disabled")) return;
           $thumbnailImageSelector.removeClass('selected');
-          $(".thumbnail-fps").prop('disabled', false);
+          $(".thumbnail-fps, .thumbnail-start-delay, .thumbnail-end-delay").prop('disabled', false);
+          $thumbnailPlaybackRate.button("enable");
           $(this).addClass('selected');
           $(".generate-thumbnail .ui-button-text").text("Generate Video");
         }).on("mouseover", function() {

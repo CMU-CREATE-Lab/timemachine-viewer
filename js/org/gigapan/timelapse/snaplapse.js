@@ -576,7 +576,7 @@ if (!Math.uuid) {
           if (version >= 7) {
             time = UTIL.truncate(encoder.read_udecimal(2), 2);
           } else {
-            time = (frameNumber + timelapse.getTimePadding()) / fps;
+            time = (frameNumber + timelapse.getFramePadding()) / fps;
           }
           frame["time"] = time;
           frame["captureTime"] = captureTimes[frameNumber];
