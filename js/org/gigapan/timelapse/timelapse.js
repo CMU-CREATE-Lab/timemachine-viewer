@@ -1894,7 +1894,7 @@ if (!window['$']) {
     var seekToFrame = function(frameIdx) {
       if (frameIdx < 0 || frameIdx > frames - 1)
         return;
-      var seekTime = (frameIdx + framePadding) / _getFps();
+      var seekTime = frameNumberToTime(frameIdx);
       _seek(seekTime);
       seek_panoVideo(seekTime);
     };
@@ -3164,8 +3164,13 @@ if (!window['$']) {
     };
     this.getCurrentFrameNumber = getCurrentFrameNumber;
 
-    var frameNumberToTime = function(value) {
-      return parseFloat(((value + framePadding) / _getFps()).toFixed(2));
+    var frameNumberToTime = function(frameNum, addFramePaddingForVideos = true) {
+      // Ensure we are at least 30% into a frame for timemachines (videos)
+      var isEarthTimeTimeMachine = (typeof(gEarthTime) != "undefined") && gEarthTime.isLayerWithActiveTimelineATimeMachine();
+      if (((addFramePaddingForVideos && (typeof(gEarthTime) == "undefined")) || (addFramePaddingForVideos && isEarthTimeTimeMachine)) && (frameNum < (Math.floor(frameNum) + framePadding))) {
+        frameNum = frameNum + framePadding;
+      }
+      return parseFloat((frameNum / _getFps()).toFixed(2));
     };
     this.frameNumberToTime = frameNumberToTime;
 
@@ -3646,7 +3651,7 @@ if (!window['$']) {
         }
         $("#" + timeMachineDivId + " .currentTime").html(UTIL.formatTime(timelapseCurrentTimeInSeconds, true));
         $("#" + timeMachineDivId + " .currentCaptureTime").html(UTIL.htmlForTextWithEmbeddedNewlines(captureTimes[timelapseCurrentCaptureTimeIndex]));
-        $("#" + timeMachineDivId + " .timelineSlider").slider("value", (timelapseCurrentTimeInSeconds * _getFps() - framePadding));
+        $("#" + timeMachineDivId + " .timelineSlider").slider("value", (timelapseCurrentTimeInSeconds * _getFps()));
         thisObj.updateShareViewTextbox();
       });
 
@@ -4118,11 +4123,7 @@ if (!window['$']) {
           frameno = b + (time_epoch - b_epoch) / (e_epoch - b_epoch);
         }
       }
-      // Ensure we are at least 30% into a frame
-      if (frameno < (Math.floor(frameno) + framePadding)) {
-        frameno = frameno + framePadding;
-      }
-      var playbackTime = frameno / _getFps();
+      var playbackTime = frameNumberToTime(frameno);
       return playbackTime;
     };
     this.playbackTimeFromDate = playbackTimeFromDate;
