@@ -246,7 +246,8 @@ if (!window['$']) {
     var didFirstTimeOnLoadAndPlayerReadyCallback = false;
     var isMovingToWaypoint = false;
     var isSpinnerShowing = false;
-    var isMobileDevice = UTIL.isMobileDevice();
+    var defaultMobileUIOverride = (typeof(settings["defaultMobileUIOverride"]) == "undefined") ? false : settings["defaultMobileUIOverride"];
+    var isMobileDevice = defaultMobileUIOverride ? false : UTIL.isMobileDevice();
     var isEarthTime = UTIL.isEarthTime();
     var isEarthTimeMinimal = UTIL.isEarthTimeMinimal();
 
