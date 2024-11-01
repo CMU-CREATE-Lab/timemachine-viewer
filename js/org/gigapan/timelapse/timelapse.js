@@ -2706,11 +2706,11 @@ if (!window['$']) {
     };
 
     var checkForJoystick = function() {
-      if (!isChrome) {
+      if (!isChrome || typeof(navigator.getGamepads) === "undefined") {
         return false;
       }
 
-      var gamepad = navigator.webkitGetGamepads()[0];
+      var gamepad = navigator.getGamepads()[0];
       var translationSpeedConstant = 30;
       var joystickError = 0.15;
       var scalingConstant = 0.94;
@@ -2785,7 +2785,7 @@ if (!window['$']) {
     };
 
     var animate = function() {
-      //var isJoystickWorking = checkForJoystick();
+      var isJoystickWorking = checkForJoystick();
 
       // Compute deltaT between this animation frame and last
       var now = UTIL.getCurrentTimeInSecs();
@@ -2817,10 +2817,10 @@ if (!window['$']) {
         view.y = targetView.y;
         view.scale = targetView.scale;
         //UTIL.log("animation finished, clearing interval");
-        //if (!isJoystickWorking) {
-        clearInterval(animateInterval);
-        animateInterval = null;
-        //}
+        if (!isJoystickWorking) {
+          clearInterval(animateInterval);
+          animateInterval = null;
+        }
         // We are done changing the view, run listeners specific to this.
         var viewEndChangeListeners = thisObj.getListenersForEvent("viewend");
         for (var i = 0; i < viewEndChangeListeners.length; i++) {
