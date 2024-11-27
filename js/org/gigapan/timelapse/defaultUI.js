@@ -840,7 +840,8 @@ if (!org.gigapan.timelapse.Timelapse) {
           }
         });
         $shareDialogClose.add($shareSidePanelClose).on("click", function() {
-          $shareButton.trigger("click");
+          // desktop behavior only (mobile defines another click listener in index.html)
+          if (!org.gigapan.Util.isMobileDevice()) $shareButton.trigger("click");
         });
         $shareUrl.focus(function() {
           $(this).select();
@@ -1925,6 +1926,34 @@ if (!org.gigapan.timelapse.Timelapse) {
 
     this.isShowMainControls = function() {
       return showMainControls;
+    };
+
+    this.shareOnClickMobile = function() {
+      // "top-panel-active" (mobile), replaces "right-panel-active" (desktop)
+      $("#" + viewerDivId + ", #" + viewerDivId + " .shareView").toggleClass("top-panel-active");
+      timelapse.onresize();
+      if ($("#" + viewerDivId).hasClass("top-panel-active")) {
+        updateShareViewTextbox();
+        var snaplapse = timelapse.getSnaplapseForPresentationSlider();
+        if (snaplapse) {
+          var snaplapseViewer = snaplapse.getSnaplapseViewer();
+          if (!snaplapseViewer.isWaypointContainerVisible() || !isEarthTime || isEarthTimeMinimal) {
+            $("#" + viewerDivId + " .presentation-mode-share-input").hide();
+          } else  {
+            $("#" + viewerDivId + " .presentation-mode-share-input").show();
+          }
+        }
+        UTIL.addGoogleAnalyticEvent('button', 'click', 'viewer-show-share-dialog');
+        var activeIdx = $shareAccordion.accordion("option", "active");
+        var $activePanel = $($shareAccordion.accordion("instance").panels[activeIdx]);
+        if ($activePanel.hasClass("share-thumbnail")) {
+          setThumbnailToolAspectRatio();
+          timelapse.getThumbnailTool().showCropBox();
+        }
+      } else {
+        disableShareThumbnail();
+        $("#" + timeMachineDivId + " .shareView .waypoint-index, #" + timeMachineDivId + " .shareView .waypoint-only").prop("checked", false);
+      }
     };
 
     var zoomIn = function(fromShiftKey) {

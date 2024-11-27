@@ -1020,7 +1020,7 @@ _:-moz-tree-row(hover), .customDialog .customDialogButton .ui-button-text {
   margin-left: 0px;
   margin-right: 4px;
   margin-bottom: 4px;
-  width: 270px;
+  width: 200px;
   height: 16px;
   resize: none;
 }
@@ -1611,6 +1611,18 @@ input::-ms-clear {
 
 .shareView.right-panel-active {
   right: -418px !important;
+}
+
+.top-panel-active {
+  /* Note: placeholder for now */
+  top: 300px !important;
+}
+
+.shareView.top-panel-active {
+  display: block;
+  top: -300px !important;
+  height: 300px;
+  width: 100%;
 }
 
 #shareViewPanelTitle {
