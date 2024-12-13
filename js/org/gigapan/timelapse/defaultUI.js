@@ -1052,7 +1052,7 @@ if (!org.gigapan.timelapse.Timelapse) {
           $thumbnailPreviewCopyDataButton.button("disable");
           $thumbnailPreviewCopyDownloadButton.button("disable");
 
-          $(".social-media").empty();
+          //$(".social-media").empty();
 
           var urlSettings;
           var format;
@@ -1448,7 +1448,7 @@ if (!org.gigapan.timelapse.Timelapse) {
           }
           hashTags = hashTags.join(",");
           if (response_is_image) {
-            socialMediaShareLink = thumbnailToolOptions.shareUrlDomain + "/image?site=" + encodeURIComponent(shareView) + "&title=" + encodeURIComponent(shareTitle) + "&description=" + encodeURIComponent(shareDescription) + "&site_name=" + encodeURIComponent(document.title) + "&fb_app_id=" + socialMediaSettings.facebookAppId + "&handle=" + encodeURIComponent(socialMediaSettings.twitterHandle) + "&image=" + encodeURIComponent(response.url);
+            socialMediaShareLink = "https://breathecam.org" + "/image?site=" + encodeURIComponent(shareView) + "&title=" + encodeURIComponent(shareTitle) + "&description=" + encodeURIComponent(shareDescription) + "&site_name=" + encodeURIComponent(document.title) + "&fb_app_id=" + socialMediaSettings.facebookAppId + "&handle=" + encodeURIComponent(socialMediaSettings.twitterHandle) + "&image=" + encodeURIComponent(response.url);
           } else if (response_is_video || response_is_gif) {
             var aspectRatio = $thumbnailCustomBoundsWidth.val() / $thumbnailCustomBoundsHeight.val();
             var previewWidth = 640;
@@ -1461,7 +1461,7 @@ if (!org.gigapan.timelapse.Timelapse) {
             previewImage = previewImage.replace("endTime=" + response.args.endTime, "endTime=" + response.args.startTime);
             previewImage = previewImage.replace("&labelsFromDataset", "&preview");
             // We treat gifs as videos because we make use of the poster attribute in the video tag to get a gif to play on social media, specifically twitter.
-            socialMediaShareLink = thumbnailToolOptions.shareUrlDomain + "/video?site=" + encodeURIComponent(shareView) + "&title=" + encodeURIComponent(shareTitle) + "&description=" + encodeURIComponent(shareDescription) + "&site_name=" + encodeURIComponent(document.title) + "&fb_app_id=" + socialMediaSettings.facebookAppId + "&handle=" + encodeURIComponent(socialMediaSettings.twitterHandle) + "&image=" + encodeURIComponent(previewImage) + "&video=" + encodeURIComponent(response.url);
+            socialMediaShareLink = "https://breathecam.org" + "/video?site=" + encodeURIComponent(shareView) + "&title=" + encodeURIComponent(shareTitle) + "&description=" + encodeURIComponent(shareDescription) + "&site_name=" + encodeURIComponent(document.title) + "&fb_app_id=" + socialMediaSettings.facebookAppId + "&handle=" + encodeURIComponent(socialMediaSettings.twitterHandle) + "&image=" + encodeURIComponent(previewImage) + "&video=" + encodeURIComponent(response.url);
           }
 
           var socialMediaShareLinkShortened = await $.ajax({
@@ -1471,6 +1471,7 @@ if (!org.gigapan.timelapse.Timelapse) {
 
           if (socialMediaShareLinkShortened && socialMediaShareLinkShortened.shorturl) {
             socialMediaShareLink = socialMediaShareLinkShortened.shorturl;
+            socialMediaShareLink = socialMediaShareLink.replace('share.createlab.org', 'breathecam.org')
           }
 
           $('<td colspan="3"><a class="twitter-sharelink" data-shareurl="" title="Share on Twitter"></a><a class="fb-sharelink" data-shareurl="" title="Share on Facebook"></a></td>').appendTo(".social-media");
@@ -1481,7 +1482,7 @@ if (!org.gigapan.timelapse.Timelapse) {
               return false;
           });
           $(".twitter-sharelink").on("click", function() {
-              var urlToLoad = 'https://twitter.com/intent/tweet?url=' + escape(socialMediaShareLink) + '&text=' + escape("Look at this");
+              var urlToLoad = 'https://twitter.com/intent/tweet?url=' + escape(socialMediaShareLink) + '&text=' + escape("");
               if (hashTags) {
                 urlToLoad += '&hashtags=' + escape(hashTags);
               }
