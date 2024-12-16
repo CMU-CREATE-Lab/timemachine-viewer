@@ -815,6 +815,9 @@ if (!org.gigapan.timelapse.Timelapse) {
         }).click(function() {
           $("#" + viewerDivId + ' .shareView').toggle("slide", { direction: "right" }, 1);
           $("#" + viewerDivId + ", #" + viewerDivId + " .shareView").toggleClass("right-panel-active");
+          // only shows "advanced" options on desktop menu
+          // TODO allow toggle display options on mobile?
+          if (!org.gigapan.Util.isMobileDevice()) $("tr.advanced").show()
           timelapse.onresize();
           if ($("#" + viewerDivId).hasClass("right-panel-active")) {
             updateShareViewTextbox();

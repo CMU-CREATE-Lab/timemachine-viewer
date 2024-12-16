@@ -1615,13 +1615,13 @@ input::-ms-clear {
 
 .top-panel-active {
   /* Note: placeholder for now */
-  top: 300px !important;
+  top: 400px !important;
 }
 
 .shareView.top-panel-active {
   display: block;
-  top: -300px !important;
-  height: 300px;
+  top: -400px !important;
+  height: 400px;
   width: 100%;
 }
 
@@ -2041,5 +2041,9 @@ input::-ms-clear {
 }
 
 tr.social-media {
+  display: none;
+}
+
+tr.advanced {
   display: none;
 }
