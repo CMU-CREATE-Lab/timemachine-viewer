@@ -1475,7 +1475,8 @@ if (!org.gigapan.timelapse.Timelapse) {
             socialMediaShareLink = socialMediaShareLink.replace('share.createlab.org', 'breathecam.org')
           }
 
-          $('<td colspan="3"><a class="twitter-sharelink" data-shareurl="" title="Share on Twitter"></a><a class="fb-sharelink" data-shareurl="" title="Share on Facebook"></a></td>').appendTo(".social-media");
+          $("tr.social-media").show();
+
           $(".fb-sharelink, .twitter-sharelink").off("click");
           $(".fb-sharelink").on("click", function() {
               window.open('https://www.facebook.com/sharer.php?s=100&p[url]=' + escape(socialMediaShareLink) + '&p[title]=' + document.title, '',

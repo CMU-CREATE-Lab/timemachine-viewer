@@ -643,7 +643,7 @@ _:-moz-tree-row(hover), .helpPlayerLabel .ui-button-text {
 .sideToolBar {
   position: absolute;
   top: 20px;
-  right: 20px;
+  /* right: 20px; */
   z-index: 15;
 }
 
@@ -2038,4 +2038,8 @@ input::-ms-clear {
 
 .ui-widget-overlay.ui-front {
   z-index: 2000 !important;
+}
+
+tr.social-media {
+  display: none;
 }
