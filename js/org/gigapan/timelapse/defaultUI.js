@@ -129,6 +129,7 @@ if (!org.gigapan.timelapse.Timelapse) {
     var eventListeners = {};
     var uiType = timelapse.getUIType();
     var customLayers = timelapse.getCustomLayers();
+    var thumbnailTimeControlsAnimationId = null;
 
     // DOM elements
     var timeMachineDivId = timelapse.getTimeMachineDivId();
@@ -187,6 +188,11 @@ if (!org.gigapan.timelapse.Timelapse) {
     var $changeDetectionControl = $("#" + viewerDivId + " .toolDialog .changeDetectionControl");
     var $waypointDrawerContainerMain = $("#" + viewerDivId + " .waypointDrawerContainerMain");
     var $waypointDrawerSideControlsContainer = $("#" + viewerDivId + " .waypointDrawerSideControlsContainer");
+    var $thumbnailTimelineSlider;
+    var $thumbnailTimelineSliderHandlers;
+    var $thumbnailTimelineSliderHandlersMin;
+    var $thumbnailTimelineSliderHandlersMax;
+    var $thumbnailTimelineSliderRange;
 
     // Flags
     var isSafari = UTIL.isSafari();
@@ -459,7 +465,135 @@ if (!org.gigapan.timelapse.Timelapse) {
         setThumbnailToolAspectRatio();
         thumbnailTool.showCropBox();
       }
+      toggleThumbnailTimelineSlider(true);
     };
+
+    var toggleThumbnailTimelineSlider = function(enable) {
+      if (isEarthTime) return;
+      if (enable) {
+        $timelineSliderFiller.hide();
+        $(".thumbnailTimeSliderControls").show();
+        $(".tippy-popper").show();
+        if (!$thumbnailTimelineSlider) {
+          createThumbnailTimelineSlider();
+        }
+      } else {
+        $timelineSliderFiller.show();
+        $(".thumbnailTimeSliderControls").hide();
+        cancelAnimationFrame(thumbnailTimeControlsAnimationId);
+        $(".tippy-popper").hide();
+      }
+    };
+
+    var createThumbnailTimelineSlider = function() {
+      $(".thumbnail-set-end-time-from-timeline, .thumbnail-set-start-time-from-timeline").hide();
+      var numFrames = timelapse.getNumFrames();
+      var values = [0, numFrames - 1];
+
+      $thumbnailTimelineSlider = $("#" + viewerDivId + ' #thumbnailTimelineSlider').slider({
+        range: true,
+        min: 0,
+        max: numFrames - 1,
+        values: values,
+        create: function (event, ui) {
+          var $slider = $(this);
+          $thumbnailTimelineSliderHandlers = $slider.find('.ui-slider-handle');
+          $thumbnailTimelineSliderHandlersMin = $thumbnailTimelineSliderHandlers.eq(0);
+          $thumbnailTimelineSliderHandlersMax = $thumbnailTimelineSliderHandlers.eq(1);
+          $thumbnailTimelineSliderRange = $slider.find('.ui-slider-range');
+          $thumbnailTimelineSliderRange.attr('data-tippy-distance', 15);
+
+          var tippyOptions = {
+            trigger: 'manual',
+            sticky: true,
+            dynamicTitle: true,
+            hideOnClick: false,
+            arrow: true,
+            arrowType: 'round',
+            animation: 'fade',
+            placement: 'top',
+            livePlacement: false,
+            flipBehavior: [],
+            createPopperInstanceOnInit: true,
+            appendTo: $(this).closest('.controls')[0],
+            popperOptions: {
+              modifiers: {
+                computeStyle: {
+                  gpuAcceleration: true
+                }
+              }
+            }
+          };
+
+          tippy($thumbnailTimelineSliderHandlersMin[0], tippyOptions);
+          tippy($thumbnailTimelineSliderHandlersMax[0], tippyOptions);
+          tippy($thumbnailTimelineSliderRange[0], tippyOptions);
+
+          updateThumbnailTimelineSliderTooltip($slider, values);
+          thumbnailTimelineSliderTooltipStep();
+        },
+        slide: function (event, ui) {
+          var $slider = $(this);
+          timelapse.seekToFrame(ui.value);
+          updateThumbnailTimelineSliderTooltip($slider, ui.values);
+        } });
+    };
+
+    function updateThumbnailTimelineSliderTooltip($slider, values) {
+      var captureTimes = timelapse.getCaptureTimes();
+
+      $thumbnailTimelineSliderHandlersMin.attr('title', captureTimes[values[0]].split(" ")[1]);
+      $thumbnailTimelineSliderHandlersMax.attr('title', captureTimes[values[1]].split(" ")[1]);
+      $thumbnailTimelineSliderRange.attr('title', captureTimes[values[0]].split(" ")[1] + " to " + captureTimes[values[1]].split(" ")[1]);
+
+      $startingTimeSpinner.captureTimeSpinner("value", values[0]);
+      $endingTimeSpinner.captureTimeSpinner("value", values[1]);
+
+      handleThumbnailDurationChange();
+    }
+
+    function thumbnailTimelineSliderTooltipStep() {
+        var tooltipMinLeft = getThumbnailTimelineControlCoords($thumbnailTimelineSliderHandlersMin[0]).left;
+        var tooltipMaxLeft = getThumbnailTimelineControlCoords($thumbnailTimelineSliderHandlersMax[0]).left;
+        var tooltipRange = tooltipMaxLeft - tooltipMinLeft;
+        var singleTooltip = tooltipRange < 80;
+
+        if (!singleTooltip) {
+          if (!$thumbnailTimelineSliderHandlersMin[0]._tippy.state.visible) {
+            $thumbnailTimelineSliderHandlersMin[0]._tippy.show(0);
+          } else if (!$thumbnailTimelineSliderHandlersMax[0]._tippy.state.visible) {
+            $thumbnailTimelineSliderHandlersMax[0]._tippy.show(0);
+          } else if ($thumbnailTimelineSliderRange[0]._tippy.state.visible) {
+            $thumbnailTimelineSliderRange[0]._tippy.hide(0);
+          }
+        } else {
+          if ($thumbnailTimelineSliderHandlersMin[0]._tippy.state.visible)
+          $thumbnailTimelineSliderHandlersMin[0]._tippy.hide(0);
+          if ($thumbnailTimelineSliderHandlersMax[0]._tippy.state.visible)
+          $thumbnailTimelineSliderHandlersMax[0]._tippy.hide(0);
+          if (!$thumbnailTimelineSliderRange[0]._tippy.state.visible)
+          $thumbnailTimelineSliderRange[0]._tippy.show(0);
+        }
+        thumbnailTimeControlsAnimationId = requestAnimationFrame(thumbnailTimelineSliderTooltipStep)
+    }
+
+    function getThumbnailTimelineControlCoords(elem) {
+      var box = elem.getBoundingClientRect();
+
+      var body = document.body;
+      var docEl = document.documentElement;
+
+      var scrollTop = window.pageYOffset || docEl.scrollTop || body.scrollTop;
+      var scrollLeft = window.pageXOffset || docEl.scrollLeft || body.scrollLeft;
+
+      var clientTop = docEl.clientTop || body.clientTop || 0;
+      var clientLeft = docEl.clientLeft || body.clientLeft || 0;
+
+      var top = box.top + scrollTop - clientTop;
+      var left = box.left + scrollLeft - clientLeft;
+
+      return { top: Math.round(top), left: Math.round(left) };
+    }
 
     var createSizePicker = function() {
       var tmJSON = timelapse.getTmJSON();
@@ -736,6 +870,7 @@ if (!org.gigapan.timelapse.Timelapse) {
         thumbnailTool.hideCropBox();
         $timelineSelectorFiller.hide();
       }
+      toggleThumbnailTimelineSlider(false);
     };
 
     var sliderValueToTime = function(value) {
@@ -833,6 +968,7 @@ if (!org.gigapan.timelapse.Timelapse) {
             if ($activePanel.hasClass("share-thumbnail")) {
               setThumbnailToolAspectRatio();
               timelapse.getThumbnailTool().showCropBox();
+              toggleThumbnailTimelineSlider(true);
             }
           } else {
             disableShareThumbnail();
@@ -937,19 +1073,35 @@ if (!org.gigapan.timelapse.Timelapse) {
             }
           },
           spin: function(event, ui) {
+            if (ui.value > $endingTimeSpinner.captureTimeSpinner("value")) {
+              event.preventDefault();
+              return;
+            }
             timelapse.seekToFrame(ui.value);
+            if ($thumbnailTimelineSliderHandlersMin) {
+              var captureTimes = timelapse.getCaptureTimes();
+              $thumbnailTimelineSliderHandlersMin.attr('title', captureTimes[ui.value].split(" ")[1]);
+              $('#slider').slider("option", "values", [ui.value, $endingTimeSpinner.captureTimeSpinner("value")]);
+              $thumbnailTimelineSliderRange.attr('title',  captureTimes[ui.value].split(" ")[1] + " to " +  captureTimes[$endingTimeSpinner.captureTimeSpinner("value")].split(" ")[1]);
+            }
           }
         }).on("mousedown", function(event) {
           // Update the text field after a user input event
           if (isStartingTimeSpinnerBlurAdded == false) {
             isStartingTimeSpinnerBlurAdded = true;
             var spinnerValue = event.target.value;
-            currentStartingIdx = timelapse.getCaptureTimes().indexOf(spinnerValue);
+            var captureTimes = timelapse.getCaptureTimes();
+            currentStartingIdx = captureTimes.indexOf(spinnerValue);
             $startingTimeSpinner.one("blur", function() {
               isStartingTimeSpinnerBlurAdded = false;
               currentStartingIdx = $startingTimeSpinner.captureTimeSpinner("value");
-              event.target.value = timelapse.getCaptureTimes()[currentStartingIdx];
+              event.target.value = captureTimes[currentStartingIdx];
               timelapse.seekToFrame(currentStartingIdx);
+              if ($thumbnailTimelineSliderHandlersMin) {
+                $thumbnailTimelineSliderHandlersMin.attr('title', captureTimes[currentStartingIdx].split(" ")[1]);
+                $('#slider').slider("option", "values", [currentStartingIdx, $endingTimeSpinner.captureTimeSpinner("value")] );
+                $thumbnailTimelineSliderRange.attr('title',  captureTimes[currentStartingIdx].split(" ")[1] + " to " +  captureTimes[$endingTimeSpinner.captureTimeSpinner("value")].split(" ")[1]);
+              }
               handleThumbnailDurationChange();
             });
           }
@@ -966,19 +1118,35 @@ if (!org.gigapan.timelapse.Timelapse) {
             }
           },
           spin: function(event, ui) {
+            if (ui.value < $startingTimeSpinner.captureTimeSpinner("value")) {
+              event.preventDefault();
+              return;
+            }
             timelapse.seekToFrame(ui.value);
+            if ($thumbnailTimelineSliderHandlersMax) {
+              var captureTimes = timelapse.getCaptureTimes();
+              $thumbnailTimelineSliderHandlersMax.attr('title', captureTimes[ui.value].split(" ")[1]);
+              $('#slider').slider("option", "values", [$startingTimeSpinner.captureTimeSpinner("value"), ui.value] );
+              $thumbnailTimelineSliderRange.attr('title',  captureTimes[$startingTimeSpinner.captureTimeSpinner("value")].split(" ")[1] + " to " +  captureTimes[ui.value].split(" ")[1]);
+            }
           }
         }).on("mousedown", function(event) {
           // Update the text field after a user input event
           if (isEndingTimeSpinnerBlurAdded == false) {
             isEndingTimeSpinnerBlurAdded = true;
             var spinnerValue = event.target.value;
-            currentEndingIdx = timelapse.getCaptureTimes().indexOf(spinnerValue);
+            var captureTimes = timelapse.getCaptureTimes();
+            currentEndingIdx = captureTimes.indexOf(spinnerValue);
             $endingTimeSpinner.one("blur", function() {
               isEndingTimeSpinnerBlurAdded = false;
               currentEndingIdx = $endingTimeSpinner.captureTimeSpinner("value");
-              event.target.value = timelapse.getCaptureTimes()[currentEndingIdx];
-              timelapse.seekToFrame(currentEndingIdx);
+              event.target.value = captureTimes[currentEndingIdx];
+              timelapse.seekToFrame();
+              if ($thumbnailTimelineSliderHandlersMax) {
+                $thumbnailTimelineSliderHandlersMax.attr('title', captureTimes[currentEndingIdx].split(" ")[1]);
+                $('#slider').slider("option", "values", [$startingTimeSpinner.captureTimeSpinner("value"), currentEndingIdx]);
+                $thumbnailTimelineSliderRange.attr('title', captureTimes[$startingTimeSpinner.captureTimeSpinner("value")].split(" ")[1] + " to " +  captureTimes[currentEndingIdx].split(" ")[1]);
+              }
               handleThumbnailDurationChange();
             });
           }

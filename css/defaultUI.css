@@ -444,6 +444,15 @@ _:-moz-tree-row(hover), .helpPlayerLabel .ui-button-text {
   z-index: 25;
 }
 
+.timelineSliderFiller .ui-slider-range {
+  background: red;
+  opacity: 0.4;
+}
+
+.tippy-popper {
+  z-index: 2147483647 !important;
+}
+
 .timelineSlider .ui-slider-handle {
   width: 12px;
   margin-left: -5px !important;
@@ -458,6 +467,11 @@ _:-moz-tree-row(hover), .helpPlayerLabel .ui-button-text {
   border-radius: 2px !important;
   cursor: pointer;
   background-image: none !important;
+}
+
+.thumbnailTimeSliderControls .ui-slider .ui-slider-handle {
+  cursor: pointer !important;
+  border-radius: 0px;
 }
 
 .timelineSlider .ui-slider-handle:focus {
@@ -2026,4 +2040,23 @@ input::-ms-clear {
 
 .ui-widget-overlay.ui-front {
   z-index: 2000 !important;
+}
+
+.thumbnailTimeSliderControls {
+  display: none;
+}
+
+.thumbnailTimeSliderControls #thumbnailTimelineSlider {
+  background: rgba(255, 255, 255, 0.3);
+  cursor: pointer;
+  border: 2px solid rgba(255, 255, 255, 0.8);
+  height: 10px;
+  width: inherit;
+  position: relative;
+  top: 0px;
+  left: 0px;
+  margin: 0;
+  padding: 0;
+  z-index: 25;
+  border-radius: 0px;
 }
