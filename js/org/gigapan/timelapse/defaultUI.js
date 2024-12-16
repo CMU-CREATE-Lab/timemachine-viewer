@@ -817,6 +817,7 @@ if (!org.gigapan.timelapse.Timelapse) {
           $("#" + viewerDivId + ", #" + viewerDivId + " .shareView").toggleClass("right-panel-active");
           // only shows "advanced" options on desktop menu
           // TODO allow toggle display options on mobile?
+          // TODO also fix Playback Rate on mobile (just hides it for now)
           if (!org.gigapan.Util.isMobileDevice()) $("tr.advanced").show()
           timelapse.onresize();
           if ($("#" + viewerDivId).hasClass("right-panel-active")) {
@@ -1056,7 +1057,7 @@ if (!org.gigapan.timelapse.Timelapse) {
           $thumbnailPreviewCopyDataButton.button("disable");
           $thumbnailPreviewCopyDownloadButton.button("disable");
 
-          //$(".social-media").empty();
+          $(".social-media").hide();
 
           var urlSettings;
           var format;
