@@ -950,6 +950,10 @@ if (!org.gigapan.timelapse.Timelapse) {
         }).click(function() {
           $("#" + viewerDivId + ' .shareView').toggle("slide", { direction: "right" }, 1);
           $("#" + viewerDivId + ", #" + viewerDivId + " .shareView").toggleClass("right-panel-active");
+          // only shows "advanced" options on desktop menu
+          // TODO allow toggle display options on mobile?
+          // TODO also fix Playback Rate on mobile (just hides it for now)
+          if (!org.gigapan.Util.isMobileDevice()) $("tr.advanced").show()
           timelapse.onresize();
           if ($("#" + viewerDivId).hasClass("right-panel-active")) {
             updateShareViewTextbox();
@@ -976,7 +980,8 @@ if (!org.gigapan.timelapse.Timelapse) {
           }
         });
         $shareDialogClose.add($shareSidePanelClose).on("click", function() {
-          $shareButton.trigger("click");
+          // desktop behavior only (mobile defines another click listener in index.html)
+          if (!org.gigapan.Util.isMobileDevice()) $shareButton.trigger("click");
         });
         $shareUrl.focus(function() {
           $(this).select();
@@ -1220,7 +1225,7 @@ if (!org.gigapan.timelapse.Timelapse) {
           $thumbnailPreviewCopyDataButton.button("disable");
           $thumbnailPreviewCopyDownloadButton.button("disable");
 
-          //$(".social-media").empty();
+          $(".social-media").hide();
 
           var urlSettings;
           var format;
@@ -1642,7 +1647,8 @@ if (!org.gigapan.timelapse.Timelapse) {
             socialMediaShareLink = socialMediaShareLink.replace('share.createlab.org', 'breathecam.org')
           }
 
-          $('<td colspan="3"><a class="twitter-sharelink" data-shareurl="" title="Share on Twitter"></a><a class="fb-sharelink" data-shareurl="" title="Share on Facebook"></a></td>').appendTo(".social-media");
+          $("tr.social-media").show();
+
           $(".fb-sharelink, .twitter-sharelink").off("click");
           $(".fb-sharelink").on("click", function() {
               window.open('https://www.facebook.com/sharer.php?s=100&p[url]=' + escape(socialMediaShareLink) + '&p[title]=' + document.title, '',
@@ -2094,6 +2100,34 @@ if (!org.gigapan.timelapse.Timelapse) {
 
     this.isShowMainControls = function() {
       return showMainControls;
+    };
+
+    this.shareOnClickMobile = function() {
+      // "top-panel-active" (mobile), replaces "right-panel-active" (desktop)
+      $("#" + viewerDivId + ", #" + viewerDivId + " .shareView").toggleClass("top-panel-active");
+      timelapse.onresize();
+      if ($("#" + viewerDivId).hasClass("top-panel-active")) {
+        updateShareViewTextbox();
+        var snaplapse = timelapse.getSnaplapseForPresentationSlider();
+        if (snaplapse) {
+          var snaplapseViewer = snaplapse.getSnaplapseViewer();
+          if (!snaplapseViewer.isWaypointContainerVisible() || !isEarthTime || isEarthTimeMinimal) {
+            $("#" + viewerDivId + " .presentation-mode-share-input").hide();
+          } else  {
+            $("#" + viewerDivId + " .presentation-mode-share-input").show();
+          }
+        }
+        UTIL.addGoogleAnalyticEvent('button', 'click', 'viewer-show-share-dialog');
+        var activeIdx = $shareAccordion.accordion("option", "active");
+        var $activePanel = $($shareAccordion.accordion("instance").panels[activeIdx]);
+        if ($activePanel.hasClass("share-thumbnail")) {
+          setThumbnailToolAspectRatio();
+          timelapse.getThumbnailTool().showCropBox();
+        }
+      } else {
+        disableShareThumbnail();
+        $("#" + timeMachineDivId + " .shareView .waypoint-index, #" + timeMachineDivId + " .shareView .waypoint-only").prop("checked", false);
+      }
     };
 
     var zoomIn = function(fromShiftKey) {

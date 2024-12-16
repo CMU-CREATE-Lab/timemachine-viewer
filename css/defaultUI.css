@@ -657,7 +657,7 @@ _:-moz-tree-row(hover), .helpPlayerLabel .ui-button-text {
 .sideToolBar {
   position: absolute;
   top: 20px;
-  right: 20px;
+  /* right: 20px; */
   z-index: 15;
 }
 
@@ -1034,7 +1034,7 @@ _:-moz-tree-row(hover), .customDialog .customDialogButton .ui-button-text {
   margin-left: 0px;
   margin-right: 4px;
   margin-bottom: 4px;
-  width: 270px;
+  width: 200px;
   height: 16px;
   resize: none;
 }
@@ -1627,6 +1627,18 @@ input::-ms-clear {
   right: -418px !important;
 }
 
+.top-panel-active {
+  /* Note: placeholder for now */
+  top: 400px !important;
+}
+
+.shareView.top-panel-active {
+  display: block;
+  top: -400px !important;
+  height: 400px;
+  width: 100%;
+}
+
 #shareViewPanelTitle {
   display: none;
 }
@@ -1818,7 +1830,7 @@ input::-ms-clear {
 
 .twitter-sharelink {
   cursor: pointer;
-  background-image: url(../images/twitter.png);
+  background-image: url(../images/x.png);
   background-repeat: no-repeat;
   background-size: contain;
   width: 72px;
@@ -2059,4 +2071,12 @@ input::-ms-clear {
   padding: 0;
   z-index: 25;
   border-radius: 0px;
+}
+
+tr.social-media {
+  display: none;
+}
+
+tr.advanced {
+  display: none;
 }
