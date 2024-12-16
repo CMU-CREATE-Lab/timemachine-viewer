@@ -1816,7 +1816,7 @@ input::-ms-clear {
 
 .twitter-sharelink {
   cursor: pointer;
-  background-image: url(../images/twitter.png);
+  background-image: url(../images/x.png);
   background-repeat: no-repeat;
   background-size: contain;
   width: 72px;
