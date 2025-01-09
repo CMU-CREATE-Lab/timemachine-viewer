@@ -2712,9 +2712,9 @@ if (!window['$']) {
 
       var attachedValidGamepads = navigator.getGamepads().filter(gamepad => gamepad && gamepad.mapping && gamepad.mapping.trim() !== '');
       var gamepad = attachedValidGamepads[0];
-      var translationSpeedConstant = 30;
-      var joystickError = 0.15;
-      var scalingConstant = 0.94;
+      var translationSpeedConstant = 15;
+      var joystickError = 0.14;
+      var scalingConstant = 0.98;
       var secondaryFunctionsEnabled = true;
 
       if (gamepad == null) {
