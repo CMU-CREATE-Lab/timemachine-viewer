@@ -100,6 +100,8 @@ if (!org.gigapan.timelapse.Timelapse) {
     //
 
     // Settings
+    var defaultMobileUIOverride = (typeof(settings["defaultMobileUIOverride"]) == "undefined") ? false : settings["defaultMobileUIOverride"];
+    var isMobileDevice = defaultMobileUIOverride ? false : UTIL.isMobileDevice();
     var useCustomUI = timelapse.useCustomUI();
     var showShareBtn = (typeof(settings["showShareBtn"]) == "undefined") ? ( useCustomUI ? false : true) : settings["showShareBtn"];
     var showHelpButton = (typeof(settings["showHelpButton"]) == "undefined") ? ( useCustomUI ? false : true) : settings["showHelpButton"];
@@ -196,7 +198,6 @@ if (!org.gigapan.timelapse.Timelapse) {
 
     // Flags
     var isSafari = UTIL.isSafari();
-    var isMobileDevice = UTIL.isMobileDevice();
     var originalIsPaused;
     var useTouchFriendlyUI = timelapse.useTouchFriendlyUI();
     var framePadding = timelapse.getFramePadding();

@@ -3169,7 +3169,7 @@ if (!window['$']) {
       if (((addFramePaddingForVideos && (typeof(gEarthTime) == "undefined")) || (addFramePaddingForVideos && isEarthTimeTimeMachine)) && (frameNum < (Math.floor(frameNum) + framePadding))) {
         frameNum = frameNum + framePadding;
       }
-      return parseFloat((frameNum / _getFps()).toFixed(2));
+      return parseFloat((frameNum / _getFps()).toFixed(5));
     };
     this.frameNumberToTime = frameNumberToTime;
 

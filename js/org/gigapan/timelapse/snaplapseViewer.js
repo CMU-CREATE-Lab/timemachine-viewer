@@ -106,7 +106,8 @@ if (!org.gigapan.timelapse.snaplapse) {
     var previousWaypoint = {};
 
     // Settings
-    var isMobileDevice = UTIL.isMobileDevice();
+    var defaultMobileUIOverride = (typeof(settings["defaultMobileUIOverride"]) == "undefined") ? false : settings["defaultMobileUIOverride"];
+    var isMobileDevice = defaultMobileUIOverride ? false : UTIL.isMobileDevice();
     var viewerType = UTIL.getViewerType();
     var datasetType = timelapse.getDatasetType();
     var startEditorFromPresentationMode = settings["startEditorFromPresentationMode"] ? settings["startEditorFromPresentationMode"] : false;
@@ -143,7 +144,6 @@ if (!org.gigapan.timelapse.snaplapse) {
     var wayPointClickedByAutoMode = false;
     var useRecordingMode = false;
     var isAutoModeRunning = false;
-    var isMobileDevice = UTIL.isMobileDevice();
     var isLoadingWaypoints = false;
     var isEarthTime = UTIL.isEarthTime();
     var isEarthTimeMinimal = UTIL.isEarthTimeMinimal();
