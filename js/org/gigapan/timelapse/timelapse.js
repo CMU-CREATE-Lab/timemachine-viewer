@@ -2710,7 +2710,8 @@ if (!window['$']) {
         return false;
       }
 
-      var gamepad = navigator.getGamepads()[0];
+      var attachedValidGamepads = navigator.getGamepads().filter(gamepad => gamepad && gamepad.mapping && gamepad.mapping.trim() !== '');
+      var gamepad = attachedValidGamepads[0];
       var translationSpeedConstant = 30;
       var joystickError = 0.15;
       var scalingConstant = 0.94;
@@ -2746,17 +2747,14 @@ if (!window['$']) {
       if (secondaryFunctionsEnabled) {
         // Seek the video
         var seekFPS = 5.0;
-        if (gamepad.buttons[7] && !gamepad.buttons[6]) {
+        if (gamepad.buttons[7] && gamepad.buttons[7].pressed) {
           if (joystickTimers[0] > 1.0 / seekFPS) {
-            thisObj.handlePlayPause();
             videoset.seek(videoset.getCurrentTime() + (1.0 / _getFps()));
             joystickTimers[0] = 0.0;
           }
           joystickTimers[0] += 0.040;
-        }
-        if (gamepad.buttons[6] && !gamepad.buttons[7]) {
+        } else if (gamepad.buttons[6] && gamepad.buttons[6].pressed) {
           if (joystickTimers[1] > 1.0 / seekFPS) {
-            thisObj.handlePlayPause();
             videoset.seek(videoset.getCurrentTime() - (1.0 / _getFps()));
             joystickTimers[1] = 0.0;
           }
@@ -2765,19 +2763,19 @@ if (!window['$']) {
 
         // Play/Pause Video
         var buttonNumberForPlay = 0;
-        if (gamepad.buttons[buttonNumberForPlay] && !isJoystickButtonPressed[buttonNumberForPlay]) {
+        if (gamepad.buttons[buttonNumberForPlay] && gamepad.buttons[buttonNumberForPlay].pressed && !isJoystickButtonPressed[buttonNumberForPlay]) {
           thisObj.handlePlayPause();
           isJoystickButtonPressed[buttonNumberForPlay] = true;
-        } else if (!gamepad.buttons[buttonNumberForPlay] && isJoystickButtonPressed[buttonNumberForPlay]) {
+        } else if (gamepad.buttons[buttonNumberForPlay] && !gamepad.buttons[buttonNumberForPlay].pressed && isJoystickButtonPressed[buttonNumberForPlay]) {
           isJoystickButtonPressed[buttonNumberForPlay] = false;
         }
 
         // Set FullScreen
         var buttonNumberForFullScreen = 1;
-        if (gamepad.buttons[buttonNumberForFullScreen] && !isJoystickButtonPressed[buttonNumberForFullScreen]) {
+        if (gamepad.buttons[buttonNumberForFullScreen] && gamepad.buttons[buttonNumberForFullScreen].pressed && !isJoystickButtonPressed[buttonNumberForFullScreen]) {
           _fullScreen(!fullScreen);
           isJoystickButtonPressed[buttonNumberForFullScreen] = true;
-        } else if (!gamepad.buttons[buttonNumberForFullScreen] && isJoystickButtonPressed[buttonNumberForFullScreen]) {
+        } else if (gamepad.buttons[buttonNumberForFullScreen] && !gamepad.buttons[buttonNumberForFullScreen].pressed && isJoystickButtonPressed[buttonNumberForFullScreen]) {
           isJoystickButtonPressed[buttonNumberForFullScreen] = false;
         }
       }
