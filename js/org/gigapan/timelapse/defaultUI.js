@@ -477,6 +477,8 @@ if (!org.gigapan.timelapse.Timelapse) {
         $(".tippy-popper").show();
         if (!$thumbnailTimelineSlider) {
           createThumbnailTimelineSlider();
+        } else {
+          thumbnailTimelineSliderTooltipStep();
         }
       } else {
         $timelineSliderFiller.show();
