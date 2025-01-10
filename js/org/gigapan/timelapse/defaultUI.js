@@ -2124,6 +2124,7 @@ if (!org.gigapan.timelapse.Timelapse) {
         if ($activePanel.hasClass("share-thumbnail")) {
           setThumbnailToolAspectRatio();
           timelapse.getThumbnailTool().showCropBox();
+          toggleThumbnailTimelineSlider(true);
         }
       } else {
         disableShareThumbnail();
