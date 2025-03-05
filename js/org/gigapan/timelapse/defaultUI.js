@@ -491,7 +491,7 @@ if (!org.gigapan.timelapse.Timelapse) {
     var createThumbnailTimelineSlider = function() {
       $(".thumbnail-set-end-time-from-timeline, .thumbnail-set-start-time-from-timeline").hide();
       var numFrames = timelapse.getNumFrames();
-      var values = [0, numFrames - 1];
+      var values = [Math.max(0,numFrames - 401), Math.max(1,numFrames - 1)];
 
       $thumbnailTimelineSlider = $("#" + viewerDivId + ' #thumbnailTimelineSlider').slider({
         range: true,
@@ -2107,8 +2107,13 @@ if (!org.gigapan.timelapse.Timelapse) {
 
     this.shareOnClickMobile = function() {
       // "top-panel-active" (mobile), replaces "right-panel-active" (desktop)
+      var homeView = timelapse.getHomeView();
+      var currentView = timelapse.getView();
       $("#" + viewerDivId + ", #" + viewerDivId + " .shareView").toggleClass("top-panel-active");
       timelapse.onresize();
+      if (homeView.x == currentView.x && homeView.y == currentView.y && homeView.scale == currentView.scale) {
+        timelapse.setNewView(timelapse.getHomeView(), true);
+      }
       if ($("#" + viewerDivId).hasClass("top-panel-active")) {
         updateShareViewTextbox();
         var snaplapse = timelapse.getSnaplapseForPresentationSlider();

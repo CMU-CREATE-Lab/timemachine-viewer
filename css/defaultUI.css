@@ -1632,9 +1632,21 @@ input::-ms-clear {
   top: 400px !important;
 }
 
+.bottom-panel-active {
+  bottom: 400px !important;
+}
+
 .shareView.top-panel-active {
   display: block;
   top: -400px !important;
+  height: 400px;
+  width: 100%;
+}
+
+.shareView.bottom-panel-active {
+  display: block;
+  bottom: -400px !important;
+  top: unset !important;
   height: 400px;
   width: 100%;
 }
