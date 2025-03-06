@@ -237,12 +237,15 @@
             <td>Ending time:</td>
             <td><input class="endingTimeSpinner" name="spinner" value=""><span title="Set to current time from timeline" class="thumbnail-set-end-time-from-timeline thumbnail-set-current-time"></span></td>
           </tr>
-          <tr>
+          <tr class="deprecated-thumbnail-type">
             <td>Type:</td>
             <td>
               <div class="customDialogButton thumbnail-type-image selected">Image</div>
               <div class="customDialogButton thumbnail-type-video">Video</div>
             </td>
+          </tr>
+          <tr>
+            <td colspan="2"><div class="helper-text-image-video">* To generate an Image, make start and end time the same</div></td>
           </tr>
           <tr class="advanced">
             <td>Playback rate:</td>

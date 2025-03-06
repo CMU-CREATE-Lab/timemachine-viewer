@@ -203,7 +203,7 @@ if (!org.gigapan.timelapse.Timelapse) {
     var framePadding = timelapse.getFramePadding();
     var isStartingTimeSpinnerBlurAdded = false;
     var isEndingTimeSpinnerBlurAdded = false;
-    var thumbnailLengthWarningMsg = "A large number of frames were selected, which may take <br> awhile to process. Always check start/end times to ensure <br> the right time range was chosen before you click generate.";
+    var thumbnailLengthWarningMsg = "A large number of frames were selected, which may take awhile to process. Always check start/end times to ensure the right time range was chosen before you click generate.";
     var maxThumbnailLength = 1500;
     var isEarthTime = UTIL.isEarthTime();
     var isEarthTimeMinimal = UTIL.isEarthTimeMinimal();
@@ -2107,14 +2107,15 @@ if (!org.gigapan.timelapse.Timelapse) {
 
     this.shareOnClickMobile = function() {
       // "top-panel-active" (mobile), replaces "right-panel-active" (desktop)
+      // TODO make this passed in? (e.g. now we use "bottom-panel-active")
       var homeView = timelapse.getHomeView();
       var currentView = timelapse.getView();
-      $("#" + viewerDivId + ", #" + viewerDivId + " .shareView").toggleClass("top-panel-active");
+      $("#" + viewerDivId + ", #" + viewerDivId + " .shareView").toggleClass("bottom-panel-active");
       timelapse.onresize();
       if (homeView.x == currentView.x && homeView.y == currentView.y && homeView.scale == currentView.scale) {
         timelapse.setNewView(timelapse.getHomeView(), true);
       }
-      if ($("#" + viewerDivId).hasClass("top-panel-active")) {
+      if ($("#" + viewerDivId).hasClass("bottom-panel-active")) {
         updateShareViewTextbox();
         var snaplapse = timelapse.getSnaplapseForPresentationSlider();
         if (snaplapse) {

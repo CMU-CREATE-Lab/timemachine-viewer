@@ -935,6 +935,10 @@ _:-moz-tree-row(hover), .helpPlayerLabel .ui-button-text {
   color: purple;
 }
 
+.thumbnail-processing-time-warning {
+  text-wrap-mode: wrap;
+}
+
 .customDialog .customDialogButton.generate-thumbnail .ui-button-text {
   margin-top: 2px;
   font-size: 13px;
@@ -1012,7 +1016,7 @@ _:-moz-tree-row(hover), .ui-spinner-input {
 }
 
 .share-thumbnail.ui-accordion-content {
-  padding: 1em 1.6em !important;
+  padding-left: 0px;
 }
 
 /* FireFox specific CSS */
@@ -2091,4 +2095,14 @@ tr.social-media {
 
 tr.advanced {
   display: none;
+}
+
+tr.deprecated-thumbnail-type {
+  display: none;
+}
+
+div.helper-text-image-video {
+  font-size: 12px;
+  color: #555;
+  text-wrap-mode: wrap;
 }
