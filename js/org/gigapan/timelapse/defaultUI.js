@@ -464,7 +464,11 @@ if (!org.gigapan.timelapse.Timelapse) {
       var thumbnailTool = timelapse.getThumbnailTool();
       if (thumbnailTool) {
         setThumbnailToolAspectRatio();
-        thumbnailTool.showCropBox();
+        if (org.gigapan.Util.isMobileDevice()) {
+          thumbnailTool.fitCropBoxToDimensionsByAspectRatio();
+        } else {
+          thumbnailTool.showCropBox();
+        }
       }
       toggleThumbnailTimelineSlider(true);
     };
@@ -2130,8 +2134,8 @@ if (!org.gigapan.timelapse.Timelapse) {
         var activeIdx = $shareAccordion.accordion("option", "active");
         var $activePanel = $($shareAccordion.accordion("instance").panels[activeIdx]);
         if ($activePanel.hasClass("share-thumbnail")) {
-          setThumbnailToolAspectRatio();
-          timelapse.getThumbnailTool().showCropBox();
+          timelapse.getThumbnailTool().setThumbnailToolAspectRatio();
+          timelapse.getThumbnailTool().fitCropBoxToDimensionsByAspectRatio();
           toggleThumbnailTimelineSlider(true);
         }
       } else {
