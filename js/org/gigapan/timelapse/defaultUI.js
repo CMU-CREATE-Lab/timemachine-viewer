@@ -1227,12 +1227,6 @@ if (!org.gigapan.timelapse.Timelapse) {
         // Add events
         $("#" + viewerDivId + " .generate-thumbnail").button().click(function(event) {
           $(this).button("disable");
-          $(".thumbnail-preview-container").addClass("loading");
-          //$thumbnailPreviewCopyTextButton.button("disable");
-          $thumbnailPreviewCopyDataButton.button("disable");
-          $thumbnailPreviewCopyDownloadButton.button("disable");
-
-          $(".social-media").hide();
 
           var urlSettings;
           var format;
@@ -1300,6 +1294,18 @@ if (!org.gigapan.timelapse.Timelapse) {
           }
 
           var thumbnailParams = timelapse.getThumbnailTool().getURL(urlSettings);
+
+          if (thumbnailParams.url == $(".thumbnail-preview").attr("src")) {
+            $(this).button("enable");
+            return;
+          }
+
+          $(".thumbnail-preview-container").addClass("loading");
+          //$thumbnailPreviewCopyTextButton.button("disable");
+          $thumbnailPreviewCopyDataButton.button("disable");
+          $thumbnailPreviewCopyDownloadButton.button("disable");
+
+          $(".social-media").hide();
 
           var listeners = eventListeners["thumbnail-generated-from-ui"];
           if (listeners) {
